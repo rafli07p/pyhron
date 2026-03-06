@@ -1,0 +1,135 @@
+[tool.poetry]
+name = "enthropy"
+version = "0.1.0"
+description = "Bloomberg-style algorithmic quant research terminal"
+authors = ["Enthropy Team"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "apps" },
+    { include = "services" },
+    { include = "shared" },
+    { include = "strategies" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+# Market data & brokerage
+polygon = "*"
+alpaca-py = "*"
+yfinance = "*"
+ccxt = "*"
+
+# Web framework
+fastapi = "*"
+uvicorn = { version = "*", extras = ["standard"] }
+slowapi = "*"
+pydantic = "*"
+
+# ML & quantitative
+torch = "*"
+scikit-learn = "*"
+mlflow = "*"
+QuantLib-Python = "*"
+
+# Data & compute
+pandas = "*"
+numpy = "*"
+scipy = "*"
+dask = { version = "*", extras = ["distributed"] }
+
+# Infrastructure
+sqlalchemy = "*"
+redis = "*"
+celery = "*"
+aiokafka = "*"
+aiohttp = "*"
+psycopg2-binary = "*"
+alembic = "*"
+
+# Observability & resilience
+structlog = "*"
+tenacity = "*"
+pybreaker = "*"
+
+# Auth & security
+passlib = "*"
+PyJWT = "*"
+cryptography = "*"
+
+# Utilities
+python-dotenv = "*"
+websockets = "*"
+httpx = "*"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "*"
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+locust = "*"
+pre-commit = "*"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
+    "T20",  # flake8-print
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "PTH",  # flake8-use-pathlib
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "S101",  # allow assert in tests
+    "S105",  # allow hardcoded password variable names
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "services", "shared", "strategies"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S106"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=apps",
+    "--cov=services",
+    "--cov=shared",
+    "--cov=strategies",
+    "--cov-report=term-missing",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests requiring external services",
+    "gpu: marks tests requiring GPU",
+]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

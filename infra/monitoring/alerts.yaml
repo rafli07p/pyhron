@@ -1,0 +1,272 @@
+# =============================================================================
+# Enthropy Trading Platform - Prometheus Alerting Rules
+# =============================================================================
+
+groups:
+  # ---------------------------------------------------------------------------
+  # Latency Alerts
+  # ---------------------------------------------------------------------------
+  - name: enthropy.latency
+    rules:
+      - alert: HighOrderLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(order_latency_seconds_bucket{job="enthropy-quant-metrics"}[5m])) by (le))
+          > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          team: trading
+          component: order-execution
+        annotations:
+          summary: "High order execution latency detected"
+          description: >
+            p95 order latency is {{ $value | humanizeDuration }} which exceeds
+            the 500ms threshold. This may impact execution quality and slippage.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/high-latency"
+
+      - alert: CriticalOrderLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(order_latency_seconds_bucket{job="enthropy-quant-metrics"}[5m])) by (le))
+          > 2.0
+        for: 1m
+        labels:
+          severity: critical
+          team: trading
+          component: order-execution
+        annotations:
+          summary: "Critical order execution latency"
+          description: >
+            p99 order latency is {{ $value | humanizeDuration }}. Orders are
+            severely delayed. Immediate investigation required.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/critical-latency"
+
+      - alert: HighAPIResponseTime
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="enthropy-api"}[5m])) by (le))
+          > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: api
+        annotations:
+          summary: "API response time is elevated"
+          description: >
+            p95 API response time is {{ $value | humanizeDuration }}.
+            Check for database bottlenecks or resource contention.
+
+  # ---------------------------------------------------------------------------
+  # Risk Alerts
+  # ---------------------------------------------------------------------------
+  - name: enthropy.risk
+    rules:
+      - alert: RiskVaRBreach
+        expr: |
+          risk_var_current{job="enthropy-quant-metrics"}
+          > risk_var_limit{job="enthropy-quant-metrics"} * 0.9
+        for: 1m
+        labels:
+          severity: critical
+          team: risk
+          component: risk-engine
+        annotations:
+          summary: "VaR approaching limit (>90%)"
+          description: >
+            Current VaR (${{ $value | humanize }}) is approaching the risk limit.
+            Portfolio risk exposure requires immediate review. Auto-hedging may
+            trigger if limit is breached.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/var-breach"
+
+      - alert: RiskVaRLimitExceeded
+        expr: |
+          risk_var_current{job="enthropy-quant-metrics"}
+          > risk_var_limit{job="enthropy-quant-metrics"}
+        for: 0m
+        labels:
+          severity: critical
+          team: risk
+          component: risk-engine
+          pager: "true"
+        annotations:
+          summary: "VaR LIMIT EXCEEDED - Trading should be halted"
+          description: >
+            Current VaR (${{ $value | humanize }}) has EXCEEDED the risk limit.
+            All new position openings should be blocked until risk is reduced.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/var-exceeded"
+
+      - alert: ExcessiveDrawdown
+        expr: |
+          drawdown_current_pct{job="enthropy-quant-metrics"} > 0.10
+        for: 5m
+        labels:
+          severity: critical
+          team: risk
+          component: portfolio
+        annotations:
+          summary: "Excessive drawdown detected (>10%)"
+          description: >
+            Strategy {{ $labels.strategy }} has a drawdown of
+            {{ $value | humanizePercentage }}. Review positions and consider
+            risk reduction.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/drawdown"
+
+      - alert: PositionConcentrationRisk
+        expr: |
+          max(position_exposure_total{job="enthropy-quant-metrics"})
+          / sum(position_exposure_total{job="enthropy-quant-metrics"})
+          > 0.30
+        for: 10m
+        labels:
+          severity: warning
+          team: risk
+          component: portfolio
+        annotations:
+          summary: "High position concentration detected"
+          description: >
+            A single position exceeds 30% of total portfolio exposure.
+            Diversification review recommended.
+
+  # ---------------------------------------------------------------------------
+  # System Health Alerts
+  # ---------------------------------------------------------------------------
+  - name: enthropy.system
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"enthropy-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+          component: infrastructure
+        annotations:
+          summary: "Enthropy service is down"
+          description: >
+            Service {{ $labels.job }} on {{ $labels.instance }} has been
+            unreachable for more than 1 minute.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/service-down"
+
+      - alert: HighCPUUsage
+        expr: |
+          avg(rate(process_cpu_seconds_total{job="enthropy-api"}[5m])) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          component: compute
+        annotations:
+          summary: "High CPU usage on API service"
+          description: >
+            CPU usage is at {{ $value | humanizePercentage }}. Consider scaling
+            up or investigating resource-intensive operations.
+
+      - alert: HighMemoryUsage
+        expr: |
+          process_resident_memory_bytes{job="enthropy-api"}
+          / on() group_left() machine_memory_bytes > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+          component: compute
+        annotations:
+          summary: "High memory usage on API service"
+          description: >
+            Memory usage is at {{ $value | humanizePercentage }}.
+            Check for memory leaks or increase resource limits.
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          pg_stat_activity_count{datname="enthropy"}
+          / pg_settings_max_connections > 0.85
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+          component: database
+        annotations:
+          summary: "PostgreSQL connection pool near exhaustion"
+          description: >
+            Database connections at {{ $value | humanizePercentage }} capacity.
+            Increase pool size or investigate connection leaks.
+
+      - alert: RedisHighMemory
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: cache
+        annotations:
+          summary: "Redis memory usage is high"
+          description: >
+            Redis memory at {{ $value | humanizePercentage }}. Eviction policy
+            may start clearing keys.
+
+  # ---------------------------------------------------------------------------
+  # Data Gap Alerts
+  # ---------------------------------------------------------------------------
+  - name: enthropy.data
+    rules:
+      - alert: MarketDataGap
+        expr: |
+          market_data_lag_seconds{job="enthropy-quant-metrics"} > 30
+        for: 1m
+        labels:
+          severity: critical
+          team: trading
+          component: market-data
+        annotations:
+          summary: "Market data feed gap detected"
+          description: >
+            Market data for {{ $labels.exchange }}/{{ $labels.symbol }} is
+            {{ $value | humanizeDuration }} behind. Trading decisions may be
+            based on stale data. Check feed connectivity.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/market-data-gap"
+
+      - alert: MarketDataStale
+        expr: |
+          time() - market_data_last_update_timestamp{job="enthropy-quant-metrics"} > 60
+        for: 2m
+        labels:
+          severity: critical
+          team: trading
+          component: market-data
+          pager: "true"
+        annotations:
+          summary: "Market data feed is stale"
+          description: >
+            No market data updates received for {{ $labels.exchange }} in over
+            60 seconds. Feed may be disconnected.
+          runbook_url: "https://wiki.enthropy.dev/runbooks/market-data-stale"
+
+      - alert: KafkaConsumerLag
+        expr: |
+          kafka_consumergroup_lag_sum{consumergroup=~"enthropy-.*"} > 10000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: messaging
+        annotations:
+          summary: "Kafka consumer lag is high"
+          description: >
+            Consumer group {{ $labels.consumergroup }} has a lag of
+            {{ $value }} messages on topic {{ $labels.topic }}.
+            Processing may be falling behind.
+
+      - alert: NoTradeExecutions
+        expr: |
+          rate(order_count_total{job="enthropy-quant-metrics", status="filled"}[15m]) == 0
+          and
+          rate(order_count_total{job="enthropy-quant-metrics", status="submitted"}[15m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+          team: trading
+          component: order-execution
+        annotations:
+          summary: "Orders submitted but none filled"
+          description: >
+            Orders are being submitted but no fills have been received in the
+            last 15 minutes. Check exchange connectivity and order parameters.
