@@ -44,8 +44,8 @@ logger = structlog.stdlib.get_logger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
-JWT_SECRET = "enthropy-jwt-secret"  # noqa: S105 — override via env
-JWT_ALGORITHM = "HS256"
+from shared.configs import get_settings as _get_settings
+
 API_VERSION = "v1"
 
 
@@ -203,7 +203,8 @@ async def get_current_user(request: Request) -> TokenPayload:
         )
     token = auth_header.removeprefix("Bearer ").strip()
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        _settings = _get_settings()
+        payload = jwt.decode(token, _settings.jwt_secret_key, algorithms=[_settings.jwt_algorithm])
         return TokenPayload(**payload)
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")

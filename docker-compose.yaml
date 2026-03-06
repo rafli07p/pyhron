@@ -1,0 +1,12 @@
+# =============================================================================
+# Enthropy Trading Platform - Docker Compose (Project Root)
+# =============================================================================
+# Extends infra/docker/docker-compose.yaml with correct build context.
+# Usage:
+#   docker compose up -d                       # Start core services
+#   docker compose --profile monitoring up -d  # Include Prometheus/Grafana
+#   docker compose down -v                     # Tear down with volumes
+# =============================================================================
+
+include:
+  - path: infra/docker/docker-compose.yaml
