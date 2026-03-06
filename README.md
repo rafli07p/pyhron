@@ -1,8 +1,6 @@
-# Enthropy
+# Pyhron
 
-**Bloomberg-style algorithmic quant research terminal.**
-
-Enthropy is an integrated platform for quantitative research, algorithmic trading strategy development, and real-time market analysis. It unifies market data ingestion, ML-driven signal generation, backtesting, and live execution into a single coherent system.
+Pyhron is an integrated platform for quantitative research, algorithmic trading strategy development, and real-time market analysis. It unifies market data ingestion, ML-driven signal generation, backtesting, and live execution into a single coherent system.
 
 ---
 
