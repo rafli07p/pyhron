@@ -10,6 +10,7 @@ packages = [
     { include = "services" },
     { include = "shared" },
     { include = "strategies" },
+    { include = "data-platform" },
 ]
 
 [tool.poetry.dependencies]
