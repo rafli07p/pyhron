@@ -1,0 +1,44 @@
+name: Reconciliation Check
+
+on:
+  schedule:
+    # Run after IDX market close (16:30 WIB = 09:30 UTC)
+    - cron: "30 9 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  reconciliation:
+    name: Position Reconciliation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run reconciliation
+        env:
+          APP_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: |
+          echo "Reconciliation check placeholder"
+          echo "In production: compare DB positions vs broker positions"
+          echo "Trigger circuit breaker if mismatch > threshold"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Reconciliation check failed — manual review required"

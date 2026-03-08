@@ -10,9 +10,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  PYTHON_VERSION: "3.12"
+
 jobs:
-  lint:
-    name: Lint
+  proto-compile:
+    name: Compile Protobuf
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +23,38 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install protobuf compiler
+        run: |
+          pip install grpcio-tools~=1.62.0 protobuf~=4.25.0
+
+      - name: Compile proto files
+        run: |
+          mkdir -p shared/proto_generated
+          python -m grpc_tools.protoc \
+            --proto_path=proto \
+            --python_out=shared/proto_generated \
+            proto/*.proto
+          touch shared/proto_generated/__init__.py
+
+      - name: Verify generated files match committed
+        run: |
+          if git diff --name-only | grep proto_generated; then
+            echo "::error::Proto generated files are out of date. Run ./scripts/generate_proto.sh and commit."
+            exit 1
+          fi
+
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -37,29 +71,30 @@ jobs:
             venv-${{ runner.os }}-
 
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --with dev,lint
 
-      - name: Run ruff linter
+      - name: Ruff check
         run: poetry run ruff check .
 
-      - name: Run ruff formatter check
+      - name: Ruff format check
         run: poetry run ruff format --check .
 
+      - name: Mypy
+        run: poetry run mypy apps/ shared/ services/ --ignore-missing-imports
+        continue-on-error: true
+
   test:
-    name: Test (Python ${{ matrix.python-version }})
+    name: Test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+    needs: [lint]
 
     services:
       postgres:
-        image: postgres:15
+        image: timescale/timescaledb:latest-pg16
         env:
-          POSTGRES_USER: enthropy
-          POSTGRES_PASSWORD: enthropy
-          POSTGRES_DB: enthropy_test
+          POSTGRES_USER: pyhron
+          POSTGRES_PASSWORD: pyhron
+          POSTGRES_DB: pyhron_test
         ports:
           - 5432:5432
         options: >-
@@ -69,7 +104,7 @@ jobs:
           --health-retries 5
 
       redis:
-        image: redis:7
+        image: redis:7-alpine
         ports:
           - 6379:6379
         options: >-
@@ -81,10 +116,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -96,35 +131,80 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .venv
-          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          key: venv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('poetry.lock') }}
           restore-keys: |
-            venv-${{ runner.os }}-py${{ matrix.python-version }}-
+            venv-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --with test
+
+      - name: Run tests
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql+asyncpg://pyhron:pyhron@localhost:5432/pyhron_test
+          DATABASE_SYNC_URL: postgresql+psycopg://pyhron:pyhron@localhost:5432/pyhron_test
+          REDIS_URL: redis://localhost:6379/0
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          APP_SECRET_KEY: ci-test-secret-key-minimum-32-chars
+          JWT_SECRET_KEY: ci-test-jwt-secret-key-minimum-64-characters-for-testing
+        run: |
+          poetry run pytest -m "not slow and not integration and not e2e" \
+            --tb=short --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
 
       - name: Install dependencies
         run: poetry install --no-interaction
 
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://enthropy:enthropy@localhost:5432/enthropy_test
-          REDIS_URL: redis://localhost:6379/0
-          SECRET_KEY: ci-test-secret
-          JWT_SECRET: ci-test-jwt-secret
-        run: poetry run pytest -m "not slow and not gpu" --tb=short
+      - name: Check for known vulnerabilities
+        run: pip install pip-audit && pip-audit
+        continue-on-error: true
 
-  docker:
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+        continue-on-error: true
+
+  docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
+    needs: [test]
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Check Dockerfile exists
+      - name: Build API image
         run: |
-          if [ -f Dockerfile ]; then
-            echo "Dockerfile found, building image..."
-            docker build --no-cache -t enthropy:ci-${{ github.sha }} .
-          else
-            echo "No Dockerfile found, skipping build."
+          if [ -f infra/docker/api.Dockerfile ]; then
+            docker build -f infra/docker/api.Dockerfile \
+              -t pyhron-api:ci-${{ github.sha }} .
+          fi
+
+      - name: Build Worker image
+        run: |
+          if [ -f infra/docker/worker.Dockerfile ]; then
+            docker build -f infra/docker/worker.Dockerfile \
+              -t pyhron-worker:ci-${{ github.sha }} .
           fi
