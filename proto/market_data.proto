@@ -1,0 +1,30 @@
+syntax = "proto3";
+package pyhron.market_data;
+
+import "google/protobuf/timestamp.proto";
+
+// OHLCV bar
+message OHLCVBar {
+  string symbol = 1;
+  string exchange = 2;
+  string interval = 3;             // "1d", "1h", "5m"
+  double open = 4;
+  double high = 5;
+  double low = 6;
+  double close = 7;
+  double adjusted_close = 8;
+  int64 volume = 9;
+  double vwap = 10;
+  google.protobuf.Timestamp bar_time = 11;
+}
+
+// Tick: real-time price update
+message Tick {
+  string symbol = 1;
+  string exchange = 2;
+  double bid = 3;
+  double ask = 4;
+  double last = 5;
+  int64 volume = 6;
+  google.protobuf.Timestamp tick_time = 7;
+}

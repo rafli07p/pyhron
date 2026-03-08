@@ -1,0 +1,88 @@
+syntax = "proto3";
+package pyhron.orders;
+
+import "google/protobuf/timestamp.proto";
+
+// OrderSide: direction of the order
+enum OrderSide {
+  ORDER_SIDE_UNSPECIFIED = 0;
+  ORDER_SIDE_BUY = 1;
+  ORDER_SIDE_SELL = 2;
+}
+
+// OrderType: execution type
+enum OrderType {
+  ORDER_TYPE_UNSPECIFIED = 0;
+  ORDER_TYPE_MARKET = 1;
+  ORDER_TYPE_LIMIT = 2;
+  ORDER_TYPE_STOP = 3;
+  ORDER_TYPE_STOP_LIMIT = 4;
+}
+
+// TimeInForce: order duration
+enum TimeInForce {
+  TIME_IN_FORCE_UNSPECIFIED = 0;
+  TIME_IN_FORCE_DAY = 1;       // Cancel at session end
+  TIME_IN_FORCE_GTC = 2;       // Good till cancelled
+  TIME_IN_FORCE_IOC = 3;       // Immediate or cancel
+  TIME_IN_FORCE_FOK = 4;       // Fill or kill
+}
+
+// OrderStatus: lifecycle state machine
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING_RISK = 1;    // Awaiting pre-trade risk check
+  ORDER_STATUS_RISK_APPROVED = 2;   // Passed all risk checks
+  ORDER_STATUS_RISK_REJECTED = 3;   // Failed pre-trade risk check
+  ORDER_STATUS_SUBMITTED = 4;       // Sent to broker
+  ORDER_STATUS_ACKNOWLEDGED = 5;    // Broker confirmed receipt
+  ORDER_STATUS_PARTIAL_FILL = 6;    // Partially executed
+  ORDER_STATUS_FILLED = 7;          // Fully executed
+  ORDER_STATUS_CANCELLED = 8;       // Cancelled before fill
+  ORDER_STATUS_REJECTED = 9;        // Rejected by broker
+  ORDER_STATUS_EXPIRED = 10;        // Expired (TimeInForce)
+}
+
+// OrderRequest: submitted by Strategy layer, consumed by Risk Engine
+message OrderRequest {
+  string client_order_id = 1;       // Idempotency key (UUID v4, strategy-generated)
+  string strategy_id = 2;           // Which strategy generated this signal
+  string symbol = 3;                // IDX: "BBCA", Global: "AAPL"
+  string exchange = 4;              // "IDX", "NYSE", "NASDAQ", "LSE"
+  OrderSide side = 5;
+  OrderType order_type = 6;
+  int64 quantity = 7;               // Must be multiple of lot_size for IDX (100)
+  double limit_price = 8;           // Required for LIMIT, STOP_LIMIT
+  double stop_price = 9;            // Required for STOP, STOP_LIMIT
+  TimeInForce time_in_force = 10;
+  string currency = 11;             // "IDR", "USD"
+  google.protobuf.Timestamp signal_time = 12;  // When signal was generated
+  map<string, string> metadata = 13;           // Strategy-specific annotations
+}
+
+// RiskDecision: emitted by Risk Engine after evaluating OrderRequest
+message RiskDecision {
+  string client_order_id = 1;
+  OrderStatus status = 2;           // RISK_APPROVED or RISK_REJECTED
+  repeated string rejection_reasons = 3;  // Empty if approved
+  double approved_quantity = 4;     // May differ from requested (Kelly sizing)
+  double portfolio_var_before = 5;  // VaR before this order
+  double portfolio_var_after = 6;   // Estimated VaR after this order
+  google.protobuf.Timestamp decided_at = 7;
+}
+
+// OrderEvent: state transition event (append-only event log)
+message OrderEvent {
+  string event_id = 1;              // UUID v4
+  string client_order_id = 2;
+  string broker_order_id = 3;       // Assigned by broker on SUBMITTED
+  OrderStatus from_status = 4;
+  OrderStatus to_status = 5;
+  double filled_quantity = 6;
+  double filled_price = 7;
+  double commission = 8;
+  double tax = 9;                   // IDX: 0.1% sell tax
+  string rejection_reason = 10;
+  google.protobuf.Timestamp occurred_at = 11;
+  string source = 12;               // "broker_ws", "reconciliation", "timeout"
+}

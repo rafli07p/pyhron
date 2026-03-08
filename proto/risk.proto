@@ -1,0 +1,38 @@
+syntax = "proto3";
+package pyhron.risk;
+
+import "google/protobuf/timestamp.proto";
+
+// RiskLimitType: categories of risk constraints
+enum RiskLimitType {
+  RISK_LIMIT_TYPE_UNSPECIFIED = 0;
+  RISK_LIMIT_MAX_POSITION_SIZE_PCT = 1;    // Max % of portfolio in one symbol
+  RISK_LIMIT_MAX_SECTOR_CONCENTRATION = 2; // Max % in one IDX sector
+  RISK_LIMIT_DAILY_LOSS_LIMIT = 3;         // Circuit breaker: max daily loss
+  RISK_LIMIT_MAX_ORDERS_PER_MINUTE = 4;    // Rate limiting
+  RISK_LIMIT_MAX_GROSS_EXPOSURE = 5;       // Total long + short exposure
+  RISK_LIMIT_MAX_VAR = 6;                  // Portfolio VaR ceiling
+  RISK_LIMIT_MIN_LOT_SIZE = 7;             // IDX: must be multiple of 100
+  RISK_LIMIT_T2_BUYING_POWER = 8;          // IDX: unsettled cash constraint
+}
+
+// RiskBreachEvent: emitted when any limit is breached
+message RiskBreachEvent {
+  string breach_id = 1;
+  RiskLimitType limit_type = 2;
+  string symbol = 3;
+  string strategy_id = 4;
+  double limit_value = 5;
+  double actual_value = 6;
+  string action_taken = 7;          // "ORDER_REJECTED", "TRADING_HALTED", "ALERT_ONLY"
+  google.protobuf.Timestamp occurred_at = 8;
+}
+
+// CircuitBreakerState: system-wide trading halt
+message CircuitBreakerState {
+  bool is_halted = 1;
+  string halt_reason = 2;
+  repeated string halted_strategies = 3;  // Empty = all strategies halted
+  google.protobuf.Timestamp halted_at = 4;
+  google.protobuf.Timestamp auto_resume_at = 5;  // If applicable
+}

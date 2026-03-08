@@ -1,0 +1,44 @@
+syntax = "proto3";
+package pyhron.positions;
+
+import "google/protobuf/timestamp.proto";
+
+// Position: current holding state
+message Position {
+  string symbol = 1;
+  string exchange = 2;
+  string strategy_id = 3;
+  int64 quantity = 4;               // Net position (negative = short, IDX: always >= 0)
+  double avg_entry_price = 5;       // Volume-weighted average entry
+  double current_price = 6;
+  double unrealized_pnl = 7;
+  double realized_pnl = 8;
+  double market_value = 9;          // quantity * current_price
+  google.protobuf.Timestamp last_updated = 10;
+}
+
+// PositionEvent: state transition for position (append-only)
+message PositionEvent {
+  string event_id = 1;
+  string symbol = 2;
+  string strategy_id = 3;
+  string triggering_order_id = 4;   // client_order_id that caused this change
+  double quantity_delta = 5;        // Positive = buy, negative = sell
+  double execution_price = 6;
+  double realized_pnl_delta = 7;    // PnL realized by this fill
+  double commission = 8;
+  double tax = 9;
+  google.protobuf.Timestamp occurred_at = 10;
+}
+
+// PortfolioSnapshot: periodic full portfolio state
+message PortfolioSnapshot {
+  string portfolio_id = 1;
+  repeated Position positions = 2;
+  double total_market_value = 3;
+  double cash_balance = 4;
+  double total_unrealized_pnl = 5;
+  double total_realized_pnl_today = 6;
+  double portfolio_var_95 = 7;      // 1-day 95% VaR
+  google.protobuf.Timestamp snapshot_at = 8;
+}
