@@ -1,163 +1,87 @@
 # Pyhron
 
-Pyhron is an integrated platform for quantitative research, algorithmic trading strategy development, and real-time market analysis. It unifies market data ingestion, ML-driven signal generation, backtesting, and live execution into a single coherent system.
+Integrated quantitative trading and research intelligence platform for
+Indonesian capital markets (IDX equities) with global market expansion path.
 
----
+## Architecture
 
-## Features
-
-- **Multi-source market data** -- Real-time and historical data from Polygon, Alpaca, Yahoo Finance, and 100+ crypto exchanges via CCXT.
-- **Quantitative analytics** -- QuantLib-powered pricing, Greeks, yield curves, and risk models.
-- **ML pipeline** -- PyTorch and scikit-learn model training with MLflow experiment tracking.
-- **Strategy framework** -- Modular strategy authoring with built-in backtesting and walk-forward optimization.
-- **Live execution** -- Paper and live trading through Alpaca with order management and position tracking.
-- **Event streaming** -- Kafka-based event bus for real-time signal propagation and system decoupling.
-- **REST & WebSocket API** -- FastAPI-powered endpoints with rate limiting, JWT auth, and WebSocket feeds.
-- **Distributed compute** -- Dask cluster support for large-scale backtests and data processing.
-- **Resilience** -- Circuit breakers, retry policies, structured logging, and health monitoring.
-
-## Tech Stack
-
-| Layer | Technologies |
-|---|---|
-| **Data** | Polygon, Alpaca, yfinance, CCXT, Kafka, Redis |
-| **Compute** | Pandas, NumPy, SciPy, Dask, Celery |
-| **ML** | PyTorch, scikit-learn, MLflow |
-| **Quant** | QuantLib |
-| **API** | FastAPI, Uvicorn, Pydantic, WebSockets |
-| **Storage** | PostgreSQL (SQLAlchemy + Alembic), Redis |
-| **Auth** | JWT (PyJWT), passlib, cryptography |
-| **Infra** | Docker, GitHub Actions, pre-commit, Ruff |
-
-## Architecture Overview
+Event-driven microservices communicating via Kafka. All inter-service
+contracts defined in Protobuf (`proto/`). Designed for zero-rewrite
+migration of execution-critical services (Risk Engine, OMS, Broker
+Adapter) to Rust.
 
 ```
-                         +------------------+
-                         |   FastAPI Gateway |
-                         |  (REST + WS)     |
-                         +--------+---------+
-                                  |
-              +-------------------+-------------------+
-              |                   |                   |
-     +--------v-------+  +-------v--------+  +-------v--------+
-     | Market Data Svc|  | Strategy Engine |  |  ML Pipeline   |
-     | (Polygon/Alpaca|  | (Backtest/Live) |  | (Train/Predict)|
-     | /yfinance/CCXT)|  +-------+--------+  +-------+--------+
-     +--------+-------+          |                    |
-              |                  |                    |
-              +--------+---------+--------------------+
-                       |                    |
-              +--------v-------+   +--------v-------+
-              |  Kafka Event   |   |   PostgreSQL   |
-              |     Bus        |   |   + Redis      |
-              +----------------+   +----------------+
+Strategy → [Kafka: pyhron.signals] → Risk Engine → [Kafka: pyhron.orders.risk-decisions] → OMS → Broker
 ```
 
-- **apps/** -- User-facing applications and dashboards.
-- **services/** -- Core microservices (data ingestion, execution, analytics).
-- **shared/** -- Common libraries, models, and utilities.
-- **strategies/** -- Trading strategy implementations.
-- **data-platform/** -- Data pipeline and storage layer.
-- **infra/** -- Docker, Kubernetes, and deployment configs.
-- **scripts/** -- Operational and maintenance scripts.
-- **tests/** -- Unit, integration, and load tests.
+## Services
 
-## Setup
+| Service | Language | Description |
+|---|---|---|
+| api | Python/FastAPI | Research terminal REST API |
+| risk-engine | Python → Rust | Pre-trade risk validation |
+| oms | Python → Rust | Order lifecycle management |
+| broker | Python → Rust | Exchange connectivity |
+| data-platform | Python | Market data ingestion |
+| worker | Python/Celery | Scheduled ingestion tasks |
 
-### Prerequisites
+## Prerequisites
 
-- Python 3.10+
-- [Poetry](https://python-poetry.org/docs/#installation)
-- Docker & Docker Compose
-- PostgreSQL 15+
-- Redis 7+
+- Python 3.12+
+- Docker + Docker Compose
+- PostgreSQL 16 + TimescaleDB extension
+- protobuf compiler (`brew install protobuf` / `apt install protobuf-compiler`)
 
-### Installation
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/enthropy.git
-cd enthropy
+# 1. Clone and enter the repository
+git clone https://github.com/rafli07p/pyhron.git && cd pyhron
 
-# Install dependencies
-poetry install
-
-# Copy environment template and fill in your keys
+# 2. Copy environment template
 cp .env.example .env
 
-# Start infrastructure services
-docker compose up -d postgres redis kafka
+# 3. Generate Protobuf bindings
+pip install grpcio-tools
+bash scripts/generate_proto.sh
 
-# Run database migrations
-poetry run alembic upgrade head
+# 4. Start infrastructure
+docker compose up -d
 
-# Start the development server
-poetry run uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000
+# 5. Wait for services to stabilise (~60s), then verify
+bash scripts/healthcheck.sh
+
+# 6. Run tests
+pytest tests/ -v
 ```
 
-### Docker
+See `docs/runbook.md` for detailed operational procedures.
 
-```bash
-# Build and run the full stack
-docker compose up --build
+## IDX Data Sources
 
-# Run in detached mode
-docker compose up -d --build
+| Source | Coverage | Tier |
+|---|---|---|
+| EODHD | OHLCV EOD, Fundamentals, Dividends | Primary (paid) |
+| yfinance | OHLCV EOD | Fallback (free) |
+| IDX.co.id | Disclosure PDFs, Corporate Actions | Scraped |
+| RSS Feeds | News (Bisnis, Kontan, CNBC Indonesia) | Free |
+
+## Project Structure
+
 ```
-
-## API Key Configuration
-
-Enthropy integrates with multiple data and brokerage providers. Set the following in your `.env` file:
-
-### Polygon.io
-
-Real-time and historical US market data (equities, options, forex, crypto).
-
-1. Sign up at [polygon.io](https://polygon.io/).
-2. Navigate to your dashboard and copy your API key.
-3. Set `MASSIVE_API_KEY` in `.env`.
-
-### Alpaca
-
-Commission-free trading and market data API for US equities.
-
-1. Create an account at [alpaca.markets](https://alpaca.markets/).
-2. Generate API keys from the dashboard (paper or live).
-3. Set `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`, and `ALPACA_BASE_URL` in `.env`.
-4. Use `https://paper-api.alpaca.markets` for paper trading.
-
-### Yahoo Finance
-
-Historical market data (no API key required). Data is accessed via the `yfinance` library with no authentication. Rate limits apply.
-
-### CCXT (Crypto Exchanges)
-
-Unified API for 100+ cryptocurrency exchanges.
-
-1. Create an account on your chosen exchange (Binance, Coinbase, Kraken, etc.).
-2. Generate API keys with appropriate permissions (read-only recommended for research).
-3. Set `CCXT_EXCHANGE` to your exchange ID (e.g., `binance`).
-4. Pass exchange-specific credentials through environment variables or the config system.
-
-## Development
-
-```bash
-# Run linter
-poetry run ruff check .
-
-# Run formatter
-poetry run ruff format .
-
-# Run tests
-poetry run pytest
-
-# Run tests with coverage
-poetry run pytest --cov
-
-# Run load tests
-poetry run locust -f tests/load/locustfile.py
+pyhron/
+├── proto/             Protobuf contracts (language-agnostic seams)
+├── shared/            Shared libraries (config, database, messaging)
+├── services/          Microservices (risk-engine, oms, broker)
+├── data-platform/     Market data ingestion + storage
+├── apps/              User-facing applications (API, terminal)
+├── strategies/        Trading strategy implementations
+├── infra/             Docker, Kubernetes, Terraform
+├── scripts/           Operational scripts
+├── tests/             Unit, integration, e2e tests
+└── docs/              ADRs, data dictionary, runbook
 ```
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT

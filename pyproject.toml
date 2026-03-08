@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "enthropy"
+name = "pyhron"
 version = "0.1.0"
-description = "Bloomberg-style algorithmic quant research terminal"
-authors = ["Enthropy Team"]
+description = "Quantitative trading platform for IDX and global markets"
+authors = ["Pyhron Team"]
 license = "MIT"
 readme = "README.md"
 packages = [
@@ -48,8 +48,18 @@ passlib = { version = "~=1.7.4", extras = ["bcrypt"] }
 PyJWT = "~=2.10.0"
 cryptography = "~=44.0.0"
 
+# Protobuf & gRPC
+protobuf = "~=4.25.0"
+grpcio-tools = "~=1.62.0"
+
+# Task queue
+celery = { version = "~=5.4.0", extras = ["redis"] }
+
 # Utilities
 python-dotenv = "~=1.0.0"
+
+# Prometheus metrics
+prometheus-client = "~=0.21.0"
 
 # Market data & brokerage
 yfinance = "~=0.2.50"
@@ -132,6 +142,10 @@ module = [
     "ccxt.*",
     "alpaca.*",
     "polygon.*",
+    "grpc_tools.*",
+    "celery.*",
+    "google.protobuf.*",
+    "prometheus_client.*",
 ]
 ignore_missing_imports = true
 
