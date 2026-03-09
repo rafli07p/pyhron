@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pyhron.risk;
+package pyhron.pre_trade_risk;
 
 import "google/protobuf/timestamp.proto";
 

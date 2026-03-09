@@ -24,7 +24,7 @@ from shared.config import get_config
 from shared.database import get_session
 from shared.logging import get_logger
 from shared.messaging import PyhronProducer, Topics
-from shared.proto_generated.risk_pb2 import RiskBreachEvent, RiskLimitType
+from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent, RiskLimitType
 
 logger = get_logger(__name__)
 

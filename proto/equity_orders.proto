@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pyhron.orders;
+package pyhron.equity_orders;
 
 import "google/protobuf/timestamp.proto";
 

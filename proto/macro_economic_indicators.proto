@@ -1,0 +1,89 @@
+syntax = "proto3";
+package pyhron.macro_economic_indicators;
+
+import "google/protobuf/timestamp.proto";
+
+// MacroIndicatorSource: which institution published the data
+enum MacroIndicatorSource {
+  MACRO_INDICATOR_SOURCE_UNSPECIFIED = 0;
+  MACRO_INDICATOR_SOURCE_BANK_INDONESIA = 1;
+  MACRO_INDICATOR_SOURCE_BPS_STATISTICS = 2;
+  MACRO_INDICATOR_SOURCE_KEMENKEU = 3;
+  MACRO_INDICATOR_SOURCE_ESDM = 4;
+  MACRO_INDICATOR_SOURCE_BMKG = 5;
+  MACRO_INDICATOR_SOURCE_NOAA = 6;
+  MACRO_INDICATOR_SOURCE_OJK = 7;
+}
+
+// MacroIndicatorFrequency: publication cadence
+enum MacroIndicatorFrequency {
+  MACRO_INDICATOR_FREQUENCY_UNSPECIFIED = 0;
+  MACRO_INDICATOR_FREQUENCY_DAILY = 1;
+  MACRO_INDICATOR_FREQUENCY_WEEKLY = 2;
+  MACRO_INDICATOR_FREQUENCY_MONTHLY = 3;
+  MACRO_INDICATOR_FREQUENCY_QUARTERLY = 4;
+  MACRO_INDICATOR_FREQUENCY_POLICY_MEETING = 5;
+}
+
+// MacroIndicatorEvent: published when a macro data point is ingested or updated
+message MacroIndicatorEvent {
+  string event_id = 1;
+  string indicator_code = 2;             // e.g. "bi_rate", "cpi_yoy_pct", "icp_crude_price_usd"
+  string indicator_name = 3;             // Human-readable: "BI 7-Day Reverse Repo Rate"
+  MacroIndicatorSource source = 4;
+  MacroIndicatorFrequency frequency = 5;
+  double value = 6;
+  double previous_value = 7;
+  double change_absolute = 8;
+  double change_pct = 9;
+  string unit = 10;                      // "percent", "idr", "usd", "index", "usd_bn"
+  string period = 11;                    // "2024-Q3", "2024-11", "2024-11-19"
+  google.protobuf.Timestamp reference_date = 12;  // The date the data refers to
+  google.protobuf.Timestamp published_at = 13;    // When the source published it
+  google.protobuf.Timestamp ingested_at = 14;     // When Pyhron ingested it
+}
+
+// CommodityPriceEvent: published when commodity price updates
+message CommodityPriceEvent {
+  string event_id = 1;
+  string commodity_code = 2;             // "CPO", "HBA_COAL", "LME_NICKEL", "ICP_CRUDE"
+  string commodity_name = 3;             // "Crude Palm Oil (CPO)"
+  double price = 4;
+  double previous_price = 5;
+  double change_pct = 6;
+  string currency = 7;                   // "USD", "MYR"
+  string unit = 8;                       // "per_ton", "per_barrel"
+  MacroIndicatorSource source = 9;
+  google.protobuf.Timestamp price_date = 10;
+  google.protobuf.Timestamp ingested_at = 11;
+}
+
+// PolicyEventNotification: scheduled central bank meetings, budget announcements
+message PolicyEventNotification {
+  string event_id = 1;
+  string event_type = 2;                 // "BI_RATE_DECISION", "APBN_REALIZATION", "DPR_SESSION"
+  string title = 3;
+  string description = 4;
+  MacroIndicatorSource source = 5;
+  google.protobuf.Timestamp scheduled_at = 6;
+  string expected_impact = 7;            // "HIGH", "MEDIUM", "LOW"
+  repeated string affected_sectors = 8;  // "BANKING", "ENERGY", "PLANTATION"
+}
+
+// YieldCurveSnapshot: point-in-time yield curve for SBN
+message YieldCurveSnapshot {
+  string snapshot_id = 1;
+  google.protobuf.Timestamp curve_date = 2;
+  repeated YieldCurvePoint points = 3;
+  double two_year_ten_year_spread_bps = 4;
+  double real_yield_ten_year = 5;        // 10yr nominal minus CPI YoY
+  double spread_vs_us_ten_year_bps = 6;  // Indonesia premium over US Treasury
+}
+
+// YieldCurvePoint: single tenor on the curve
+message YieldCurvePoint {
+  string tenor = 1;                      // "1M", "3M", "6M", "1Y", "2Y", "5Y", "10Y", "20Y", "30Y"
+  double yield_pct = 2;
+  double change_bps = 3;                 // vs previous day
+  int32 tenor_months = 4;               // Numeric for interpolation
+}

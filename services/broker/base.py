@@ -10,7 +10,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import AsyncIterator
 
-from shared.proto_generated.orders_pb2 import OrderRequest
+from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 
 class BrokerAdapter(ABC):

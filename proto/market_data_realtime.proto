@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pyhron.market_data;
+package pyhron.market_data_realtime;
 
 import "google/protobuf/timestamp.proto";
 

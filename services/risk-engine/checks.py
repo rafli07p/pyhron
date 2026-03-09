@@ -13,8 +13,8 @@ from datetime import datetime, timezone
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from shared.proto_generated.orders_pb2 import OrderRequest
-from shared.proto_generated.positions_pb2 import PortfolioSnapshot
+from shared.proto_generated.equity_orders_pb2 import OrderRequest
+from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
 
 
 @dataclass(frozen=True)

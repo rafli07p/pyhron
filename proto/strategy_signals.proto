@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pyhron.signals;
+package pyhron.strategy_signals;
 
 import "google/protobuf/timestamp.proto";
 

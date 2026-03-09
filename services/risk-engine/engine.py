@@ -18,16 +18,16 @@ from shared.cache import get_redis
 from shared.config import get_config
 from shared.logging import get_logger
 from shared.messaging import PyhronConsumer, PyhronProducer, Topics
-from shared.proto_generated.orders_pb2 import (
+from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
     OrderSide,
     OrderType,
     RiskDecision,
     TimeInForce,
 )
-from shared.proto_generated.positions_pb2 import PortfolioSnapshot
-from shared.proto_generated.risk_pb2 import RiskBreachEvent, RiskLimitType
-from shared.proto_generated.signals_pb2 import Signal, SignalDirection
+from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
+from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent, RiskLimitType
+from shared.proto_generated.strategy_signals_pb2 import Signal, SignalDirection
 
 from .checks import (
     RiskCheckResult,

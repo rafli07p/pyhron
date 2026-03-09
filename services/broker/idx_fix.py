@@ -15,7 +15,7 @@ from typing import AsyncIterator
 
 from services.broker.base import BrokerAdapter
 from shared.logging import get_logger
-from shared.proto_generated.orders_pb2 import OrderRequest
+from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 logger = get_logger(__name__)
 

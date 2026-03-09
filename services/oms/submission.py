@@ -23,7 +23,7 @@ from shared.database import get_session
 from shared.exceptions import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
 from shared.logging import get_logger
 from shared.messaging import PyhronConsumer, PyhronProducer, Topics
-from shared.proto_generated.orders_pb2 import (
+from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
     OrderStatus,
     RiskDecision,
