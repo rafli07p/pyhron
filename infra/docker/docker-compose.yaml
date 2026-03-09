@@ -126,7 +126,7 @@ services:
   api:
     build:
       context: ../..
-      dockerfile: infra/docker/api.Dockerfile
+      dockerfile: infra/docker/api_service.Dockerfile
     container_name: pyhron-api
     restart: unless-stopped
     depends_on:
@@ -159,7 +159,7 @@ services:
   worker:
     build:
       context: ../..
-      dockerfile: infra/docker/worker.Dockerfile
+      dockerfile: infra/docker/celery_worker.Dockerfile
     container_name: pyhron-worker
     restart: unless-stopped
     depends_on:
@@ -180,7 +180,7 @@ services:
   beat:
     build:
       context: ../..
-      dockerfile: infra/docker/worker.Dockerfile
+      dockerfile: infra/docker/celery_worker.Dockerfile
     container_name: pyhron-beat
     restart: unless-stopped
     depends_on:
