@@ -80,7 +80,7 @@ jobs:
         run: poetry run ruff format --check .
 
       - name: Mypy
-        run: poetry run mypy apps/ shared/ services/ --ignore-missing-imports
+        run: poetry run mypy apps/ shared/ services/ data_platform/ strategy_engine/ commodity_linkage_engine/ macro_intelligence/ governance_intelligence/ --ignore-missing-imports
         continue-on-error: true
 
   test:
@@ -197,14 +197,10 @@ jobs:
 
       - name: Build API image
         run: |
-          if [ -f infra/docker/api.Dockerfile ]; then
-            docker build -f infra/docker/api.Dockerfile \
-              -t pyhron-api:ci-${{ github.sha }} .
-          fi
+          docker build -f infra/docker/api_service.Dockerfile \
+            -t pyhron-api:ci-${{ github.sha }} .
 
       - name: Build Worker image
         run: |
-          if [ -f infra/docker/worker.Dockerfile ]; then
-            docker build -f infra/docker/worker.Dockerfile \
-              -t pyhron-worker:ci-${{ github.sha }} .
-          fi
+          docker build -f infra/docker/celery_worker.Dockerfile \
+            -t pyhron-worker:ci-${{ github.sha }} .
