@@ -20,7 +20,7 @@ from typing import Any, Optional
 import jwt
 from passlib.context import CryptContext
 
-from shared.configs import get_settings
+from shared.configuration_settings import get_config as get_settings
 
 # ---------------------------------------------------------------------------
 # Password hashing
@@ -125,7 +125,7 @@ def create_access_token(
         role: User role (e.g. ``ADMIN``, ``TRADER``).
         scopes: Optional list of granted scopes.
         expires_delta: Custom expiry duration.  Defaults to the value
-            configured in :class:`~shared.configs.Settings`.
+            configured in :class:`~shared.configuration_settings.Config`.
         extra_claims: Additional claims to include in the token payload.
 
     Returns:
