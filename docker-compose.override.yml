@@ -1,0 +1,32 @@
+# =============================================================================
+# Pyhron Trading Platform — Docker Compose Override (Local Development)
+# =============================================================================
+# This file is automatically loaded alongside docker-compose.yml and provides
+# development-specific settings: volume mounts for hot reload, debug logging,
+# and additional tooling containers.
+# =============================================================================
+
+services:
+  api:
+    volumes:
+      - ./apps:/app/apps:ro
+      - ./shared:/app/shared:ro
+      - ./services:/app/services:ro
+      - ./data_platform:/app/data_platform:ro
+      - ./strategy_engine:/app/strategy_engine:ro
+      - ./commodity_linkage_engine:/app/commodity_linkage_engine:ro
+      - ./macro_intelligence:/app/macro_intelligence:ro
+      - ./governance_intelligence:/app/governance_intelligence:ro
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: DEBUG
+      RELOAD: "true"
+
+  worker:
+    volumes:
+      - ./data_platform:/app/data_platform:ro
+      - ./shared:/app/shared:ro
+      - ./services:/app/services:ro
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: DEBUG
