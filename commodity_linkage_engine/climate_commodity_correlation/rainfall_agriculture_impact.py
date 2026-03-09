@@ -17,8 +17,7 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 from shared.structured_json_logger import get_logger
 
@@ -136,9 +135,7 @@ class RainfallAgricultureImpact:
             num_crops=len(self._profiles),
         )
 
-    def estimate_production_impact(
-        self, crop: str, rainfall_anomaly_mm: float
-    ) -> RainfallImpactEstimate:
+    def estimate_production_impact(self, crop: str, rainfall_anomaly_mm: float) -> RainfallImpactEstimate:
         """Estimate crop production impact from rainfall anomaly.
 
         Args:
@@ -172,11 +169,7 @@ class RainfallAgricultureImpact:
         # Price elasticity: supply shock → inverse price response.
         price_impact_pct = -impact_pct * 0.5
 
-        confidence = (
-            "HIGH" if abs(anomaly) >= 100
-            else "MEDIUM" if abs(anomaly) >= 50
-            else "LOW"
-        )
+        confidence = "HIGH" if abs(anomaly) >= 100 else "MEDIUM" if abs(anomaly) >= 50 else "LOW"
 
         estimate = RainfallImpactEstimate(
             crop_name=crop,
@@ -197,9 +190,7 @@ class RainfallAgricultureImpact:
         )
         return estimate
 
-    def estimate_all_crops(
-        self, rainfall_anomaly_mm: float
-    ) -> list[RainfallImpactEstimate]:
+    def estimate_all_crops(self, rainfall_anomaly_mm: float) -> list[RainfallImpactEstimate]:
         """Estimate impact across all supported crops.
 
         Args:
@@ -208,7 +199,4 @@ class RainfallAgricultureImpact:
         Returns:
             List of impact estimates for all crops.
         """
-        return [
-            self.estimate_production_impact(crop, rainfall_anomaly_mm)
-            for crop in self._profiles
-        ]
+        return [self.estimate_production_impact(crop, rainfall_anomaly_mm) for crop in self._profiles]

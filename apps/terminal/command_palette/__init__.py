@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,9 @@ class ParsedCommand:
     raw: str
     command_type: CommandType = CommandType.UNKNOWN
     action: str = ""
-    symbol: Optional[str] = None
-    exchange: Optional[str] = None
-    asset_class: Optional[str] = None
+    symbol: str | None = None
+    exchange: str | None = None
+    asset_class: str | None = None
     args: dict[str, Any] = field(default_factory=dict)
 
 
@@ -290,7 +291,7 @@ class CommandPalette:
             args=args,
         )
 
-    def _parse_security_lookup(self, text: str) -> Optional[ParsedCommand]:
+    def _parse_security_lookup(self, text: str) -> ParsedCommand | None:
         """Parse a Bloomberg-style security lookup."""
         tokens = text.upper().split()
         if len(tokens) < 2:
@@ -345,7 +346,7 @@ class CommandPalette:
 
 __all__ = [
     "CommandPalette",
+    "CommandSuggestion",
     "CommandType",
     "ParsedCommand",
-    "CommandSuggestion",
 ]

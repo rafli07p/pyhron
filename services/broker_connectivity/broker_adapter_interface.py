@@ -9,9 +9,12 @@ concrete adapters.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
-from shared.proto_generated.equity_orders_pb2 import OrderRequest
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 
 class BrokerAdapterInterface(ABC):
@@ -119,4 +122,4 @@ class BrokerAdapterInterface(ABC):
         """
         raise NotImplementedError("stream_fills must be implemented by subclass")
         # This yield is required to make the method an async generator
-        yield  # noqa: unreachable -- required for AsyncIterator type hint
+        yield  # required for AsyncIterator type hint

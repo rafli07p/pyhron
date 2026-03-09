@@ -7,21 +7,18 @@ VaR constraints, drawdown thresholds, and concentration limits.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
-from uuid import uuid4
 
 import pytest
-
 from enthropy.risk.engine import RiskEngine
 from enthropy.risk.models import (
     RiskCheckResult,
-    RiskViolation,
     RiskViolationType,
 )
 from enthropy.shared.schemas.order import OrderCreate, OrderSide, OrderType
-from enthropy.shared.schemas.risk import RiskLimits
 from enthropy.shared.schemas.position import PositionSnapshot
+from enthropy.shared.schemas.risk import RiskLimits
 
 
 # =============================================================================
@@ -63,7 +60,7 @@ def sample_buy_order() -> OrderCreate:
 @pytest.fixture
 def sample_positions() -> list[PositionSnapshot]:
     """Sample portfolio positions."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return [
         PositionSnapshot(
             symbol="BBCA.JK",
@@ -115,10 +112,7 @@ class TestOrderSizeLimits:
         # Notional = 200 * 9200 = 1,840,000 > 1,000,000 limit
         result = risk_engine.check_order_size(large_order)
         assert result.passed is False
-        assert any(
-            v.violation_type == RiskViolationType.ORDER_SIZE_EXCEEDED
-            for v in result.violations
-        )
+        assert any(v.violation_type == RiskViolationType.ORDER_SIZE_EXCEEDED for v in result.violations)
 
     def test_market_order_uses_last_price(self, risk_engine: RiskEngine):
         """Market orders should use last known price for size check."""
@@ -169,10 +163,7 @@ class TestPositionSizeLimits:
             current_position_value=Decimal("9500000.00"),
         )
         assert result.passed is False
-        assert any(
-            v.violation_type == RiskViolationType.POSITION_LIMIT_EXCEEDED
-            for v in result.violations
-        )
+        assert any(v.violation_type == RiskViolationType.POSITION_LIMIT_EXCEEDED for v in result.violations)
 
     def test_sell_order_reduces_position(self, risk_engine: RiskEngine):
         """Sell orders reducing position should always pass position check."""
@@ -212,10 +203,7 @@ class TestVaRLimits:
             proposed_var_impact=Decimal("500000.00"),
         )
         assert result.passed is False
-        assert any(
-            v.violation_type == RiskViolationType.VAR_LIMIT_EXCEEDED
-            for v in result.violations
-        )
+        assert any(v.violation_type == RiskViolationType.VAR_LIMIT_EXCEEDED for v in result.violations)
 
     def test_var_at_exactly_limit(self, risk_engine: RiskEngine):
         """VaR exactly at limit should pass (boundary condition)."""
@@ -259,18 +247,15 @@ class TestDrawdownLimits:
         )
         # 15% drawdown > 10% limit
         assert result.passed is False
-        assert any(
-            v.violation_type == RiskViolationType.DRAWDOWN_EXCEEDED
-            for v in result.violations
-        )
+        assert any(v.violation_type == RiskViolationType.DRAWDOWN_EXCEEDED for v in result.violations)
 
     @pytest.mark.parametrize(
         "peak,current,should_pass",
         [
-            (Decimal("100"), Decimal("91"), True),   # 9% < 10%
-            (Decimal("100"), Decimal("90"), True),    # 10% == 10% (at limit)
-            (Decimal("100"), Decimal("89"), False),   # 11% > 10%
-            (Decimal("100"), Decimal("100"), True),   # 0% drawdown
+            (Decimal("100"), Decimal("91"), True),  # 9% < 10%
+            (Decimal("100"), Decimal("90"), True),  # 10% == 10% (at limit)
+            (Decimal("100"), Decimal("89"), False),  # 11% > 10%
+            (Decimal("100"), Decimal("100"), True),  # 0% drawdown
         ],
     )
     def test_drawdown_boundary_conditions(
@@ -315,10 +300,7 @@ class TestConcentrationLimits:
         )
         # 80% > 25% limit
         assert result.passed is False
-        assert any(
-            v.violation_type == RiskViolationType.CONCENTRATION_EXCEEDED
-            for v in result.violations
-        )
+        assert any(v.violation_type == RiskViolationType.CONCENTRATION_EXCEEDED for v in result.violations)
 
     def test_small_position_passes(self, risk_engine: RiskEngine):
         """Small position should pass concentration check."""
@@ -422,18 +404,18 @@ class TestCombinedRiskChecks:
         sample_buy_order: OrderCreate,
     ):
         """Running the same check twice should produce the same result."""
-        kwargs = dict(
-            order=sample_buy_order,
-            current_position_value=Decimal("2000000.00"),
-            current_var=Decimal("500000.00"),
-            proposed_var_impact=Decimal("100000.00"),
-            peak_portfolio_value=Decimal("50000000.00"),
-            current_portfolio_value=Decimal("48000000.00"),
-            position_value_for_concentration=Decimal("5000000.00"),
-            total_portfolio_value=Decimal("50000000.00"),
-            total_exposure=Decimal("60000000.00"),
-            equity=Decimal("50000000.00"),
-        )
+        kwargs = {
+            "order": sample_buy_order,
+            "current_position_value": Decimal("2000000.00"),
+            "current_var": Decimal("500000.00"),
+            "proposed_var_impact": Decimal("100000.00"),
+            "peak_portfolio_value": Decimal("50000000.00"),
+            "current_portfolio_value": Decimal("48000000.00"),
+            "position_value_for_concentration": Decimal("5000000.00"),
+            "total_portfolio_value": Decimal("50000000.00"),
+            "total_exposure": Decimal("60000000.00"),
+            "equity": Decimal("50000000.00"),
+        }
         result1 = risk_engine.run_pre_trade_checks(**kwargs)
         result2 = risk_engine.run_pre_trade_checks(**kwargs)
         assert result1.passed == result2.passed

@@ -9,23 +9,23 @@ every routing decision.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from decimal import Decimal
 from typing import Any, Optional
 from uuid import UUID
 
 import structlog
 
+from services.execution.exchange_connectors import (
+    AlpacaConnector,
+    BaseConnector,
+    CCXTConnector,
+)
 from shared.schemas.order_events import (
     OrderFill,
     OrderRequest,
     OrderStatusEnum,
     OrderType,
-)
-from services.execution.exchange_connectors import (
-    AlpacaConnector,
-    BaseConnector,
-    CCXTConnector,
 )
 
 logger = structlog.get_logger(__name__)
@@ -61,7 +61,7 @@ class RouteDecision:
     def __init__(self, connector_name: str, reason: str) -> None:
         self.connector_name = connector_name
         self.reason = reason
-        self.timestamp = datetime.now(timezone.utc)
+        self.timestamp = datetime.now(UTC)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -84,7 +84,7 @@ class _RiskServiceClient:
     integrate it; the actual transport is a single async method.
     """
 
-    def __init__(self, base_url: Optional[str] = None) -> None:
+    def __init__(self, base_url: str | None = None) -> None:
         self._base_url = base_url or "http://risk-service:8000"
 
     async def pre_trade_check(self, order: OrderRequest) -> dict[str, Any]:
@@ -143,9 +143,9 @@ class OrderRouter:
 
     def __init__(
         self,
-        alpaca_connector: Optional[AlpacaConnector] = None,
-        ccxt_connector: Optional[CCXTConnector] = None,
-        risk_service_url: Optional[str] = None,
+        alpaca_connector: AlpacaConnector | None = None,
+        ccxt_connector: CCXTConnector | None = None,
+        risk_service_url: str | None = None,
     ) -> None:
         self._connectors: dict[str, BaseConnector] = {}
         if alpaca_connector is not None:
@@ -227,7 +227,7 @@ class OrderRouter:
         self,
         symbol: str,
         *,
-        order: Optional[OrderRequest] = None,
+        order: OrderRequest | None = None,
     ) -> RouteDecision:
         """Decide which connector to use for *symbol*.
 
@@ -295,7 +295,7 @@ class OrderRouter:
             "action": action,
             "detail": detail,
             "tenant_id": order.tenant_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
         self._audit_log.append(entry)
         logger.info("router.audit", **entry)

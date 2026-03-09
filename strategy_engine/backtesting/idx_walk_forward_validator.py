@@ -15,19 +15,21 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
 from shared.structured_json_logger import get_logger
-from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
-    BacktestResult,
-    IDXVectorbtBacktestEngine,
-)
 from strategy_engine.backtesting.backtest_performance_metrics import (
     BacktestPerformanceMetrics,
 )
-from strategy_engine.base_strategy_interface import BaseStrategyInterface
+
+if TYPE_CHECKING:
+    from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
+        BacktestResult,
+        IDXVectorbtBacktestEngine,
+    )
+    from strategy_engine.base_strategy_interface import BaseStrategyInterface
 
 logger = get_logger(__name__)
 
@@ -132,18 +134,12 @@ class IDXWalkForwardValidator:
         all_oos_returns: list[pd.Series] = []
 
         for i in range(self._n_folds):
-            is_start = (
-                data_start
-                if self._anchored
-                else data_start + timedelta(days=i * self._oos_months * 30)
-            )
+            is_start = data_start if self._anchored else data_start + timedelta(days=i * self._oos_months * 30)
             is_end = is_start + timedelta(days=self._is_months * 30)
             oos_start = is_end + timedelta(days=1)
             oos_end = oos_start + timedelta(days=self._oos_months * 30)
 
-            oos_result = await self._engine.run(
-                strategy, market_data, oos_start, oos_end
-            )
+            oos_result = await self._engine.run(strategy, market_data, oos_start, oos_end)
             oos_metrics = self._metrics.compute_all(oos_result.returns)
 
             fold = WalkForwardFold(

@@ -9,8 +9,7 @@ from __future__ import annotations
 import pytest
 
 from data_platform.models.trading import OrderStatusEnum
-from services.oms.state_machine import TERMINAL_STATES, VALID_TRANSITIONS
-
+from services.order_management_system.order_state_machine import TERMINAL_STATES, VALID_TRANSITIONS
 
 # ── Transition Table Tests ───────────────────────────────────────────────────
 
@@ -21,16 +20,12 @@ class TestTransitionTable:
     def test_all_statuses_have_entries(self):
         """Every OrderStatusEnum value must appear in VALID_TRANSITIONS."""
         for status in OrderStatusEnum:
-            assert status in VALID_TRANSITIONS, (
-                f"{status.value} missing from VALID_TRANSITIONS"
-            )
+            assert status in VALID_TRANSITIONS, f"{status.value} missing from VALID_TRANSITIONS"
 
     def test_terminal_states_have_no_transitions(self):
         """Terminal states must map to empty sets."""
         for status in TERMINAL_STATES:
-            assert VALID_TRANSITIONS[status] == set(), (
-                f"Terminal state {status.value} has outgoing transitions"
-            )
+            assert VALID_TRANSITIONS[status] == set(), f"Terminal state {status.value} has outgoing transitions"
 
     def test_expected_terminal_states(self):
         expected = {
@@ -40,7 +35,7 @@ class TestTransitionTable:
             OrderStatusEnum.CANCELLED,
             OrderStatusEnum.EXPIRED,
         }
-        assert TERMINAL_STATES == expected
+        assert expected == TERMINAL_STATES
 
     def test_no_self_loops_except_partial_fill(self):
         """Only PARTIAL_FILL should allow self-transition."""
@@ -48,9 +43,7 @@ class TestTransitionTable:
             if status == OrderStatusEnum.PARTIAL_FILL:
                 assert OrderStatusEnum.PARTIAL_FILL in allowed
             else:
-                assert status not in allowed, (
-                    f"{status.value} has unexpected self-loop"
-                )
+                assert status not in allowed, f"{status.value} has unexpected self-loop"
 
 
 # ── Specific Transition Validation ───────────────────────────────────────────
@@ -125,6 +118,5 @@ class TestInvalidTransitions:
     def test_invalid_transition_not_allowed(self, from_status, to_status):
         allowed = VALID_TRANSITIONS.get(from_status, set())
         assert to_status not in allowed, (
-            f"Transition {from_status.value} -> {to_status.value} "
-            f"should be invalid but is allowed"
+            f"Transition {from_status.value} -> {to_status.value} should be invalid but is allowed"
         )

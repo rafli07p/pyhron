@@ -9,17 +9,20 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from enum import Enum
+from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 
 
-class AuditOpinion(str, Enum):
+class AuditOpinion(StrEnum):
     """Indonesian audit opinion types."""
 
     WTP = "wajar_tanpa_pengecualian"  # Unqualified
@@ -45,7 +48,9 @@ class AuditOpinionTracker:
     """Track and flag non-standard audit opinions."""
 
     async def get_flagged_opinions(
-        self, session: AsyncSession, fiscal_year: int | None = None,
+        self,
+        session: AsyncSession,
+        fiscal_year: int | None = None,
     ) -> list[AuditOpinionRecord]:
         """Get companies with non-WTP audit opinions.
 
@@ -72,15 +77,17 @@ class AuditOpinionTracker:
 
         records: list[AuditOpinionRecord] = []
         for row in result.fetchall():
-            records.append(AuditOpinionRecord(
-                symbol=row[0],
-                fiscal_year=target_year,
-                auditor="",
-                opinion=AuditOpinion.WDP,
-                is_going_concern="going_concern" in (row[2] or "").lower(),
-                key_audit_matters=[],
-                report_date=row[3],
-            ))
+            records.append(
+                AuditOpinionRecord(
+                    symbol=row[0],
+                    fiscal_year=target_year,
+                    auditor="",
+                    opinion=AuditOpinion.WDP,
+                    is_going_concern="going_concern" in (row[2] or "").lower(),
+                    key_audit_matters=[],
+                    report_date=row[3],
+                )
+            )
 
         logger.info("flagged_opinions", year=target_year, count=len(records))
         return records

@@ -97,6 +97,6 @@ class EventPriority(IntEnum):
 
 
 __all__ = [
-    "MessageType",
     "EventPriority",
+    "MessageType",
 ]

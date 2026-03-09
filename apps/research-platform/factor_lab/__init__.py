@@ -63,8 +63,8 @@ class FactorTestResult:
     max_drawdown: float = 0.0
     hit_rate: float = 0.0
     num_periods: int = 0
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
+    start_date: str | None = None
+    end_date: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize test results to a dictionary."""
@@ -107,7 +107,7 @@ class FactorLab:
         universe: str = "all",
         frequency: str = "daily",
         lookback_days: int = 252,
-        tags: Optional[list[str]] = None,
+        tags: list[str] | None = None,
     ) -> FactorDefinition:
         """Create a new factor definition.
 
@@ -203,7 +203,7 @@ class FactorLab:
 
         # Compute turnover
         turnover_values: list[float] = []
-        prev_ranks: Optional[pd.Series] = None
+        prev_ranks: pd.Series | None = None
         for dt in factor_values.index:
             current = factor_values.loc[dt].dropna().rank(pct=True)
             if prev_ranks is not None:
@@ -320,7 +320,7 @@ class FactorLab:
         portfolio_returns: list[float] = []
         rebalance_dates = self._get_rebalance_dates(factor_values.index, rebalance_frequency)
 
-        current_holdings: Optional[pd.Index] = None
+        current_holdings: pd.Index | None = None
         for dt in returns.index:
             if dt in rebalance_dates or current_holdings is None:
                 fv = factor_values.loc[dt].dropna() if dt in factor_values.index else pd.Series(dtype=float)
@@ -370,9 +370,9 @@ class FactorLab:
         """Get rebalance dates from an index based on frequency."""
         if frequency == "daily":
             return set(index)
-        elif frequency == "weekly":
+        if frequency == "weekly":
             return {dt for dt in index if dt.weekday() == 0}  # Mondays
-        elif frequency == "monthly":
+        if frequency == "monthly":
             dates = set()
             seen_months: set[tuple[int, int]] = set()
             for dt in index:
@@ -385,7 +385,7 @@ class FactorLab:
 
 
 __all__ = [
-    "FactorLab",
     "FactorDefinition",
+    "FactorLab",
     "FactorTestResult",
 ]

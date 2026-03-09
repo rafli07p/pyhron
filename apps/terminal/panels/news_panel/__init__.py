@@ -34,7 +34,7 @@ class NewsArticle:
     summary: str = ""
     source: str = ""
     url: str = ""
-    published_at: Optional[datetime] = None
+    published_at: datetime | None = None
     symbols: list[str] = field(default_factory=list)
     sentiment: SentimentLabel = SentimentLabel.NEUTRAL
     sentiment_score: float = 0.0
@@ -58,7 +58,7 @@ class NewsPanel:
     def __init__(self, data_client: Any = None) -> None:
         self._data_client = data_client
         self._articles: list[NewsArticle] = []
-        self._current_symbol: Optional[str] = None
+        self._current_symbol: str | None = None
         logger.info("NewsPanel initialized")
 
     @property
@@ -66,7 +66,7 @@ class NewsPanel:
         """Number of loaded articles."""
         return len(self._articles)
 
-    async def render_news(self, symbol: Optional[str] = None, limit: int = 50) -> dict[str, Any]:
+    async def render_news(self, symbol: str | None = None, limit: int = 50) -> dict[str, Any]:
         """Render news articles for a given symbol.
 
         Parameters
@@ -194,7 +194,7 @@ class NewsPanel:
 
 
 __all__ = [
-    "NewsPanel",
     "NewsArticle",
+    "NewsPanel",
     "SentimentLabel",
 ]

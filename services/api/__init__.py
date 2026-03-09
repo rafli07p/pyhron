@@ -9,13 +9,13 @@ delivers real-time market data, order updates, and portfolio events.
 from __future__ import annotations
 
 __all__ = [
+    "configure_logging",
     "create_rest_app",
     "create_ws_app",
-    "configure_logging",
 ]
 
 
-def __getattr__(name: str):  # noqa: N807
+def __getattr__(name: str):
     """Lazy imports to avoid heavy startup cost."""
     if name == "create_rest_app":
         from services.api.rest_gateway import create_rest_app

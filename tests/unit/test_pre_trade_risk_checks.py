@@ -8,16 +8,12 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from services.pre_trade_risk_engine.pre_trade_risk_checks import (
-    RiskCheckResult,
     check_buying_power_t2,
     check_lot_size_constraint,
     check_max_position_size,
     check_sector_concentration,
 )
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

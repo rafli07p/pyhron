@@ -18,15 +18,14 @@ The model accounts for:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
-from shared.structured_json_logger import get_logger
+from dataclasses import dataclass
 
 from commodity_linkage_engine.commodity_to_stock_impact_engine import (
-    ConfidenceLevel,
     CommodityType,
+    ConfidenceLevel,
     StockEarningsImpactEstimate,
 )
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -228,11 +227,7 @@ class CPOPlantationStockSensitivity:
             Earnings impact estimate.
         """
         # Annual CPO production in metric tons.
-        annual_cpo_production_ton = (
-            company.plantation_area_ha
-            * company.ffb_yield_ton_per_ha
-            * company.oer_pct
-        )
+        annual_cpo_production_ton = company.plantation_area_ha * company.ffb_yield_ton_per_ha * company.oer_pct
 
         # Price delta in MYR per ton.
         cpo_price_delta_myr = self._cpo_ref_price_myr * (cpo_price_change_pct / 100.0)
@@ -254,12 +249,7 @@ class CPOPlantationStockSensitivity:
 
         # Revenue impact = production * price_delta * unhedged * export_share
         #                 - production * levy_delta * export_share
-        revenue_impact_myr = (
-            annual_cpo_production_ton
-            * cpo_price_delta_myr
-            * unhedged_fraction
-            * export_fraction
-        ) - (
+        revenue_impact_myr = (annual_cpo_production_ton * cpo_price_delta_myr * unhedged_fraction * export_fraction) - (
             annual_cpo_production_ton * levy_delta_myr * export_fraction
         )
 
@@ -270,9 +260,7 @@ class CPOPlantationStockSensitivity:
         eps_impact = net_income_impact_idr / company.shares_outstanding
 
         impact_pct = (
-            abs(revenue_impact_idr) / company.trailing_revenue_idr * 100.0
-            if company.trailing_revenue_idr > 0
-            else 0.0
+            abs(revenue_impact_idr) / company.trailing_revenue_idr * 100.0 if company.trailing_revenue_idr > 0 else 0.0
         )
 
         # Confidence based on hedging transparency and downstream complexity.
@@ -292,8 +280,7 @@ class CPOPlantationStockSensitivity:
             impact_pct_of_revenue=impact_pct,
             confidence=confidence,
             methodology=(
-                "plantation_area * ffb_yield * OER * cpo_price_delta "
-                "* (1 - hedging) * (1 - DMO) - export_levy_delta"
+                "plantation_area * ffb_yield * OER * cpo_price_delta * (1 - hedging) * (1 - DMO) - export_levy_delta"
             ),
             assumptions=[
                 f"Plantation area: {company.plantation_area_ha:,.0f} ha",
@@ -308,9 +295,7 @@ class CPOPlantationStockSensitivity:
 
     # ── Public API ──────────────────────────────────────────────────────
 
-    def compute_all_impacts(
-        self, cpo_price_change_pct: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def compute_all_impacts(self, cpo_price_change_pct: float) -> list[StockEarningsImpactEstimate]:
         """Compute impact across all covered plantation stocks.
 
         Args:

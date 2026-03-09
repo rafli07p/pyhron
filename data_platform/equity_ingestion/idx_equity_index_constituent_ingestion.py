@@ -18,14 +18,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -121,9 +121,7 @@ class IDXEquityIndexConstituentIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="idx_website", symbol="INDEX", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="idx_website", symbol="INDEX", operation="inserted").inc(inserted)
 
         self._logger.info(
             "index_constituent_ingestion_complete",
@@ -161,13 +159,9 @@ class IDXEquityIndexConstituentIngester:
                 resp.raise_for_status()
                 data = resp.json()
         except httpx.HTTPStatusError as exc:
-            raise IngestionError(
-                f"IDX API error for {index_code}: {exc}"
-            ) from exc
+            raise IngestionError(f"IDX API error for {index_code}: {exc}") from exc
         except httpx.RequestError as exc:
-            raise IngestionError(
-                f"IDX connection error for {index_code}: {exc}"
-            ) from exc
+            raise IngestionError(f"IDX connection error for {index_code}: {exc}") from exc
 
         members: list[str] = []
         for item in data.get("data", data if isinstance(data, list) else []):
@@ -190,13 +184,9 @@ class IDXEquityIndexConstituentIngester:
         """
         symbol = record["symbol"]
         if not symbol or len(symbol) < 2 or len(symbol) > 6:
-            raise DataQualityError(
-                f"Invalid symbol '{symbol}' for index {record['index_code']}"
-            )
+            raise DataQualityError(f"Invalid symbol '{symbol}' for index {record['index_code']}")
         if not symbol.isalpha():
-            raise DataQualityError(
-                f"Symbol '{symbol}' contains non-alpha characters"
-            )
+            raise DataQualityError(f"Symbol '{symbol}' contains non-alpha characters")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

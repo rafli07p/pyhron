@@ -22,8 +22,6 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any
 
 from shared.structured_json_logger import get_logger
 
@@ -127,16 +125,10 @@ class APBNFiscalHealthAnalyzer:
             FiscalHealthReport with metrics and risk assessment.
         """
         total_revenue = data.tax_revenue_realized + data.non_tax_revenue_realized
-        total_budget_revenue = data.tax_revenue_budget + data.non_tax_revenue_budget
+        data.tax_revenue_budget + data.non_tax_revenue_budget
 
-        tax_real_pct = (
-            data.tax_revenue_realized / data.tax_revenue_budget * 100
-            if data.tax_revenue_budget > 0 else 0.0
-        )
-        exp_real_pct = (
-            data.expenditure_realized / data.expenditure_budget * 100
-            if data.expenditure_budget > 0 else 0.0
-        )
+        tax_real_pct = data.tax_revenue_realized / data.tax_revenue_budget * 100 if data.tax_revenue_budget > 0 else 0.0
+        exp_real_pct = data.expenditure_realized / data.expenditure_budget * 100 if data.expenditure_budget > 0 else 0.0
 
         deficit = total_revenue - data.expenditure_realized
         deficit_gdp = deficit / data.gdp_nominal_estimate * 100 if data.gdp_nominal_estimate > 0 else 0.0
@@ -150,17 +142,13 @@ class APBNFiscalHealthAnalyzer:
             annualized_expenditure = data.expenditure_realized / data.months_elapsed * 12
             projected_deficit = annualized_revenue - annualized_expenditure
             projected_deficit_pct = (
-                projected_deficit / data.gdp_nominal_estimate * 100
-                if data.gdp_nominal_estimate > 0 else 0.0
+                projected_deficit / data.gdp_nominal_estimate * 100 if data.gdp_nominal_estimate > 0 else 0.0
             )
         else:
             projected_deficit_pct = 0.0
 
         # Subsidy overrun risk.
-        subsidy_pace = (
-            data.energy_subsidy_realized / data.months_elapsed * 12
-            if data.months_elapsed > 0 else 0.0
-        )
+        subsidy_pace = data.energy_subsidy_realized / data.months_elapsed * 12 if data.months_elapsed > 0 else 0.0
         if subsidy_pace > data.energy_subsidy_budget * 1.1:
             subsidy_risk = "HIGH"
         elif subsidy_pace > data.energy_subsidy_budget * 0.95:
@@ -169,13 +157,14 @@ class APBNFiscalHealthAnalyzer:
             subsidy_risk = "LOW"
 
         # Composite score.
-        score = self._compute_health_score(
-            tax_real_pct, exp_real_pct, abs(projected_deficit_pct), subsidy_risk
-        )
+        score = self._compute_health_score(tax_real_pct, exp_real_pct, abs(projected_deficit_pct), subsidy_risk)
 
         risks = self._identify_risks(
-            tax_real_pct, deficit_gdp, projected_deficit_pct,
-            subsidy_risk, data.months_elapsed,
+            tax_real_pct,
+            deficit_gdp,
+            projected_deficit_pct,
+            subsidy_risk,
+            data.months_elapsed,
         )
 
         report = FiscalHealthReport(
@@ -199,9 +188,7 @@ class APBNFiscalHealthAnalyzer:
         )
         return report
 
-    def _compute_health_score(
-        self, tax_pct: float, exp_pct: float, deficit_pct: float, subsidy_risk: str
-    ) -> float:
+    def _compute_health_score(self, tax_pct: float, exp_pct: float, deficit_pct: float, subsidy_risk: str) -> float:
         """Compute composite fiscal health score (0-100)."""
         score = 50.0
         expected_pct = 83.3  # Linear pace for 10/12 months
@@ -216,8 +203,11 @@ class APBNFiscalHealthAnalyzer:
 
     @staticmethod
     def _identify_risks(
-        tax_pct: float, deficit_gdp: float, proj_deficit: float,
-        subsidy_risk: str, months: int,
+        tax_pct: float,
+        deficit_gdp: float,
+        proj_deficit: float,
+        subsidy_risk: str,
+        months: int,
     ) -> list[str]:
         """Identify fiscal risk factors."""
         risks: list[str] = []

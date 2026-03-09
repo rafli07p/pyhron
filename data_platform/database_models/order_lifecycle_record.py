@@ -7,8 +7,8 @@ serving as the source of truth for order management.
 from __future__ import annotations
 
 import enum
-from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP
@@ -16,15 +16,18 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
 
+if TYPE_CHECKING:
+    from datetime import datetime
 
-class OrderSideEnum(str, enum.Enum):
+
+class OrderSideEnum(enum.StrEnum):
     """Order side."""
 
     BUY = "buy"
     SELL = "sell"
 
 
-class OrderTypeEnum(str, enum.Enum):
+class OrderTypeEnum(enum.StrEnum):
     """Order type."""
 
     MARKET = "market"
@@ -33,7 +36,7 @@ class OrderTypeEnum(str, enum.Enum):
     STOP_LIMIT = "stop_limit"
 
 
-class TimeInForceEnum(str, enum.Enum):
+class TimeInForceEnum(enum.StrEnum):
     """Time-in-force policy."""
 
     DAY = "day"
@@ -42,7 +45,7 @@ class TimeInForceEnum(str, enum.Enum):
     FOK = "fok"
 
 
-class OrderStatusEnum(str, enum.Enum):
+class OrderStatusEnum(enum.StrEnum):
     """Order status."""
 
     PENDING_RISK = "pending_risk"
@@ -120,12 +123,8 @@ class OrderLifecycleRecord(Base):
     submitted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     acknowledged_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     filled_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         Index(

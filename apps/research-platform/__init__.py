@@ -7,10 +7,10 @@ research, model training, backtesting, and dataset management.
 from __future__ import annotations
 
 __all__ = [
-    "datasets",
-    "notebooks",
-    "factor_lab",
-    "model_training",
     "backtest_ui",
+    "datasets",
+    "factor_lab",
     "ml_pipelines",
+    "model_training",
+    "notebooks",
 ]

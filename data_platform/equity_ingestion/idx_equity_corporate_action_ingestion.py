@@ -20,16 +20,16 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
-from shared.redis_cache_client import get_redis
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
     RateLimitExceededError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.redis_cache_client import get_redis
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -122,9 +122,7 @@ class IDXEquityCorporateActionIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="eodhd", symbol=symbol, operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="eodhd", symbol=symbol, operation="inserted").inc(inserted)
 
         self._logger.info(
             "corporate_action_ingestion_complete",
@@ -204,7 +202,9 @@ class IDXEquityCorporateActionIngester:
             {
                 "action_type": "split",
                 "ex_date": date.fromisoformat(row["date"]),
-                "value": Decimal(str(row["split"])) if "/" not in str(row["split"]) else self._parse_split_ratio(str(row["split"])),
+                "value": Decimal(str(row["split"]))
+                if "/" not in str(row["split"])
+                else self._parse_split_ratio(str(row["split"])),
                 "currency": "IDR",
             }
             for row in data
@@ -230,9 +230,7 @@ class IDXEquityCorporateActionIngester:
         if count == 1:
             await redis.expire(EODHD_RATE_LIMIT_KEY, 86400)
         if count > EODHD_DAILY_LIMIT:
-            raise RateLimitExceededError(
-                f"EODHD daily limit ({EODHD_DAILY_LIMIT}) exceeded"
-            )
+            raise RateLimitExceededError(f"EODHD daily limit ({EODHD_DAILY_LIMIT}) exceeded")
 
         params = {
             "api_token": self._eodhd_key,
@@ -286,15 +284,11 @@ class IDXEquityCorporateActionIngester:
         """
         if action["value"] <= 0:
             raise DataQualityError(
-                f"Non-positive value {action['value']} for "
-                f"{action['action_type']} on {action['ex_date']}"
+                f"Non-positive value {action['value']} for {action['action_type']} on {action['ex_date']}"
             )
         # ex-date must not be a weekend
         if action["ex_date"].weekday() >= 5:
-            raise DataQualityError(
-                f"Ex-date {action['ex_date']} falls on a weekend for "
-                f"{action['action_type']}"
-            )
+            raise DataQualityError(f"Ex-date {action['ex_date']} falls on a weekend for {action['action_type']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

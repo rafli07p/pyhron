@@ -25,7 +25,7 @@ class IndicatorConfig:
     name: str
     params: dict[str, Any] = field(default_factory=dict)
     visible: bool = True
-    color: Optional[str] = None
+    color: str | None = None
 
 
 @dataclass
@@ -36,7 +36,7 @@ class ChartState:
     timeframe: str = "1D"
     bars: list[BarEvent] = field(default_factory=list)
     indicators: list[IndicatorConfig] = field(default_factory=list)
-    last_update: Optional[datetime] = None
+    last_update: datetime | None = None
 
 
 class ChartPanel:
@@ -120,7 +120,7 @@ class ChartPanel:
             "last_update": self._state.last_update.isoformat(),
         }
 
-    def add_indicator(self, name: str, params: Optional[dict[str, Any]] = None, color: Optional[str] = None) -> IndicatorConfig:
+    def add_indicator(self, name: str, params: dict[str, Any] | None = None, color: str | None = None) -> IndicatorConfig:
         """Add a technical indicator overlay to the chart.
 
         Parameters
@@ -162,7 +162,7 @@ class ChartPanel:
             timeframe=self._state.timeframe,
         )
 
-    def _compute_indicators(self, bars: list[dict[str, Any]]) -> dict[str, list[Optional[float]]]:
+    def _compute_indicators(self, bars: list[dict[str, Any]]) -> dict[str, list[float | None]]:
         """Compute indicator series from bar data.
 
         Parameters
@@ -176,7 +176,7 @@ class ChartPanel:
             Mapping of indicator name to computed values.
         """
         closes = [float(b.get("close", 0)) for b in bars]
-        results: dict[str, list[Optional[float]]] = {}
+        results: dict[str, list[float | None]] = {}
 
         for ind in self._state.indicators:
             if not ind.visible:
@@ -201,20 +201,20 @@ class ChartPanel:
         return results
 
     @staticmethod
-    def _sma(data: list[float], period: int) -> list[Optional[float]]:
+    def _sma(data: list[float], period: int) -> list[float | None]:
         """Simple Moving Average."""
-        result: list[Optional[float]] = [None] * min(period - 1, len(data))
+        result: list[float | None] = [None] * min(period - 1, len(data))
         for i in range(period - 1, len(data)):
             result.append(sum(data[i - period + 1 : i + 1]) / period)
         return result
 
     @staticmethod
-    def _ema(data: list[float], period: int) -> list[Optional[float]]:
+    def _ema(data: list[float], period: int) -> list[float | None]:
         """Exponential Moving Average."""
         if len(data) < period:
             return [None] * len(data)
         multiplier = 2.0 / (period + 1)
-        result: list[Optional[float]] = [None] * (period - 1)
+        result: list[float | None] = [None] * (period - 1)
         ema_val = sum(data[:period]) / period
         result.append(ema_val)
         for i in range(period, len(data)):
@@ -223,12 +223,12 @@ class ChartPanel:
         return result
 
     @staticmethod
-    def _rsi(data: list[float], period: int) -> list[Optional[float]]:
+    def _rsi(data: list[float], period: int) -> list[float | None]:
         """Relative Strength Index."""
         if len(data) < period + 1:
             return [None] * len(data)
         deltas = [data[i] - data[i - 1] for i in range(1, len(data))]
-        result: list[Optional[float]] = [None] * period
+        result: list[float | None] = [None] * period
 
         gains = [max(d, 0) for d in deltas[:period]]
         losses = [abs(min(d, 0)) for d in deltas[:period]]
@@ -257,11 +257,11 @@ class ChartPanel:
     @staticmethod
     def _bollinger(
         data: list[float], period: int, std_dev: float = 2.0
-    ) -> tuple[list[Optional[float]], list[Optional[float]], list[Optional[float]]]:
+    ) -> tuple[list[float | None], list[float | None], list[float | None]]:
         """Bollinger Bands (upper, middle, lower)."""
-        upper: list[Optional[float]] = [None] * min(period - 1, len(data))
-        middle: list[Optional[float]] = [None] * min(period - 1, len(data))
-        lower: list[Optional[float]] = [None] * min(period - 1, len(data))
+        upper: list[float | None] = [None] * min(period - 1, len(data))
+        middle: list[float | None] = [None] * min(period - 1, len(data))
+        lower: list[float | None] = [None] * min(period - 1, len(data))
         for i in range(period - 1, len(data)):
             window = data[i - period + 1 : i + 1]
             mean = sum(window) / period

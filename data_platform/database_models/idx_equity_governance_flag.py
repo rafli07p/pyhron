@@ -7,14 +7,17 @@ related-party transaction disclosures, and share pledges for ESG screening.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IdxEquityGovernanceFlag(Base):
@@ -38,9 +41,7 @@ class IdxEquityGovernanceFlag(Base):
 
     __tablename__ = "idx_equity_governance_flags"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
         ForeignKey("idx_equity_instruments.symbol"),
@@ -57,9 +58,7 @@ class IdxEquityGovernanceFlag(Base):
     change_pct: Mapped[Decimal | None] = mapped_column(Numeric(8, 4), nullable=True)
     event_date: Mapped[date] = mapped_column(Date, nullable=False)
     source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-    ingested_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         Index(

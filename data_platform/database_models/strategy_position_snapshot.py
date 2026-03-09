@@ -7,14 +7,17 @@ unrealised and realised PnL.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from decimal import Decimal
 
 
 class StrategyPositionSnapshot(Base):
@@ -36,9 +39,7 @@ class StrategyPositionSnapshot(Base):
 
     __tablename__ = "strategy_position_snapshots"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     strategy_id: Mapped[str] = mapped_column(String(100), nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
     exchange: Mapped[str | None] = mapped_column(String(10))
@@ -48,10 +49,6 @@ class StrategyPositionSnapshot(Base):
     unrealized_pnl: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     realized_pnl: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     market_value: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
-    last_updated: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    last_updated: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    __table_args__ = (
-        UniqueConstraint("strategy_id", "symbol", "exchange"),
-    )
+    __table_args__ = (UniqueConstraint("strategy_id", "symbol", "exchange"),)

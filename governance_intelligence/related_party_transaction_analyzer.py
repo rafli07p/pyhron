@@ -7,12 +7,16 @@ party transactions that may indicate governance risks.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from datetime import date
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 
@@ -44,7 +48,9 @@ class RelatedPartyTransactionAnalyzer:
     """Analyze related party transactions within conglomerate groups."""
 
     async def detect_rpt_flags(
-        self, session: AsyncSession, days: int = 30,
+        self,
+        session: AsyncSession,
+        days: int = 30,
     ) -> list[RelatedPartyTransaction]:
         """Detect flagged RPTs from governance filings.
 
@@ -68,16 +74,18 @@ class RelatedPartyTransactionAnalyzer:
 
         flags: list[RelatedPartyTransaction] = []
         for row in result.fetchall():
-            flags.append(RelatedPartyTransaction(
-                symbol=row[0],
-                counterparty=row[2] or "",
-                relationship="conglomerate_affiliate",
-                transaction_type="material_transaction",
-                value_idr_bn=0.0,
-                as_pct_of_equity=0.0,
-                event_date=row[3],
-                risk_level="MEDIUM",
-            ))
+            flags.append(
+                RelatedPartyTransaction(
+                    symbol=row[0],
+                    counterparty=row[2] or "",
+                    relationship="conglomerate_affiliate",
+                    transaction_type="material_transaction",
+                    value_idr_bn=0.0,
+                    as_pct_of_equity=0.0,
+                    event_date=row[3],
+                    risk_level="MEDIUM",
+                )
+            )
 
         logger.info("rpt_flags_detected", count=len(flags))
         return flags

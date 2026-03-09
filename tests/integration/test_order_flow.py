@@ -12,16 +12,15 @@ from __future__ import annotations
 
 import asyncio
 import os
-from datetime import datetime, timezone
+from datetime import UTC
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-
 from enthropy.api.client import EntropyAPIClient
-from enthropy.execution.router import OrderRouter
 from enthropy.execution.models import ExecutionReport, ExecutionStatus
+from enthropy.execution.router import OrderRouter
 from enthropy.risk.engine import RiskEngine
 from enthropy.shared.schemas.order import (
     OrderCreate,
@@ -31,7 +30,6 @@ from enthropy.shared.schemas.order import (
     OrderType,
 )
 from enthropy.shared.schemas.risk import RiskLimits
-
 
 # =============================================================================
 # Skip Conditions
@@ -126,9 +124,7 @@ class TestOrderSubmission:
 
     @SKIP_INTEGRATION
     @pytest.mark.asyncio
-    async def test_submit_limit_order(
-        self, api_client: EntropyAPIClient, sample_limit_order: OrderCreate
-    ):
+    async def test_submit_limit_order(self, api_client: EntropyAPIClient, sample_limit_order: OrderCreate):
         """Limit order should be accepted and return an order ID."""
         response = await api_client.submit_order(sample_limit_order)
 
@@ -141,9 +137,7 @@ class TestOrderSubmission:
 
     @SKIP_INTEGRATION
     @pytest.mark.asyncio
-    async def test_submit_market_order(
-        self, api_client: EntropyAPIClient, sample_market_order: OrderCreate
-    ):
+    async def test_submit_market_order(self, api_client: EntropyAPIClient, sample_market_order: OrderCreate):
         """Market order should be accepted and routed immediately."""
         response = await api_client.submit_order(sample_market_order)
 
@@ -356,9 +350,7 @@ class TestExecutionReports:
 
     @SKIP_INTEGRATION
     @pytest.mark.asyncio
-    async def test_fill_report_contains_required_fields(
-        self, order_router: OrderRouter
-    ):
+    async def test_fill_report_contains_required_fields(self, order_router: OrderRouter):
         """Fill reports should contain all required fields."""
         order = OrderCreate(
             symbol="BBCA.JK",
@@ -382,9 +374,7 @@ class TestExecutionReports:
 
     @SKIP_INTEGRATION
     @pytest.mark.asyncio
-    async def test_execution_timestamps_are_utc(
-        self, order_router: OrderRouter
-    ):
+    async def test_execution_timestamps_are_utc(self, order_router: OrderRouter):
         """All execution timestamps should be in UTC."""
         order = OrderCreate(
             symbol="BBCA.JK",
@@ -400,7 +390,7 @@ class TestExecutionReports:
         )
 
         assert report.timestamp.tzinfo is not None
-        assert report.timestamp.tzinfo == timezone.utc
+        assert report.timestamp.tzinfo == UTC
 
         if report.fill_timestamp:
-            assert report.fill_timestamp.tzinfo == timezone.utc
+            assert report.fill_timestamp.tzinfo == UTC

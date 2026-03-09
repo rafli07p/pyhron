@@ -6,20 +6,16 @@ with mocked Kafka/Redis but real business logic.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import MagicMock
 
-import pytest
-import pytest_asyncio
-
-from services.risk_engine.checks import (
+from services.pre_trade_risk_engine.pre_trade_risk_checks import (
     check_daily_loss_limit,
     check_duplicate_order,
     check_lot_size_constraint,
     check_max_position_size,
     check_signal_staleness,
 )
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -72,7 +68,7 @@ class TestFullOrderPipeline:
 
     def test_valid_order_passes_all_checks(self):
         """A well-formed order should pass all pre-trade risk checks."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         order = _make_order(
             quantity=500,
             limit_price=9200.0,
@@ -92,9 +88,9 @@ class TestFullOrderPipeline:
 
     def test_invalid_lot_size_rejects_early(self):
         """Orders with invalid lot sizes should be rejected at the first check."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         order = _make_order(quantity=150, signal_time=now)
-        portfolio = _make_portfolio()
+        _make_portfolio()
 
         # Simulate fail-fast pipeline
         lot_result = check_lot_size_constraint(order, lot_size=100)
@@ -107,7 +103,7 @@ class TestFullOrderPipeline:
 
     def test_stale_signal_rejected(self):
         """Orders from stale signals should be rejected."""
-        old_time = datetime.now(tz=timezone.utc) - timedelta(minutes=10)
+        old_time = datetime.now(tz=UTC) - timedelta(minutes=10)
         order = _make_order(quantity=100, signal_time=old_time)
 
         result = check_signal_staleness(order, max_age_seconds=300)
@@ -143,7 +139,7 @@ class TestFullOrderPipeline:
 
     def test_pipeline_with_existing_position(self):
         """Orders should be evaluated against existing portfolio state."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         pos = MagicMock()
         pos.symbol = "BBCA.JK"
         pos.quantity = 50_000

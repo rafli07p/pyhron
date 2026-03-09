@@ -65,7 +65,7 @@ class WorkspaceConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "WorkspaceConfig":
+    def from_dict(cls, data: dict[str, Any]) -> WorkspaceConfig:
         """Deserialize workspace configuration from a dictionary."""
         panels = [
             PanelConfig(
@@ -108,7 +108,7 @@ class WorkspaceManager:
         self,
         name: str,
         user_id: str,
-        panels: Optional[list[PanelConfig]] = None,
+        panels: list[PanelConfig] | None = None,
         theme: str = "dark",
     ) -> WorkspaceConfig:
         """Create a new workspace configuration.

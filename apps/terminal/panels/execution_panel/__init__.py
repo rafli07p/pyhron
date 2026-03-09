@@ -34,12 +34,12 @@ class OrderEntry:
     side: str = "BUY"
     order_type: str = "LIMIT"
     qty: Decimal = Decimal("0")
-    price: Optional[Decimal] = None
+    price: Decimal | None = None
     status: str = "PENDING"
     filled_qty: Decimal = Decimal("0")
-    avg_fill_price: Optional[Decimal] = None
-    submitted_at: Optional[datetime] = None
-    last_updated: Optional[datetime] = None
+    avg_fill_price: Decimal | None = None
+    submitted_at: datetime | None = None
+    last_updated: datetime | None = None
 
 
 class ExecutionPanel:
@@ -76,10 +76,10 @@ class ExecutionPanel:
         side: str,
         qty: Decimal,
         order_type: str = "LIMIT",
-        price: Optional[Decimal] = None,
+        price: Decimal | None = None,
         time_in_force: str = "DAY",
-        stop_price: Optional[Decimal] = None,
-        account_id: Optional[str] = None,
+        stop_price: Decimal | None = None,
+        account_id: str | None = None,
     ) -> dict[str, Any]:
         """Submit a new order through the execution service.
 

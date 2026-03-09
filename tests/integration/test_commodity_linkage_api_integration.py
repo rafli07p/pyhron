@@ -7,10 +7,9 @@ impact calculations on linked Indonesian equities.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
-
 
 # ── Domain Models ───────────────────────────────────────────────────────────
 

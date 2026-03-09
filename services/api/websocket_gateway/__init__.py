@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from enum import StrEnum
 from typing import Any, Optional
 from uuid import uuid4
@@ -27,7 +27,7 @@ logger = structlog.stdlib.get_logger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
-JWT_SECRET = "enthropy-jwt-secret"  # noqa: S105 — override via env
+JWT_SECRET = "enthropy-jwt-secret"
 JWT_ALGORITHM = "HS256"
 HEARTBEAT_INTERVAL_SECONDS = 15
 HEARTBEAT_TIMEOUT_SECONDS = 30
@@ -50,11 +50,11 @@ class WSMessageType(StrEnum):
 
 class WSMessage(BaseModel):
     type: WSMessageType
-    channel: Optional[str] = None
-    symbol: Optional[str] = None
-    data: Optional[dict[str, Any]] = None
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
-    request_id: Optional[str] = None
+    channel: str | None = None
+    symbol: str | None = None
+    data: dict[str, Any] | None = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    request_id: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -157,7 +157,7 @@ class ConnectionManager:
                     logger.warning("ws_send_failed", connection_id=cid, symbol=symbol)
                     await self.disconnect(cid)
 
-    async def broadcast_channel(self, channel: str, data: dict[str, Any], tenant_id: Optional[str] = None) -> None:
+    async def broadcast_channel(self, channel: str, data: dict[str, Any], tenant_id: str | None = None) -> None:
         """Broadcast to all subscribers of a named channel.
 
         If ``tenant_id`` is provided, only connections belonging to
@@ -225,7 +225,7 @@ def authenticate_ws_token(token: str) -> dict[str, str]:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         required = {"sub", "tenant_id"}
         if not required.issubset(payload.keys()):
-            raise ValueError("Missing required claims")  # noqa: TRY301
+            raise ValueError("Missing required claims")
         return {
             "user_id": payload["sub"],
             "tenant_id": payload["tenant_id"],
@@ -251,7 +251,7 @@ async def _heartbeat_loop() -> None:
             await manager.disconnect(cid)
 
         # Send heartbeat to all active connections
-        hb = WSMessage(type=WSMessageType.HEARTBEAT, data={"server_time": datetime.now(tz=timezone.utc).isoformat()})
+        hb = WSMessage(type=WSMessageType.HEARTBEAT, data={"server_time": datetime.now(tz=UTC).isoformat()})
         payload = hb.model_dump_json()
         for cid, ws in list(manager._connections.items()):
             try:
@@ -325,7 +325,7 @@ async def _polygon_market_feed() -> None:
                                         "size": msg.get("s", 0),
                                         "timestamp": msg.get("t"),
                                     })
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         continue
 
         except Exception:
@@ -356,7 +356,7 @@ def create_ws_app() -> FastAPI:
         return {
             "status": "ok",
             "active_connections": manager.active_connections,
-            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "timestamp": datetime.now(tz=UTC).isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -366,7 +366,7 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws")
     async def websocket_endpoint(
         websocket: WebSocket,
-        token: Optional[str] = Query(None),
+        token: str | None = Query(None),
     ) -> None:
         """Primary WebSocket endpoint.
 
@@ -463,7 +463,7 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws/market-data")
     async def market_data_ws(
         websocket: WebSocket,
-        token: Optional[str] = Query(None),
+        token: str | None = Query(None),
     ) -> None:
         """Dedicated WebSocket for market data streaming.
 
@@ -515,7 +515,7 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws/orders")
     async def orders_ws(
         websocket: WebSocket,
-        token: Optional[str] = Query(None),
+        token: str | None = Query(None),
     ) -> None:
         """WebSocket for real-time order status updates.
 
@@ -554,7 +554,7 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws/portfolio")
     async def portfolio_ws(
         websocket: WebSocket,
-        token: Optional[str] = Query(None),
+        token: str | None = Query(None),
     ) -> None:
         """WebSocket for real-time portfolio / P&L updates."""
         if not token:
@@ -586,9 +586,9 @@ def create_ws_app() -> FastAPI:
 
 
 __all__ = [
-    "create_ws_app",
     "ConnectionManager",
-    "manager",
     "WSMessage",
     "WSMessageType",
+    "create_ws_app",
+    "manager",
 ]

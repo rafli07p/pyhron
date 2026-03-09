@@ -7,13 +7,11 @@ for all domain schemas used across the Enthropy platform.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from enthropy.shared.schemas.order import (
     OrderCreate,
     OrderResponse,
@@ -21,9 +19,10 @@ from enthropy.shared.schemas.order import (
     OrderStatus,
     OrderType,
 )
-from enthropy.shared.schemas.tick import TickData
 from enthropy.shared.schemas.position import PositionSnapshot
 from enthropy.shared.schemas.risk import RiskLimits
+from enthropy.shared.schemas.tick import TickData
+from pydantic import ValidationError
 
 
 # =============================================================================
@@ -169,8 +168,8 @@ class TestOrderResponseSchema:
             average_fill_price=Decimal("4525.00"),
             status=OrderStatus.FILLED,
             strategy_id="pairs_trading_v1",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         assert response.order_id == order_id
         assert response.status == OrderStatus.FILLED
@@ -189,8 +188,8 @@ class TestOrderResponseSchema:
             average_fill_price=Decimal("6205.50"),
             status=OrderStatus.PARTIALLY_FILLED,
             strategy_id="stat_arb_v1",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         assert response.filled_quantity < response.quantity
         assert response.status == OrderStatus.PARTIALLY_FILLED
@@ -219,7 +218,7 @@ class TestTickDataSchema:
             volume=volume,
             bid=price - Decimal("0.50"),
             ask=price + Decimal("0.50"),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             exchange="IDX",
         )
         assert tick.symbol == symbol
@@ -236,7 +235,7 @@ class TestTickDataSchema:
                 "volume": 1000,
                 "bid": Decimal("99"),
                 "ask": Decimal("101"),
-                "timestamp": datetime.now(timezone.utc),
+                "timestamp": datetime.now(UTC),
                 "exchange": "IDX",
             },
             # Negative volume
@@ -246,7 +245,7 @@ class TestTickDataSchema:
                 "volume": -1000,
                 "bid": Decimal("99"),
                 "ask": Decimal("101"),
-                "timestamp": datetime.now(timezone.utc),
+                "timestamp": datetime.now(UTC),
                 "exchange": "IDX",
             },
             # Bid > Ask (crossed market)
@@ -256,7 +255,7 @@ class TestTickDataSchema:
                 "volume": 1000,
                 "bid": Decimal("102"),
                 "ask": Decimal("99"),
-                "timestamp": datetime.now(timezone.utc),
+                "timestamp": datetime.now(UTC),
                 "exchange": "IDX",
             },
         ],
@@ -284,7 +283,7 @@ class TestPositionSnapshotSchema:
             realized_pnl=Decimal("0.00"),
             market_value=Decimal("9350000.00"),
             strategy_id="momentum_v1",
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(UTC),
         )
         assert position.quantity > 0
         assert position.unrealized_pnl > 0
@@ -300,7 +299,7 @@ class TestPositionSnapshotSchema:
             realized_pnl=Decimal("0.00"),
             market_value=Decimal("-1925000.00"),
             strategy_id="pairs_v1",
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(UTC),
         )
         assert position.quantity < 0
 
@@ -315,7 +314,7 @@ class TestPositionSnapshotSchema:
             realized_pnl=Decimal("5000.00"),
             market_value=Decimal("1240000.00"),
             strategy_id="value_v1",
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(UTC),
         )
         data = position.model_dump(mode="json")
         assert "symbol" in data

@@ -11,8 +11,8 @@ Subpackages:
   enumerations.
 * ``shared.utils`` -- Retry, rate limiting, JSON serialization, ID
   generation, and timestamp helpers.
-* ``shared.configs`` -- Centralised application settings via Pydantic
-  BaseSettings.
+* ``shared.configuration_settings`` -- Centralised application settings
+  via Pydantic BaseSettings.
 * ``shared.security`` -- JWT authentication, RBAC, and audit logging.
 """
 

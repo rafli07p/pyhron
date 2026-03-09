@@ -15,35 +15,74 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
-from shared.redis_cache_client import get_redis
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
     RateLimitExceededError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import DATA_FRESHNESS, INGESTION_ROWS
+from shared.redis_cache_client import get_redis
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
 IDX_LQ45_SYMBOLS: list[str] = [
-    "BBCA", "BBRI", "BMRI", "TLKM", "ASII", "UNVR", "GGRM", "HMSP",
-    "BBNI", "ICBP", "INDF", "KLBF", "MDKA", "MNCN", "PGAS", "PTBA",
-    "SMGR", "TBIG", "TOWR", "UNTR", "ADRO", "AMRT", "ANTM", "ARTO",
-    "BFIN", "BRPT", "BUKA", "CPIN", "EMTK", "ERAA", "ESSA", "EXCL",
-    "GOTO", "HRUM", "INCO", "INKP", "ITMG", "JPFA", "MAPI", "MBMA",
-    "MEDC", "MIKA", "PGEO", "TKIM", "TPIA",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "GGRM",
+    "HMSP",
+    "BBNI",
+    "ICBP",
+    "INDF",
+    "KLBF",
+    "MDKA",
+    "MNCN",
+    "PGAS",
+    "PTBA",
+    "SMGR",
+    "TBIG",
+    "TOWR",
+    "UNTR",
+    "ADRO",
+    "AMRT",
+    "ANTM",
+    "ARTO",
+    "BFIN",
+    "BRPT",
+    "BUKA",
+    "CPIN",
+    "EMTK",
+    "ERAA",
+    "ESSA",
+    "EXCL",
+    "GOTO",
+    "HRUM",
+    "INCO",
+    "INKP",
+    "ITMG",
+    "JPFA",
+    "MAPI",
+    "MBMA",
+    "MEDC",
+    "MIKA",
+    "PGEO",
+    "TKIM",
+    "TPIA",
 ]
 
 EODHD_RATE_LIMIT_KEY = "pyhron:eodhd:daily_requests"
@@ -189,9 +228,7 @@ class IDXEquityEODIngester:
         if count == 1:
             await redis.expire(EODHD_RATE_LIMIT_KEY, 86400)
         if count > EODHD_DAILY_LIMIT:
-            raise RateLimitExceededError(
-                f"EODHD daily limit ({EODHD_DAILY_LIMIT}) exceeded"
-            )
+            raise RateLimitExceededError(f"EODHD daily limit ({EODHD_DAILY_LIMIT}) exceeded")
 
         url = f"https://eodhd.com/api/eod/{symbol}.IDX"
         params = {
@@ -217,9 +254,7 @@ class IDXEquityEODIngester:
                             "high": Decimal(str(row["high"])),
                             "low": Decimal(str(row["low"])),
                             "close": Decimal(str(row["close"])),
-                            "adjusted_close": Decimal(
-                                str(row.get("adjusted_close", row["close"]))
-                            ),
+                            "adjusted_close": Decimal(str(row.get("adjusted_close", row["close"]))),
                             "volume": int(row["volume"]),
                         }
                         for row in data
@@ -275,13 +310,9 @@ class IDXEquityEODIngester:
         """
         o, h, l, c = row["open"], row["high"], row["low"], row["close"]
         if h < max(o, c):
-            raise DataQualityError(
-                f"High {h} < max(open={o}, close={c}) on {row['time']}"
-            )
+            raise DataQualityError(f"High {h} < max(open={o}, close={c}) on {row['time']}")
         if l > min(o, c):
-            raise DataQualityError(
-                f"Low {l} > min(open={o}, close={c}) on {row['time']}"
-            )
+            raise DataQualityError(f"Low {l} > min(open={o}, close={c}) on {row['time']}")
         if o <= 0 or c <= 0:
             raise DataQualityError(f"Non-positive price on {row['time']}")
 
@@ -289,8 +320,7 @@ class IDXEquityEODIngester:
             daily_move = abs(float(c - o) / float(o))
             if daily_move > MAX_DAILY_MOVE_PCT:
                 raise DataQualityError(
-                    f"Daily move {daily_move:.1%} exceeds IDX circuit breaker "
-                    f"{MAX_DAILY_MOVE_PCT:.0%} on {row['time']}"
+                    f"Daily move {daily_move:.1%} exceeds IDX circuit breaker {MAX_DAILY_MOVE_PCT:.0%} on {row['time']}"
                 )
 
     # ── Persistence ──────────────────────────────────────────────────────

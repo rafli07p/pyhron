@@ -7,13 +7,15 @@ mandatory ``tenant_id`` fields.
 
 from __future__ import annotations
 
-from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class Exchange(StrEnum):
@@ -48,7 +50,7 @@ class MarketEventBase(BaseModel):
     timestamp: datetime = Field(..., description="Event timestamp in UTC")
     exchange: Exchange = Field(default=Exchange.OTHER, description="Source exchange")
     tenant_id: str = Field(..., min_length=1, max_length=64, description="Tenant identifier for multi-tenancy")
-    sequence_number: Optional[int] = Field(default=None, ge=0, description="Exchange sequence number for ordering")
+    sequence_number: int | None = Field(default=None, ge=0, description="Exchange sequence number for ordering")
 
 
 class TickEvent(MarketEventBase):
@@ -60,7 +62,7 @@ class TickEvent(MarketEventBase):
 
     price: Decimal = Field(..., gt=0, decimal_places=8, description="Tick price")
     volume: Decimal = Field(default=Decimal("0"), ge=0, description="Volume at this tick")
-    condition: Optional[str] = Field(default=None, max_length=16, description="Trade condition code")
+    condition: str | None = Field(default=None, max_length=16, description="Trade condition code")
 
 
 class BarEvent(MarketEventBase):
@@ -75,12 +77,12 @@ class BarEvent(MarketEventBase):
     low: Decimal = Field(..., gt=0, description="Period low price")
     close: Decimal = Field(..., gt=0, description="Closing price")
     volume: Decimal = Field(default=Decimal("0"), ge=0, description="Total volume in the period")
-    vwap: Optional[Decimal] = Field(default=None, gt=0, description="Volume-weighted average price")
-    bar_count: Optional[int] = Field(default=None, ge=0, description="Number of ticks in the bar")
+    vwap: Decimal | None = Field(default=None, gt=0, description="Volume-weighted average price")
+    bar_count: int | None = Field(default=None, ge=0, description="Number of ticks in the bar")
     interval_seconds: int = Field(default=60, gt=0, description="Bar interval in seconds")
 
     @model_validator(mode="after")
-    def _validate_ohlc(self) -> "BarEvent":
+    def _validate_ohlc(self) -> BarEvent:
         """Ensure high >= low and high/low bracket open/close."""
         if self.high < self.low:
             raise ValueError(f"high ({self.high}) must be >= low ({self.low})")
@@ -100,12 +102,12 @@ class TradeEvent(MarketEventBase):
 
     price: Decimal = Field(..., gt=0, description="Trade price")
     volume: Decimal = Field(..., gt=0, description="Trade size / quantity")
-    aggressor_side: Optional[str] = Field(
+    aggressor_side: str | None = Field(
         default=None,
         pattern=r"^(BUY|SELL|UNKNOWN)$",
         description="Aggressor side of the trade",
     )
-    trade_id: Optional[str] = Field(default=None, max_length=64, description="Exchange-assigned trade ID")
+    trade_id: str | None = Field(default=None, max_length=64, description="Exchange-assigned trade ID")
 
 
 class QuoteEvent(MarketEventBase):
@@ -119,11 +121,11 @@ class QuoteEvent(MarketEventBase):
     ask: Decimal = Field(..., ge=0, description="Best ask price")
     bid_size: Decimal = Field(default=Decimal("0"), ge=0, description="Size at best bid")
     ask_size: Decimal = Field(default=Decimal("0"), ge=0, description="Size at best ask")
-    mid: Optional[Decimal] = Field(default=None, description="Mid price (computed if not provided)")
-    spread: Optional[Decimal] = Field(default=None, description="Bid-ask spread (computed if not provided)")
+    mid: Decimal | None = Field(default=None, description="Mid price (computed if not provided)")
+    spread: Decimal | None = Field(default=None, description="Bid-ask spread (computed if not provided)")
 
     @model_validator(mode="after")
-    def _compute_derived_fields(self) -> "QuoteEvent":
+    def _compute_derived_fields(self) -> QuoteEvent:
         """Compute mid and spread if not explicitly provided."""
         obj = self
         if obj.bid > 0 and obj.ask > 0:
@@ -134,7 +136,7 @@ class QuoteEvent(MarketEventBase):
         return obj
 
     @model_validator(mode="after")
-    def _validate_bid_ask(self) -> "QuoteEvent":
+    def _validate_bid_ask(self) -> QuoteEvent:
         """Bid must not exceed ask when both are positive."""
         if self.bid > 0 and self.ask > 0 and self.bid > self.ask:
             raise ValueError(f"bid ({self.bid}) must be <= ask ({self.ask})")
@@ -142,10 +144,10 @@ class QuoteEvent(MarketEventBase):
 
 
 __all__ = [
+    "BarEvent",
     "Exchange",
     "MarketEventBase",
-    "TickEvent",
-    "BarEvent",
-    "TradeEvent",
     "QuoteEvent",
+    "TickEvent",
+    "TradeEvent",
 ]

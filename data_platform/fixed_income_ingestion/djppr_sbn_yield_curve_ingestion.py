@@ -28,14 +28,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -44,8 +44,15 @@ MAX_RETRIES = 3
 
 TENORS: list[str] = ["1Y", "2Y", "3Y", "5Y", "7Y", "10Y", "15Y", "20Y", "30Y"]
 TENOR_YEARS: dict[str, float] = {
-    "1Y": 1.0, "2Y": 2.0, "3Y": 3.0, "5Y": 5.0, "7Y": 7.0,
-    "10Y": 10.0, "15Y": 15.0, "20Y": 20.0, "30Y": 30.0,
+    "1Y": 1.0,
+    "2Y": 2.0,
+    "3Y": 3.0,
+    "5Y": 5.0,
+    "7Y": 7.0,
+    "10Y": 10.0,
+    "15Y": 15.0,
+    "20Y": 20.0,
+    "30Y": 30.0,
 }
 
 
@@ -121,9 +128,7 @@ class DJPPRSBNYieldCurveIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="djppr", symbol="SBN", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="djppr", symbol="SBN", operation="inserted").inc(inserted)
 
         self._logger.info(
             "sbn_yield_ingestion_complete",
@@ -135,9 +140,7 @@ class DJPPRSBNYieldCurveIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_yields(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_yields(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch SBN benchmark yields from DJPPR.
 
         Args:
@@ -159,9 +162,7 @@ class DJPPRSBNYieldCurveIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        DJPPR_API_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(DJPPR_API_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -181,9 +182,7 @@ class DJPPRSBNYieldCurveIngester:
 
     # ── Parsing ──────────────────────────────────────────────────────────
 
-    def _parse_yield_data(
-        self, items: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+    def _parse_yield_data(self, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Parse DJPPR yield data and extract tenor yields and NSS params.
 
         Args:
@@ -205,25 +204,29 @@ class DJPPRSBNYieldCurveIngester:
                 yield_key = tenor.lower().replace("y", "yr")
                 value = row.get(yield_key) or row.get(tenor) or row.get(f"yield_{tenor}")
                 if value is not None:
-                    records.append({
-                        "indicator": f"sbn_yield_{tenor.lower()}",
-                        "reference_date": ref_date,
-                        "value": Decimal(str(value)),
-                        "unit": "percent",
-                        "frequency": "daily",
-                    })
+                    records.append(
+                        {
+                            "indicator": f"sbn_yield_{tenor.lower()}",
+                            "reference_date": ref_date,
+                            "value": Decimal(str(value)),
+                            "unit": "percent",
+                            "frequency": "daily",
+                        }
+                    )
 
             # Extract NSS parameters if provided by DJPPR
             for param in ("beta0", "beta1", "beta2", "beta3"):
                 nss_val = row.get(param) or row.get(f"nss_{param}")
                 if nss_val is not None:
-                    records.append({
-                        "indicator": f"sbn_nss_{param}",
-                        "reference_date": ref_date,
-                        "value": Decimal(str(nss_val)),
-                        "unit": "coefficient",
-                        "frequency": "daily",
-                    })
+                    records.append(
+                        {
+                            "indicator": f"sbn_nss_{param}",
+                            "reference_date": ref_date,
+                            "value": Decimal(str(nss_val)),
+                            "unit": "coefficient",
+                            "frequency": "daily",
+                        }
+                    )
 
         return records
 
@@ -239,10 +242,7 @@ class DJPPRSBNYieldCurveIngester:
         if record["indicator"].startswith("sbn_yield_"):
             # Indonesian govt yields historically 4%-15%
             if v < 0 or v > 25:
-                raise DataQualityError(
-                    f"SBN yield {v}% outside plausible range [0, 25] "
-                    f"on {record['reference_date']}"
-                )
+                raise DataQualityError(f"SBN yield {v}% outside plausible range [0, 25] on {record['reference_date']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

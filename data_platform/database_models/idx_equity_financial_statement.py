@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
@@ -29,8 +28,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
 
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
-class StatementType(str, enum.Enum):
+
+class StatementType(enum.StrEnum):
     """Financial statement type."""
 
     INCOME = "income"
@@ -69,9 +72,7 @@ class IdxEquityFinancialStatement(Base):
 
     __tablename__ = "idx_equity_financial_statements"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
         ForeignKey("idx_equity_instruments.symbol"),
@@ -107,9 +108,7 @@ class IdxEquityFinancialStatement(Base):
     shares_outstanding: Mapped[int | None] = mapped_column(BigInteger)
     eps: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     source_url: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("symbol", "period_end", "statement_type"),

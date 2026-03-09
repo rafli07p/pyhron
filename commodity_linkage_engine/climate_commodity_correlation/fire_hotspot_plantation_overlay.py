@@ -17,15 +17,12 @@ Usage::
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 import httpx
 
 from shared.structured_json_logger import get_logger
-from shared.configuration_settings import get_config
 
 logger = get_logger(__name__)
 
@@ -96,20 +93,30 @@ class PlantationFireAlert:
     max_frp: float
     severity: str
     affected_area_pct: float
-    detected_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    detected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 # ── Sample concession registry ──────────────────────────────────────────────
 
 _PLANTATION_CONCESSIONS: list[PlantationConcession] = [
-    PlantationConcession("AALI-KAL01", "Astra Agro Lestari", "AALI", "palm_oil",
-                         (-2.5, 115.0, -1.5, 116.5), 250_000, "Central Kalimantan"),
-    PlantationConcession("LSIP-SUM01", "PP London Sumatra", "LSIP", "palm_oil",
-                         (1.0, 103.0, 2.5, 104.5), 120_000, "North Sumatra"),
-    PlantationConcession("SIMP-KAL01", "Salim Ivomas Pratama", "SIMP", "palm_oil",
-                         (-1.0, 116.0, 0.0, 117.5), 180_000, "East Kalimantan"),
-    PlantationConcession("INKP-RIA01", "Indah Kiat Pulp", "INKP", "pulp_paper",
-                         (0.5, 101.5, 1.5, 103.0), 300_000, "Riau"),
+    PlantationConcession(
+        "AALI-KAL01",
+        "Astra Agro Lestari",
+        "AALI",
+        "palm_oil",
+        (-2.5, 115.0, -1.5, 116.5),
+        250_000,
+        "Central Kalimantan",
+    ),
+    PlantationConcession(
+        "LSIP-SUM01", "PP London Sumatra", "LSIP", "palm_oil", (1.0, 103.0, 2.5, 104.5), 120_000, "North Sumatra"
+    ),
+    PlantationConcession(
+        "SIMP-KAL01", "Salim Ivomas Pratama", "SIMP", "palm_oil", (-1.0, 116.0, 0.0, 117.5), 180_000, "East Kalimantan"
+    ),
+    PlantationConcession(
+        "INKP-RIA01", "Indah Kiat Pulp", "INKP", "pulp_paper", (0.5, 101.5, 1.5, 103.0), 300_000, "Riau"
+    ),
 ]
 
 
@@ -141,9 +148,7 @@ class FireHotspotPlantationOverlay:
             buffer_km=buffer_km,
         )
 
-    async def fetch_hotspots(
-        self, country: str = "IDN", days: int = 1
-    ) -> list[FireHotspot]:
+    async def fetch_hotspots(self, country: str = "IDN", days: int = 1) -> list[FireHotspot]:
         """Fetch recent fire hotspots from NASA FIRMS API.
 
         Args:
@@ -174,7 +179,7 @@ class FireHotspotPlantationOverlay:
                     longitude=float(parts[1]),
                     brightness=float(parts[2]),
                     confidence=int(parts[8]) if parts[8].isdigit() else 50,
-                    acquired_at=datetime.now(timezone.utc),
+                    acquired_at=datetime.now(UTC),
                     satellite="VIIRS_SNPP",
                     frp=float(parts[12]) if parts[12] else 0.0,
                 )
@@ -183,9 +188,7 @@ class FireHotspotPlantationOverlay:
         logger.info("firms_hotspots_fetched", count=len(hotspots))
         return hotspots
 
-    def detect_plantation_fires(
-        self, hotspots: list[FireHotspot]
-    ) -> list[PlantationFireAlert]:
+    def detect_plantation_fires(self, hotspots: list[FireHotspot]) -> list[PlantationFireAlert]:
         """Overlay hotspots on concessions and generate alerts.
 
         Args:
@@ -206,9 +209,9 @@ class FireHotspotPlantationOverlay:
             )
 
             matched = [
-                h for h in hotspots
-                if buffered[0] <= h.latitude <= buffered[2]
-                and buffered[1] <= h.longitude <= buffered[3]
+                h
+                for h in hotspots
+                if buffered[0] <= h.latitude <= buffered[2] and buffered[1] <= h.longitude <= buffered[3]
             ]
 
             if not matched:
@@ -242,8 +245,8 @@ class FireHotspotPlantationOverlay:
         """Classify fire severity from hotspot count and intensity."""
         if hotspot_count >= 50 or max_frp >= 100.0:
             return "CRITICAL"
-        elif hotspot_count >= 20 or max_frp >= 50.0:
+        if hotspot_count >= 20 or max_frp >= 50.0:
             return "HIGH"
-        elif hotspot_count >= 5:
+        if hotspot_count >= 5:
             return "MEDIUM"
         return "LOW"

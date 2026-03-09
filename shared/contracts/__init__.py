@@ -21,14 +21,14 @@ from shared.contracts.message_types import EventPriority, MessageType
 __all__ = [
     # API models
     "APIResponse",
-    "PaginatedResponse",
+    "DependencyHealth",
     "ErrorDetail",
     "ErrorResponse",
     "ErrorSeverity",
-    "ServiceStatus",
-    "DependencyHealth",
+    "EventPriority",
     "HealthCheck",
     # Message types
     "MessageType",
-    "EventPriority",
+    "PaginatedResponse",
+    "ServiceStatus",
 ]

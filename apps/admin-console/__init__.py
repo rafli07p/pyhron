@@ -13,8 +13,8 @@ from apps.admin_console.system_health import SystemHealth
 from apps.admin_console.user_management import UserManager
 
 __all__ = [
-    "StrategyManager",
     "RiskMonitor",
-    "UserManager",
+    "StrategyManager",
     "SystemHealth",
+    "UserManager",
 ]

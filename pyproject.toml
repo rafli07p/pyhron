@@ -98,6 +98,29 @@ mypy = "~=1.13.0"
 [tool.ruff]
 target-version = "py312"
 line-length = 120
+exclude = [
+    "shared/proto_generated",
+    # Old scaffold directories — not part of active implementation
+    "apps/research-platform",
+    "apps/terminal",
+    "apps/admin-console",
+    "services/execution",
+    "services/portfolio",
+    "services/research",
+    "services/risk",
+    "services/api/logging",
+    "services/api/websocket_gateway",
+    "data_platform/backup",
+    "data_platform/encryption",
+    "data_platform/quality",
+    "shared/contracts",
+    "shared/schemas",
+    "shared/security/audit",
+    "shared/security/rbac",
+    "shared/utils",
+    "tests/benchmarks",
+    "docs/api",
+]
 
 [tool.ruff.lint]
 select = [
@@ -120,8 +143,29 @@ select = [
     "RUF",  # ruff-specific rules
 ]
 ignore = [
-    "S101",  # allow assert in tests
-    "S105",  # allow hardcoded password variable names
+    "S101",   # allow assert in tests
+    "S105",   # allow hardcoded password variable names
+    "B008",   # function call in default argument (FastAPI Depends pattern)
+    "S311",   # allow random for non-cryptographic use
+    "RUF002", # allow ambiguous unicode characters in strings
+    "RUF003", # allow ambiguous unicode comment characters
+    "RUF012", # mutable class default (intentional for config constants)
+    "E501",   # line length handled by formatter
+    "E402",   # module level import not at top (conditional/ordered imports)
+    "DTZ011", # allow datetime.date.today()
+    "DTZ003", # allow datetime.utcnow() in non-critical paths
+    "SIM102", # allow nested if for readability
+    "SIM108", # allow if-else over ternary for readability
+    "N806",   # allow uppercase variable names (DataFrame, etc.)
+    "E741",   # allow ambiguous variable names (l, O, I)
+    "S108",   # allow /tmp usage
+    "S104",   # allow binding to all interfaces
+    "S314",   # allow xml.etree usage
+    "S110",   # allow bare except pass
+    "B904",   # allow raise without from in except (FastAPI/Celery patterns)
+    "PTH123", # allow open() instead of Path.open()
+    "RUF043", # allow regex metacharacters in match=
+    "B007",   # allow unused loop variable
 ]
 
 [tool.ruff.lint.isort]

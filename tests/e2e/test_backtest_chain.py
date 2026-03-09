@@ -8,21 +8,19 @@ order simulation, fill modeling, PnL calculation, and report generation.
 from __future__ import annotations
 
 import os
-from datetime import date, datetime, timezone, timedelta
+from datetime import date
 from decimal import Decimal
 
 import pytest
-
-from enthropy.backtest.engine import BacktestEngine
 from enthropy.backtest.config import BacktestConfig
+from enthropy.backtest.engine import BacktestEngine
 from enthropy.backtest.result import BacktestResult
 from enthropy.market_data.historical import HistoricalDataLoader
-from enthropy.strategy.momentum import MomentumStrategy
-from enthropy.strategy.mean_reversion import MeanReversionStrategy
 from enthropy.pnl.engine import PnLEngine
 from enthropy.risk.engine import RiskEngine
 from enthropy.shared.schemas.risk import RiskLimits
-
+from enthropy.strategy.mean_reversion import MeanReversionStrategy
+from enthropy.strategy.momentum import MomentumStrategy
 
 # =============================================================================
 # Skip Conditions
@@ -211,9 +209,7 @@ class TestFullBacktestChain:
         assert abs(result.max_drawdown) <= float(risk_limits.max_drawdown_pct) + 0.001
 
         # No risk violations should be recorded
-        assert len(result.risk_violations) == 0, (
-            f"Risk violations detected: {result.risk_violations}"
-        )
+        assert len(result.risk_violations) == 0, f"Risk violations detected: {result.risk_violations}"
 
     @SKIP_E2E
     def test_backtest_pnl_consistency(

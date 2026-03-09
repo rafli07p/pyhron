@@ -18,12 +18,12 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
-
-import numpy as np
+from typing import TYPE_CHECKING
 
 from shared.structured_json_logger import get_logger
-from strategy_engine.base_strategy_interface import StrategySignal
+
+if TYPE_CHECKING:
+    from strategy_engine.base_strategy_interface import StrategySignal
 
 logger = get_logger(__name__)
 

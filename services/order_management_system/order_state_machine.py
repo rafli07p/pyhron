@@ -9,20 +9,22 @@ Transition graph matches proto/orders.proto OrderStatus enum.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import update
 
 from data_platform.models.trading import Order, OrderStatusEnum
 from shared.async_database_session import get_session
-from shared.platform_exception_hierarchy import InvalidTransitionError
-from shared.structured_json_logger import get_logger
 from shared.kafka_producer_consumer import PyhronProducer, Topics
+from shared.platform_exception_hierarchy import InvalidTransitionError
 from shared.proto_generated.equity_orders_pb2 import (
     OrderEvent as OrderEventProto,
+)
+from shared.proto_generated.equity_orders_pb2 import (
     OrderStatus,
 )
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -62,11 +64,7 @@ VALID_TRANSITIONS: dict[OrderStatusEnum, set[OrderStatusEnum]] = {
     OrderStatusEnum.EXPIRED: set(),
 }
 
-TERMINAL_STATES: set[OrderStatusEnum] = {
-    status
-    for status, allowed in VALID_TRANSITIONS.items()
-    if len(allowed) == 0
-}
+TERMINAL_STATES: set[OrderStatusEnum] = {status for status, allowed in VALID_TRANSITIONS.items() if len(allowed) == 0}
 
 # Map DB enum values to proto enum values for event serialization
 _STATUS_TO_PROTO: dict[OrderStatusEnum, int] = {
@@ -139,13 +137,12 @@ class OrderStateMachine:
         allowed = VALID_TRANSITIONS.get(from_status, set())
         if to_status not in allowed:
             raise InvalidTransitionError(
-                f"Cannot transition order {order.client_order_id} "
-                f"from {from_status.value} to {to_status.value}",
+                f"Cannot transition order {order.client_order_id} from {from_status.value} to {to_status.value}",
                 from_status=from_status.value,
                 to_status=to_status.value,
             )
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         # Persist the status change inside a transaction
         async with get_session() as session:
@@ -176,11 +173,7 @@ class OrderStateMachine:
             if "tax" in event_data:
                 update_values["tax"] = event_data["tax"]
 
-            stmt = (
-                update(Order)
-                .where(Order.client_order_id == order.client_order_id)
-                .values(**update_values)
-            )
+            stmt = update(Order).where(Order.client_order_id == order.client_order_id).values(**update_values)
             await session.execute(stmt)
 
         # Build the protobuf event
@@ -229,9 +222,7 @@ class OrderStateMachine:
         event = OrderEventProto()
         event.event_id = str(uuid.uuid4())
         event.client_order_id = order.client_order_id
-        event.broker_order_id = str(event_data.get("broker_order_id", "")) or (
-            order.broker_order_id or ""
-        )
+        event.broker_order_id = str(event_data.get("broker_order_id", "")) or (order.broker_order_id or "")
         event.from_status = _STATUS_TO_PROTO[from_status]
         event.to_status = _STATUS_TO_PROTO[to_status]
         event.filled_quantity = float(event_data.get("filled_quantity", 0))

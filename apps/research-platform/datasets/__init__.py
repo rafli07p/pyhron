@@ -83,8 +83,8 @@ class DatasetManager:
 
     def list_datasets(
         self,
-        category: Optional[str] = None,
-        tags: Optional[list[str]] = None,
+        category: str | None = None,
+        tags: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """List available datasets with optional filtering.
 
@@ -128,8 +128,8 @@ class DatasetManager:
         self,
         name: str,
         format: str = "dataframe",
-        columns: Optional[list[str]] = None,
-        limit: Optional[int] = None,
+        columns: list[str] | None = None,
+        limit: int | None = None,
     ) -> Any:
         """Load a dataset into memory.
 
@@ -159,7 +159,7 @@ class DatasetManager:
 
         # Search registry first
         meta = self._registry.get(name)
-        file_path: Optional[Path] = None
+        file_path: Path | None = None
 
         if meta:
             file_path = self._storage_dir / f"{name}.parquet"
@@ -198,7 +198,7 @@ class DatasetManager:
         data: Any,
         description: str = "",
         category: str = "custom",
-        tags: Optional[list[str]] = None,
+        tags: list[str] | None = None,
         format: str = "parquet",
     ) -> DatasetMetadata:
         """Create and persist a new dataset.
@@ -265,7 +265,7 @@ class DatasetManager:
         name: str,
         output_path: str | Path,
         format: str = "csv",
-        columns: Optional[list[str]] = None,
+        columns: list[str] | None = None,
     ) -> Path:
         """Export a dataset to a specific format and location.
 

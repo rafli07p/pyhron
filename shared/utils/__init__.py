@@ -16,10 +16,11 @@ from __future__ import annotations
 import json
 import threading
 import time
-from datetime import date, datetime, timezone
+from collections.abc import Callable
+from datetime import UTC, date, datetime, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 from uuid import UUID, uuid4
 
 from tenacity import (
@@ -174,7 +175,7 @@ class EnthopyJSONEncoder(json.JSONEncoder):
     * Objects with a ``dict()`` method (Pydantic v1 fallback)
     """
 
-    def default(self, obj: Any) -> Any:  # noqa: ANN401
+    def default(self, obj: Any) -> Any:
         if isinstance(obj, datetime):
             return obj.isoformat()
         if isinstance(obj, date):
@@ -243,7 +244,7 @@ def timestamp_now() -> datetime:
     Returns:
         ``datetime`` object with ``tzinfo=timezone.utc``.
     """
-    return datetime.now(tz=timezone.utc)
+    return datetime.now(tz=UTC)
 
 
 def timestamp_now_iso() -> str:
@@ -256,13 +257,13 @@ def timestamp_now_iso() -> str:
 
 
 __all__ = [
-    "retry_with_backoff",
-    "RateLimiter",
-    "rate_limiter",
     "EnthopyJSONEncoder",
-    "json_serializer",
-    "json_deserialize",
+    "RateLimiter",
     "generate_id",
+    "json_deserialize",
+    "json_serializer",
+    "rate_limiter",
+    "retry_with_backoff",
     "timestamp_now",
     "timestamp_now_iso",
 ]

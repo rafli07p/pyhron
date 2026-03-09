@@ -26,14 +26,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -113,9 +113,7 @@ class BKPMInvestmentRealizationIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="bkpm", symbol="FDI", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="bkpm", symbol="FDI", operation="inserted").inc(inserted)
 
         self._logger.info(
             "bkpm_ingestion_complete",
@@ -127,9 +125,7 @@ class BKPMInvestmentRealizationIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_realization(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_realization(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch quarterly investment realization from BKPM.
 
         Args:
@@ -151,9 +147,7 @@ class BKPMInvestmentRealizationIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        BKPM_API_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(BKPM_API_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -164,29 +158,35 @@ class BKPMInvestmentRealizationIngester:
                             continue
                         ref_date = date.fromisoformat(ref)
                         if row.get("fdi_usd"):
-                            records.append({
-                                "indicator": "fdi_realization_usd",
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row["fdi_usd"])),
-                                "unit": "million_usd",
-                                "frequency": "quarterly",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "fdi_realization_usd",
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row["fdi_usd"])),
+                                    "unit": "million_usd",
+                                    "frequency": "quarterly",
+                                }
+                            )
                         if row.get("ddi_idr"):
-                            records.append({
-                                "indicator": "ddi_realization_idr",
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row["ddi_idr"])),
-                                "unit": "billion_idr",
-                                "frequency": "quarterly",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "ddi_realization_idr",
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row["ddi_idr"])),
+                                    "unit": "billion_idr",
+                                    "frequency": "quarterly",
+                                }
+                            )
                         if row.get("projects"):
-                            records.append({
-                                "indicator": "fdi_projects_count",
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row["projects"])),
-                                "unit": "count",
-                                "frequency": "quarterly",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "fdi_projects_count",
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row["projects"])),
+                                    "unit": "count",
+                                    "frequency": "quarterly",
+                                }
+                            )
                     return records
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (500, 502, 503) and attempt < MAX_RETRIES:
@@ -212,8 +212,7 @@ class BKPMInvestmentRealizationIngester:
         v = float(record["value"])
         if v < 0:
             raise DataQualityError(
-                f"Negative investment value {v} for {record['indicator']} "
-                f"on {record['reference_date']}"
+                f"Negative investment value {v} for {record['indicator']} on {record['reference_date']}"
             )
 
     # ── Persistence ──────────────────────────────────────────────────────

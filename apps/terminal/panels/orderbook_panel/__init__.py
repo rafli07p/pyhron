@@ -22,7 +22,7 @@ class PriceLevel:
     price: Decimal
     size: Decimal
     order_count: int = 1
-    timestamp: Optional[datetime] = None
+    timestamp: datetime | None = None
 
 
 @dataclass
@@ -32,7 +32,7 @@ class OrderBookState:
     symbol: str = ""
     bids: list[PriceLevel] = field(default_factory=list)
     asks: list[PriceLevel] = field(default_factory=list)
-    last_update: Optional[datetime] = None
+    last_update: datetime | None = None
     sequence: int = 0
 
 
@@ -65,7 +65,7 @@ class OrderBookPanel:
         return self._state.symbol
 
     @property
-    def spread(self) -> Optional[Decimal]:
+    def spread(self) -> Decimal | None:
         """Current bid-ask spread, or ``None`` if the book is empty."""
         if self._state.bids and self._state.asks:
             return self._state.asks[0].price - self._state.bids[0].price

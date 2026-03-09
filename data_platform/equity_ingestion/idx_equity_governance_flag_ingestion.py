@@ -18,14 +18,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -123,9 +123,7 @@ class IDXEquityGovernanceFlagIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="idx_ojk", symbol="GOVERNANCE", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="idx_ojk", symbol="GOVERNANCE", operation="inserted").inc(inserted)
 
         self._logger.info(
             "governance_flag_ingestion_complete",
@@ -171,9 +169,7 @@ class IDXEquityGovernanceFlagIngester:
 
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
-                resp = await client.get(
-                    IDX_DISCLOSURE_URL, params=params, headers=headers
-                )
+                resp = await client.get(IDX_DISCLOSURE_URL, params=params, headers=headers)
                 resp.raise_for_status()
                 data = resp.json()
         except httpx.HTTPStatusError as exc:
@@ -192,9 +188,7 @@ class IDXEquityGovernanceFlagIngester:
                 continue
 
             try:
-                flag_date = date.fromisoformat(
-                    item.get("TanggalPenyampaian", "")[:10]
-                )
+                flag_date = date.fromisoformat(item.get("TanggalPenyampaian", "")[:10])
             except ValueError:
                 continue
 
@@ -304,13 +298,9 @@ class IDXEquityGovernanceFlagIngester:
         if not flag.get("symbol"):
             raise DataQualityError("Empty symbol in governance flag")
         if flag["flag_type"] not in FLAG_TYPES:
-            raise DataQualityError(
-                f"Unknown flag type '{flag['flag_type']}'"
-            )
+            raise DataQualityError(f"Unknown flag type '{flag['flag_type']}'")
         if not flag.get("flag_date"):
-            raise DataQualityError(
-                f"Missing flag_date for {flag['symbol']}/{flag['flag_type']}"
-            )
+            raise DataQualityError(f"Missing flag_date for {flag['symbol']}/{flag['flag_type']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

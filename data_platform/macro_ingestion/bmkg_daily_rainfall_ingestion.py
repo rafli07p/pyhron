@@ -21,14 +21,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -127,9 +127,7 @@ class BMKGDailyRainfallIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="bmkg", symbol="RAINFALL", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="bmkg", symbol="RAINFALL", operation="inserted").inc(inserted)
 
         self._logger.info(
             "bmkg_rainfall_ingestion_complete",
@@ -175,31 +173,21 @@ class BMKGDailyRainfallIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        BMKG_API_BASE, params=params, headers=headers
-                    )
+                    resp = await client.get(BMKG_API_BASE, params=params, headers=headers)
                     resp.raise_for_status()
-                    return self._parse_rainfall_response(
-                        resp.json(), station_id, start, end
-                    )
+                    return self._parse_rainfall_response(resp.json(), station_id, start, end)
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (500, 502, 503) and attempt < MAX_RETRIES:
                     await asyncio.sleep(2 ** (attempt - 1))
                     continue
-                raise IngestionError(
-                    f"BMKG API error for station {station_id}: {exc}"
-                ) from exc
+                raise IngestionError(f"BMKG API error for station {station_id}: {exc}") from exc
             except httpx.RequestError as exc:
                 if attempt < MAX_RETRIES:
                     await asyncio.sleep(2 ** (attempt - 1))
                     continue
-                raise IngestionError(
-                    f"BMKG connection error for station {station_id}: {exc}"
-                ) from exc
+                raise IngestionError(f"BMKG connection error for station {station_id}: {exc}") from exc
 
-        raise IngestionError(
-            f"BMKG fetch failed for station {station_id} after {MAX_RETRIES} retries"
-        )
+        raise IngestionError(f"BMKG fetch failed for station {station_id} after {MAX_RETRIES} retries")
 
     # ── Parsing ──────────────────────────────────────────────────────────
 
@@ -226,9 +214,7 @@ class BMKGDailyRainfallIngester:
 
         for item in items:
             try:
-                obs_date = date.fromisoformat(
-                    item.get("date", item.get("tanggal", ""))[:10]
-                )
+                obs_date = date.fromisoformat(item.get("date", item.get("tanggal", ""))[:10])
             except (ValueError, TypeError):
                 continue
 
@@ -264,14 +250,12 @@ class BMKGDailyRainfallIngester:
         rainfall = float(record["rainfall_mm"])
         if rainfall < 0:
             raise DataQualityError(
-                f"Negative rainfall {rainfall} mm at station "
-                f"{record['station_id']} on {record['observation_date']}"
+                f"Negative rainfall {rainfall} mm at station {record['station_id']} on {record['observation_date']}"
             )
         # World record daily rainfall is ~1825mm; use 500mm as practical max
         if rainfall > 500:
             raise DataQualityError(
-                f"Implausible rainfall {rainfall} mm at station "
-                f"{record['station_id']} on {record['observation_date']}"
+                f"Implausible rainfall {rainfall} mm at station {record['station_id']} on {record['observation_date']}"
             )
 
     # ── Persistence ──────────────────────────────────────────────────────

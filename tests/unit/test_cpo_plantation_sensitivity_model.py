@@ -13,17 +13,17 @@ from dataclasses import dataclass
 
 import pytest
 
-
 # ── Sensitivity Model (pure functions under test) ───────────────────────────
 
 
 @dataclass(frozen=True)
 class CommodityImpact:
     """Impact of a commodity price change on a stock."""
+
     symbol: str
     commodity: str
     sensitivity: float  # beta: stock return per 1% commodity return
-    impact_pct: float   # expected stock return for the given commodity move
+    impact_pct: float  # expected stock return for the given commodity move
 
 
 # Historical beta estimates for CPO sensitivity (stylized)

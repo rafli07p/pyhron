@@ -12,16 +12,11 @@ Usage:
 
 from __future__ import annotations
 
-import json
 import random
-import string
-import time
-from decimal import Decimal
 from uuid import uuid4
 
-from locust import HttpUser, between, events, tag, task, TaskSet
+from locust import HttpUser, between, events, tag, task
 from locust.runners import MasterRunner
-
 
 # =============================================================================
 # Configuration
@@ -48,25 +43,12 @@ API_KEY = "load-test-api-key"
 def on_test_start(environment, **kwargs):
     """Log test start."""
     if isinstance(environment.runner, MasterRunner):
-        print("Load test starting on master node.")
-    print(f"Target host: {environment.host}")
-    print(f"Symbols: {len(IDX_SYMBOLS)}, Strategies: {len(STRATEGIES)}")
+        pass
 
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **kwargs):
     """Print summary statistics."""
-    stats = environment.runner.stats
-    print("\n" + "=" * 70)
-    print("LOAD TEST SUMMARY")
-    print("=" * 70)
-    print(f"Total requests: {stats.total.num_requests}")
-    print(f"Failed requests: {stats.total.num_failures}")
-    print(f"Avg response time: {stats.total.avg_response_time:.2f}ms")
-    print(f"p95 response time: {stats.total.get_response_time_percentile(0.95):.2f}ms")
-    print(f"p99 response time: {stats.total.get_response_time_percentile(0.99):.2f}ms")
-    print(f"Requests/s: {stats.total.current_rps:.2f}")
-    print("=" * 70)
 
 
 # =============================================================================

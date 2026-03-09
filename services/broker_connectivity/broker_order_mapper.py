@@ -10,7 +10,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from shared.structured_json_logger import get_logger
 from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
     OrderSide,
@@ -18,6 +17,7 @@ from shared.proto_generated.equity_orders_pb2 import (
     TimeInForce,
 )
 from shared.proto_generated.equity_positions_pb2 import PositionRecord
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -52,14 +52,14 @@ ALPACA_TIF_REVERSE: dict[str, int] = {v: k for k, v in ALPACA_TIF_MAP.items()}
 # ── IDX FIX-specific mappings ────────────────────────────────────────────────
 
 IDX_FIX_SIDE_MAP: dict[int, str] = {
-    OrderSide.ORDER_SIDE_BUY: "1",   # FIX Side: Buy
+    OrderSide.ORDER_SIDE_BUY: "1",  # FIX Side: Buy
     OrderSide.ORDER_SIDE_SELL: "2",  # FIX Side: Sell
 }
 
 IDX_FIX_ORDER_TYPE_MAP: dict[int, str] = {
-    OrderType.ORDER_TYPE_MARKET: "1",      # FIX OrdType: Market
-    OrderType.ORDER_TYPE_LIMIT: "2",       # FIX OrdType: Limit
-    OrderType.ORDER_TYPE_STOP: "3",        # FIX OrdType: Stop
+    OrderType.ORDER_TYPE_MARKET: "1",  # FIX OrdType: Market
+    OrderType.ORDER_TYPE_LIMIT: "2",  # FIX OrdType: Limit
+    OrderType.ORDER_TYPE_STOP: "3",  # FIX OrdType: Stop
     OrderType.ORDER_TYPE_STOP_LIMIT: "4",  # FIX OrdType: Stop Limit
 }
 
@@ -254,9 +254,7 @@ class BrokerOrderMapper:
             "broker_name": "IDX",
         }
 
-    def to_broker(
-        self, order: OrderRequest, broker_name: str
-    ) -> BrokerOrderPayload:
+    def to_broker(self, order: OrderRequest, broker_name: str) -> BrokerOrderPayload:
         """Route an OrderRequest to the appropriate broker mapper.
 
         Args:
@@ -280,7 +278,7 @@ class BrokerOrderMapper:
                     "proto_tif": order.time_in_force,
                 },
             )
-        elif broker_upper == "IDX":
+        if broker_upper == "IDX":
             return BrokerOrderPayload(
                 broker_name="IDX",
                 payload=self.to_fix_new_order(order),
@@ -291,15 +289,9 @@ class BrokerOrderMapper:
                     "lot_size_valid": order.quantity % 100 == 0,
                 },
             )
-        else:
-            raise ValueError(
-                f"Unsupported broker: {broker_name}. "
-                f"Supported brokers: ALPACA, IDX"
-            )
+        raise ValueError(f"Unsupported broker: {broker_name}. Supported brokers: ALPACA, IDX")
 
-    def from_broker(
-        self, broker_data: dict[str, Any], broker_name: str
-    ) -> dict[str, Any]:
+    def from_broker(self, broker_data: dict[str, Any], broker_name: str) -> dict[str, Any]:
         """Route a broker response through the appropriate reverse mapper.
 
         Args:
@@ -329,10 +321,6 @@ class BrokerOrderMapper:
                 "status": broker_data.get("status", "unknown"),
                 "broker_name": "ALPACA",
             }
-        elif broker_upper == "IDX":
+        if broker_upper == "IDX":
             return self.from_fix_execution_report(broker_data)
-        else:
-            raise ValueError(
-                f"Unsupported broker: {broker_name}. "
-                f"Supported brokers: ALPACA, IDX"
-            )
+        raise ValueError(f"Unsupported broker: {broker_name}. Supported brokers: ALPACA, IDX")

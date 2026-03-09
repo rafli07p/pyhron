@@ -27,14 +27,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -132,9 +132,7 @@ class BPSStatisticsMacroIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="bps", symbol="MACRO", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="bps", symbol="MACRO", operation="inserted").inc(inserted)
 
         self._logger.info(
             "bps_ingestion_complete",
@@ -182,9 +180,7 @@ class BPSStatisticsMacroIngester:
 
         for item in data:
             try:
-                ref_date = self._parse_bps_period(
-                    item.get("tahun", ""), item.get("bulan", ""), spec["frequency"]
-                )
+                ref_date = self._parse_bps_period(item.get("tahun", ""), item.get("bulan", ""), spec["frequency"])
             except ValueError:
                 continue
 
@@ -291,16 +287,12 @@ class BPSStatisticsMacroIngester:
         if record["indicator"] not in BPS_VARIABLES:
             raise DataQualityError(f"Unknown BPS indicator: {record['indicator']}")
         if record["value"] is None:
-            raise DataQualityError(
-                f"Null value for {record['indicator']} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Null value for {record['indicator']} on {record['reference_date']}")
         # CPI index should be in [50, 500]
         if record["indicator"] == "cpi_headline":
             v = float(record["value"])
             if v < 50 or v > 500:
-                raise DataQualityError(
-                    f"CPI headline {v} outside plausible range [50, 500]"
-                )
+                raise DataQualityError(f"CPI headline {v} outside plausible range [50, 500]")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

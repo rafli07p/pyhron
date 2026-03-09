@@ -193,7 +193,7 @@ class RiskLimitEngine:
 
         if not result.passed:
             self._log.warning("position_limit_breach", tenant_id=tenant_id, symbol=symbol, msg=result.message)
-            breaker.call(lambda: (_ for _ in ()).throw(RuntimeError("limit breach")))  # noqa: B023
+            breaker.call(lambda: (_ for _ in ()).throw(RuntimeError("limit breach")))
         return result
 
     def check_order_size_limit(
@@ -424,7 +424,7 @@ class RiskLimitEngine:
 
 
 __all__ = [
-    "TenantRiskLimits",
     "LimitCheckResult",
     "RiskLimitEngine",
+    "TenantRiskLimits",
 ]

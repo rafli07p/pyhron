@@ -31,18 +31,14 @@ class _InMemoryStore:
     def __init__(self) -> None:
         self._counters: dict[str, list[float]] = {}
 
-    def is_rate_limited(
-        self, key: str, limit: int, window: int
-    ) -> tuple[bool, int, int]:
+    def is_rate_limited(self, key: str, limit: int, window: int) -> tuple[bool, int, int]:
         """Check and increment counter. Returns (limited, remaining, reset_after)."""
         now = time.monotonic()
         if key not in self._counters:
             self._counters[key] = []
 
         # Prune expired entries
-        self._counters[key] = [
-            ts for ts in self._counters[key] if now - ts < window
-        ]
+        self._counters[key] = [ts for ts in self._counters[key] if now - ts < window]
         count = len(self._counters[key])
 
         if count >= limit:
@@ -63,9 +59,7 @@ class _RedisStore:
     def __init__(self, redis_client: Any) -> None:
         self._redis = redis_client
 
-    async def is_rate_limited(
-        self, key: str, limit: int, window: int
-    ) -> tuple[bool, int, int]:
+    async def is_rate_limited(self, key: str, limit: int, window: int) -> tuple[bool, int, int]:
         """Atomic increment with TTL-based expiration in Redis."""
         redis_key = f"rate_limit:{key}"
         current = await self._redis.incr(redis_key)
@@ -107,9 +101,7 @@ class PerIPRateLimiterMiddleware(BaseHTTPMiddleware):
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "unknown"
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         client_ip = self._get_client_ip(request)
 
         if self._async:

@@ -6,12 +6,15 @@ with fundamental and technical filters.
 
 from __future__ import annotations
 
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/screener", tags=["screener"])

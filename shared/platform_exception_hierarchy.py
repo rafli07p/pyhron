@@ -147,9 +147,7 @@ class OrderError(PyhronError):
 class InvalidTransitionError(OrderError):
     """Invalid order state transition."""
 
-    def __init__(
-        self, message: str, *, from_status: str = "", to_status: str = ""
-    ) -> None:
+    def __init__(self, message: str, *, from_status: str = "", to_status: str = "") -> None:
         super().__init__(message)
         self.from_status = from_status
         self.to_status = to_status

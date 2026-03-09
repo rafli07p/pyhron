@@ -21,21 +21,22 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 from uuid import UUID
 
 import pybreaker
 import structlog
 
+from services.execution.exchange_connectors import BaseConnector
 from shared.schemas.order_events import (
     OrderFill,
     OrderRequest,
     OrderStatusEnum,
 )
-from services.execution.exchange_connectors import BaseConnector
 
 logger = structlog.get_logger(__name__)
 
@@ -97,8 +98,8 @@ class ExecutionEngine:
         connectors: dict[str, BaseConnector],
         default_connector: str = "alpaca",
         max_concurrent: int = 10,
-        on_fill: Optional[Callable[[OrderFill], Any]] = None,
-        on_rejection: Optional[Callable[[OrderRequest, str], Any]] = None,
+        on_fill: Callable[[OrderFill], Any] | None = None,
+        on_rejection: Callable[[OrderRequest, str], Any] | None = None,
     ) -> None:
         self._connectors = connectors
         self._default_connector = default_connector
@@ -109,7 +110,7 @@ class ExecutionEngine:
         self._queue: asyncio.PriorityQueue[_PrioritisedOrder] = asyncio.PriorityQueue()
         self._sequence = 0
         self._running = False
-        self._worker_task: Optional[asyncio.Task[None]] = None
+        self._worker_task: asyncio.Task[None] | None = None
 
         # Metrics
         self._total_orders = 0
@@ -144,7 +145,7 @@ class ExecutionEngine:
             total_rejections=self._total_rejections,
         )
 
-    async def execute_order(self, order: OrderRequest, *, connector_name: Optional[str] = None) -> OrderFill:
+    async def execute_order(self, order: OrderRequest, *, connector_name: str | None = None) -> OrderFill:
         """Submit a single order immediately (bypass queue).
 
         This is the fast path -- the order is sent directly to the
@@ -203,7 +204,7 @@ class ExecutionEngine:
             await self._handle_rejection(order, reason)
             raise
 
-    async def enqueue_order(self, order: OrderRequest, *, connector_name: Optional[str] = None) -> None:
+    async def enqueue_order(self, order: OrderRequest, *, connector_name: str | None = None) -> None:
         """Add an order to the priority queue for deferred execution."""
         self._sequence += 1
         item = _PrioritisedOrder(
@@ -229,7 +230,7 @@ class ExecutionEngine:
                 # Block until at least one order arrives
                 first = await asyncio.wait_for(self._queue.get(), timeout=1.0)
                 batch.append(first)
-            except (asyncio.TimeoutError, TimeoutError):
+            except TimeoutError:
                 continue
 
             # Grab up to max_concurrent - 1 additional items without blocking

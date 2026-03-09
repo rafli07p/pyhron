@@ -19,9 +19,8 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
 import numpy as np
 from scipy.optimize import minimize
@@ -81,13 +80,9 @@ class IndonesiaYieldCurveCalculator:
         output_tenors: Tenors at which to evaluate the fitted curve.
     """
 
-    _DEFAULT_TENORS: list[float] = [
-        0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0
-    ]
+    _DEFAULT_TENORS: list[float] = [0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0]
 
-    def __init__(
-        self, output_tenors: list[float] | None = None
-    ) -> None:
+    def __init__(self, output_tenors: list[float] | None = None) -> None:
         self._output_tenors = output_tenors or list(self._DEFAULT_TENORS)
         logger.info(
             "yield_curve_calculator_initialised",
@@ -97,8 +92,12 @@ class IndonesiaYieldCurveCalculator:
     @staticmethod
     def _nss_yield(
         t: np.ndarray,
-        b0: float, b1: float, b2: float, b3: float,
-        t1: float, t2: float,
+        b0: float,
+        b1: float,
+        b2: float,
+        b3: float,
+        t1: float,
+        t2: float,
     ) -> np.ndarray:
         """Evaluate NSS model at given tenors.
 
@@ -121,9 +120,7 @@ class IndonesiaYieldCurveCalculator:
 
         return b0 + b1 * factor1 + b2 * factor2 + b3 * factor3
 
-    def fit_curve(
-        self, observed: list[ObservedYield]
-    ) -> YieldCurveSnapshot:
+    def fit_curve(self, observed: list[ObservedYield]) -> YieldCurveSnapshot:
         """Fit NSS model to observed benchmark yields.
 
         Args:
@@ -164,7 +161,7 @@ class IndonesiaYieldCurveCalculator:
             shape = "INVERTED"
 
         snapshot = YieldCurveSnapshot(
-            fitted_at=datetime.now(timezone.utc),
+            fitted_at=datetime.now(UTC),
             nss_params={"b0": b0, "b1": b1, "b2": b2, "b3": b3, "t1": t1, "t2": t2},
             tenors=self._output_tenors,
             fitted_yields=[round(float(y), 4) for y in fitted_yields],
@@ -181,9 +178,7 @@ class IndonesiaYieldCurveCalculator:
         )
         return snapshot
 
-    def interpolate_yield(
-        self, tenor: float, params: dict[str, float]
-    ) -> float:
+    def interpolate_yield(self, tenor: float, params: dict[str, float]) -> float:
         """Interpolate yield at arbitrary tenor using fitted NSS params.
 
         Args:
@@ -195,7 +190,12 @@ class IndonesiaYieldCurveCalculator:
         """
         t = np.array([tenor])
         y = self._nss_yield(
-            t, params["b0"], params["b1"], params["b2"],
-            params["b3"], params["t1"], params["t2"],
+            t,
+            params["b0"],
+            params["b1"],
+            params["b2"],
+            params["b3"],
+            params["t1"],
+            params["t2"],
         )
         return float(y[0])

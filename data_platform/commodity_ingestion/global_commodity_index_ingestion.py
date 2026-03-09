@@ -26,14 +26,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -124,9 +124,7 @@ class GlobalCommodityIndexIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="eodhd", symbol="BCOM", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="eodhd", symbol="BCOM", operation="inserted").inc(inserted)
 
         self._logger.info(
             "bcom_ingestion_complete",
@@ -138,9 +136,7 @@ class GlobalCommodityIndexIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_index(
-        self, indicator: str, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_index(self, indicator: str, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch a single BCOM index from EODHD.
 
         Args:
@@ -208,9 +204,7 @@ class GlobalCommodityIndexIngester:
         """
         v = float(record["value"])
         if v <= 0:
-            raise DataQualityError(
-                f"Non-positive index value {v} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Non-positive index value {v} on {record['reference_date']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

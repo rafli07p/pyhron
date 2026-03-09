@@ -27,14 +27,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -131,9 +131,7 @@ class ESDMEnergyProductionIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="esdm", symbol="ENERGY", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="esdm", symbol="ENERGY", operation="inserted").inc(inserted)
 
         self._logger.info(
             "esdm_ingestion_complete",
@@ -288,9 +286,18 @@ class ESDMEnergyProductionIngester:
         """
         records: list[dict[str, Any]] = []
         month_map = {
-            "januari": 1, "februari": 2, "maret": 3, "april": 4,
-            "mei": 5, "juni": 6, "juli": 7, "agustus": 8,
-            "september": 9, "oktober": 10, "november": 11, "desember": 12,
+            "januari": 1,
+            "februari": 2,
+            "maret": 3,
+            "april": 4,
+            "mei": 5,
+            "juni": 6,
+            "juli": 7,
+            "agustus": 8,
+            "september": 9,
+            "oktober": 10,
+            "november": 11,
+            "desember": 12,
         }
 
         # Pattern: month year ... USD value
@@ -396,9 +403,7 @@ class ESDMEnergyProductionIngester:
         """
         records: list[dict[str, Any]] = []
         # Simplified: real implementation would parse structured tables
-        self._logger.info(
-            "lifting_html_parsing", content_length=len(html)
-        )
+        self._logger.info("lifting_html_parsing", content_length=len(html))
         return records
 
     # ── Validation ───────────────────────────────────────────────────────
@@ -410,24 +415,17 @@ class ESDMEnergyProductionIngester:
             DataQualityError: If validation fails.
         """
         if record["value"] is None or record["value"] <= 0:
-            raise DataQualityError(
-                f"Non-positive value for {record['indicator']} "
-                f"on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Non-positive value for {record['indicator']} on {record['reference_date']}")
         # HBA coal price: historically between 40 and 500 USD/ton
         if record["indicator"] == "hba_coal_price":
             v = float(record["value"])
             if v < 20 or v > 600:
-                raise DataQualityError(
-                    f"HBA coal price {v} outside plausible range [20, 600]"
-                )
+                raise DataQualityError(f"HBA coal price {v} outside plausible range [20, 600]")
         # ICP crude: historically between 10 and 200 USD/barrel
         if record["indicator"] == "icp_crude_price":
             v = float(record["value"])
             if v < 5 or v > 250:
-                raise DataQualityError(
-                    f"ICP crude price {v} outside plausible range [5, 250]"
-                )
+                raise DataQualityError(f"ICP crude price {v} outside plausible range [5, 250]")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

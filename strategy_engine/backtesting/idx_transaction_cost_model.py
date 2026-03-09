@@ -17,14 +17,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
 
-class TradeSide(str, Enum):
+class TradeSide(StrEnum):
     """Trade side enumeration."""
 
     BUY = "buy"

@@ -6,13 +6,16 @@ and circuit breaker administration.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/trading", tags=["trading"])
@@ -126,5 +129,5 @@ async def clear_circuit_breaker(body: CircuitBreakerClearRequest) -> dict[str, s
     return {
         "status": "cleared",
         "strategy_id": body.strategy_id,
-        "cleared_at": datetime.now(tz=timezone.utc).isoformat(),
+        "cleared_at": datetime.now(tz=UTC).isoformat(),
     }

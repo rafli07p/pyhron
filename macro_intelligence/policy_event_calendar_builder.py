@@ -19,16 +19,15 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     """Calendar event type classification."""
 
     BI_RATE_DECISION = "BI_RATE_DECISION"
@@ -42,7 +41,7 @@ class EventType(str, Enum):
     BOND_AUCTION = "BOND_AUCTION"
 
 
-class EventImpact(str, Enum):
+class EventImpact(StrEnum):
     """Expected market impact level."""
 
     HIGH = "HIGH"
@@ -136,7 +135,7 @@ class PolicyEventCalendarBuilder:
         high_count = sum(1 for e in events if e.impact == EventImpact.HIGH)
 
         calendar = PolicyEventCalendar(
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             start_date=start_date,
             end_date=end_date,
             events=events,
@@ -151,9 +150,7 @@ class PolicyEventCalendarBuilder:
         return calendar
 
     @staticmethod
-    def _get_bi_rate_schedule(
-        start: datetime, end: datetime
-    ) -> list[CalendarEvent]:
+    def _get_bi_rate_schedule(start: datetime, end: datetime) -> list[CalendarEvent]:
         """Generate BI rate decision schedule (3rd-4th week of each month)."""
         events: list[CalendarEvent] = []
         current = start.replace(day=20, hour=7, minute=0, second=0, microsecond=0)
@@ -177,9 +174,7 @@ class PolicyEventCalendarBuilder:
         return events
 
     @staticmethod
-    def _get_bps_release_schedule(
-        start: datetime, end: datetime
-    ) -> list[CalendarEvent]:
+    def _get_bps_release_schedule(start: datetime, end: datetime) -> list[CalendarEvent]:
         """Generate BPS statistical release schedule."""
         events: list[CalendarEvent] = []
         current = start.replace(day=1, hour=3, minute=0, second=0, microsecond=0)
@@ -203,9 +198,7 @@ class PolicyEventCalendarBuilder:
         return events
 
     @staticmethod
-    def _get_earnings_season(
-        start: datetime, end: datetime
-    ) -> list[CalendarEvent]:
+    def _get_earnings_season(start: datetime, end: datetime) -> list[CalendarEvent]:
         """Generate IDX earnings season markers (Q1-Q4)."""
         quarters = [
             (1, 31, "Q4 Earnings Season (Annual Reports)"),
@@ -216,7 +209,7 @@ class PolicyEventCalendarBuilder:
         events: list[CalendarEvent] = []
         for year in range(start.year, end.year + 1):
             for month, day, title in quarters:
-                dt = datetime(year, month, day, tzinfo=timezone.utc)
+                dt = datetime(year, month, day, tzinfo=UTC)
                 if start <= dt <= end:
                     events.append(
                         CalendarEvent(
@@ -231,9 +224,7 @@ class PolicyEventCalendarBuilder:
         return events
 
     @staticmethod
-    def _get_bond_auction_schedule(
-        start: datetime, end: datetime
-    ) -> list[CalendarEvent]:
+    def _get_bond_auction_schedule(start: datetime, end: datetime) -> list[CalendarEvent]:
         """Generate SUN/SBSN bond auction schedule (bi-weekly Tuesday)."""
         events: list[CalendarEvent] = []
         current = start
@@ -243,13 +234,14 @@ class PolicyEventCalendarBuilder:
                     CalendarEvent(
                         event_type=EventType.BOND_AUCTION,
                         title=f"SUN Bond Auction — {current.strftime('%d %B %Y')}",
-                        scheduled_at=current.replace(hour=4, tzinfo=timezone.utc),
+                        scheduled_at=current.replace(hour=4, tzinfo=UTC),
                         impact=EventImpact.MEDIUM,
                         affected_assets=["SUN", "SBSN", "Fixed income"],
                         description="Government bond auction (conventional or sukuk)",
                     )
                 )
             from datetime import timedelta
+
             current += timedelta(days=1)
 
         return events

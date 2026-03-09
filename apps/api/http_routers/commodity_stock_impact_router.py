@@ -6,8 +6,7 @@ providing sensitivity matrices, impact alerts, and correlation data.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -27,9 +26,7 @@ class StockImpact(BaseModel):
     sector: str | None = None
     correlation: float = Field(description="Correlation coefficient with commodity")
     beta: float = Field(description="Sensitivity to commodity price changes")
-    revenue_exposure_pct: float | None = Field(
-        None, description="Estimated revenue exposure to commodity"
-    )
+    revenue_exposure_pct: float | None = Field(None, description="Estimated revenue exposure to commodity")
 
 
 class CommodityImpactAnalysis(BaseModel):
@@ -37,7 +34,7 @@ class CommodityImpactAnalysis(BaseModel):
     commodity_name: str
     change_pct_30d: float | None = None
     impacted_stocks: list[StockImpact]
-    analysis_date: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    analysis_date: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class ImpactAlert(BaseModel):
@@ -63,7 +60,7 @@ class SensitivityMatrix(BaseModel):
     commodities: list[str]
     stocks: list[str]
     cells: list[SensitivityCell]
-    computed_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    computed_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────

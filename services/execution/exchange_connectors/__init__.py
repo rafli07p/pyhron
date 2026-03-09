@@ -14,7 +14,7 @@ from __future__ import annotations
 import asyncio
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from decimal import Decimal
 from typing import Any, Optional
 from uuid import uuid4
@@ -236,7 +236,7 @@ class AlpacaConnector(BaseConnector):
                 leaves_qty=leaves,
                 status=status,
                 exchange="ALPACA",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
 
     @retry(
@@ -319,7 +319,7 @@ class CCXTConnector(BaseConnector):
         ``CCXT_SANDBOX``        -- ``"true"`` to enable sandbox / testnet mode
     """
 
-    def __init__(self, exchange_id: Optional[str] = None) -> None:
+    def __init__(self, exchange_id: str | None = None) -> None:
         super().__init__(name="ccxt")
         self._exchange_id = exchange_id or os.environ.get("CCXT_EXCHANGE", "binance")
         self._exchange: Any = None
@@ -428,7 +428,7 @@ class CCXTConnector(BaseConnector):
                 status=status,
                 exchange=self._exchange_id.upper(),
                 commission=fee,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
 
     @retry(

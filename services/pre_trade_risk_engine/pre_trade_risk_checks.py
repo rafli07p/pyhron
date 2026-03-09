@@ -9,12 +9,12 @@ Design constraint (for Rust migration):
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
-from google.protobuf.timestamp_pb2 import Timestamp
-
-from shared.proto_generated.equity_orders_pb2 import OrderRequest
-from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
+if TYPE_CHECKING:
+    from shared.proto_generated.equity_orders_pb2 import OrderRequest
+    from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
 
 
 @dataclass(frozen=True)
@@ -61,10 +61,7 @@ def check_lot_size_constraint(
         return RiskCheckResult(
             passed=False,
             check_name="lot_size",
-            reason=(
-                f"Quantity {order.quantity} is not a multiple of lot_size "
-                f"{lot_size}. Nearest valid: {nearest}"
-            ),
+            reason=(f"Quantity {order.quantity} is not a multiple of lot_size {lot_size}. Nearest valid: {nearest}"),
             adjusted_quantity=nearest if nearest > 0 else None,
         )
     return RiskCheckResult(passed=True, check_name="lot_size")
@@ -135,10 +132,7 @@ def check_max_position_size(
         return RiskCheckResult(
             passed=False,
             check_name="max_position_size",
-            reason=(
-                f"Position would be {position_pct:.1%} of portfolio "
-                f"(limit: {max_pct:.1%})"
-            ),
+            reason=(f"Position would be {position_pct:.1%} of portfolio (limit: {max_pct:.1%})"),
             adjusted_quantity=max(0, allowed_additional),
         )
 
@@ -189,10 +183,7 @@ def check_sector_concentration(
         return RiskCheckResult(
             passed=False,
             check_name="sector_concentration",
-            reason=(
-                f"Sector '{target_sector}' would be {sector_pct:.1%} of portfolio "
-                f"(limit: {max_pct:.1%})"
-            ),
+            reason=(f"Sector '{target_sector}' would be {sector_pct:.1%} of portfolio (limit: {max_pct:.1%})"),
         )
     return RiskCheckResult(passed=True, check_name="sector_concentration")
 
@@ -225,10 +216,7 @@ def check_daily_loss_limit(
         return RiskCheckResult(
             passed=False,
             check_name="daily_loss_limit",
-            reason=(
-                f"Daily loss {daily_pnl_pct:.2%} exceeds limit "
-                f"-{daily_loss_limit_pct:.2%}. Trading halted."
-            ),
+            reason=(f"Daily loss {daily_pnl_pct:.2%} exceeds limit -{daily_loss_limit_pct:.2%}. Trading halted."),
         )
     return RiskCheckResult(passed=True, check_name="daily_loss_limit")
 
@@ -263,10 +251,7 @@ def check_buying_power_t2(
         return RiskCheckResult(
             passed=False,
             check_name="buying_power_t2",
-            reason=(
-                f"Required cash {required_cash:,.0f} exceeds available "
-                f"T+2 buying power {available_cash:,.0f}"
-            ),
+            reason=(f"Required cash {required_cash:,.0f} exceeds available T+2 buying power {available_cash:,.0f}"),
         )
     return RiskCheckResult(passed=True, check_name="buying_power_t2")
 
@@ -316,8 +301,8 @@ def check_signal_staleness(
             reason="Order has no signal_time -- cannot verify freshness",
         )
 
-    signal_dt = order.signal_time.ToDatetime().replace(tzinfo=timezone.utc)
-    now = datetime.now(tz=timezone.utc)
+    signal_dt = order.signal_time.ToDatetime().replace(tzinfo=UTC)
+    now = datetime.now(tz=UTC)
     age = (now - signal_dt).total_seconds()
 
     if age > max_age_seconds:
@@ -367,9 +352,6 @@ def check_portfolio_var(
         return RiskCheckResult(
             passed=False,
             check_name="portfolio_var",
-            reason=(
-                f"Estimated portfolio VaR {estimated_var_pct:.2%} would exceed "
-                f"limit {var_limit_pct:.2%}"
-            ),
+            reason=(f"Estimated portfolio VaR {estimated_var_pct:.2%} would exceed limit {var_limit_pct:.2%}"),
         )
     return RiskCheckResult(passed=True, check_name="portfolio_var")

@@ -19,14 +19,17 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from typing import AsyncIterator, Generic, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import KafkaError
 from google.protobuf.message import Message
 
-from shared.platform_exception_hierarchy import ConsumerError, DeserializationError, ProducerError
+from shared.platform_exception_hierarchy import ConsumerError, ProducerError
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 logger = get_logger(__name__)
 ProtoT = TypeVar("ProtoT", bound=Message)
@@ -183,9 +186,7 @@ class PyhronProducer:
                         error=str(exc),
                         attempts=attempt,
                     )
-                    raise ProducerError(
-                        f"Failed to send to {topic} after {max_retries} attempts: {exc}"
-                    ) from exc
+                    raise ProducerError(f"Failed to send to {topic} after {max_retries} attempts: {exc}") from exc
                 wait = 0.1 * (2 ** (attempt - 1))
                 logger.warning(
                     "kafka_send_retry",
@@ -196,7 +197,7 @@ class PyhronProducer:
                 await asyncio.sleep(wait)
 
 
-class PyhronConsumer(Generic[ProtoT]):
+class PyhronConsumer[ProtoT: Message]:
     """Type-safe Kafka consumer for Protobuf messages.
 
     Usage::

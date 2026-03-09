@@ -19,8 +19,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
 
 from shared.structured_json_logger import get_logger
 
@@ -49,7 +48,7 @@ class MacroIndicator:
     previous_value: float | None = None
     yoy_change: float | None = None
     source: str = "BPS"
-    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
@@ -93,18 +92,14 @@ class IndonesiaEconomicDashboardBuilder:
         "pmi_manufacturing": 0.10,
     }
 
-    def __init__(
-        self, indicator_weights: dict[str, float] | None = None
-    ) -> None:
+    def __init__(self, indicator_weights: dict[str, float] | None = None) -> None:
         self._weights = indicator_weights or dict(self._DEFAULT_WEIGHTS)
         logger.info(
             "dashboard_builder_initialised",
             num_indicators=len(self._weights),
         )
 
-    async def build_dashboard(
-        self, indicators: dict[str, MacroIndicator] | None = None
-    ) -> EconomicDashboard:
+    async def build_dashboard(self, indicators: dict[str, MacroIndicator] | None = None) -> EconomicDashboard:
         """Build the macroeconomic dashboard from latest indicators.
 
         Args:
@@ -122,7 +117,7 @@ class IndonesiaEconomicDashboardBuilder:
         risks = self._identify_risks(indicators)
 
         dashboard = EconomicDashboard(
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             indicators=indicators,
             summary_score=round(score, 4),
             regime=regime,
@@ -137,9 +132,7 @@ class IndonesiaEconomicDashboardBuilder:
         )
         return dashboard
 
-    def _compute_composite_score(
-        self, indicators: dict[str, MacroIndicator]
-    ) -> float:
+    def _compute_composite_score(self, indicators: dict[str, MacroIndicator]) -> float:
         """Compute weighted composite macro health score.
 
         Normalises each indicator against reference values and applies
@@ -183,7 +176,7 @@ class IndonesiaEconomicDashboardBuilder:
         """Classify macro regime from composite score."""
         if score >= 0.3:
             return "EXPANSIONARY"
-        elif score >= -0.3:
+        if score >= -0.3:
             return "NEUTRAL"
         return "CONTRACTIONARY"
 

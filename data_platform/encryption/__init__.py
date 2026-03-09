@@ -11,13 +11,13 @@ import base64
 import hashlib
 import os
 import secrets
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 import structlog
-from cryptography.fernet import Fernet, MultiFernet, InvalidToken
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 logger = structlog.get_logger(__name__)
 
@@ -57,9 +57,9 @@ class EncryptionService:
 
     def __init__(
         self,
-        encryption_key: Optional[str | bytes] = None,
+        encryption_key: str | bytes | None = None,
         tenant_id: str = "default",
-        previous_keys: Optional[list[str | bytes]] = None,
+        previous_keys: list[str | bytes] | None = None,
     ) -> None:
         self.tenant_id = tenant_id
         self._log = logger.bind(tenant_id=tenant_id, component="EncryptionService")
@@ -280,7 +280,7 @@ class EncryptionService:
         self._log.info(
             "key_rotated",
             previous_key_count=len(self._previous_keys),
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
         )
         return new_key_bytes.decode()
 
@@ -297,7 +297,7 @@ class EncryptionService:
 
 
 __all__ = [
-    "EncryptionService",
     "EncryptionError",
+    "EncryptionService",
     "KeyManagementError",
 ]

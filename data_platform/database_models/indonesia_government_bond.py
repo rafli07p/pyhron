@@ -7,14 +7,17 @@ sovereign bonds including FR (fixed rate) and PBS (sukuk) series.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IndonesiaGovernmentBond(Base):
@@ -42,9 +45,7 @@ class IndonesiaGovernmentBond(Base):
 
     __tablename__ = "indonesia_government_bonds"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     series_code: Mapped[str] = mapped_column(String(30), nullable=False)
     instrument_type: Mapped[str] = mapped_column(String(30), nullable=False)
     coupon_rate: Mapped[Decimal | None] = mapped_column(Numeric(6, 4))
@@ -60,9 +61,7 @@ class IndonesiaGovernmentBond(Base):
     convexity: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     daily_volume_idr_bn: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     price_date: Mapped[date] = mapped_column(Date, nullable=False)
-    ingested_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("series_code", "price_date"),

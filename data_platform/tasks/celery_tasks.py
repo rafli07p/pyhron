@@ -113,6 +113,7 @@ def compute_daily_ratios(self):
 
         async def _compute():
             from data_platform.ingestion.idx_eod import IDX_LQ45_SYMBOLS
+
             for sym in IDX_LQ45_SYMBOLS:
                 try:
                     await ingester._compute_ratios(sym)

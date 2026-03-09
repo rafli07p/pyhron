@@ -9,12 +9,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 
@@ -45,7 +47,9 @@ class ManagementTrackRecordScorer:
     }
 
     async def score_management(
-        self, session: AsyncSession, symbol: str,
+        self,
+        session: AsyncSession,
+        symbol: str,
     ) -> list[ManagementScore]:
         """Score current management team for a company.
 
@@ -87,18 +91,20 @@ class ManagementTrackRecordScorer:
 
             grade = self._score_to_grade(overall)
 
-            scores.append(ManagementScore(
-                symbol=symbol,
-                executive_name=row[0],
-                role=row[1],
-                tenure_start=tenure_start,
-                tenure_years=round(tenure_years, 1),
-                financial_score=financial_score,
-                governance_score=governance_score,
-                stock_performance_score=stock_score,
-                overall_score=round(overall, 1),
-                grade=grade,
-            ))
+            scores.append(
+                ManagementScore(
+                    symbol=symbol,
+                    executive_name=row[0],
+                    role=row[1],
+                    tenure_start=tenure_start,
+                    tenure_years=round(tenure_years, 1),
+                    financial_score=financial_score,
+                    governance_score=governance_score,
+                    stock_performance_score=stock_score,
+                    overall_score=round(overall, 1),
+                    grade=grade,
+                )
+            )
 
         logger.info("management_scored", symbol=symbol, executives=len(scores))
         return scores
@@ -108,10 +114,10 @@ class ManagementTrackRecordScorer:
         """Convert numeric score to letter grade."""
         if score >= 85:
             return "A"
-        elif score >= 70:
+        if score >= 70:
             return "B"
-        elif score >= 55:
+        if score >= 55:
             return "C"
-        elif score >= 40:
+        if score >= 40:
             return "D"
         return "F"

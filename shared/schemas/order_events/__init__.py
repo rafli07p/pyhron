@@ -15,7 +15,6 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
@@ -88,7 +87,7 @@ class OrderEventBase(BaseModel):
     symbol: str = Field(..., min_length=1, max_length=20, description="Instrument symbol")
     side: OrderSide = Field(..., description="BUY or SELL")
     qty: Decimal = Field(..., gt=0, description="Order quantity")
-    price: Optional[Decimal] = Field(default=None, ge=0, description="Limit / stop price (None for market orders)")
+    price: Decimal | None = Field(default=None, ge=0, description="Limit / stop price (None for market orders)")
     order_type: OrderType = Field(default=OrderType.LIMIT, description="Order type")
     tenant_id: str = Field(..., min_length=1, max_length=64, description="Tenant identifier")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Event timestamp (UTC)")
@@ -102,14 +101,14 @@ class OrderRequest(OrderEventBase):
     """
 
     time_in_force: TimeInForce = Field(default=TimeInForce.DAY, description="Time-in-force instruction")
-    account_id: Optional[str] = Field(default=None, max_length=64, description="Trading account / sub-account")
-    strategy_id: Optional[str] = Field(default=None, max_length=64, description="Originating strategy identifier")
-    stop_price: Optional[Decimal] = Field(default=None, ge=0, description="Stop trigger price (for STOP / STOP_LIMIT)")
-    display_qty: Optional[Decimal] = Field(default=None, ge=0, description="Display quantity for iceberg orders")
-    client_order_id: Optional[str] = Field(default=None, max_length=64, description="Client-assigned order reference")
+    account_id: str | None = Field(default=None, max_length=64, description="Trading account / sub-account")
+    strategy_id: str | None = Field(default=None, max_length=64, description="Originating strategy identifier")
+    stop_price: Decimal | None = Field(default=None, ge=0, description="Stop trigger price (for STOP / STOP_LIMIT)")
+    display_qty: Decimal | None = Field(default=None, ge=0, description="Display quantity for iceberg orders")
+    client_order_id: str | None = Field(default=None, max_length=64, description="Client-assigned order reference")
 
     @model_validator(mode="after")
-    def _validate_price_for_type(self) -> "OrderRequest":
+    def _validate_price_for_type(self) -> OrderRequest:
         if self.order_type == OrderType.LIMIT and self.price is None:
             raise ValueError("Limit orders require a price")
         if self.order_type in (OrderType.STOP, OrderType.STOP_LIMIT) and self.stop_price is None:
@@ -133,15 +132,15 @@ class OrderFill(OrderEventBase):
     leaves_qty: Decimal = Field(..., ge=0, description="Remaining open quantity")
     status: OrderStatusEnum = Field(default=OrderStatusEnum.PARTIALLY_FILLED, description="Order status after fill")
     commission: Decimal = Field(default=Decimal("0"), ge=0, description="Commission charged for this fill")
-    exchange: Optional[str] = Field(default=None, max_length=20, description="Execution venue")
-    liquidity_flag: Optional[str] = Field(
+    exchange: str | None = Field(default=None, max_length=20, description="Execution venue")
+    liquidity_flag: str | None = Field(
         default=None,
         pattern=r"^(ADD|REMOVE|ROUTED)$",
         description="Liquidity indicator",
     )
 
     @model_validator(mode="after")
-    def _validate_fill_quantities(self) -> "OrderFill":
+    def _validate_fill_quantities(self) -> OrderFill:
         if self.cumulative_qty + self.leaves_qty != self.qty:
             raise ValueError("cumulative_qty + leaves_qty must equal qty")
         if self.leaves_qty == 0 and self.status != OrderStatusEnum.FILLED:
@@ -160,7 +159,7 @@ class OrderCancel(OrderEventBase):
     status: OrderStatusEnum = Field(default=OrderStatusEnum.CANCELLED, description="Order status (always CANCELLED)")
     cancelled_qty: Decimal = Field(..., ge=0, description="Quantity that was cancelled")
     filled_qty: Decimal = Field(default=Decimal("0"), ge=0, description="Quantity already filled before cancel")
-    detail: Optional[str] = Field(default=None, max_length=512, description="Human-readable cancellation detail")
+    detail: str | None = Field(default=None, max_length=512, description="Human-readable cancellation detail")
 
 
 class OrderStatus(OrderEventBase):
@@ -173,20 +172,20 @@ class OrderStatus(OrderEventBase):
     status: OrderStatusEnum = Field(..., description="Current order status")
     filled_qty: Decimal = Field(default=Decimal("0"), ge=0, description="Total filled quantity")
     remaining_qty: Decimal = Field(..., ge=0, description="Remaining open quantity")
-    avg_fill_price: Optional[Decimal] = Field(default=None, ge=0, description="Volume-weighted average fill price")
+    avg_fill_price: Decimal | None = Field(default=None, ge=0, description="Volume-weighted average fill price")
     commission_total: Decimal = Field(default=Decimal("0"), ge=0, description="Total commissions paid")
     last_updated: datetime = Field(default_factory=datetime.utcnow, description="Last status change time")
 
 
 __all__ = [
-    "OrderSide",
-    "OrderType",
-    "OrderStatusEnum",
-    "TimeInForce",
     "CancelReason",
-    "OrderEventBase",
-    "OrderRequest",
-    "OrderFill",
     "OrderCancel",
+    "OrderEventBase",
+    "OrderFill",
+    "OrderRequest",
+    "OrderSide",
     "OrderStatus",
+    "OrderStatusEnum",
+    "OrderType",
+    "TimeInForce",
 ]

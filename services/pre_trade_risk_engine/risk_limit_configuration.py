@@ -7,8 +7,7 @@ loaded from the database or configuration.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 from sqlalchemy import text
 
@@ -123,9 +122,15 @@ class RiskLimitConfiguration:
                 for row in rows:
                     limits = StrategyRiskLimits(
                         strategy_id=row[0],
-                        max_position_size_pct=float(row[1]) if row[1] is not None else self._default_limits.max_position_size_pct,
-                        max_sector_concentration_pct=float(row[2]) if row[2] is not None else self._default_limits.max_sector_concentration_pct,
-                        daily_loss_limit_pct=float(row[3]) if row[3] is not None else self._default_limits.daily_loss_limit_pct,
+                        max_position_size_pct=float(row[1])
+                        if row[1] is not None
+                        else self._default_limits.max_position_size_pct,
+                        max_sector_concentration_pct=float(row[2])
+                        if row[2] is not None
+                        else self._default_limits.max_sector_concentration_pct,
+                        daily_loss_limit_pct=float(row[3])
+                        if row[3] is not None
+                        else self._default_limits.daily_loss_limit_pct,
                         max_var_95_pct=float(row[4]) if row[4] is not None else self._default_limits.max_var_95_pct,
                         idx_lot_size=int(row[5]) if row[5] is not None else self._default_limits.idx_lot_size,
                         max_order_value=float(row[6]) if row[6] is not None else 0.0,

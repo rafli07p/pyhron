@@ -13,7 +13,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any, Optional
 from urllib.parse import urljoin
 
 import httpx
@@ -50,7 +51,7 @@ class DataClient:
         self,
         base_url: str = _DEFAULT_BASE_URL,
         ws_url: str = _DEFAULT_WS_URL,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         tenant_id: str = "default",
         timeout: float = 30.0,
     ) -> None:
@@ -59,7 +60,7 @@ class DataClient:
         self._api_key = api_key
         self._tenant_id = tenant_id
         self._timeout = timeout
-        self._http_client: Optional[httpx.AsyncClient] = None
+        self._http_client: httpx.AsyncClient | None = None
         self._ws_connections: dict[str, Any] = {}
         self._subscriptions: dict[str, Callable[..., Any]] = {}
         logger.info("DataClient initialized (base_url=%s, tenant_id=%s)", base_url, tenant_id)
@@ -162,7 +163,7 @@ class DataClient:
         self,
         symbol: str,
         channel: str = "quotes",
-        callback: Optional[Callable[..., Any]] = None,
+        callback: Callable[..., Any] | None = None,
     ) -> str:
         """Subscribe to real-time streaming data via WebSocket.
 
@@ -248,7 +249,7 @@ class DataClient:
 
     async def get_portfolio(
         self,
-        account_id: Optional[str] = None,
+        account_id: str | None = None,
     ) -> dict[str, Any]:
         """Fetch portfolio positions and summary.
 
@@ -302,7 +303,7 @@ class DataClient:
             logger.error("Backtest submission failed (%d): %s", exc.response.status_code, exc)
             raise
 
-    async def __aenter__(self) -> "DataClient":
+    async def __aenter__(self) -> DataClient:
         """Async context manager entry."""
         await self.connect()
         return self

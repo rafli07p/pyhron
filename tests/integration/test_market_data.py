@@ -13,18 +13,16 @@ from __future__ import annotations
 
 import asyncio
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
 import pytest_asyncio
-
+from enthropy.market_data.cache import MarketDataCache
 from enthropy.market_data.client import MarketDataClient
 from enthropy.market_data.ingestion import MarketDataIngestionService
-from enthropy.market_data.cache import MarketDataCache
 from enthropy.market_data.publisher import MarketDataPublisher
 from enthropy.shared.schemas.tick import TickData
-
 
 # =============================================================================
 # Skip Conditions
@@ -130,7 +128,7 @@ class TestMarketDataClient:
     @pytest.mark.asyncio
     async def test_fetch_historical_data(self, market_data_client: MarketDataClient):
         """Should fetch historical OHLCV data."""
-        end_date = datetime.now(timezone.utc)
+        end_date = datetime.now(UTC)
         start_date = end_date - timedelta(days=30)
 
         bars = await market_data_client.get_historical_bars(
@@ -159,10 +157,7 @@ class TestMarketDataClient:
     async def test_rate_limiting_handled(self, market_data_client: MarketDataClient):
         """Client should handle rate limiting gracefully."""
         # Rapid-fire requests to trigger rate limiting
-        tasks = [
-            market_data_client.get_latest_quote("BBCA.JK")
-            for _ in range(50)
-        ]
+        tasks = [market_data_client.get_latest_quote("BBCA.JK") for _ in range(50)]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # All should succeed (client handles retries internally)
@@ -186,7 +181,7 @@ class TestMarketDataCache:
             volume=1_500_000,
             bid=Decimal("9245.00"),
             ask=Decimal("9255.00"),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             exchange="IDX",
         )
 
@@ -207,7 +202,7 @@ class TestMarketDataCache:
             volume=1000,
             bid=Decimal("99.50"),
             ask=Decimal("100.50"),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             exchange="TEST",
         )
 
@@ -231,7 +226,7 @@ class TestMarketDataCache:
                 volume=1000 * (i + 1),
                 bid=Decimal(str(99 + i * 10)),
                 ask=Decimal(str(101 + i * 10)),
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 exchange="TEST",
             )
             await redis_cache.set_latest_tick(tick)
@@ -258,7 +253,7 @@ class TestMarketDataPublisher:
             volume=1_500_000,
             bid=Decimal("9245.00"),
             ask=Decimal("9255.00"),
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             exchange="IDX",
         )
 
@@ -271,7 +266,7 @@ class TestMarketDataPublisher:
     @pytest.mark.asyncio
     async def test_publish_batch(self, kafka_publisher: MarketDataPublisher):
         """Should publish a batch of ticks efficiently."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         ticks = [
             TickData(
                 symbol=f"SYM_{i}",
@@ -315,9 +310,7 @@ class TestIngestionPipeline:
     @SKIP_NO_API_KEY
     @SKIP_NO_REDIS
     @pytest.mark.asyncio
-    async def test_ingestion_handles_partial_failure(
-        self, ingestion_service: MarketDataIngestionService
-    ):
+    async def test_ingestion_handles_partial_failure(self, ingestion_service: MarketDataIngestionService):
         """Pipeline should handle partial failures gracefully."""
         symbols = ["BBCA.JK", "INVALID_SYMBOL_XYZ", "TLKM.JK"]
 

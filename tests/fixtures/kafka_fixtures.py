@@ -8,10 +8,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 from typing import Any, TypeVar
-from unittest.mock import AsyncMock
 
 import pytest
-
 from google.protobuf.message import Message
 
 ProtoT = TypeVar("ProtoT", bound=Message)
@@ -127,8 +125,7 @@ class MockRedis:
 @pytest.fixture
 def mock_producer() -> MockPyhronProducer:
     """Provide a mock Kafka producer."""
-    producer = MockPyhronProducer()
-    return producer
+    return MockPyhronProducer()
 
 
 @pytest.fixture

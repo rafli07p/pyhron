@@ -13,28 +13,50 @@ Usage::
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
-import numpy as np
 import pandas as pd
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.base_strategy_interface import (
-    BaseStrategyInterface,
     BarData,
+    BaseStrategyInterface,
     SignalDirection,
     StrategyParameters,
     StrategySignal,
     TickData,
 )
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 logger = get_logger(__name__)
 
 _DEFAULT_UNIVERSE: list[str] = [
-    "BBCA", "BBRI", "BMRI", "BBNI", "TLKM", "ASII", "UNVR", "HMSP",
-    "GGRM", "KLBF", "ICBP", "INDF", "SMGR", "PTBA", "ADRO", "ITMG",
-    "UNTR", "PGAS", "JSMR", "CPIN", "INKP", "INTP", "EXCL", "TOWR",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "BBNI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "HMSP",
+    "GGRM",
+    "KLBF",
+    "ICBP",
+    "INDF",
+    "SMGR",
+    "PTBA",
+    "ADRO",
+    "ITMG",
+    "UNTR",
+    "PGAS",
+    "JSMR",
+    "CPIN",
+    "INKP",
+    "INTP",
+    "EXCL",
+    "TOWR",
 ]
 
 
@@ -222,9 +244,7 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
 
         return bool(is_bullish)
 
-    def _compute_bollinger_bands(
-        self, series: pd.Series
-    ) -> tuple[pd.Series, pd.Series, pd.Series]:
+    def _compute_bollinger_bands(self, series: pd.Series) -> tuple[pd.Series, pd.Series, pd.Series]:
         """Compute Bollinger Bands for a price series.
 
         Args:

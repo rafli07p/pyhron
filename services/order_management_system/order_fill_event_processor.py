@@ -8,7 +8,7 @@ state machine to PARTIAL_FILL or FILLED status.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
@@ -16,7 +16,9 @@ from data_platform.models.trading import Order, OrderStatusEnum
 from services.order_management_system.order_state_machine import OrderStateMachine
 from shared.async_database_session import get_session
 from shared.structured_json_logger import get_logger
-from shared.kafka_producer_consumer import PyhronProducer
+
+if TYPE_CHECKING:
+    from shared.kafka_producer_consumer import PyhronProducer
 
 logger = get_logger(__name__)
 
@@ -128,10 +130,7 @@ class OrderFillEventProcessor:
             new_avg_price = fill.filled_price
 
         # Determine target status
-        if cumulative_filled >= order.quantity:
-            target_status = OrderStatusEnum.FILLED
-        else:
-            target_status = OrderStatusEnum.PARTIAL_FILL
+        target_status = OrderStatusEnum.FILLED if cumulative_filled >= order.quantity else OrderStatusEnum.PARTIAL_FILL
 
         event_data: dict[str, object] = {
             "filled_quantity": cumulative_filled,
@@ -208,7 +207,5 @@ class OrderFillEventProcessor:
             The Order ORM instance, or None if not found.
         """
         async with get_session() as session:
-            result = await session.execute(
-                select(Order).where(Order.client_order_id == client_order_id)
-            )
+            result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
             return result.scalar_one_or_none()

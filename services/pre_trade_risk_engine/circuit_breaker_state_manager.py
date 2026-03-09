@@ -8,9 +8,8 @@ in Redis for cross-service visibility and automatic expiry.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from shared.redis_cache_client import get_redis
 from shared.structured_json_logger import get_logger
@@ -26,7 +25,7 @@ DEFAULT_TTL_SECONDS: int = 3600  # 1 hour
 MAX_HISTORY_ENTRIES: int = 100
 
 
-class CircuitBreakerReason(str, Enum):
+class CircuitBreakerReason(StrEnum):
     """Reason codes for circuit breaker activation."""
 
     DAILY_LOSS_LIMIT = "DAILY_LOSS_LIMIT"
@@ -117,7 +116,7 @@ class CircuitBreakerStateManager:
         """
         redis = await get_redis()
         ttl = ttl_seconds if ttl_seconds is not None else self._default_ttl
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         cb_key = CIRCUIT_BREAKER_KEY.format(entity_id=entity_id)
         value = f"{reason.value}:{detail}:{now.isoformat()}"
@@ -168,7 +167,7 @@ class CircuitBreakerStateManager:
         existed = await redis.delete(cb_key)
 
         # Log to history
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         history_key = CIRCUIT_BREAKER_HISTORY_KEY.format(entity_id=entity_id)
         history_entry = f"{now.isoformat()}|RESUME|{reason}|"
         await redis.lpush(history_key, history_entry)
@@ -243,9 +242,7 @@ class CircuitBreakerStateManager:
             ttl_seconds=max(0, ttl),
         )
 
-    async def get_history(
-        self, entity_id: str, limit: int = 20
-    ) -> list[dict[str, str]]:
+    async def get_history(self, entity_id: str, limit: int = 20) -> list[dict[str, str]]:
         """Retrieve recent circuit breaker activation history.
 
         Args:
@@ -264,11 +261,13 @@ class CircuitBreakerStateManager:
         for entry in entries or []:
             entry_str = entry if isinstance(entry, str) else entry.decode()
             parts = entry_str.split("|", 3)
-            results.append({
-                "timestamp": parts[0] if len(parts) > 0 else "",
-                "action": parts[1] if len(parts) > 1 else "",
-                "reason": parts[2] if len(parts) > 2 else "",
-                "detail": parts[3] if len(parts) > 3 else "",
-            })
+            results.append(
+                {
+                    "timestamp": parts[0] if len(parts) > 0 else "",
+                    "action": parts[1] if len(parts) > 1 else "",
+                    "reason": parts[2] if len(parts) > 2 else "",
+                    "detail": parts[3] if len(parts) > 3 else "",
+                }
+            )
 
         return results

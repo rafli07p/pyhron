@@ -28,14 +28,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -110,9 +110,7 @@ class NASAFIRMSFireHotspotIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="nasa_firms", symbol="FIRE", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="nasa_firms", symbol="FIRE", operation="inserted").inc(inserted)
 
         self._logger.info(
             "firms_ingestion_complete",
@@ -191,22 +189,26 @@ class NASAFIRMSFireHotspotIngester:
             except ValueError:
                 continue
 
-            records.append({
-                "indicator": "viirs_hotspot_count",
-                "reference_date": ref_date,
-                "value": Decimal(str(agg["count"])),
-                "unit": "count",
-                "frequency": "daily",
-                "province": province,
-            })
-            records.append({
-                "indicator": "viirs_frp_total",
-                "reference_date": ref_date,
-                "value": Decimal(str(round(agg["frp_total"], 2))),
-                "unit": "megawatts",
-                "frequency": "daily",
-                "province": province,
-            })
+            records.append(
+                {
+                    "indicator": "viirs_hotspot_count",
+                    "reference_date": ref_date,
+                    "value": Decimal(str(agg["count"])),
+                    "unit": "count",
+                    "frequency": "daily",
+                    "province": province,
+                }
+            )
+            records.append(
+                {
+                    "indicator": "viirs_frp_total",
+                    "reference_date": ref_date,
+                    "value": Decimal(str(round(agg["frp_total"], 2))),
+                    "unit": "megawatts",
+                    "frequency": "daily",
+                    "province": province,
+                }
+            )
 
         return records
 
@@ -220,10 +222,7 @@ class NASAFIRMSFireHotspotIngester:
         """
         v = float(record["value"])
         if v < 0:
-            raise DataQualityError(
-                f"Negative value {v} for {record['indicator']} "
-                f"on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Negative value {v} for {record['indicator']} on {record['reference_date']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

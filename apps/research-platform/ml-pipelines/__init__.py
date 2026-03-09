@@ -96,7 +96,7 @@ class FinancialNet(nn.Module):
         self.output_head = nn.Linear(prev_dim, output_dim)
 
         # Residual projection if input/output dims differ
-        self.residual_proj: Optional[nn.Linear] = None
+        self.residual_proj: nn.Linear | None = None
         if input_dim != prev_dim:
             self.residual_proj = nn.Linear(input_dim, prev_dim)
 
@@ -179,32 +179,32 @@ class MLPipeline:
     >>> pipeline.log_to_mlflow()
     """
 
-    def __init__(self, config: Optional[PipelineConfig] = None) -> None:
+    def __init__(self, config: PipelineConfig | None = None) -> None:
         self.config = config or PipelineConfig()
         self._scaler = StandardScaler()
-        self._model: Optional[FinancialNet] = None
-        self._optimizer: Optional[torch.optim.Optimizer] = None
-        self._criterion: Optional[nn.Module] = None
+        self._model: FinancialNet | None = None
+        self._optimizer: torch.optim.Optimizer | None = None
+        self._criterion: nn.Module | None = None
         self._device = torch.device(self.config.device)
 
         # Data splits
-        self._X_train: Optional[np.ndarray] = None
-        self._X_val: Optional[np.ndarray] = None
-        self._X_test: Optional[np.ndarray] = None
-        self._y_train: Optional[np.ndarray] = None
-        self._y_val: Optional[np.ndarray] = None
-        self._y_test: Optional[np.ndarray] = None
+        self._X_train: np.ndarray | None = None
+        self._X_val: np.ndarray | None = None
+        self._X_test: np.ndarray | None = None
+        self._y_train: np.ndarray | None = None
+        self._y_val: np.ndarray | None = None
+        self._y_test: np.ndarray | None = None
 
         # Data loaders
-        self._train_loader: Optional[DataLoader[Any]] = None
-        self._val_loader: Optional[DataLoader[Any]] = None
-        self._test_loader: Optional[DataLoader[Any]] = None
+        self._train_loader: DataLoader[Any] | None = None
+        self._val_loader: DataLoader[Any] | None = None
+        self._test_loader: DataLoader[Any] | None = None
 
         # Training history
         self._train_losses: list[float] = []
         self._val_losses: list[float] = []
         self._best_val_loss: float = float("inf")
-        self._best_model_state: Optional[dict[str, Any]] = None
+        self._best_model_state: dict[str, Any] | None = None
         self._training_time: float = 0.0
         self._eval_metrics: dict[str, float] = {}
 
@@ -218,7 +218,7 @@ class MLPipeline:
         self,
         features: np.ndarray | Any,
         targets: np.ndarray | Any,
-        feature_names: Optional[list[str]] = None,
+        feature_names: list[str] | None = None,
     ) -> dict[str, int]:
         """Prepare and split data for training.
 
@@ -584,9 +584,10 @@ class MLPipeline:
             )
 
             # Log preprocessing scaler as artifact
-            import joblib
             import os
             import tempfile
+
+            import joblib
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 scaler_path = os.path.join(tmpdir, "scaler.joblib")
@@ -645,7 +646,7 @@ class MLPipeline:
 
 
 __all__ = [
-    "MLPipeline",
     "FinancialNet",
+    "MLPipeline",
     "PipelineConfig",
 ]

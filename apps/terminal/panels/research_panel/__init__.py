@@ -20,8 +20,8 @@ class BacktestResult:
 
     backtest_id: str = ""
     strategy_name: str = ""
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     total_return: float = 0.0
     sharpe_ratio: float = 0.0
     max_drawdown: float = 0.0
@@ -40,7 +40,7 @@ class FactorResult:
     turnover: float = 0.0
     returns_1d: float = 0.0
     returns_5d: float = 0.0
-    timestamp: Optional[datetime] = None
+    timestamp: datetime | None = None
 
 
 class ResearchPanel:
@@ -69,7 +69,7 @@ class ResearchPanel:
         end_date: str,
         symbols: list[str],
         initial_capital: float = 1_000_000.0,
-        params: Optional[dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Launch a backtest from the terminal UI.
 
@@ -127,7 +127,7 @@ class ResearchPanel:
 
     async def show_factor_analysis(
         self,
-        factor_name: Optional[str] = None,
+        factor_name: str | None = None,
         limit: int = 20,
     ) -> list[dict[str, Any]]:
         """Display factor analysis results.
@@ -183,7 +183,7 @@ class ResearchPanel:
             for f in factors[:limit]
         ]
 
-    async def list_datasets(self, category: Optional[str] = None) -> list[dict[str, Any]]:
+    async def list_datasets(self, category: str | None = None) -> list[dict[str, Any]]:
         """List available datasets for research.
 
         Parameters
@@ -218,7 +218,7 @@ class ResearchPanel:
 
 
 __all__ = [
-    "ResearchPanel",
     "BacktestResult",
     "FactorResult",
+    "ResearchPanel",
 ]

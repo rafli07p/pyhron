@@ -13,8 +13,7 @@ RSS sources:
 from __future__ import annotations
 
 import re
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 from xml.etree import ElementTree
@@ -36,12 +35,32 @@ RSS_SOURCES: dict[str, str] = {
 
 # Simple Indonesian financial sentiment lexicon
 POSITIVE_WORDS: set[str] = {
-    "naik", "untung", "laba", "tumbuh", "positif", "surplus", "bullish",
-    "melonjak", "rekor", "ekspansi", "dividen", "optimis",
+    "naik",
+    "untung",
+    "laba",
+    "tumbuh",
+    "positif",
+    "surplus",
+    "bullish",
+    "melonjak",
+    "rekor",
+    "ekspansi",
+    "dividen",
+    "optimis",
 }
 NEGATIVE_WORDS: set[str] = {
-    "turun", "rugi", "defisit", "negatif", "bearish", "anjlok", "jatuh",
-    "koreksi", "resesi", "gagal", "pesimis", "bangkrut",
+    "turun",
+    "rugi",
+    "defisit",
+    "negatif",
+    "bearish",
+    "anjlok",
+    "jatuh",
+    "koreksi",
+    "resesi",
+    "gagal",
+    "pesimis",
+    "bangkrut",
 }
 
 # Default HTTP timeout for RSS fetches
@@ -95,9 +114,7 @@ class IndonesiaFinancialNewsAggregator:
     async def _load_symbols(self) -> None:
         """Load known active instrument symbols from the database."""
         async with get_session() as session:
-            result = await session.execute(
-                text("SELECT symbol FROM instruments WHERE is_active = true")
-            )
+            result = await session.execute(text("SELECT symbol FROM instruments WHERE is_active = true"))
             self._known_symbols = {row[0] for row in result.fetchall()}
 
     async def aggregate(self) -> dict[str, int]:
@@ -167,16 +184,18 @@ class IndonesiaFinancialNewsAggregator:
                 # Sentiment
                 score, label = simple_sentiment(full_text)
 
-                articles.append({
-                    "title": title.strip(),
-                    "url": link.strip(),
-                    "source": source,
-                    "published_at": pub_date_el.text if pub_date_el is not None else None,
-                    "content_summary": description[:500] if description else None,
-                    "sentiment_score": score,
-                    "sentiment_label": label,
-                    "mentioned_tickers": tickers,
-                })
+                articles.append(
+                    {
+                        "title": title.strip(),
+                        "url": link.strip(),
+                        "source": source,
+                        "published_at": pub_date_el.text if pub_date_el is not None else None,
+                        "content_summary": description[:500] if description else None,
+                        "sentiment_score": score,
+                        "sentiment_label": label,
+                        "mentioned_tickers": tickers,
+                    }
+                )
         except httpx.RequestError:
             logger.exception("rss_connection_failed", source=source)
 
@@ -234,7 +253,7 @@ class IndonesiaFinancialNewsAggregator:
                     "title": article["title"],
                     "url": article["url"],
                     "source": article["source"],
-                    "published_at": article.get("published_at") or datetime.now(tz=timezone.utc).isoformat(),
+                    "published_at": article.get("published_at") or datetime.now(tz=UTC).isoformat(),
                     "summary": article.get("content_summary"),
                     "score": float(article["sentiment_score"]),
                     "label": article["sentiment_label"],

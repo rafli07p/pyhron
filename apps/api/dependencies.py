@@ -5,11 +5,14 @@ Shared dependencies used across routers (DB sessions, Redis, config).
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
-from shared.redis_cache_client import get_redis
-from shared.configuration_settings import Config, get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import Config, get_config
+from shared.redis_cache_client import get_redis
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 async def get_db() -> AsyncIterator:

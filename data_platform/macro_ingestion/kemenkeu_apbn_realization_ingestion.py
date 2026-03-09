@@ -25,14 +25,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -135,9 +135,7 @@ class KemenkeuAPBNRealizationIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="kemenkeu", symbol="FISCAL", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="kemenkeu", symbol="FISCAL", operation="inserted").inc(inserted)
 
         self._logger.info(
             "kemenkeu_ingestion_complete",
@@ -229,9 +227,7 @@ class KemenkeuAPBNRealizationIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        DJPPR_YIELD_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(DJPPR_YIELD_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     data = resp.json()
                     return self._parse_sbn_yields(data, start, end)
@@ -344,17 +340,12 @@ class KemenkeuAPBNRealizationIngester:
             DataQualityError: If validation fails.
         """
         if record["value"] is None:
-            raise DataQualityError(
-                f"Null value for {record['indicator']} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Null value for {record['indicator']} on {record['reference_date']}")
         # SBN yields should be between 0% and 25%
         if record["indicator"].startswith("sbn_yield_"):
             v = float(record["value"])
             if v < 0 or v > 25:
-                raise DataQualityError(
-                    f"SBN yield {v}% outside plausible range [0, 25] "
-                    f"for {record['indicator']}"
-                )
+                raise DataQualityError(f"SBN yield {v}% outside plausible range [0, 25] for {record['indicator']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

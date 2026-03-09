@@ -7,22 +7,19 @@ encryption for PII/sensitive data, and compliance with UU PDP requirements.
 
 from __future__ import annotations
 
-import base64
 import json
 import os
-from datetime import datetime, timezone
 
 import pytest
-
-from enthropy.shared.encryption.service import (
-    EncryptionService,
-    FieldEncryptor,
-    KeyDerivationService,
-)
 from enthropy.shared.encryption.exceptions import (
     DecryptionError,
     InvalidKeyError,
     TamperedDataError,
+)
+from enthropy.shared.encryption.service import (
+    EncryptionService,
+    FieldEncryptor,
+    KeyDerivationService,
 )
 
 
@@ -90,9 +87,7 @@ class TestBasicEncryption:
             bytes(range(256)),  # All byte values
         ],
     )
-    def test_various_plaintext_sizes(
-        self, encryption_service: EncryptionService, plaintext: bytes
-    ):
+    def test_various_plaintext_sizes(self, encryption_service: EncryptionService, plaintext: bytes):
         """Various plaintext sizes should be handled correctly."""
         ciphertext = encryption_service.encrypt(plaintext)
         decrypted = encryption_service.decrypt(ciphertext)
@@ -131,7 +126,7 @@ class TestTamperingDetection:
         ciphertext = encryption_service.encrypt(plaintext)
 
         with pytest.raises((DecryptionError, TamperedDataError)):
-            encryption_service.decrypt(ciphertext[:len(ciphertext) // 2])
+            encryption_service.decrypt(ciphertext[: len(ciphertext) // 2])
 
     def test_wrong_key_fails(self, encryption_service: EncryptionService):
         """Decryption with wrong key should fail."""
@@ -162,9 +157,7 @@ class TestKeyDerivation:
         key2 = key_derivation_service.derive_key(context="user_pii")
         assert key1 == key2
 
-    def test_different_contexts_different_keys(
-        self, key_derivation_service: KeyDerivationService
-    ):
+    def test_different_contexts_different_keys(self, key_derivation_service: KeyDerivationService):
         """Different contexts should produce different derived keys."""
         key_pii = key_derivation_service.derive_key(context="user_pii")
         key_trading = key_derivation_service.derive_key(context="trading_data")
@@ -276,13 +269,15 @@ class TestComplianceEncryption:
 
     def test_pii_not_in_encrypted_output(self, encryption_service: EncryptionService):
         """PII should not appear in any form in encrypted output."""
-        pii_data = json.dumps({
-            "nik": "3201012345678901",
-            "nama": "Budi Santoso",
-            "alamat": "Jl. Sudirman No. 1, Jakarta Selatan",
-            "nomor_telepon": "+6281234567890",
-            "email": "budi.santoso@email.co.id",
-        }).encode("utf-8")
+        pii_data = json.dumps(
+            {
+                "nik": "3201012345678901",
+                "nama": "Budi Santoso",
+                "alamat": "Jl. Sudirman No. 1, Jakarta Selatan",
+                "nomor_telepon": "+6281234567890",
+                "email": "budi.santoso@email.co.id",
+            }
+        ).encode("utf-8")
 
         ciphertext = encryption_service.encrypt(pii_data)
         ciphertext_str = ciphertext.hex()
@@ -300,7 +295,7 @@ class TestComplianceEncryption:
     def test_audit_trail_for_encryption(self, encryption_service: EncryptionService):
         """Encryption operations should be auditable."""
         plaintext = b"Auditable encryption operation"
-        ciphertext = encryption_service.encrypt(plaintext)
+        encryption_service.encrypt(plaintext)
 
         # Verify metadata is available for audit
         metadata = encryption_service.get_last_operation_metadata()

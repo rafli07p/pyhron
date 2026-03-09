@@ -6,9 +6,8 @@ and browse backtest history.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -36,7 +35,7 @@ class BacktestRequest(BaseModel):
 class BacktestSubmission(BaseModel):
     task_id: UUID = Field(default_factory=uuid4)
     status: str = "submitted"
-    submitted_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class BacktestResult(BaseModel):

@@ -16,13 +16,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from shared.structured_json_logger import get_logger
-
 from commodity_linkage_engine.commodity_to_stock_impact_engine import (
-    ConfidenceLevel,
     CommodityType,
+    ConfidenceLevel,
     StockEarningsImpactEstimate,
 )
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -132,11 +131,7 @@ class NickelPriceMinerRevenueModel:
         effective_price_change = lme_change_usd_per_ton * producer.lme_correlation
 
         # Revenue impact from nickel segment only.
-        revenue_impact_usd = (
-            producer.nickel_production_ton
-            * effective_price_change
-            * (1.0 - producer.royalty_rate)
-        )
+        revenue_impact_usd = producer.nickel_production_ton * effective_price_change * (1.0 - producer.royalty_rate)
 
         revenue_impact_idr = revenue_impact_usd * self._usd_idr
         net_income_impact_idr = revenue_impact_idr * producer.net_margin
@@ -179,9 +174,7 @@ class NickelPriceMinerRevenueModel:
             ],
         )
 
-    def compute_all_impacts(
-        self, lme_change_usd_per_ton: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def compute_all_impacts(self, lme_change_usd_per_ton: float) -> list[StockEarningsImpactEstimate]:
         """Compute impact across all covered nickel producers.
 
         Args:

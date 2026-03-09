@@ -11,11 +11,15 @@ what would be needed for a production FIX implementation.
 
 from __future__ import annotations
 
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
 from shared.structured_json_logger import get_logger
-from shared.proto_generated.equity_orders_pb2 import OrderRequest
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 logger = get_logger(__name__)
 
@@ -156,4 +160,4 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
             "IDX FIX session."
         )
         # This yield is required to make the method an async generator
-        yield  # noqa: unreachable -- required for AsyncIterator type hint
+        yield  # required for AsyncIterator type hint
