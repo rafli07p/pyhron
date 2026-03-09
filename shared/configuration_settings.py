@@ -5,7 +5,7 @@ using Pydantic v2 ``BaseSettings``. Validates at startup — fail fast.
 
 Usage::
 
-    from shared.config import get_config
+    from shared.configuration_settings import get_config
 
     config = get_config()
     print(config.database_url)

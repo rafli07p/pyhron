@@ -73,7 +73,7 @@ def _run_async(coro):
 )
 def ingest_idx_eod_daily(self):
     """Ingest IDX EOD data for all LQ45 symbols."""
-    from shared.logging import get_logger
+    from shared.structured_json_logger import get_logger
 
     logger = get_logger(__name__)
     try:
@@ -103,7 +103,7 @@ def ingest_idx_eod_daily(self):
 )
 def compute_daily_ratios(self):
     """Compute valuation ratios for all active instruments."""
-    from shared.logging import get_logger
+    from shared.structured_json_logger import get_logger
 
     logger = get_logger(__name__)
     try:
@@ -135,7 +135,7 @@ def compute_daily_ratios(self):
 )
 def aggregate_news(self):
     """Aggregate news from all RSS sources."""
-    from shared.logging import get_logger
+    from shared.structured_json_logger import get_logger
 
     logger = get_logger(__name__)
     try:
@@ -158,7 +158,7 @@ def aggregate_news(self):
 )
 def ingest_idx_fundamentals(self):
     """Ingest fundamentals for all LQ45 symbols."""
-    from shared.logging import get_logger
+    from shared.structured_json_logger import get_logger
 
     logger = get_logger(__name__)
     try:

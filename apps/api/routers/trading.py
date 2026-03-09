@@ -14,7 +14,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from shared.logging import get_logger
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/trading", tags=["trading"])

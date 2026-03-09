@@ -17,12 +17,12 @@ from sqlalchemy import select
 from data_platform.models.trading import Order, OrderStatusEnum
 from services.broker.base import BrokerAdapter
 from services.oms.state_machine import OrderStateMachine
-from shared.cache import get_redis
-from shared.config import get_config
-from shared.database import get_session
-from shared.exceptions import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
-from shared.logging import get_logger
-from shared.messaging import PyhronConsumer, PyhronProducer, Topics
+from shared.redis_cache_client import get_redis
+from shared.configuration_settings import get_config
+from shared.async_database_session import get_session
+from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
+from shared.structured_json_logger import get_logger
+from shared.kafka_producer_consumer import PyhronConsumer, PyhronProducer, Topics
 from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
     OrderStatus,

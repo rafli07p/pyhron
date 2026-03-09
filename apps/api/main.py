@@ -13,9 +13,9 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from shared.cache import close_redis
-from shared.config import get_config
-from shared.logging import get_logger
+from shared.redis_cache_client import close_redis
+from shared.configuration_settings import get_config
+from shared.structured_json_logger import get_logger
 
 from .middleware.rate_limit import RateLimitMiddleware
 from .middleware.timing import TimingMiddleware

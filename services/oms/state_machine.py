@@ -15,10 +15,10 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import update
 
 from data_platform.models.trading import Order, OrderStatusEnum
-from shared.database import get_session
-from shared.exceptions import InvalidTransitionError
-from shared.logging import get_logger
-from shared.messaging import PyhronProducer, Topics
+from shared.async_database_session import get_session
+from shared.platform_exception_hierarchy import InvalidTransitionError
+from shared.structured_json_logger import get_logger
+from shared.kafka_producer_consumer import PyhronProducer, Topics
 from shared.proto_generated.equity_orders_pb2 import (
     OrderEvent as OrderEventProto,
     OrderStatus,

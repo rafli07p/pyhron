@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 
-from shared.logging import get_logger
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/auth", tags=["auth"])

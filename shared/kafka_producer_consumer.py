@@ -25,8 +25,8 @@ from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import KafkaError
 from google.protobuf.message import Message
 
-from shared.exceptions import ConsumerError, DeserializationError, ProducerError
-from shared.logging import get_logger
+from shared.platform_exception_hierarchy import ConsumerError, DeserializationError, ProducerError
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 ProtoT = TypeVar("ProtoT", bound=Message)
@@ -59,14 +59,41 @@ class Topics:
     RISK_BREACHES = "pyhron.risk.breaches"
     RISK_CIRCUIT_BREAKER = "pyhron.risk.circuit-breaker"
 
+    # Equity strategy signals
+    EQUITY_STRATEGY_SIGNALS = "pyhron.equity.strategy-signals"
+
+    # Macro economic indicators
+    MACRO_INDICATOR_UPDATES = "pyhron.macro.indicator-updates"
+    MACRO_POLICY_EVENTS = "pyhron.macro.policy-events"
+
+    # Commodity prices and alerts
+    COMMODITY_PRICE_UPDATES = "pyhron.commodity.price-updates"
+    COMMODITY_STOCK_IMPACT_ALERTS = "pyhron.commodity.stock-impact-alerts"
+
+    # Alternative data
+    FIRE_HOTSPOT_EVENTS = "pyhron.alternative-data.fire-hotspot-events"
+    CLIMATE_INDEX_EVENTS = "pyhron.alternative-data.climate-index-events"
+    NEWS_SENTIMENT_EVENTS = "pyhron.alternative-data.news-sentiment-events"
+
+    # Fixed income
+    YIELD_CURVE_SNAPSHOTS = "pyhron.fixed-income.yield-curve-snapshots"
+    BOND_PRICE_UPDATES = "pyhron.fixed-income.bond-price-updates"
+
+    # Governance intelligence
+    GOVERNANCE_FLAG_EVENTS = "pyhron.governance.flag-events"
+    OWNERSHIP_CHANGE_EVENTS = "pyhron.governance.ownership-change-events"
+
     # Data platform
     DATA_INGESTION_STATUS = "pyhron.data.ingestion-status"
     DATA_QUALITY_ALERTS = "pyhron.data.quality-alerts"
 
     # Dead letter queues
-    DLQ_SIGNALS = "pyhron.dlq.signals"
-    DLQ_ORDERS = "pyhron.dlq.orders"
-    DLQ_POSITIONS = "pyhron.dlq.positions"
+    DLQ_SIGNALS = "pyhron.dlq.equity-strategy-signals"
+    DLQ_ORDERS = "pyhron.dlq.equity-order-events"
+    DLQ_POSITIONS = "pyhron.dlq.equity-position-events"
+    DLQ_MACRO = "pyhron.dlq.macro-indicator-updates"
+    DLQ_COMMODITY = "pyhron.dlq.commodity-price-updates"
+    DLQ_FIRE_HOTSPOT = "pyhron.dlq.fire-hotspot-events"
 
 
 class PyhronProducer:

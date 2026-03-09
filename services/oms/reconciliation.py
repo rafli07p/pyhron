@@ -19,11 +19,11 @@ from sqlalchemy import select
 
 from data_platform.models.trading import Order, OrderStatusEnum
 from services.broker.base import BrokerAdapter
-from shared.cache import get_redis
-from shared.config import get_config
-from shared.database import get_session
-from shared.logging import get_logger
-from shared.messaging import PyhronProducer, Topics
+from shared.redis_cache_client import get_redis
+from shared.configuration_settings import get_config
+from shared.async_database_session import get_session
+from shared.structured_json_logger import get_logger
+from shared.kafka_producer_consumer import PyhronProducer, Topics
 from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent, RiskLimitType
 
 logger = get_logger(__name__)

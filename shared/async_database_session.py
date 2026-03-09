@@ -2,7 +2,7 @@
 
 Usage::
 
-    from shared.database import get_engine, get_session, Base
+    from shared.async_database_session import get_engine, get_session, Base
 
     async with get_session() as session:
         result = await session.execute(select(Instrument))
@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-from shared.config import get_config
+from shared.configuration_settings import get_config
 
 # Naming convention for constraints (Alembic auto-generation friendly)
 NAMING_CONVENTION = {

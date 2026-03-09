@@ -9,7 +9,7 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from shared.database import Base
+from shared.async_database_session import Base
 
 # Import all models so Alembic sees them
 import data_platform.models.market  # noqa: F401

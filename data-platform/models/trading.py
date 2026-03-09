@@ -27,7 +27,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from shared.database import Base
+from shared.async_database_session import Base
 
 
 # ── Enums (match proto/orders.proto) ────────────────────────────────────────

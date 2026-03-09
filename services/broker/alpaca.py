@@ -15,9 +15,9 @@ import httpx
 import websockets
 
 from services.broker.base import BrokerAdapter
-from shared.config import get_config
-from shared.exceptions import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
-from shared.logging import get_logger
+from shared.configuration_settings import get_config
+from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
+from shared.structured_json_logger import get_logger
 from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 logger = get_logger(__name__)

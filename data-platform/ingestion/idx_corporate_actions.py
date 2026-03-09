@@ -11,10 +11,10 @@ from decimal import Decimal, InvalidOperation
 import httpx
 from sqlalchemy import text
 
-from shared.config import get_config
-from shared.database import get_session
-from shared.exceptions import IngestionError
-from shared.logging import get_logger
+from shared.configuration_settings import get_config
+from shared.async_database_session import get_session
+from shared.platform_exception_hierarchy import IngestionError
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 

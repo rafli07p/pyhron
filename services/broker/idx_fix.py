@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import AsyncIterator
 
 from services.broker.base import BrokerAdapter
-from shared.logging import get_logger
+from shared.structured_json_logger import get_logger
 from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 logger = get_logger(__name__)

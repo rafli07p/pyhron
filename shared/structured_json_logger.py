@@ -5,7 +5,7 @@ Output is JSON in production, human-readable in development.
 
 Usage::
 
-    from shared.logging import get_logger
+    from shared.structured_json_logger import get_logger
 
     logger = get_logger(__name__)
     logger.info("order_submitted", order_id=order_id, symbol=symbol)

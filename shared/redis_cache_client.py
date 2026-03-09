@@ -2,7 +2,7 @@
 
 Usage::
 
-    from shared.cache import get_redis
+    from shared.redis_cache_client import get_redis
 
     redis = await get_redis()
     await redis.set("key", "value", ex=60)
@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from redis.asyncio import Redis, from_url
 
-from shared.config import get_config
-from shared.logging import get_logger
+from shared.configuration_settings import get_config
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 

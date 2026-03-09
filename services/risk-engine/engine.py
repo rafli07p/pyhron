@@ -14,10 +14,10 @@ from datetime import datetime, timezone
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from shared.cache import get_redis
-from shared.config import get_config
-from shared.logging import get_logger
-from shared.messaging import PyhronConsumer, PyhronProducer, Topics
+from shared.redis_cache_client import get_redis
+from shared.configuration_settings import get_config
+from shared.structured_json_logger import get_logger
+from shared.kafka_producer_consumer import PyhronConsumer, PyhronProducer, Topics
 from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
     OrderSide,

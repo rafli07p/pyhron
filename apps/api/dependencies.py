@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 
-from shared.cache import get_redis
-from shared.config import Config, get_config
-from shared.database import get_session
+from shared.redis_cache_client import get_redis
+from shared.configuration_settings import Config, get_config
+from shared.async_database_session import get_session
 
 
 async def get_db() -> AsyncIterator:

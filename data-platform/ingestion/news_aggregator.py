@@ -20,8 +20,8 @@ from xml.etree import ElementTree
 import httpx
 from sqlalchemy import text
 
-from shared.database import get_session
-from shared.logging import get_logger
+from shared.async_database_session import get_session
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
