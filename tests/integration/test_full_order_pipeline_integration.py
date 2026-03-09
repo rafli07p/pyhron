@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from data_platform.models.trading import OrderStatusEnum
-from services.oms.state_machine import VALID_TRANSITIONS
+from services.order_management_system.order_state_machine import VALID_TRANSITIONS
 
 
 # ── Fixtures ────────────────────────────────────────────────────────────────

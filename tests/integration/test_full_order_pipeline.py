@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import pytest_asyncio
 
-from services.risk_engine.checks import (
+from services.pre_trade_risk_engine.pre_trade_risk_checks import (
     check_daily_loss_limit,
     check_duplicate_order,
     check_lot_size_constraint,

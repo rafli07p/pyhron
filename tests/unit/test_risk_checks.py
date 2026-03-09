@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from services.risk_engine.checks import (
+from services.pre_trade_risk_engine.pre_trade_risk_checks import (
     RiskCheckResult,
     check_buying_power_t2,
     check_daily_loss_limit,
