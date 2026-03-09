@@ -1,4 +1,8 @@
-"""Alembic environment configuration."""
+"""Alembic environment configuration for Pyhron data platform.
+
+Supports both online (async) and offline migration modes.
+Imports all database models to ensure Alembic detects table changes.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +15,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from shared.async_database_session import Base
 
-# Import all models so Alembic sees them
+# Import all models so Alembic sees them for autogenerate
 import data_platform.models.market  # noqa: F401
 import data_platform.models.trading  # noqa: F401
 
@@ -19,14 +23,19 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    return os.environ.get(
-        "DATABASE_URL",
-        "postgresql+asyncpg://pyhron:pyhron@localhost:5432/pyhron",
-    )
+    """Get database URL from environment or configuration_settings."""
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        return url
+    try:
+        from shared.configuration_settings import get_config
+        return get_config().database_url
+    except ImportError:
+        return "postgresql+asyncpg://pyhron:pyhron@postgres:5432/pyhron"
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
+    """Run migrations in 'offline' mode for SQL script generation."""
     context.configure(
         url=get_url(),
         target_metadata=target_metadata,
@@ -37,7 +46,8 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection):
+def do_run_migrations(connection) -> None:
+    """Execute migrations against a live database connection."""
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
@@ -52,6 +62,7 @@ async def run_async_migrations() -> None:
 
 
 def run_migrations_online() -> None:
+    """Entry point for online migration mode."""
     asyncio.run(run_async_migrations())
 
 

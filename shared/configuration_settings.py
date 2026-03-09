@@ -31,6 +31,7 @@ class Config(BaseSettings):
     }
 
     # -- General --
+    app_name: str = Field(default="pyhron", max_length=64, description="Application name")
     app_env: str = Field(default="development", description="Deployment environment")
     app_secret_key: str = Field(default="local-dev-secret-key-min-32-chars-long", min_length=8)
     app_debug: bool = Field(default=False)

@@ -23,11 +23,16 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock* ./
 RUN poetry install --only main --no-root --no-directory
 
+COPY README.md ./
 COPY shared/ ./shared/
 COPY services/ ./services/
-COPY data-platform/ ./data-platform/
-COPY strategies/ ./strategies/
+COPY apps/ ./apps/
 COPY proto/ ./proto/
+COPY data_platform/ ./data_platform/
+COPY strategy_engine/ ./strategy_engine/
+COPY commodity_linkage_engine/ ./commodity_linkage_engine/
+COPY macro_intelligence/ ./macro_intelligence/
+COPY governance_intelligence/ ./governance_intelligence/
 RUN poetry install --only main
 
 # ---------------------------------------------------------------------------
@@ -48,9 +53,13 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/services ./services
-COPY --from=builder /app/data-platform ./data-platform
-COPY --from=builder /app/strategies ./strategies
+COPY --from=builder /app/apps ./apps
 COPY --from=builder /app/proto ./proto
+COPY --from=builder /app/data_platform ./data_platform
+COPY --from=builder /app/strategy_engine ./strategy_engine
+COPY --from=builder /app/commodity_linkage_engine ./commodity_linkage_engine
+COPY --from=builder /app/macro_intelligence ./macro_intelligence
+COPY --from=builder /app/governance_intelligence ./governance_intelligence
 COPY --from=builder /app/pyproject.toml ./
 
 RUN mkdir -p /app/logs && chown -R appuser:appuser /app

@@ -44,7 +44,7 @@ logger = structlog.stdlib.get_logger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
-from shared.configs import get_settings as _get_settings
+from shared.configuration_settings import get_config as _get_settings
 
 API_VERSION = "v1"
 
@@ -312,6 +312,37 @@ def create_rest_app() -> FastAPI:
 
     # Structlog request logging
     app.add_middleware(RequestLoggingMiddleware)
+
+    # ------------------------------------------------------------------
+    # Pyhron domain routers (IDX equity, macro, commodity, etc.)
+    # ------------------------------------------------------------------
+    from apps.api.http_routers.idx_equity_screener_router import router as screener_router
+    from apps.api.http_routers.idx_equity_stock_detail_router import router as stock_detail_router
+    from apps.api.http_routers.idx_market_overview_router import router as market_overview_router
+    from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
+    from apps.api.http_routers.indonesia_macro_dashboard_router import router as macro_router
+    from apps.api.http_routers.indonesia_commodity_price_router import router as commodity_price_router
+    from apps.api.http_routers.commodity_stock_impact_router import router as commodity_impact_router
+    from apps.api.http_routers.indonesia_fixed_income_router import router as fixed_income_router
+    from apps.api.http_routers.governance_intelligence_router import router as governance_router
+    from apps.api.http_routers.strategy_management_router import router as strategy_router
+    from apps.api.http_routers.backtest_execution_router import router as backtest_router
+    from apps.api.http_routers.live_trading_position_router import router as live_trading_router
+    from apps.api.http_routers.user_authentication_router import router as auth_router
+
+    app.include_router(screener_router)
+    app.include_router(stock_detail_router)
+    app.include_router(market_overview_router)
+    app.include_router(news_router)
+    app.include_router(macro_router)
+    app.include_router(commodity_price_router)
+    app.include_router(commodity_impact_router)
+    app.include_router(fixed_income_router)
+    app.include_router(governance_router)
+    app.include_router(strategy_router)
+    app.include_router(backtest_router)
+    app.include_router(live_trading_router)
+    app.include_router(auth_router)
 
     # ------------------------------------------------------------------
     # Health / Readiness

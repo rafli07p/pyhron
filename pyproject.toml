@@ -9,8 +9,11 @@ packages = [
     { include = "apps" },
     { include = "services" },
     { include = "shared" },
-    { include = "strategies" },
-    { include = "data-platform" },
+    { include = "data_platform" },
+    { include = "strategy_engine" },
+    { include = "commodity_linkage_engine" },
+    { include = "macro_intelligence" },
+    { include = "governance_intelligence" },
 ]
 
 [tool.poetry.dependencies]
@@ -122,7 +125,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["apps", "services", "shared", "strategies"]
+known-first-party = ["apps", "services", "shared", "data_platform", "strategy_engine", "commodity_linkage_engine", "macro_intelligence", "governance_intelligence"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S106"]
@@ -161,7 +164,11 @@ addopts = [
     "--cov=apps",
     "--cov=services",
     "--cov=shared",
-    "--cov=strategies",
+    "--cov=data_platform",
+    "--cov=strategy_engine",
+    "--cov=commodity_linkage_engine",
+    "--cov=macro_intelligence",
+    "--cov=governance_intelligence",
     "--cov-report=term-missing",
 ]
 markers = [

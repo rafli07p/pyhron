@@ -1,1 +1,0 @@
-"""Pyhron Order Management System."""
