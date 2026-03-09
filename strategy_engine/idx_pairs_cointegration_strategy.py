@@ -1,8 +1,12 @@
-"""Engle-Granger cointegration pairs trading with Kalman filter hedge ratio.
+"""Engle-Granger cointegration pairs trading strategy with Kalman filter.
 
-Tests cointegration on pre-defined IDX pairs (e.g. BBCA/BBRI, TLKM/EXCL),
-estimates the hedge ratio via a Kalman filter, and trades the spread when it
-deviates beyond a z-score threshold.
+Identifies cointegrated IDX equity pairs using the Engle-Granger two-step
+procedure, then tracks the hedge ratio dynamically with a Kalman filter.
+Trades when the spread z-score breaches configurable thresholds.
+
+References:
+    Engle & Granger (1987) — *Co-Integration and Error Correction*.
+    Gatev, Goetzmann & Rouwenhorst (2006) — *Pairs Trading*.
 
 Usage::
 
@@ -12,12 +16,12 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
 import numpy as np
 import pandas as pd
+from statsmodels.tsa.stattools import coint
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.base_strategy_interface import (
@@ -31,526 +35,185 @@ from strategy_engine.base_strategy_interface import (
 
 logger = get_logger(__name__)
 
-# ── Default pairs ────────────────────────────────────────────────────────────
+# ── Default pairs universe (banking & telco) ────────────────────────────────
 
-_DEFAULT_PAIRS: list[tuple[str, str]] = [
+_DEFAULT_PAIR_CANDIDATES: list[tuple[str, str]] = [
     ("BBCA", "BBRI"),
-    ("BBCA", "BMRI"),
     ("BBRI", "BMRI"),
+    ("BBNI", "BMRI"),
     ("TLKM", "EXCL"),
-    ("TLKM", "ISAT"),
-    ("ADRO", "ITMG"),
-    ("ADRO", "PTBA"),
     ("ICBP", "INDF"),
     ("SMGR", "INTP"),
-    ("TOWR", "TBIG"),
+    ("ADRO", "ITMG"),
+    ("ASII", "UNTR"),
 ]
 
 
-@dataclass
-class KalmanState:
-    """State for a single Kalman filter tracking the hedge ratio.
+class _KalmanHedgeRatio:
+    """Online Kalman filter for dynamic hedge ratio estimation.
 
-    Attributes:
-        beta: Current hedge ratio estimate.
-        P: Estimate covariance.
-        Q: Process noise variance.
-        R: Observation noise variance.
+    State: hedge ratio (beta).  Observation: y_t = beta * x_t + e_t.
+
+    Args:
+        delta: State transition variance (controls adaptation speed).
+        ve: Observation noise variance.
     """
 
-    beta: float
-    P: float
-    Q: float
-    R: float
+    def __init__(self, delta: float = 1e-4, ve: float = 1e-3) -> None:
+        self.delta = delta
+        self.ve = ve
+        self.beta: float = 0.0
+        self._R: float = 1.0
 
+    def update(self, x: float, y: float) -> float:
+        """Incorporate a new observation and return updated hedge ratio.
 
-@dataclass
-class PairState:
-    """Tracking state for a single pair.
+        Args:
+            x: Independent variable price.
+            y: Dependent variable price.
 
-    Attributes:
-        leg_a: Symbol of the first leg.
-        leg_b: Symbol of the second leg.
-        kalman: Kalman filter state for the hedge ratio.
-        spread_mean: Running mean of the spread.
-        spread_std: Running standard deviation of the spread.
-        position: Current position: 0 = flat, 1 = long spread, -1 = short spread.
-    """
-
-    leg_a: str
-    leg_b: str
-    kalman: KalmanState
-    spread_mean: float = 0.0
-    spread_std: float = 1.0
-    position: int = 0
+        Returns:
+            Updated hedge ratio estimate.
+        """
+        R_prior = self._R + self.delta
+        K = R_prior * x / (x * R_prior * x + self.ve)
+        self.beta += K * (y - self.beta * x)
+        self._R = (1.0 - K * x) * R_prior
+        return self.beta
 
 
 class IDXPairsCointegrationStrategy(BaseStrategyInterface):
-    """Engle-Granger cointegration pairs trading with Kalman filter hedge ratio.
-
-    The strategy:
-        1. Tests each pair for cointegration using the Engle-Granger ADF test.
-        2. Estimates the time-varying hedge ratio with a Kalman filter.
-        3. Computes the spread: ``price_A - beta * price_B``.
-        4. Enters when the spread z-score exceeds ``entry_z`` (default 2.0).
-        5. Exits when the spread reverts within ``exit_z`` (default 0.5).
+    """Engle-Granger cointegration pairs trading with Kalman hedge ratio.
 
     Args:
-        pairs: List of (symbol_a, symbol_b) tuples.
-        lookback_days: Window for spread statistics (default 60).
-        entry_z: Z-score threshold for entry (default 2.0).
-        exit_z: Z-score threshold for exit (default 0.5).
-        kalman_q: Kalman process noise (default 1e-5).
-        kalman_r: Kalman observation noise (default 1e-3).
-        coint_pvalue: Maximum ADF p-value to accept cointegration (default 0.05).
-        weight_per_pair: Portfolio weight per pair trade (default 0.05).
-        strategy_id: Unique identifier for this strategy instance.
+        pair_candidates: List of (symbol_a, symbol_b) tuples to test.
+        formation_days: Look-back window for cointegration test.
+        zscore_entry: Z-score threshold for entry (default 2.0).
+        zscore_exit: Z-score threshold for exit (default 0.5).
+        coint_pvalue: Maximum p-value for Engle-Granger test.
+        strategy_id: Unique strategy identifier.
     """
 
     def __init__(
         self,
-        pairs: list[tuple[str, str]] | None = None,
-        lookback_days: int = 60,
-        entry_z: float = 2.0,
-        exit_z: float = 0.5,
-        kalman_q: float = 1e-5,
-        kalman_r: float = 1e-3,
+        pair_candidates: list[tuple[str, str]] | None = None,
+        formation_days: int = 252,
+        zscore_entry: float = 2.0,
+        zscore_exit: float = 0.5,
         coint_pvalue: float = 0.05,
-        weight_per_pair: float = 0.05,
-        strategy_id: str = "idx_pairs_cointegration",
+        strategy_id: str = "idx_pairs_coint",
     ) -> None:
-        self._pairs = pairs or list(_DEFAULT_PAIRS)
-        self._lookback_days = lookback_days
-        self._entry_z = entry_z
-        self._exit_z = exit_z
-        self._kalman_q = kalman_q
-        self._kalman_r = kalman_r
+        self._pairs = pair_candidates or list(_DEFAULT_PAIR_CANDIDATES)
+        self._formation_days = formation_days
+        self._zscore_entry = zscore_entry
+        self._zscore_exit = zscore_exit
         self._coint_pvalue = coint_pvalue
-        self._weight = weight_per_pair
         self._strategy_id = strategy_id
+        self._kalman_filters: dict[tuple[str, str], _KalmanHedgeRatio] = {}
+        self._bar_buffer: dict[str, list[BarData]] = {}
 
-        # Build universe from pairs
-        symbols: set[str] = set()
-        for a, b in self._pairs:
-            symbols.add(a)
-            symbols.add(b)
-        self._universe = sorted(symbols)
-
-        # Pair states
-        self._pair_states: dict[str, PairState] = {}
-        for a, b in self._pairs:
-            key = f"{a}/{b}"
-            self._pair_states[key] = PairState(
-                leg_a=a,
-                leg_b=b,
-                kalman=KalmanState(beta=1.0, P=1.0, Q=kalman_q, R=kalman_r),
-            )
+        all_symbols = {s for pair in self._pairs for s in pair}
+        for sym in all_symbols:
+            self._bar_buffer[sym] = []
 
         logger.info(
             "pairs_strategy_initialised",
             strategy_id=self._strategy_id,
-            pair_count=len(self._pairs),
-            entry_z=self._entry_z,
-            exit_z=self._exit_z,
+            num_pairs=len(self._pairs),
         )
 
-    # ── Interface implementation ─────────────────────────────────────────
-
     def get_parameters(self) -> StrategyParameters:
-        """Return current strategy parameters.
-
-        Returns:
-            StrategyParameters with pairs-trading-specific configuration.
-        """
+        universe = list({s for pair in self._pairs for s in pair})
         return StrategyParameters(
             name="IDX Pairs Cointegration (Engle-Granger + Kalman)",
             version="1.0.0",
-            universe=list(self._universe),
-            lookback_days=self._lookback_days + 60,
+            universe=universe,
+            lookback_days=self._formation_days,
             rebalance_frequency="daily",
             custom={
-                "pairs": [f"{a}/{b}" for a, b in self._pairs],
-                "entry_z": self._entry_z,
-                "exit_z": self._exit_z,
+                "zscore_entry": self._zscore_entry,
+                "zscore_exit": self._zscore_exit,
                 "coint_pvalue": self._coint_pvalue,
-                "kalman_q": self._kalman_q,
-                "kalman_r": self._kalman_r,
             },
         )
 
     async def generate_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
+        self, market_data: pd.DataFrame, as_of_date: datetime
     ) -> list[StrategySignal]:
-        """Generate pairs-trading signals.
-
-        Args:
-            market_data: DataFrame with multi-index ``(date, symbol)`` and
-                column ``close``.
-            as_of_date: Evaluation date.
-
-        Returns:
-            List of LONG, SHORT, and CLOSE signals for pair legs.
-        """
         logger.info("pairs_signal_generation_start", as_of_date=as_of_date.isoformat())
-
         try:
-            signals = self._compute_pairs_signals(market_data, as_of_date)
-            logger.info(
-                "pairs_signal_generation_complete",
-                as_of_date=as_of_date.isoformat(),
-                signal_count=len(signals),
-            )
-            return signals
+            return self._compute_pairs_signals(market_data, as_of_date)
         except (KeyError, ValueError) as exc:
             logger.error("pairs_signal_generation_failed", error=str(exc))
             return []
 
     async def on_bar(self, bar: BarData) -> list[StrategySignal]:
-        """No-op for daily pair rebalance strategy.
-
-        Args:
-            bar: A single OHLCV bar.
-
-        Returns:
-            Empty list.
-        """
+        if bar.symbol in self._bar_buffer:
+            self._bar_buffer[bar.symbol].append(bar)
         return []
 
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
-        """No-op for daily pair rebalance strategy.
-
-        Args:
-            tick: A single tick event.
-
-        Returns:
-            Empty list.
-        """
         return []
 
-    # ── Kalman Filter ────────────────────────────────────────────────────
-
-    def _kalman_update(
-        self,
-        state: KalmanState,
-        price_a: float,
-        price_b: float,
-    ) -> tuple[float, float]:
-        """Run one step of the Kalman filter to estimate hedge ratio.
-
-        The observation model is: ``price_A = beta * price_B + epsilon``.
-
-        Args:
-            state: Current Kalman filter state.
-            price_a: Price of the dependent leg.
-            price_b: Price of the independent leg.
-
-        Returns:
-            Tuple of (updated_beta, spread_residual).
-        """
-        # Predict
-        beta_pred = state.beta
-        P_pred = state.P + state.Q
-
-        # Update
-        y = price_a - beta_pred * price_b  # innovation (spread)
-        S = P_pred * price_b * price_b + state.R  # innovation covariance
-        K = P_pred * price_b / S  # Kalman gain
-
-        state.beta = beta_pred + K * y
-        state.P = (1.0 - K * price_b) * P_pred
-
-        return state.beta, y
-
-    # ── Cointegration Test ───────────────────────────────────────────────
-
-    @staticmethod
-    def _engle_granger_adf_test(
-        series_a: pd.Series,
-        series_b: pd.Series,
-    ) -> tuple[bool, float, float]:
-        """Simplified Engle-Granger cointegration test.
-
-        Runs OLS regression of A on B, then applies an ADF test on the
-        residuals.  Uses the Dickey-Fuller critical values approximation.
-
-        Args:
-            series_a: Price series of leg A (aligned with B).
-            series_b: Price series of leg B (aligned with A).
-
-        Returns:
-            Tuple of (is_cointegrated, ols_beta, approx_pvalue).
-        """
-        # OLS regression: A = beta * B + alpha + epsilon
-        b_mean = series_b.mean()
-        a_mean = series_a.mean()
-        b_demeaned = series_b - b_mean
-
-        cov_ab = ((series_a - a_mean) * b_demeaned).mean()
-        var_b = (b_demeaned ** 2).mean()
-
-        if var_b < 1e-12:
-            return False, 0.0, 1.0
-
-        beta = cov_ab / var_b
-        alpha = a_mean - beta * b_mean
-        residuals = series_a - (beta * series_b + alpha)
-
-        # ADF test on residuals (simplified: check first-order autocorrelation)
-        n = len(residuals)
-        if n < 30:
-            return False, float(beta), 1.0
-
-        diff_resid = residuals.diff().dropna()
-        lagged_resid = residuals.shift(1).dropna()
-
-        # Align
-        diff_resid = diff_resid.iloc[:len(lagged_resid)]
-        lagged_resid = lagged_resid.iloc[:len(diff_resid)]
-
-        # OLS: diff_resid = gamma * lagged_resid + error
-        lr_mean = lagged_resid.mean()
-        lr_demeaned = lagged_resid - lr_mean
-        var_lr = (lr_demeaned ** 2).mean()
-
-        if var_lr < 1e-12:
-            return False, float(beta), 1.0
-
-        gamma = ((diff_resid - diff_resid.mean()) * lr_demeaned).mean() / var_lr
-        se_gamma_residuals = diff_resid - (gamma * lagged_resid + (diff_resid.mean() - gamma * lr_mean))
-        se_gamma = float(np.sqrt((se_gamma_residuals ** 2).mean() / (var_lr * n)))
-
-        if se_gamma < 1e-12:
-            return False, float(beta), 1.0
-
-        t_stat = gamma / se_gamma
-
-        # Approximate p-value using ADF critical values for n > 100
-        # Critical values: 1% = -3.43, 5% = -2.86, 10% = -2.57
-        if t_stat < -3.43:
-            approx_p = 0.01
-        elif t_stat < -2.86:
-            approx_p = 0.05
-        elif t_stat < -2.57:
-            approx_p = 0.10
-        else:
-            approx_p = 0.50
-
-        is_coint = approx_p <= 0.05
-        return is_coint, float(beta), approx_p
-
-    # ── Signal Computation ───────────────────────────────────────────────
-
     def _compute_pairs_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
+        self, market_data: pd.DataFrame, as_of_date: datetime
     ) -> list[StrategySignal]:
-        """Core pairs-trading signal computation.
-
-        Steps:
-            1. Pivot to date x symbol close matrix.
-            2. For each pair, test cointegration over the look-back window.
-            3. Update the Kalman-filter hedge ratio.
-            4. Compute spread z-score.
-            5. Generate entry/exit signals based on z-score thresholds.
-
-        Args:
-            market_data: Multi-index (date, symbol) DataFrame with ``close``.
-            as_of_date: Evaluation date.
-
-        Returns:
-            List of trading signals.
-        """
-        # Pivot to date x symbol close matrix
         if isinstance(market_data.index, pd.MultiIndex):
-            close_prices = market_data["close"].unstack(level="symbol")
+            close = market_data["close"].unstack(level="symbol")
         else:
-            close_prices = market_data.pivot(columns="symbol", values="close")
+            close = market_data.pivot(columns="symbol", values="close")
 
-        close_prices = close_prices.loc[close_prices.index <= as_of_date].sort_index()
-
+        close = close.loc[close.index <= as_of_date].sort_index()
+        close = close.iloc[-self._formation_days:]
         signals: list[StrategySignal] = []
 
-        for pair_key, pair_state in self._pair_states.items():
-            a, b = pair_state.leg_a, pair_state.leg_b
-
-            if a not in close_prices.columns or b not in close_prices.columns:
+        for sym_a, sym_b in self._pairs:
+            if sym_a not in close.columns or sym_b not in close.columns:
                 continue
 
-            # Get aligned price series
-            pair_data = close_prices[[a, b]].dropna()
-            if len(pair_data) < self._lookback_days:
-                logger.debug(
-                    "pairs_insufficient_data",
-                    pair=pair_key,
-                    available=len(pair_data),
-                    required=self._lookback_days,
-                )
+            series_a = close[sym_a].dropna()
+            series_b = close[sym_b].dropna()
+            common_idx = series_a.index.intersection(series_b.index)
+            if len(common_idx) < 60:
                 continue
 
-            lookback_data = pair_data.iloc[-self._lookback_days:]
-            series_a = lookback_data[a]
-            series_b = lookback_data[b]
+            sa, sb = series_a.loc[common_idx], series_b.loc[common_idx]
 
-            # Test cointegration
-            is_coint, ols_beta, pvalue = self._engle_granger_adf_test(series_a, series_b)
-
-            if not is_coint:
-                # If not cointegrated and we have a position, close it
-                if pair_state.position != 0:
-                    signals.extend(
-                        self._create_close_signals(pair_state, as_of_date, "cointegration_breakdown")
-                    )
-                    pair_state.position = 0
+            _, pvalue, _ = coint(sa.values, sb.values)
+            if pvalue > self._coint_pvalue:
                 continue
 
-            # Update Kalman filter with latest prices
-            price_a = float(series_a.iloc[-1])
-            price_b = float(series_b.iloc[-1])
-            beta, spread = self._kalman_update(pair_state.kalman, price_a, price_b)
+            pair_key = (sym_a, sym_b)
+            if pair_key not in self._kalman_filters:
+                self._kalman_filters[pair_key] = _KalmanHedgeRatio()
 
-            # Compute spread series using Kalman beta
-            spread_series = series_a.values - beta * series_b.values
-            pair_state.spread_mean = float(np.mean(spread_series))
-            pair_state.spread_std = float(np.std(spread_series, ddof=1))
+            kf = self._kalman_filters[pair_key]
+            for xa, xb in zip(sa.values, sb.values):
+                kf.update(xa, xb)
 
-            if pair_state.spread_std < 1e-8:
-                continue
+            spread = sb.values - kf.beta * sa.values
+            zscore = (spread[-1] - np.mean(spread)) / (np.std(spread) + 1e-9)
 
-            z_score = (spread - pair_state.spread_mean) / pair_state.spread_std
-
-            logger.debug(
-                "pairs_z_score",
-                pair=pair_key,
-                z_score=round(z_score, 4),
-                beta=round(beta, 4),
-                spread=round(spread, 4),
-            )
-
-            # Generate signals based on z-score
-            if pair_state.position == 0:
-                # No position — check for entry
-                if z_score < -self._entry_z:
-                    # Spread is too low: long A, short B
-                    signals.extend(
-                        self._create_entry_signals(
-                            pair_state, as_of_date, z_score, beta,
-                            long_a=True,
+            if abs(zscore) >= self._zscore_entry:
+                direction_a = SignalDirection.LONG if zscore < 0 else SignalDirection.SHORT
+                direction_b = SignalDirection.SHORT if zscore < 0 else SignalDirection.LONG
+                for sym, direction in [(sym_a, direction_a), (sym_b, direction_b)]:
+                    signals.append(
+                        StrategySignal(
+                            symbol=sym,
+                            direction=direction,
+                            target_weight=0.05,
+                            confidence=min(abs(zscore) / 4.0, 1.0),
+                            strategy_id=self._strategy_id,
+                            generated_at=as_of_date,
+                            metadata={
+                                "pair": f"{sym_a}/{sym_b}",
+                                "zscore": round(float(zscore), 4),
+                                "hedge_ratio": round(kf.beta, 6),
+                                "coint_pvalue": round(float(pvalue), 4),
+                            },
                         )
                     )
-                    pair_state.position = 1
-                elif z_score > self._entry_z:
-                    # Spread is too high: short A, long B
-                    signals.extend(
-                        self._create_entry_signals(
-                            pair_state, as_of_date, z_score, beta,
-                            long_a=False,
-                        )
-                    )
-                    pair_state.position = -1
-            else:
-                # Have position — check for exit
-                if abs(z_score) < self._exit_z:
-                    signals.extend(
-                        self._create_close_signals(pair_state, as_of_date, "mean_reversion")
-                    )
-                    pair_state.position = 0
 
+        logger.info("pairs_signal_generation_complete", signal_count=len(signals))
         return signals
-
-    def _create_entry_signals(
-        self,
-        pair_state: PairState,
-        as_of_date: datetime,
-        z_score: float,
-        beta: float,
-        long_a: bool,
-    ) -> list[StrategySignal]:
-        """Create entry signals for a pair trade.
-
-        Args:
-            pair_state: State of the pair.
-            as_of_date: Signal timestamp.
-            z_score: Current spread z-score.
-            beta: Current hedge ratio.
-            long_a: If True, go long A and short B; otherwise the reverse.
-
-        Returns:
-            Two signals — one for each leg.
-        """
-        confidence = min(0.95, abs(z_score) / (self._entry_z * 2))
-
-        dir_a = SignalDirection.LONG if long_a else SignalDirection.SHORT
-        dir_b = SignalDirection.SHORT if long_a else SignalDirection.LONG
-
-        meta = {
-            "pair": f"{pair_state.leg_a}/{pair_state.leg_b}",
-            "z_score": round(z_score, 4),
-            "hedge_ratio": round(beta, 6),
-            "entry_reason": "spread_divergence",
-        }
-
-        return [
-            StrategySignal(
-                symbol=pair_state.leg_a,
-                direction=dir_a,
-                target_weight=self._weight,
-                confidence=round(confidence, 4),
-                strategy_id=self._strategy_id,
-                generated_at=as_of_date,
-                metadata={**meta, "leg": "A"},
-            ),
-            StrategySignal(
-                symbol=pair_state.leg_b,
-                direction=dir_b,
-                target_weight=self._weight * beta,
-                confidence=round(confidence, 4),
-                strategy_id=self._strategy_id,
-                generated_at=as_of_date,
-                metadata={**meta, "leg": "B"},
-            ),
-        ]
-
-    def _create_close_signals(
-        self,
-        pair_state: PairState,
-        as_of_date: datetime,
-        reason: str,
-    ) -> list[StrategySignal]:
-        """Create close signals for both legs of a pair.
-
-        Args:
-            pair_state: State of the pair.
-            as_of_date: Signal timestamp.
-            reason: Reason for closing the position.
-
-        Returns:
-            Two CLOSE signals — one for each leg.
-        """
-        meta = {
-            "pair": f"{pair_state.leg_a}/{pair_state.leg_b}",
-            "exit_reason": reason,
-        }
-
-        return [
-            StrategySignal(
-                symbol=pair_state.leg_a,
-                direction=SignalDirection.CLOSE,
-                target_weight=0.0,
-                confidence=0.9,
-                strategy_id=self._strategy_id,
-                generated_at=as_of_date,
-                metadata={**meta, "leg": "A"},
-            ),
-            StrategySignal(
-                symbol=pair_state.leg_b,
-                direction=SignalDirection.CLOSE,
-                target_weight=0.0,
-                confidence=0.9,
-                strategy_id=self._strategy_id,
-                generated_at=as_of_date,
-                metadata={**meta, "leg": "B"},
-            ),
-        ]

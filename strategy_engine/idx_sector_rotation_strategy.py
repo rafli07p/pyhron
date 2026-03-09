@@ -1,8 +1,12 @@
-"""Relative-strength sector rotation strategy for IDX.
+"""Relative strength sector rotation strategy for IDX equities.
 
-Compares 1-month returns across IDX sectors, overweights the top 3 sectors,
-and allocates equally within each selected sector using representative
-liquid stocks.
+Ranks IDX sector indices by trailing relative strength, rotates into the
+top-performing sectors, and selects the most liquid constituents within
+each chosen sector.
+
+References:
+    Stangl, Jacobsen & Visaltanachoti (2009) — *Sector Rotation over
+    Business Cycles*.
 
 Usage::
 
@@ -30,350 +34,158 @@ from strategy_engine.base_strategy_interface import (
 
 logger = get_logger(__name__)
 
-# ── IDX Sector Definitions ──────────────────────────────────────────────────
-# Maps each sector to its representative liquid stocks and sector index symbol.
+# ── IDX sector mapping ──────────────────────────────────────────────────────
 
-IDX_SECTORS: dict[str, dict[str, Any]] = {
-    "FINANCIALS": {
-        "index": "IDXFINANCE",
-        "stocks": ["BBCA", "BBRI", "BMRI", "BBNI"],
-    },
-    "CONSUMER_STAPLES": {
-        "index": "IDXNONCYC",
-        "stocks": ["UNVR", "ICBP", "INDF", "KLBF"],
-    },
-    "CONSUMER_DISCRETIONARY": {
-        "index": "IDXCYCLIC",
-        "stocks": ["ASII", "ACES", "ERAA", "MAPI"],
-    },
-    "ENERGY": {
-        "index": "IDXENERGY",
-        "stocks": ["ADRO", "ITMG", "PTBA", "PGAS"],
-    },
-    "MATERIALS": {
-        "index": "IDXBASIC",
-        "stocks": ["INKP", "SMGR", "INTP", "TINS"],
-    },
-    "TELECOM": {
-        "index": "IDXINFRA",
-        "stocks": ["TLKM", "EXCL", "ISAT", "TOWR"],
-    },
-    "PROPERTY": {
-        "index": "IDXPROPERT",
-        "stocks": ["BSDE", "SMRA", "CTRA", "PWON"],
-    },
-    "MINING": {
-        "index": "IDXMINING",
-        "stocks": ["ANTM", "INCO", "MDKA", "ESSA"],
-    },
-    "INDUSTRIALS": {
-        "index": "IDXINDUST",
-        "stocks": ["UNTR", "WIKA", "WSKT", "JSMR"],
-    },
-    "TOBACCO": {
-        "index": "IDXTOBACCO",
-        "stocks": ["HMSP", "GGRM"],
-    },
+_SECTOR_CONSTITUENTS: dict[str, list[str]] = {
+    "FINANCE": ["BBCA", "BBRI", "BMRI", "BBNI", "BRIS"],
+    "CONSUMER": ["UNVR", "ICBP", "INDF", "KLBF", "HMSP"],
+    "ENERGY": ["ADRO", "PTBA", "ITMG", "MEDC", "PGAS"],
+    "BASIC_MATERIALS": ["INCO", "ANTM", "TINS", "SMGR", "INTP"],
+    "INFRASTRUCTURE": ["TLKM", "TOWR", "TBIG", "JSMR", "EXCL"],
+    "INDUSTRIAL": ["ASII", "UNTR", "CPIN", "SRTG", "INKP"],
+    "PROPERTY": ["BSDE", "SMRA", "CTRA", "PWON", "DILD"],
 }
 
 
 class IDXSectorRotationStrategy(BaseStrategyInterface):
-    """Relative-strength sector rotation strategy for IDX.
+    """Relative strength sector rotation strategy.
 
-    The strategy computes the trailing 1-month return for each IDX sector,
-    ranks sectors by momentum, selects the top ``n_top_sectors`` sectors,
-    and allocates equally across representative stocks within each selected
-    sector.
+    Steps:
+        1. Compute trailing ``lookback_months`` return for each sector
+           (equal-weight of constituents).
+        2. Rank sectors by relative strength (return vs IHSG).
+        3. Select top ``n_sectors`` sectors.
+        4. Within each sector, select top ``stocks_per_sector`` by momentum.
+        5. Assign equal weight across all selected stocks.
 
     Args:
-        sectors: Sector definition mapping.  Defaults to ``IDX_SECTORS``.
-        n_top_sectors: Number of top sectors to overweight (default 3).
-        momentum_period: Look-back period in trading days for sector
-            momentum calculation (default 21 = ~1 month).
-        use_sector_index: If True, compute sector returns from sector
-            index symbols; otherwise average constituent returns.
-        strategy_id: Unique identifier for this strategy instance.
+        sector_map: Mapping of sector name to constituent tickers.
+        lookback_months: Months for relative strength calculation.
+        n_sectors: Number of top sectors to rotate into.
+        stocks_per_sector: Number of stocks per selected sector.
+        strategy_id: Unique strategy identifier.
     """
 
     def __init__(
         self,
-        sectors: dict[str, dict[str, Any]] | None = None,
-        n_top_sectors: int = 3,
-        momentum_period: int = 21,
-        use_sector_index: bool = False,
+        sector_map: dict[str, list[str]] | None = None,
+        lookback_months: int = 3,
+        n_sectors: int = 3,
+        stocks_per_sector: int = 3,
         strategy_id: str = "idx_sector_rotation",
     ) -> None:
-        self._sectors = sectors or dict(IDX_SECTORS)
-        self._n_top_sectors = n_top_sectors
-        self._momentum_period = momentum_period
-        self._use_sector_index = use_sector_index
+        self._sectors = sector_map or dict(_SECTOR_CONSTITUENTS)
+        self._lookback_months = lookback_months
+        self._n_sectors = n_sectors
+        self._stocks_per_sector = stocks_per_sector
         self._strategy_id = strategy_id
 
-        # Build full universe
-        self._universe: list[str] = []
-        for sector_info in self._sectors.values():
-            self._universe.extend(sector_info["stocks"])
-            if self._use_sector_index:
-                self._universe.append(sector_info["index"])
-        self._universe = sorted(set(self._universe))
-
-        # Current sector allocation
-        self._selected_sectors: list[str] = []
+        self._all_symbols = [s for syms in self._sectors.values() for s in syms]
 
         logger.info(
-            "sector_rotation_strategy_initialised",
+            "sector_rotation_initialised",
             strategy_id=self._strategy_id,
-            sector_count=len(self._sectors),
-            n_top_sectors=self._n_top_sectors,
-            momentum_period=self._momentum_period,
+            num_sectors=len(self._sectors),
+            lookback_months=self._lookback_months,
         )
 
-    # ── Interface implementation ─────────────────────────────────────────
-
     def get_parameters(self) -> StrategyParameters:
-        """Return current strategy parameters.
-
-        Returns:
-            StrategyParameters with sector-rotation-specific configuration.
-        """
         return StrategyParameters(
-            name="IDX Sector Rotation (Relative Strength)",
+            name="IDX Relative Strength Sector Rotation",
             version="1.0.0",
-            universe=list(self._universe),
-            lookback_days=self._momentum_period + 10,
+            universe=list(self._all_symbols),
+            lookback_days=self._lookback_months * 21,
             rebalance_frequency="monthly",
             custom={
-                "n_top_sectors": self._n_top_sectors,
-                "momentum_period": self._momentum_period,
-                "sectors": list(self._sectors.keys()),
-                "use_sector_index": self._use_sector_index,
+                "n_sectors": self._n_sectors,
+                "stocks_per_sector": self._stocks_per_sector,
+                "lookback_months": self._lookback_months,
             },
         )
 
     async def generate_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
+        self, market_data: pd.DataFrame, as_of_date: datetime
     ) -> list[StrategySignal]:
-        """Generate sector-rotation signals based on relative strength.
-
-        Args:
-            market_data: DataFrame with multi-index ``(date, symbol)`` and
-                column ``close``.
-            as_of_date: Evaluation date.
-
-        Returns:
-            List of LONG/CLOSE signals reflecting the sector rotation.
-        """
-        logger.info("sector_rotation_signal_generation_start", as_of_date=as_of_date.isoformat())
-
+        logger.info("sector_rotation_signal_start", as_of_date=as_of_date.isoformat())
         try:
-            signals = self._compute_sector_signals(market_data, as_of_date)
-            logger.info(
-                "sector_rotation_signal_generation_complete",
-                as_of_date=as_of_date.isoformat(),
-                signal_count=len(signals),
-            )
-            return signals
+            return self._compute_rotation_signals(market_data, as_of_date)
         except (KeyError, ValueError) as exc:
-            logger.error("sector_rotation_signal_generation_failed", error=str(exc))
+            logger.error("sector_rotation_signal_failed", error=str(exc))
             return []
 
     async def on_bar(self, bar: BarData) -> list[StrategySignal]:
-        """No-op for monthly sector rotation.
-
-        Args:
-            bar: A single OHLCV bar.
-
-        Returns:
-            Empty list.
-        """
         return []
 
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
-        """No-op for monthly sector rotation.
-
-        Args:
-            tick: A single tick event.
-
-        Returns:
-            Empty list.
-        """
         return []
 
-    # ── Private helpers ──────────────────────────────────────────────────
+    def _compute_rotation_signals(
+        self, market_data: pd.DataFrame, as_of_date: datetime
+    ) -> list[StrategySignal]:
+        if isinstance(market_data.index, pd.MultiIndex):
+            close = market_data["close"].unstack(level="symbol")
+        else:
+            close = market_data.pivot(columns="symbol", values="close")
 
-    def _compute_sector_returns(
-        self,
-        close_prices: pd.DataFrame,
-    ) -> dict[str, float]:
-        """Compute trailing 1-month return for each sector.
+        close = close.loc[close.index <= as_of_date].sort_index()
+        lookback_days = self._lookback_months * 21
 
-        If ``use_sector_index`` is True, uses the sector index symbol's
-        return.  Otherwise, averages the returns of constituent stocks.
+        if len(close) < lookback_days:
+            logger.warning("sector_rotation_insufficient_data")
+            return []
 
-        Args:
-            close_prices: Date x symbol close-price matrix.
+        window = close.iloc[-lookback_days:]
 
-        Returns:
-            Mapping of sector name to 1-month return.
-        """
+        # Compute sector returns (equal-weight of constituents).
         sector_returns: dict[str, float] = {}
-
-        for sector_name, sector_info in self._sectors.items():
-            if self._use_sector_index:
-                idx_sym = sector_info["index"]
-                if idx_sym in close_prices.columns:
-                    series = close_prices[idx_sym].dropna()
-                    if len(series) >= self._momentum_period + 1:
-                        ret = float(
-                            series.iloc[-1] / series.iloc[-self._momentum_period - 1] - 1.0
-                        )
-                        sector_returns[sector_name] = ret
-                        continue
-
-            # Average constituent returns
-            stocks = sector_info["stocks"]
-            available = [s for s in stocks if s in close_prices.columns]
+        for sector, constituents in self._sectors.items():
+            available = [c for c in constituents if c in window.columns]
             if not available:
                 continue
+            sector_ret = window[available].pct_change().mean(axis=1).add(1).prod() - 1
+            sector_returns[sector] = float(sector_ret)
 
-            stock_returns: list[float] = []
-            for stock in available:
-                series = close_prices[stock].dropna()
-                if len(series) >= self._momentum_period + 1:
-                    ret = float(
-                        series.iloc[-1] / series.iloc[-self._momentum_period - 1] - 1.0
-                    )
-                    stock_returns.append(ret)
-
-            if stock_returns:
-                sector_returns[sector_name] = float(np.mean(stock_returns))
-
-        return sector_returns
-
-    def _compute_sector_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
-    ) -> list[StrategySignal]:
-        """Core sector rotation signal computation.
-
-        Steps:
-            1. Pivot to date x symbol close matrix.
-            2. Compute 1-month returns per sector.
-            3. Rank sectors and select top N.
-            4. Allocate equal weight across stocks in selected sectors.
-            5. Generate CLOSE signals for stocks in de-selected sectors.
-
-        Args:
-            market_data: Multi-index (date, symbol) DataFrame with ``close``.
-            as_of_date: Evaluation date.
-
-        Returns:
-            List of trading signals.
-        """
-        # Pivot
-        if isinstance(market_data.index, pd.MultiIndex):
-            close_prices = market_data["close"].unstack(level="symbol")
-        else:
-            close_prices = market_data.pivot(columns="symbol", values="close")
-
-        close_prices = close_prices.loc[close_prices.index <= as_of_date].sort_index()
-
-        if len(close_prices) < self._momentum_period + 1:
-            logger.warning(
-                "sector_rotation_insufficient_data",
-                required=self._momentum_period + 1,
-                available=len(close_prices),
-            )
+        if not sector_returns:
             return []
 
-        # Compute sector returns
-        sector_returns = self._compute_sector_returns(close_prices)
+        ranked = sorted(sector_returns.items(), key=lambda x: x[1], reverse=True)
+        top_sectors = ranked[: self._n_sectors]
 
-        if len(sector_returns) < self._n_top_sectors:
-            logger.warning(
-                "sector_rotation_insufficient_sectors",
-                available=len(sector_returns),
-                required=self._n_top_sectors,
-            )
+        # Within each top sector, pick best-performing stocks.
+        selected: list[tuple[str, float, str]] = []
+        for sector, sector_ret in top_sectors:
+            constituents = [c for c in self._sectors[sector] if c in window.columns]
+            stock_returns: dict[str, float] = {}
+            for sym in constituents:
+                sym_close = window[sym].dropna()
+                if len(sym_close) >= 2:
+                    stock_returns[sym] = float(sym_close.iloc[-1] / sym_close.iloc[0] - 1)
+
+            sorted_stocks = sorted(stock_returns.items(), key=lambda x: x[1], reverse=True)
+            for sym, ret in sorted_stocks[: self._stocks_per_sector]:
+                selected.append((sym, ret, sector))
+
+        if not selected:
             return []
 
-        # Rank and select top N sectors
-        sorted_sectors = sorted(sector_returns.items(), key=lambda x: x[1], reverse=True)
-        top_sectors = [name for name, _ in sorted_sectors[: self._n_top_sectors]]
-        previous_sectors = list(self._selected_sectors)
-        self._selected_sectors = top_sectors
-
-        logger.info(
-            "sector_rotation_selected",
-            top_sectors=top_sectors,
-            sector_returns={k: round(v, 4) for k, v in sorted_sectors},
-        )
-
-        # Collect stocks in selected sectors
-        selected_stocks: list[str] = []
-        stock_to_sector: dict[str, str] = {}
-        for sector_name in top_sectors:
-            stocks = self._sectors[sector_name]["stocks"]
-            for stock in stocks:
-                if stock in close_prices.columns:
-                    selected_stocks.append(stock)
-                    stock_to_sector[stock] = sector_name
-
-        if not selected_stocks:
-            logger.warning("sector_rotation_no_stocks_in_selected_sectors")
-            return []
-
-        # Equal weight across all selected stocks
-        weight = 1.0 / len(selected_stocks)
-
+        weight = 1.0 / len(selected)
         signals: list[StrategySignal] = []
-
-        # CLOSE signals for stocks in previously-selected but now de-selected sectors
-        deselected_sectors = set(previous_sectors) - set(top_sectors)
-        for sector_name in deselected_sectors:
-            for stock in self._sectors[sector_name]["stocks"]:
-                signals.append(
-                    StrategySignal(
-                        symbol=stock,
-                        direction=SignalDirection.CLOSE,
-                        target_weight=0.0,
-                        confidence=0.85,
-                        strategy_id=self._strategy_id,
-                        generated_at=as_of_date,
-                        metadata={
-                            "exit_reason": "sector_deselected",
-                            "sector": sector_name,
-                            "sector_return": round(sector_returns.get(sector_name, 0.0), 4),
-                        },
-                    )
-                )
-
-        # LONG signals for stocks in selected sectors
-        for stock in selected_stocks:
-            sector_name = stock_to_sector[stock]
-            sector_ret = sector_returns.get(sector_name, 0.0)
-
-            # Confidence based on sector rank
-            rank_idx = top_sectors.index(sector_name)
-            confidence = 0.9 - rank_idx * 0.1  # top sector gets 0.9, second 0.8, etc.
-
+        for sym, ret, sector in selected:
             signals.append(
                 StrategySignal(
-                    symbol=stock,
+                    symbol=sym,
                     direction=SignalDirection.LONG,
                     target_weight=weight,
-                    confidence=round(max(0.5, confidence), 4),
+                    confidence=round(min(max(ret + 0.5, 0.0), 1.0), 4),
                     strategy_id=self._strategy_id,
                     generated_at=as_of_date,
                     metadata={
-                        "sector": sector_name,
-                        "sector_1m_return": round(sector_ret, 4),
-                        "sector_rank": rank_idx + 1,
+                        "sector": sector,
+                        "stock_return": round(ret, 6),
+                        "sector_return": round(sector_returns.get(sector, 0.0), 6),
                     },
                 )
             )
 
+        logger.info("sector_rotation_signal_complete", signal_count=len(signals))
         return signals

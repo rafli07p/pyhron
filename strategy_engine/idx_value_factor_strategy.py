@@ -1,7 +1,12 @@
-"""PBV + ROE value factor strategy with quarterly rebalance.
+"""PBV + ROE quarterly rebalance value factor strategy for IDX equities.
 
-Screens for stocks with low Price-to-Book Value (PBV) and high Return on
-Equity (ROE), assigns equal weight, and rebalances quarterly.
+Constructs a composite value score from Price-to-Book Value (PBV) and
+Return on Equity (ROE), then goes long the cheapest-yet-profitable
+stocks on a quarterly rebalance cycle.
+
+References:
+    Fama & French (1993) — *Common Risk Factors in the Returns on Stocks*.
+    Piotroski (2000) — *Value Investing: The Use of Historical Financial*.
 
 Usage::
 
@@ -32,332 +37,144 @@ logger = get_logger(__name__)
 _DEFAULT_UNIVERSE: list[str] = [
     "BBCA", "BBRI", "BMRI", "BBNI", "TLKM", "ASII", "UNVR", "HMSP",
     "GGRM", "KLBF", "ICBP", "INDF", "SMGR", "PTBA", "ADRO", "ITMG",
-    "UNTR", "PGAS", "JSMR", "CPIN", "INKP", "INTP", "EXCL", "TOWR",
-    "TBIG", "MDKA", "EMTK", "ESSA", "ACES", "ERAA", "MAPI", "MNCN",
-    "BSDE", "SMRA", "WIKA", "WSKT", "ANTM", "TINS", "INCO", "ISAT",
+    "UNTR", "PGAS", "JSMR", "CPIN", "INKP", "INTP", "SMRA", "BSDE",
+    "WIKA", "WSKT", "ANTM", "TINS", "INCO", "EXCL", "TOWR", "TBIG",
 ]
 
 
 class IDXValueFactorStrategy(BaseStrategyInterface):
-    """PBV + ROE value factor strategy with quarterly rebalance.
+    """PBV + ROE composite value factor strategy with quarterly rebalance.
 
-    The strategy scores each stock using a composite value-quality metric:
-
-        ``composite_score = (1 - pbv_rank_pct) * pbv_weight + roe_rank_pct * roe_weight``
-
-    Where rank percentiles are computed cross-sectionally.  Stocks in the
-    top quintile by composite score are selected and equally weighted.
+    Scoring formula:
+        value_score = z_score(-PBV) + z_score(ROE)
+    Stocks with ROE < ``min_roe`` are excluded (value trap filter).
+    Top quintile is selected for equal-weight long portfolio.
 
     Args:
         universe: List of IDX ticker symbols.
-        pbv_weight: Weight for the PBV factor in the composite (default 0.5).
-        roe_weight: Weight for the ROE factor in the composite (default 0.5).
-        max_pbv: Maximum PBV to include in the screen (default 3.0).
-        min_roe: Minimum ROE to include in the screen (default 0.05 = 5%).
-        top_quantile: Fraction of stocks to select (default 0.2).
-        rebalance_months: Months in which to rebalance (default Q1 ends:
-            March, June, September, December).
-        strategy_id: Unique identifier for this strategy instance.
+        top_quantile: Fraction of universe to go long (default 0.2).
+        min_roe: Minimum ROE threshold to exclude value traps.
+        pbv_weight: Weight of PBV z-score in composite (default 0.5).
+        roe_weight: Weight of ROE z-score in composite (default 0.5).
+        strategy_id: Unique strategy identifier.
     """
 
     def __init__(
         self,
         universe: list[str] | None = None,
+        top_quantile: float = 0.20,
+        min_roe: float = 0.05,
         pbv_weight: float = 0.5,
         roe_weight: float = 0.5,
-        max_pbv: float = 3.0,
-        min_roe: float = 0.05,
-        top_quantile: float = 0.20,
-        rebalance_months: list[int] | None = None,
-        strategy_id: str = "idx_value_factor",
+        strategy_id: str = "idx_value_pbv_roe",
     ) -> None:
         self._universe = universe or list(_DEFAULT_UNIVERSE)
+        self._top_quantile = top_quantile
+        self._min_roe = min_roe
         self._pbv_weight = pbv_weight
         self._roe_weight = roe_weight
-        self._max_pbv = max_pbv
-        self._min_roe = min_roe
-        self._top_quantile = top_quantile
-        self._rebalance_months = rebalance_months or [3, 6, 9, 12]
         self._strategy_id = strategy_id
 
-        # Current portfolio holdings from last rebalance
-        self._current_holdings: dict[str, float] = {}
-        self._last_rebalance_month: int | None = None
-
         logger.info(
-            "value_factor_strategy_initialised",
+            "value_strategy_initialised",
             strategy_id=self._strategy_id,
             universe_size=len(self._universe),
-            pbv_weight=self._pbv_weight,
-            roe_weight=self._roe_weight,
-            max_pbv=self._max_pbv,
-            min_roe=self._min_roe,
         )
 
-    # ── Interface implementation ─────────────────────────────────────────
-
     def get_parameters(self) -> StrategyParameters:
-        """Return current strategy parameters.
-
-        Returns:
-            StrategyParameters with value-factor-specific configuration.
-        """
         return StrategyParameters(
-            name="IDX PBV + ROE Value Factor",
+            name="IDX PBV+ROE Value Factor",
             version="1.0.0",
             universe=list(self._universe),
             lookback_days=90,
             rebalance_frequency="quarterly",
             custom={
+                "top_quantile": self._top_quantile,
+                "min_roe": self._min_roe,
                 "pbv_weight": self._pbv_weight,
                 "roe_weight": self._roe_weight,
-                "max_pbv": self._max_pbv,
-                "min_roe": self._min_roe,
-                "top_quantile": self._top_quantile,
-                "rebalance_months": self._rebalance_months,
             },
         )
 
     async def generate_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
+        self, market_data: pd.DataFrame, as_of_date: datetime
     ) -> list[StrategySignal]:
-        """Generate value-factor rebalance signals.
+        """Generate value factor signals from PBV and ROE data.
 
-        The ``market_data`` DataFrame must include ``pbv`` and ``roe`` columns
-        in addition to ``close``.  If the current month is not a rebalance
-        month, the method returns the existing holdings as REBALANCE signals
-        (i.e., hold current portfolio).
+        ``market_data`` must contain columns ``pbv`` and ``roe`` indexed by
+        symbol (or multi-index with date and symbol).
 
         Args:
-            market_data: DataFrame with multi-index ``(date, symbol)`` and
-                columns ``close``, ``pbv``, ``roe``.
+            market_data: DataFrame with fundamental data.
             as_of_date: Evaluation date.
 
         Returns:
-            List of LONG/REBALANCE signals for the value-screened portfolio.
+            List of StrategySignal for top-quintile value stocks.
         """
-        logger.info("value_factor_signal_generation_start", as_of_date=as_of_date.isoformat())
-
-        current_month = as_of_date.month
-
-        # Check if this is a rebalance month
-        if (
-            current_month not in self._rebalance_months
-            and self._last_rebalance_month is not None
-        ):
-            logger.info(
-                "value_factor_not_rebalance_month",
-                month=current_month,
-                holding_count=len(self._current_holdings),
-            )
-            return self._emit_hold_signals(as_of_date)
-
+        logger.info("value_signal_generation_start", as_of_date=as_of_date.isoformat())
         try:
-            signals = self._compute_value_signals(market_data, as_of_date)
-            self._last_rebalance_month = current_month
-            logger.info(
-                "value_factor_signal_generation_complete",
-                as_of_date=as_of_date.isoformat(),
-                signal_count=len(signals),
-            )
-            return signals
+            return self._compute_value_signals(market_data, as_of_date)
         except (KeyError, ValueError) as exc:
-            logger.error("value_factor_signal_generation_failed", error=str(exc))
+            logger.error("value_signal_generation_failed", error=str(exc))
             return []
 
     async def on_bar(self, bar: BarData) -> list[StrategySignal]:
-        """No-op for quarterly rebalance strategy.
-
-        Args:
-            bar: A single OHLCV bar.
-
-        Returns:
-            Empty list.
-        """
         return []
 
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
-        """No-op for quarterly rebalance strategy.
-
-        Args:
-            tick: A single tick event.
-
-        Returns:
-            Empty list.
-        """
         return []
 
-    # ── Private helpers ──────────────────────────────────────────────────
-
     def _compute_value_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
+        self, market_data: pd.DataFrame, as_of_date: datetime
     ) -> list[StrategySignal]:
-        """Core value-factor screening and signal generation.
-
-        Steps:
-            1. Extract latest PBV and ROE for each stock.
-            2. Apply hard filters (max PBV, min ROE).
-            3. Rank stocks by composite score.
-            4. Select top quintile.
-            5. Close positions no longer in the portfolio.
-            6. Open/maintain positions in selected stocks.
-
-        Args:
-            market_data: Multi-index (date, symbol) DataFrame with
-                ``close``, ``pbv``, ``roe``.
-            as_of_date: Evaluation date.
-
-        Returns:
-            List of trading signals.
-        """
-        # Extract the latest fundamental data per symbol
         if isinstance(market_data.index, pd.MultiIndex):
-            latest = market_data.loc[market_data.index.get_level_values("date") <= as_of_date]
-            latest = latest.groupby(level="symbol").last()
-        else:
-            latest = market_data.loc[market_data.index <= as_of_date].copy()
-
-        # Ensure required columns exist
-        required_cols = {"pbv", "roe"}
-        available_cols = set(latest.columns)
-        if not required_cols.issubset(available_cols):
-            logger.warning(
-                "value_factor_missing_columns",
-                required=list(required_cols),
-                available=list(available_cols),
+            latest = market_data.xs(
+                market_data.index.get_level_values("date").max(), level="date"
             )
-            # Fall back to close-based proxy if fundamentals are missing
-            return self._fallback_price_based_signals(market_data, as_of_date)
+        else:
+            latest = market_data
 
-        # Filter to universe
-        universe_data = latest.loc[latest.index.isin(self._universe)].copy()
+        fundamentals = latest[["pbv", "roe"]].copy()
+        fundamentals = fundamentals.reindex(self._universe).dropna()
 
-        if universe_data.empty:
-            logger.warning("value_factor_no_universe_data")
+        # Filter value traps: ROE must exceed minimum threshold.
+        fundamentals = fundamentals[fundamentals["roe"] >= self._min_roe]
+        if len(fundamentals) < 3:
+            logger.warning("value_insufficient_stocks", count=len(fundamentals))
             return []
 
-        # Hard filters
-        screened = universe_data[
-            (universe_data["pbv"] > 0)
-            & (universe_data["pbv"] <= self._max_pbv)
-            & (universe_data["roe"] >= self._min_roe)
-        ].copy()
-
-        if screened.empty:
-            logger.warning("value_factor_screen_empty_after_filters")
-            return []
-
-        # Cross-sectional rank percentiles
-        screened["pbv_rank_pct"] = screened["pbv"].rank(ascending=True, pct=True)
-        screened["roe_rank_pct"] = screened["roe"].rank(ascending=True, pct=True)
-
-        # Composite score: low PBV (inverted rank) + high ROE
-        screened["composite_score"] = (
-            (1.0 - screened["pbv_rank_pct"]) * self._pbv_weight
-            + screened["roe_rank_pct"] * self._roe_weight
+        # Cross-sectional z-scores.
+        pbv_z = -(fundamentals["pbv"] - fundamentals["pbv"].mean()) / (
+            fundamentals["pbv"].std() + 1e-9
+        )
+        roe_z = (fundamentals["roe"] - fundamentals["roe"].mean()) / (
+            fundamentals["roe"].std() + 1e-9
         )
 
-        # Select top quintile
-        n_select = max(1, int(np.ceil(len(screened) * self._top_quantile)))
-        selected = screened.nlargest(n_select, "composite_score")
+        composite = self._pbv_weight * pbv_z + self._roe_weight * roe_z
 
+        n_select = max(1, int(np.ceil(len(composite) * self._top_quantile)))
+        top_stocks = composite.nlargest(n_select)
         weight = 1.0 / n_select
 
         signals: list[StrategySignal] = []
-
-        # Close signals for stocks no longer in the portfolio
-        new_holdings = set(selected.index)
-        for symbol in list(self._current_holdings.keys()):
-            if symbol not in new_holdings:
-                signals.append(
-                    StrategySignal(
-                        symbol=symbol,
-                        direction=SignalDirection.CLOSE,
-                        target_weight=0.0,
-                        confidence=0.9,
-                        strategy_id=self._strategy_id,
-                        generated_at=as_of_date,
-                        metadata={"exit_reason": "quarterly_rebalance_drop"},
-                    )
-                )
-
-        # Long signals for selected stocks
-        self._current_holdings = {}
-        for symbol in selected.index:
-            row = selected.loc[symbol]
-            composite = float(row["composite_score"])
-            confidence = min(0.95, composite)
-
-            self._current_holdings[symbol] = weight
-
+        for symbol in top_stocks.index:
+            rank_pct = float(composite.rank(ascending=True)[symbol] / len(composite))
             signals.append(
                 StrategySignal(
                     symbol=symbol,
                     direction=SignalDirection.LONG,
                     target_weight=weight,
-                    confidence=round(confidence, 4),
+                    confidence=round(rank_pct, 4),
                     strategy_id=self._strategy_id,
                     generated_at=as_of_date,
                     metadata={
-                        "pbv": round(float(row["pbv"]), 4),
-                        "roe": round(float(row["roe"]), 4),
-                        "composite_score": round(composite, 4),
-                        "pbv_rank_pct": round(float(row["pbv_rank_pct"]), 4),
-                        "roe_rank_pct": round(float(row["roe_rank_pct"]), 4),
+                        "composite_score": round(float(composite[symbol]), 4),
+                        "pbv": round(float(fundamentals.loc[symbol, "pbv"]), 4),
+                        "roe": round(float(fundamentals.loc[symbol, "roe"]), 4),
                     },
                 )
             )
 
-        return signals
-
-    def _fallback_price_based_signals(
-        self,
-        market_data: pd.DataFrame,
-        as_of_date: datetime,
-    ) -> list[StrategySignal]:
-        """Fallback when fundamental data is unavailable.
-
-        Uses trailing return as a crude quality proxy. This should rarely
-        be invoked in production.
-
-        Args:
-            market_data: Market data DataFrame.
-            as_of_date: Evaluation date.
-
-        Returns:
-            Empty signal list with a warning logged.
-        """
-        logger.warning(
-            "value_factor_using_fallback",
-            reason="fundamental_data_missing",
-            as_of_date=as_of_date.isoformat(),
-        )
-        return []
-
-    def _emit_hold_signals(self, as_of_date: datetime) -> list[StrategySignal]:
-        """Re-emit current holdings as REBALANCE signals (hold portfolio).
-
-        Args:
-            as_of_date: Signal timestamp.
-
-        Returns:
-            REBALANCE signals for all current holdings.
-        """
-        signals: list[StrategySignal] = []
-        for symbol, weight in self._current_holdings.items():
-            signals.append(
-                StrategySignal(
-                    symbol=symbol,
-                    direction=SignalDirection.REBALANCE,
-                    target_weight=weight,
-                    confidence=0.8,
-                    strategy_id=self._strategy_id,
-                    generated_at=as_of_date,
-                    metadata={"hold_reason": "not_rebalance_month"},
-                )
-            )
+        logger.info("value_signal_generation_complete", signal_count=len(signals))
         return signals
