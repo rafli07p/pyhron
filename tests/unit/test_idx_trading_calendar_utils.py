@@ -12,23 +12,22 @@ from datetime import date, timedelta
 
 import pytest
 
-
 # ── Calendar Utilities (pure functions under test) ──────────────────────────
 
 
 # Indonesian public holidays for 2025 (subset for testing)
 IDX_HOLIDAYS_2025: set[date] = {
-    date(2025, 1, 1),   # New Year
+    date(2025, 1, 1),  # New Year
     date(2025, 1, 29),  # Isra Mi'raj
     date(2025, 1, 30),  # Chinese New Year (observed)
     date(2025, 3, 31),  # Hari Raya Nyepi
     date(2025, 4, 18),  # Good Friday
-    date(2025, 5, 1),   # Labour Day
+    date(2025, 5, 1),  # Labour Day
     date(2025, 5, 12),  # Waisak
     date(2025, 5, 29),  # Ascension Day
-    date(2025, 6, 1),   # Pancasila Day
+    date(2025, 6, 1),  # Pancasila Day
     date(2025, 8, 17),  # Independence Day
-    date(2025, 12, 25), # Christmas Day
+    date(2025, 12, 25),  # Christmas Day
 }
 
 

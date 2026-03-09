@@ -7,14 +7,17 @@ government sources (BI Rate, CPI, GDP, M2, forex reserves, IKK, etc.).
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IndonesiaMacroIndicator(Base):
@@ -37,9 +40,7 @@ class IndonesiaMacroIndicator(Base):
 
     __tablename__ = "indonesia_macro_indicators"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     indicator_code: Mapped[str] = mapped_column(String(100), nullable=False)
     indicator_name: Mapped[str] = mapped_column(String(300), nullable=False)
     source: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -48,15 +49,9 @@ class IndonesiaMacroIndicator(Base):
     unit: Mapped[str] = mapped_column(String(30), nullable=False)
     period: Mapped[str] = mapped_column(String(20), nullable=False)
     reference_date: Mapped[date] = mapped_column(Date, nullable=False)
-    published_at: Mapped[datetime | None] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=True
-    )
-    ingested_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    published_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("indicator_code", "reference_date", "source"),

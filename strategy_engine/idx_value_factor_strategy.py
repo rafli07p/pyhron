@@ -16,29 +16,59 @@ Usage::
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.base_strategy_interface import (
-    BaseStrategyInterface,
     BarData,
+    BaseStrategyInterface,
     SignalDirection,
     StrategyParameters,
     StrategySignal,
     TickData,
 )
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 logger = get_logger(__name__)
 
 _DEFAULT_UNIVERSE: list[str] = [
-    "BBCA", "BBRI", "BMRI", "BBNI", "TLKM", "ASII", "UNVR", "HMSP",
-    "GGRM", "KLBF", "ICBP", "INDF", "SMGR", "PTBA", "ADRO", "ITMG",
-    "UNTR", "PGAS", "JSMR", "CPIN", "INKP", "INTP", "SMRA", "BSDE",
-    "WIKA", "WSKT", "ANTM", "TINS", "INCO", "EXCL", "TOWR", "TBIG",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "BBNI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "HMSP",
+    "GGRM",
+    "KLBF",
+    "ICBP",
+    "INDF",
+    "SMGR",
+    "PTBA",
+    "ADRO",
+    "ITMG",
+    "UNTR",
+    "PGAS",
+    "JSMR",
+    "CPIN",
+    "INKP",
+    "INTP",
+    "SMRA",
+    "BSDE",
+    "WIKA",
+    "WSKT",
+    "ANTM",
+    "TINS",
+    "INCO",
+    "EXCL",
+    "TOWR",
+    "TBIG",
 ]
 
 
@@ -96,9 +126,7 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
             },
         )
 
-    async def generate_signals(
-        self, market_data: pd.DataFrame, as_of_date: datetime
-    ) -> list[StrategySignal]:
+    async def generate_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         """Generate value factor signals from PBV and ROE data.
 
         ``market_data`` must contain columns ``pbv`` and ``roe`` indexed by
@@ -124,13 +152,9 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
         return []
 
-    def _compute_value_signals(
-        self, market_data: pd.DataFrame, as_of_date: datetime
-    ) -> list[StrategySignal]:
+    def _compute_value_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         if isinstance(market_data.index, pd.MultiIndex):
-            latest = market_data.xs(
-                market_data.index.get_level_values("date").max(), level="date"
-            )
+            latest = market_data.xs(market_data.index.get_level_values("date").max(), level="date")
         else:
             latest = market_data
 
@@ -144,12 +168,8 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
             return []
 
         # Cross-sectional z-scores.
-        pbv_z = -(fundamentals["pbv"] - fundamentals["pbv"].mean()) / (
-            fundamentals["pbv"].std() + 1e-9
-        )
-        roe_z = (fundamentals["roe"] - fundamentals["roe"].mean()) / (
-            fundamentals["roe"].std() + 1e-9
-        )
+        pbv_z = -(fundamentals["pbv"] - fundamentals["pbv"].mean()) / (fundamentals["pbv"].std() + 1e-9)
+        roe_z = (fundamentals["roe"] - fundamentals["roe"].mean()) / (fundamentals["roe"].std() + 1e-9)
 
         composite = self._pbv_weight * pbv_z + self._roe_weight * roe_z
 

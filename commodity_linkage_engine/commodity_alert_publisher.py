@@ -14,25 +14,27 @@ Usage::
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
-from typing import Any
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any
 
 from shared.kafka_producer_consumer import PyhronProducer, Topics
 from shared.structured_json_logger import get_logger
-from commodity_linkage_engine.commodity_to_stock_impact_engine import (
-    CommodityPriceChangeEvent,
-    StockEarningsImpactEstimate,
-)
+
+if TYPE_CHECKING:
+    from commodity_linkage_engine.commodity_to_stock_impact_engine import (
+        CommodityPriceChangeEvent,
+        StockEarningsImpactEstimate,
+    )
 
 logger = get_logger(__name__)
 
 # ── Alert severity thresholds ───────────────────────────────────────────────
 
 _SEVERITY_THRESHOLDS: dict[str, float] = {
-    "CRITICAL": 5.0,   # > 5% revenue impact
-    "HIGH": 2.0,       # > 2% revenue impact
-    "MEDIUM": 1.0,     # > 1% revenue impact
-    "LOW": 0.0,        # Any impact
+    "CRITICAL": 5.0,  # > 5% revenue impact
+    "HIGH": 2.0,  # > 2% revenue impact
+    "MEDIUM": 1.0,  # > 1% revenue impact
+    "LOW": 0.0,  # Any impact
 }
 
 
@@ -173,7 +175,7 @@ class CommodityAlertPublisher:
         return {
             "alert_type": "commodity_stock_impact",
             "severity": severity,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "commodity": event.commodity.value,
             "commodity_change_pct": event.change_pct,
             "ticker": estimate.ticker,

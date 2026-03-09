@@ -13,11 +13,10 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from shared.async_database_session import Base
-
 # Import all models so Alembic sees them for autogenerate
-import data_platform.models.market  # noqa: F401
+import data_platform.models.market
 import data_platform.models.trading  # noqa: F401
+from shared.async_database_session import Base
 
 target_metadata = Base.metadata
 
@@ -29,6 +28,7 @@ def get_url() -> str:
         return url
     try:
         from shared.configuration_settings import get_config
+
         return get_config().database_url
     except ImportError:
         return "postgresql+asyncpg://pyhron:pyhron@postgres:5432/pyhron"

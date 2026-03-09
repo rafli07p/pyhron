@@ -14,7 +14,7 @@ import json
 import os
 import shutil
 import subprocess
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -67,8 +67,8 @@ class BackupManager:
     def __init__(
         self,
         backup_dir: str | Path = "/var/enthropy/backups",
-        pg_connection_string: Optional[str] = None,
-        redis_rdb_path: Optional[str | Path] = None,
+        pg_connection_string: str | None = None,
+        redis_rdb_path: str | Path | None = None,
         tenant_id: str = "default",
         pg_dump_path: str = "pg_dump",
         pg_restore_path: str = "pg_restore",
@@ -105,7 +105,7 @@ class BackupManager:
         *,
         include_pg: bool = True,
         include_redis: bool = True,
-        label: Optional[str] = None,
+        label: str | None = None,
         compression: bool = True,
     ) -> dict:
         """Create a new backup snapshot.
@@ -126,7 +126,7 @@ class BackupManager:
         dict
             Backup manifest with paths, checksums, and metadata.
         """
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         backup_name = f"backup_{timestamp}"
         if label:
             backup_name += f"_{label}"
@@ -136,7 +136,7 @@ class BackupManager:
         manifest: dict = {
             "name": backup_name,
             "tenant_id": self.tenant_id,
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "label": label,
             "components": {},
         }
@@ -426,6 +426,6 @@ class BackupManager:
 
 
 __all__ = [
-    "BackupManager",
     "BackupError",
+    "BackupManager",
 ]

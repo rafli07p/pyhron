@@ -30,7 +30,7 @@ class PanelSlot:
     visible: bool = True
     z_index: int = 0
 
-    def overlaps(self, other: "PanelSlot") -> bool:
+    def overlaps(self, other: PanelSlot) -> bool:
         """Check if this slot overlaps with another."""
         return not (
             self.col + self.width <= other.col
@@ -81,8 +81,8 @@ class LayoutEngine:
     def create_layout(
         self,
         name: str = "Default",
-        columns: Optional[int] = None,
-        rows: Optional[int] = None,
+        columns: int | None = None,
+        rows: int | None = None,
     ) -> LayoutConfig:
         """Create a new empty layout.
 
@@ -177,8 +177,8 @@ class LayoutEngine:
     def resize_panel(
         self,
         panel_id: UUID,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
     ) -> PanelSlot:
         """Resize an existing panel.
 
@@ -304,7 +304,7 @@ class LayoutEngine:
 
 
 __all__ = [
-    "LayoutEngine",
     "LayoutConfig",
+    "LayoutEngine",
     "PanelSlot",
 ]

@@ -10,8 +10,9 @@ from __future__ import annotations
 import csv
 import io
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +25,9 @@ class ColumnDef:
     label: str
     sortable: bool = True
     filterable: bool = True
-    width: Optional[int] = None
+    width: int | None = None
     align: str = "left"  # left, right, center
-    formatter: Optional[Callable[[Any], str]] = None
+    formatter: Callable[[Any], str] | None = None
 
 
 @dataclass
@@ -36,7 +37,7 @@ class TableState:
     columns: list[ColumnDef] = field(default_factory=list)
     data: list[dict[str, Any]] = field(default_factory=list)
     filtered_data: list[dict[str, Any]] = field(default_factory=list)
-    sort_key: Optional[str] = None
+    sort_key: str | None = None
     sort_ascending: bool = True
     filters: dict[str, Any] = field(default_factory=dict)
     page: int = 0
@@ -79,7 +80,7 @@ class TableEngine:
     def create_table(
         self,
         columns: list[dict[str, Any]],
-        data: Optional[list[dict[str, Any]]] = None,
+        data: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Create a new table with column definitions.
 
@@ -276,7 +277,7 @@ class TableEngine:
 
 
 __all__ = [
+    "ColumnDef",
     "TableEngine",
     "TableState",
-    "ColumnDef",
 ]

@@ -75,7 +75,9 @@ def upgrade() -> None:
         sa.Column("ingested_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
         schema="market_data",
     )
-    op.create_index("ix_financial_stmt_symbol_period", "idx_equity_financial_statement", ["symbol", "period"], schema="market_data")
+    op.create_index(
+        "ix_financial_stmt_symbol_period", "idx_equity_financial_statement", ["symbol", "period"], schema="market_data"
+    )
 
     # Computed ratios
     op.create_table(
@@ -95,7 +97,13 @@ def upgrade() -> None:
         sa.Column("computed_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
         schema="market_data",
     )
-    op.create_index("ix_computed_ratio_symbol_date", "idx_equity_computed_ratio", ["symbol", "date"], schema="market_data", unique=True)
+    op.create_index(
+        "ix_computed_ratio_symbol_date",
+        "idx_equity_computed_ratio",
+        ["symbol", "date"],
+        schema="market_data",
+        unique=True,
+    )
 
     # Corporate actions
     op.create_table(
@@ -124,7 +132,12 @@ def upgrade() -> None:
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
         schema="market_data",
     )
-    op.create_index("ix_index_constituent_index_symbol", "idx_equity_index_constituent", ["index_name", "symbol"], schema="market_data")
+    op.create_index(
+        "ix_index_constituent_index_symbol",
+        "idx_equity_index_constituent",
+        ["index_name", "symbol"],
+        schema="market_data",
+    )
 
     # News articles
     op.create_table(

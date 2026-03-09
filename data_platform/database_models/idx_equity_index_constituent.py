@@ -7,8 +7,7 @@ over time, including effective/removal dates and portfolio weights.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Date,
@@ -22,6 +21,10 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IdxEquityIndexConstituent(Base):
@@ -39,9 +42,7 @@ class IdxEquityIndexConstituent(Base):
 
     __tablename__ = "idx_equity_index_constituents"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     index_name: Mapped[str] = mapped_column(String(20), nullable=False)
     symbol: Mapped[str] = mapped_column(
         String(20),
@@ -52,9 +53,7 @@ class IdxEquityIndexConstituent(Base):
     effective_date: Mapped[date] = mapped_column(Date, nullable=False)
     removal_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     weight_pct: Mapped[Decimal | None] = mapped_column(Numeric(8, 4))
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("index_name", "symbol", "effective_date"),

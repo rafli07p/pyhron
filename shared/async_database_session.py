@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import (
@@ -24,6 +24,9 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import DeclarativeBase
 
 from shared.configuration_settings import get_config
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 # Naming convention for constraints (Alembic auto-generation friendly)
 NAMING_CONVENTION = {

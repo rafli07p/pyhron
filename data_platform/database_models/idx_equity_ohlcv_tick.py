@@ -6,14 +6,17 @@ Designed as a TimescaleDB hypertable partitioned by time in 7-day chunks.
 
 from __future__ import annotations
 
-from datetime import datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from decimal import Decimal
 
 
 class IdxEquityOhlcvTick(Base):
@@ -39,9 +42,7 @@ class IdxEquityOhlcvTick(Base):
 
     __tablename__ = "idx_equity_ohlcv_ticks"
 
-    time: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), primary_key=True, nullable=False
-    )
+    time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), primary_key=True, nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), primary_key=True, nullable=False)
     exchange: Mapped[str] = mapped_column(String(10), primary_key=True, nullable=False)
     open: Mapped[Decimal] = mapped_column(Numeric(18, 6), nullable=True)
@@ -52,9 +53,7 @@ class IdxEquityOhlcvTick(Base):
     vwap: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
     bid: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
     ask: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    adjusted_close: Mapped[Decimal | None] = mapped_column(
-        Numeric(18, 6), nullable=True
-    )
+    adjusted_close: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
 
     __table_args__ = (
         Index("ix_idx_equity_ohlcv_ticks_symbol_time", "symbol", time.desc()),

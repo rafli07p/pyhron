@@ -6,14 +6,13 @@ Kafka and broker connections are mocked.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from data_platform.models.trading import OrderStatusEnum
 from services.order_management_system.order_state_machine import VALID_TRANSITIONS
-
 
 # ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -42,7 +41,7 @@ def sample_order_request():
     order.quantity = 500
     order.limit_price = 9200.0
     order.HasField.return_value = True
-    order.signal_time.ToDatetime.return_value = datetime.now(tz=timezone.utc)
+    order.signal_time.ToDatetime.return_value = datetime.now(tz=UTC)
     return order
 
 
@@ -78,9 +77,7 @@ class TestOrderPipelineFlow:
         pos_result = check_max_position_size(sample_order_request, sample_portfolio, max_pct=0.10)
         assert pos_result.passed is True
 
-        bp_result = check_buying_power_t2(
-            sample_order_request, available_cash=500_000_000.0, current_price=9200.0
-        )
+        bp_result = check_buying_power_t2(sample_order_request, available_cash=500_000_000.0, current_price=9200.0)
         assert bp_result.passed is True
 
     def test_transition_path_is_valid(self):

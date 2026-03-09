@@ -6,12 +6,15 @@ for Indonesian market and company-specific coverage.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/news", tags=["news-sentiment"])
@@ -27,9 +30,7 @@ class NewsArticle(BaseModel):
     url: str
     published_at: datetime
     summary: str | None = None
-    sentiment_score: float | None = Field(
-        None, ge=-1.0, le=1.0, description="Sentiment: -1 bearish to +1 bullish"
-    )
+    sentiment_score: float | None = Field(None, ge=-1.0, le=1.0, description="Sentiment: -1 bearish to +1 bullish")
     sentiment_label: str | None = Field(None, description="bearish, neutral, bullish")
     symbols: list[str] = Field(default_factory=list)
     categories: list[str] = Field(default_factory=list)
@@ -61,9 +62,7 @@ async def get_news(
     category: str | None = Query(None, description="Filter by category"),
     start_date: date | None = Query(None, description="Start date for date range"),
     end_date: date | None = Query(None, description="End date for date range"),
-    sentiment: str | None = Query(
-        None, pattern="^(bullish|neutral|bearish)$", description="Filter by sentiment"
-    ),
+    sentiment: str | None = Query(None, pattern="^(bullish|neutral|bearish)$", description="Filter by sentiment"),
     limit: int = Query(20, ge=1, le=100),
 ) -> list[NewsArticle]:
     """Get news articles with sentiment scores, optionally filtered."""

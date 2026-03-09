@@ -305,6 +305,6 @@ class PreTradeCheckService:
 
 __all__ = [
     "CheckResult",
-    "PreTradeConfig",
     "PreTradeCheckService",
+    "PreTradeConfig",
 ]

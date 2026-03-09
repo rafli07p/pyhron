@@ -455,7 +455,7 @@ class ComplianceEngine:
 
 
 __all__ = [
-    "RegulatoryLimits",
-    "ComplianceReport",
     "ComplianceEngine",
+    "ComplianceReport",
+    "RegulatoryLimits",
 ]

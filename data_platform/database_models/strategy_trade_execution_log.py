@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP, UUID
@@ -17,8 +17,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
 
+if TYPE_CHECKING:
+    from datetime import datetime
 
-class TradeSideEnum(str, enum.Enum):
+
+class TradeSideEnum(enum.StrEnum):
     """Trade side."""
 
     BUY = "buy"
@@ -45,9 +48,7 @@ class StrategyTradeExecutionLog(Base):
 
     __tablename__ = "strategy_trade_execution_logs"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     client_order_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     broker_trade_id: Mapped[str | None] = mapped_column(String(100))
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -59,12 +60,8 @@ class StrategyTradeExecutionLog(Base):
     price: Mapped[Decimal] = mapped_column(Numeric(18, 6), nullable=False)
     commission: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=Decimal("0"))
     tax: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=Decimal("0"))
-    trade_time: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    trade_time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         Index(

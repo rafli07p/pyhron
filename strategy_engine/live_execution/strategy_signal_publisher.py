@@ -13,13 +13,13 @@ Usage::
 from __future__ import annotations
 
 import json
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from shared.kafka_producer_consumer import PyhronProducer, Topics
 from shared.structured_json_logger import get_logger
-from shared.prometheus_metrics_registry import ORDERS_TOTAL
-from strategy_engine.base_strategy_interface import StrategySignal
+
+if TYPE_CHECKING:
+    from strategy_engine.base_strategy_interface import StrategySignal
 
 logger = get_logger(__name__)
 

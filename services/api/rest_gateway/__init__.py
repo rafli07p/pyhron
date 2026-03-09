@@ -9,11 +9,11 @@ limiting (slowapi), structured logging, and OpenAPI documentation.
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from enum import StrEnum
 from functools import wraps
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 import jwt
@@ -26,13 +26,14 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from shared.schemas.market_events import BarEvent, QuoteEvent
+from shared.configuration_settings import get_config as _get_settings
+from shared.schemas.market_events import BarEvent, QuoteEvent  # noqa: F401
 from shared.schemas.order_events import (
     CancelReason,
-    OrderCancel,
-    OrderRequest,
+    OrderCancel,  # noqa: F401
+    OrderRequest,  # noqa: F401
     OrderSide,
-    OrderStatus,
+    OrderStatus,  # noqa: F401
     OrderStatusEnum,
     OrderType,
     TimeInForce,
@@ -40,18 +41,13 @@ from shared.schemas.order_events import (
 
 logger = structlog.stdlib.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-from shared.configuration_settings import get_config as _get_settings
-
 API_VERSION = "v1"
 
 
 # ---------------------------------------------------------------------------
 # RBAC
 # ---------------------------------------------------------------------------
+
 
 class Role(StrEnum):
     VIEWER = "viewer"
@@ -72,24 +68,25 @@ ROLE_HIERARCHY: dict[Role, int] = {
 # Request / Response models
 # ---------------------------------------------------------------------------
 
+
 class TokenPayload(BaseModel):
     sub: str
     tenant_id: str
     role: Role = Role.VIEWER
-    exp: Optional[int] = None
+    exp: int | None = None
 
 
 class HealthResponse(BaseModel):
     status: str = "ok"
     version: str = "0.1.0"
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class MarketDataRequest(BaseModel):
     interval: str = "1min"
     limit: int = Field(default=100, ge=1, le=5000)
-    start: Optional[datetime] = None
-    end: Optional[datetime] = None
+    start: datetime | None = None
+    end: datetime | None = None
 
 
 class MarketDataResponse(BaseModel):
@@ -103,17 +100,17 @@ class CreateOrderRequest(BaseModel):
     side: OrderSide
     qty: Decimal = Field(..., gt=0)
     order_type: OrderType = OrderType.LIMIT
-    price: Optional[Decimal] = None
-    stop_price: Optional[Decimal] = None
+    price: Decimal | None = None
+    stop_price: Decimal | None = None
     time_in_force: TimeInForce = TimeInForce.DAY
-    strategy_id: Optional[str] = None
-    account_id: Optional[str] = None
+    strategy_id: str | None = None
+    account_id: str | None = None
 
 
 class CreateOrderResponse(BaseModel):
     order_id: UUID
     status: OrderStatusEnum = OrderStatusEnum.PENDING
-    submitted_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class CancelOrderRequest(BaseModel):
@@ -136,7 +133,7 @@ class PortfolioPnlResponse(BaseModel):
     realized_pnl: Decimal
     unrealized_pnl: Decimal
     positions: list[PositionResponse] = Field(default_factory=list)
-    as_of: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    as_of: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class BacktestRequest(BaseModel):
@@ -151,21 +148,21 @@ class BacktestRequest(BaseModel):
 class BacktestResponse(BaseModel):
     backtest_id: UUID = Field(default_factory=uuid4)
     status: str = "submitted"
-    submitted_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class RiskCheckRequest(BaseModel):
     symbol: str
     side: OrderSide
     qty: Decimal
-    price: Optional[Decimal] = None
-    account_id: Optional[str] = None
+    price: Decimal | None = None
+    account_id: str | None = None
 
 
 class RiskCheckResponse(BaseModel):
     approved: bool
     checks: list[dict[str, Any]] = Field(default_factory=list)
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class UserCreateRequest(BaseModel):
@@ -180,17 +177,18 @@ class UserResponse(BaseModel):
     email: str
     role: Role
     tenant_id: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class UserUpdateRequest(BaseModel):
-    email: Optional[str] = None
-    role: Optional[Role] = None
+    email: str | None = None
+    role: Role | None = None
 
 
 # ---------------------------------------------------------------------------
 # JWT auth dependency
 # ---------------------------------------------------------------------------
+
 
 async def get_current_user(request: Request) -> TokenPayload:
     """Extract and validate JWT from Authorization header."""
@@ -206,10 +204,10 @@ async def get_current_user(request: Request) -> TokenPayload:
         _settings = _get_settings()
         payload = jwt.decode(token, _settings.jwt_secret_key, algorithms=[_settings.jwt_algorithm])
         return TokenPayload(**payload)
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+    except jwt.ExpiredSignatureError as err:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired") from err
     except jwt.InvalidTokenError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid token: {exc}") from exc
 
 
 def get_tenant_id(user: TokenPayload = Depends(get_current_user)) -> str:
@@ -220,6 +218,7 @@ def get_tenant_id(user: TokenPayload = Depends(get_current_user)) -> str:
 # ---------------------------------------------------------------------------
 # RBAC decorator
 # ---------------------------------------------------------------------------
+
 
 def require_role(minimum_role: Role):
     """Decorator that enforces a minimum RBAC role on an endpoint."""
@@ -245,6 +244,7 @@ def require_role(minimum_role: Role):
 # ---------------------------------------------------------------------------
 # Structlog request-logging middleware
 # ---------------------------------------------------------------------------
+
 
 class RequestLoggingMiddleware:
     """ASGI middleware that logs every HTTP request with timing."""
@@ -285,6 +285,7 @@ class RequestLoggingMiddleware:
 # Application factory
 # ---------------------------------------------------------------------------
 
+
 def create_rest_app() -> FastAPI:
     """Build and return the configured FastAPI application."""
     limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
@@ -316,18 +317,18 @@ def create_rest_app() -> FastAPI:
     # ------------------------------------------------------------------
     # Pyhron domain routers (IDX equity, macro, commodity, etc.)
     # ------------------------------------------------------------------
+    from apps.api.http_routers.backtest_execution_router import router as backtest_router
+    from apps.api.http_routers.commodity_stock_impact_router import router as commodity_impact_router
+    from apps.api.http_routers.governance_intelligence_router import router as governance_router
     from apps.api.http_routers.idx_equity_screener_router import router as screener_router
     from apps.api.http_routers.idx_equity_stock_detail_router import router as stock_detail_router
     from apps.api.http_routers.idx_market_overview_router import router as market_overview_router
-    from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
-    from apps.api.http_routers.indonesia_macro_dashboard_router import router as macro_router
     from apps.api.http_routers.indonesia_commodity_price_router import router as commodity_price_router
-    from apps.api.http_routers.commodity_stock_impact_router import router as commodity_impact_router
     from apps.api.http_routers.indonesia_fixed_income_router import router as fixed_income_router
-    from apps.api.http_routers.governance_intelligence_router import router as governance_router
-    from apps.api.http_routers.strategy_management_router import router as strategy_router
-    from apps.api.http_routers.backtest_execution_router import router as backtest_router
+    from apps.api.http_routers.indonesia_macro_dashboard_router import router as macro_router
+    from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
     from apps.api.http_routers.live_trading_position_router import router as live_trading_router
+    from apps.api.http_routers.strategy_management_router import router as strategy_router
     from apps.api.http_routers.user_authentication_router import router as auth_router
 
     app.include_router(screener_router)
@@ -368,8 +369,8 @@ def create_rest_app() -> FastAPI:
         symbol: str,
         interval: str = Query("1min", description="Bar interval (1min, 5min, 1hour, 1day)"),
         limit: int = Query(100, ge=1, le=5000),
-        start: Optional[datetime] = Query(None),
-        end: Optional[datetime] = Query(None),
+        start: datetime | None = Query(None),
+        end: datetime | None = Query(None),
         user: TokenPayload = Depends(get_current_user),
     ) -> MarketDataResponse:
         """Retrieve OHLCV bars and latest quotes for a symbol.
@@ -400,8 +401,8 @@ def create_rest_app() -> FastAPI:
                     "1day": ("1", "day"),
                 }
                 multiplier, timespan = _interval_map.get(interval, ("1", "minute"))
-                from_date = (start or datetime(2024, 1, 1, tzinfo=timezone.utc)).strftime("%Y-%m-%d")
-                to_date = (end or datetime.now(tz=timezone.utc)).strftime("%Y-%m-%d")
+                from_date = (start or datetime(2024, 1, 1, tzinfo=UTC)).strftime("%Y-%m-%d")
+                to_date = (end or datetime.now(tz=UTC)).strftime("%Y-%m-%d")
 
                 async with httpx.AsyncClient(timeout=10.0) as client:
                     resp = await client.get(
@@ -412,16 +413,18 @@ def create_rest_app() -> FastAPI:
                     if resp.status_code == 200:
                         data = resp.json()
                         for r in data.get("results", []):
-                            bars.append({
-                                "open": r["o"],
-                                "high": r["h"],
-                                "low": r["l"],
-                                "close": r["c"],
-                                "volume": r["v"],
-                                "vwap": r.get("vw"),
-                                "timestamp": r["t"],
-                                "bar_count": r.get("n"),
-                            })
+                            bars.append(
+                                {
+                                    "open": r["o"],
+                                    "high": r["h"],
+                                    "low": r["l"],
+                                    "close": r["c"],
+                                    "volume": r["v"],
+                                    "vwap": r.get("vw"),
+                                    "timestamp": r["t"],
+                                    "bar_count": r.get("n"),
+                                }
+                            )
                     else:
                         log.warning("polygon_bars_error", status=resp.status_code, body=resp.text[:200])
 
@@ -432,13 +435,15 @@ def create_rest_app() -> FastAPI:
                     )
                     if quote_resp.status_code == 200:
                         for q in quote_resp.json().get("results", []):
-                            quotes.append({
-                                "bid": q.get("bid_price", 0),
-                                "ask": q.get("ask_price", 0),
-                                "bid_size": q.get("bid_size", 0),
-                                "ask_size": q.get("ask_size", 0),
-                                "timestamp": q.get("participant_timestamp"),
-                            })
+                            quotes.append(
+                                {
+                                    "bid": q.get("bid_price", 0),
+                                    "ask": q.get("ask_price", 0),
+                                    "bid_size": q.get("bid_size", 0),
+                                    "ask_size": q.get("ask_size", 0),
+                                    "timestamp": q.get("participant_timestamp"),
+                                }
+                            )
             except Exception:
                 log.exception("polygon_api_error")
 
@@ -452,14 +457,16 @@ def create_rest_app() -> FastAPI:
                 ticker = yf.Ticker(symbol)
                 hist = ticker.history(period="5d", interval=yf_interval)
                 for ts, row in hist.iterrows():
-                    bars.append({
-                        "open": float(row["Open"]),
-                        "high": float(row["High"]),
-                        "low": float(row["Low"]),
-                        "close": float(row["Close"]),
-                        "volume": int(row["Volume"]),
-                        "timestamp": int(ts.timestamp() * 1000),
-                    })
+                    bars.append(
+                        {
+                            "open": float(row["Open"]),
+                            "high": float(row["High"]),
+                            "low": float(row["Low"]),
+                            "close": float(row["Close"]),
+                            "volume": int(row["Volume"]),
+                            "timestamp": int(ts.timestamp() * 1000),
+                        }
+                    )
                 bars = bars[-limit:]
             except Exception:
                 log.exception("yfinance_fallback_error")
@@ -493,8 +500,8 @@ def create_rest_app() -> FastAPI:
     @require_role(Role.TRADER)
     async def list_orders(
         request: Request,
-        status_filter: Optional[OrderStatusEnum] = Query(None, alias="status"),
-        symbol: Optional[str] = Query(None),
+        status_filter: OrderStatusEnum | None = Query(None, alias="status"),
+        symbol: str | None = Query(None),
         limit: int = Query(50, ge=1, le=500),
         user: TokenPayload = Depends(get_current_user),
     ) -> list[dict[str, Any]]:
@@ -553,13 +560,15 @@ def create_rest_app() -> FastAPI:
                     )
                     if resp.status_code == 200:
                         for p in resp.json():
-                            positions.append(PositionResponse(
-                                symbol=p["symbol"],
-                                qty=Decimal(p["qty"]),
-                                avg_cost=Decimal(p["avg_entry_price"]),
-                                market_value=Decimal(p["market_value"]),
-                                unrealized_pnl=Decimal(p["unrealized_pl"]),
-                            ))
+                            positions.append(
+                                PositionResponse(
+                                    symbol=p["symbol"],
+                                    qty=Decimal(p["qty"]),
+                                    avg_cost=Decimal(p["avg_entry_price"]),
+                                    market_value=Decimal(p["market_value"]),
+                                    unrealized_pnl=Decimal(p["unrealized_pl"]),
+                                )
+                            )
             except Exception:
                 logger.exception("alpaca_positions_error")
 
@@ -617,13 +626,15 @@ def create_rest_app() -> FastAPI:
                         for p in pos_resp.json():
                             upl = Decimal(p["unrealized_pl"])
                             unrealized += upl
-                            positions.append(PositionResponse(
-                                symbol=p["symbol"],
-                                qty=Decimal(p["qty"]),
-                                avg_cost=Decimal(p["avg_entry_price"]),
-                                market_value=Decimal(p["market_value"]),
-                                unrealized_pnl=upl,
-                            ))
+                            positions.append(
+                                PositionResponse(
+                                    symbol=p["symbol"],
+                                    qty=Decimal(p["qty"]),
+                                    avg_cost=Decimal(p["avg_entry_price"]),
+                                    market_value=Decimal(p["market_value"]),
+                                    unrealized_pnl=upl,
+                                )
+                            )
             except Exception:
                 logger.exception("alpaca_pnl_error")
 
@@ -688,7 +699,7 @@ def create_rest_app() -> FastAPI:
         """
         checks: list[dict[str, Any]] = []
         approved = True
-        reason: Optional[str] = None
+        reason: str | None = None
 
         # Position size check
         max_position_value = Decimal("500000")
@@ -788,10 +799,10 @@ def create_rest_app() -> FastAPI:
 
 
 __all__ = [
+    "Role",
+    "TokenPayload",
     "create_rest_app",
     "get_current_user",
     "get_tenant_id",
     "require_role",
-    "Role",
-    "TokenPayload",
 ]

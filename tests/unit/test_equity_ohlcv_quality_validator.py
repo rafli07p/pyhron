@@ -10,10 +10,7 @@ Validates:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-import pytest
-
+from datetime import UTC, datetime
 
 # ── Validator (pure functions under test) ───────────────────────────────────
 
@@ -52,8 +49,7 @@ def validate_timestamp_order(bars: list[dict]) -> list[str]:
     for i in range(1, len(bars)):
         if bars[i]["time"] <= bars[i - 1]["time"]:
             errors.append(
-                f"Timestamp at index {i} ({bars[i]['time']}) is not after "
-                f"index {i-1} ({bars[i-1]['time']})"
+                f"Timestamp at index {i} ({bars[i]['time']}) is not after index {i - 1} ({bars[i - 1]['time']})"
             )
     return errors
 
@@ -127,28 +123,28 @@ class TestInvalidBars:
 class TestTimestampOrder:
     def test_ordered_timestamps_pass(self):
         bars = [
-            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=timezone.utc)},
-            {"time": datetime(2025, 1, 7, 9, 0, tzinfo=timezone.utc)},
-            {"time": datetime(2025, 1, 8, 9, 0, tzinfo=timezone.utc)},
+            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=UTC)},
+            {"time": datetime(2025, 1, 7, 9, 0, tzinfo=UTC)},
+            {"time": datetime(2025, 1, 8, 9, 0, tzinfo=UTC)},
         ]
         assert validate_timestamp_order(bars) == []
 
     def test_duplicate_timestamps_fail(self):
         bars = [
-            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=timezone.utc)},
-            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=timezone.utc)},
+            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=UTC)},
+            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=UTC)},
         ]
         errors = validate_timestamp_order(bars)
         assert len(errors) == 1
 
     def test_reversed_timestamps_fail(self):
         bars = [
-            {"time": datetime(2025, 1, 7, 9, 0, tzinfo=timezone.utc)},
-            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=timezone.utc)},
+            {"time": datetime(2025, 1, 7, 9, 0, tzinfo=UTC)},
+            {"time": datetime(2025, 1, 6, 9, 0, tzinfo=UTC)},
         ]
         errors = validate_timestamp_order(bars)
         assert len(errors) == 1
 
     def test_single_bar_passes(self):
-        bars = [{"time": datetime(2025, 1, 6, 9, 0, tzinfo=timezone.utc)}]
+        bars = [{"time": datetime(2025, 1, 6, 9, 0, tzinfo=UTC)}]
         assert validate_timestamp_order(bars) == []

@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Date,
@@ -26,8 +25,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
 
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
-class ActionType(str, enum.Enum):
+
+class ActionType(enum.StrEnum):
     """Corporate action type."""
 
     CASH_DIVIDEND = "cash_dividend"
@@ -56,18 +59,14 @@ class IdxEquityCorporateAction(Base):
 
     __tablename__ = "idx_equity_corporate_actions"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
         ForeignKey("idx_equity_instruments.symbol"),
         nullable=False,
         index=True,
     )
-    action_type: Mapped[ActionType] = mapped_column(
-        Enum(ActionType, name="action_type_enum"), nullable=False
-    )
+    action_type: Mapped[ActionType] = mapped_column(Enum(ActionType, name="action_type_enum"), nullable=False)
     ex_date: Mapped[date] = mapped_column(Date, nullable=False)
     record_date: Mapped[date | None] = mapped_column(Date)
     payment_date: Mapped[date | None] = mapped_column(Date)
@@ -75,9 +74,7 @@ class IdxEquityCorporateAction(Base):
     ratio: Mapped[Decimal | None] = mapped_column(Numeric(10, 6))
     currency: Mapped[str] = mapped_column(String(3), default="IDR")
     notes: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("symbol", "action_type", "ex_date"),

@@ -10,13 +10,20 @@ Makes Rust migration trivial (same Kafka interface, same DB schema).
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from shared.redis_cache_client import get_redis
+from services.pre_trade_risk_engine.pre_trade_risk_checks import (
+    RiskCheckResult,
+    check_daily_loss_limit,
+    check_duplicate_order,
+    check_lot_size_constraint,
+    check_max_position_size,
+    check_portfolio_var,
+    check_signal_staleness,
+)
 from shared.configuration_settings import get_config
-from shared.structured_json_logger import get_logger
 from shared.kafka_producer_consumer import PyhronConsumer, PyhronProducer, Topics
 from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
@@ -26,20 +33,10 @@ from shared.proto_generated.equity_orders_pb2 import (
     TimeInForce,
 )
 from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
-from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent, RiskLimitType
+from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent
 from shared.proto_generated.strategy_signals_pb2 import Signal, SignalDirection
-
-from services.pre_trade_risk_engine.pre_trade_risk_checks import (
-    RiskCheckResult,
-    check_buying_power_t2,
-    check_daily_loss_limit,
-    check_duplicate_order,
-    check_lot_size_constraint,
-    check_max_position_size,
-    check_portfolio_var,
-    check_sector_concentration,
-    check_signal_staleness,
-)
+from shared.redis_cache_client import get_redis
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -133,9 +130,7 @@ class RiskEngineKafkaConsumer:
                 "circuit_breaker_active",
                 strategy_id=signal.strategy_id,
             )
-            await self._publish_rejection(
-                signal, ["Circuit breaker is active for this strategy"]
-            )
+            await self._publish_rejection(signal, ["Circuit breaker is active for this strategy"])
             return
 
         # Construct OrderRequest from Signal
@@ -155,22 +150,31 @@ class RiskEngineKafkaConsumer:
 
         for check_fn, kwargs in [
             (check_lot_size_constraint, {"order": order, "lot_size": self._lot_size}),
-            (check_daily_loss_limit, {
-                "portfolio": portfolio,
-                "daily_loss_limit_pct": self._daily_loss_pct,
-            }),
+            (
+                check_daily_loss_limit,
+                {
+                    "portfolio": portfolio,
+                    "daily_loss_limit_pct": self._daily_loss_pct,
+                },
+            ),
             (check_duplicate_order, {"order": order, "recent_orders": recent_orders}),
             (check_signal_staleness, {"order": order, "max_age_seconds": 300}),
-            (check_max_position_size, {
-                "order": order,
-                "portfolio": portfolio,
-                "max_pct": self._max_position_pct,
-            }),
-            (check_portfolio_var, {
-                "order": order,
-                "portfolio": portfolio,
-                "var_limit_pct": self._max_var_pct,
-            }),
+            (
+                check_max_position_size,
+                {
+                    "order": order,
+                    "portfolio": portfolio,
+                    "max_pct": self._max_position_pct,
+                },
+            ),
+            (
+                check_portfolio_var,
+                {
+                    "order": order,
+                    "portfolio": portfolio,
+                    "var_limit_pct": self._max_var_pct,
+                },
+            ),
         ]:
             result = check_fn(**kwargs)
             checks.append(result)
@@ -212,9 +216,10 @@ class RiskEngineKafkaConsumer:
 
         if signal.direction == SignalDirection.SIGNAL_DIRECTION_LONG:
             order.side = OrderSide.ORDER_SIDE_BUY
-        elif signal.direction == SignalDirection.SIGNAL_DIRECTION_SHORT:
-            order.side = OrderSide.ORDER_SIDE_SELL
-        elif signal.direction == SignalDirection.SIGNAL_DIRECTION_CLOSE:
+        elif (
+            signal.direction == SignalDirection.SIGNAL_DIRECTION_SHORT
+            or signal.direction == SignalDirection.SIGNAL_DIRECTION_CLOSE
+        ):
             order.side = OrderSide.ORDER_SIDE_SELL
         else:
             order.side = OrderSide.ORDER_SIDE_BUY
@@ -260,7 +265,7 @@ class RiskEngineKafkaConsumer:
         decision.portfolio_var_before = portfolio.portfolio_var_95
 
         now = Timestamp()
-        now.FromDatetime(datetime.now(tz=timezone.utc))
+        now.FromDatetime(datetime.now(tz=UTC))
         decision.decided_at.CopyFrom(now)
 
         await self._producer.send(
@@ -269,9 +274,7 @@ class RiskEngineKafkaConsumer:
             key=order.client_order_id,
         )
 
-    async def _publish_rejection(
-        self, signal: Signal, reasons: list[str]
-    ) -> None:
+    async def _publish_rejection(self, signal: Signal, reasons: list[str]) -> None:
         """Publish a RISK_REJECTED decision to Kafka.
 
         Args:
@@ -287,7 +290,7 @@ class RiskEngineKafkaConsumer:
         decision.rejection_reasons.extend(reasons)
 
         now = Timestamp()
-        now.FromDatetime(datetime.now(tz=timezone.utc))
+        now.FromDatetime(datetime.now(tz=UTC))
         decision.decided_at.CopyFrom(now)
 
         await self._producer.send(
@@ -296,9 +299,7 @@ class RiskEngineKafkaConsumer:
             key=signal.signal_id,
         )
 
-    async def _publish_breach(
-        self, signal: Signal, checks: list[RiskCheckResult]
-    ) -> None:
+    async def _publish_breach(self, signal: Signal, checks: list[RiskCheckResult]) -> None:
         """Publish risk breach events for failed checks.
 
         Args:
@@ -317,7 +318,7 @@ class RiskEngineKafkaConsumer:
                 breach.action_taken = "ORDER_REJECTED"
 
                 now = Timestamp()
-                now.FromDatetime(datetime.now(tz=timezone.utc))
+                now.FromDatetime(datetime.now(tz=UTC))
                 breach.occurred_at.CopyFrom(now)
 
                 await self._producer.send(

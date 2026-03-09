@@ -10,8 +10,8 @@ from services.risk.pre_trade_checks import PreTradeCheckService
 from services.risk.risk_limits import RiskLimitEngine
 
 __all__ = [
-    "RiskLimitEngine",
-    "PreTradeCheckService",
-    "PostTradeAnalytics",
     "ComplianceEngine",
+    "PostTradeAnalytics",
+    "PreTradeCheckService",
+    "RiskLimitEngine",
 ]

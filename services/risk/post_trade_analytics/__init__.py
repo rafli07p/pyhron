@@ -313,8 +313,8 @@ class PostTradeAnalytics:
 
 
 __all__ = [
-    "SlippageResult",
-    "MarketImpactResult",
     "ExecutionQualityReport",
+    "MarketImpactResult",
     "PostTradeAnalytics",
+    "SlippageResult",
 ]

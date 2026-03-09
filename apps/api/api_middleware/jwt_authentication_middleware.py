@@ -7,7 +7,6 @@ Skips validation for public/health endpoints.
 
 from __future__ import annotations
 
-import time
 from typing import Any
 
 from fastapi import Request, Response
@@ -20,7 +19,7 @@ logger = get_logger(__name__)
 
 # ── Configuration ────────────────────────────────────────────────────────────
 
-JWT_SECRET_KEY = "CHANGE_ME_IN_PRODUCTION"  # noqa: S105 - placeholder
+JWT_SECRET_KEY = "CHANGE_ME_IN_PRODUCTION"
 JWT_ALGORITHM = "HS256"
 
 PUBLIC_PATHS: set[str] = {
@@ -53,9 +52,7 @@ def _is_public_path(path: str) -> bool:
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     """Starlette middleware that validates JWT Bearer tokens."""
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if _is_public_path(request.url.path):
             return await call_next(request)
 

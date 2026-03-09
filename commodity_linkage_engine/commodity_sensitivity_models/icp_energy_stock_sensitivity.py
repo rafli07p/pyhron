@@ -18,13 +18,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from shared.structured_json_logger import get_logger
-
 from commodity_linkage_engine.commodity_to_stock_impact_engine import (
-    ConfidenceLevel,
     CommodityType,
+    ConfidenceLevel,
     StockEarningsImpactEstimate,
 )
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -137,31 +136,20 @@ class ICPEnergyStockSensitivity:
         """
         # Oil revenue impact (direct ICP sensitivity).
         oil_revenue_delta_usd = (
-            company.oil_production_bopd
-            * _DAYS_PER_YEAR
-            * icp_change_usd_per_barrel
-            * company.oil_price_sensitivity
+            company.oil_production_bopd * _DAYS_PER_YEAR * icp_change_usd_per_barrel * company.oil_price_sensitivity
         )
 
         # Gas revenue impact (oil-price-linked gas contracts).
         # Gas price change = slope * ICP change.
-        gas_price_change_usd_per_boe = (
-            company.gas_oil_price_linkage * icp_change_usd_per_barrel
-        )
-        gas_revenue_delta_usd = (
-            company.gas_production_boepd
-            * _DAYS_PER_YEAR
-            * gas_price_change_usd_per_boe
-        )
+        gas_price_change_usd_per_boe = company.gas_oil_price_linkage * icp_change_usd_per_barrel
+        gas_revenue_delta_usd = company.gas_production_boepd * _DAYS_PER_YEAR * gas_price_change_usd_per_boe
 
         # Total gross revenue impact.
         gross_revenue_delta_usd = oil_revenue_delta_usd + gas_revenue_delta_usd
 
         # PSC government take reduces the company's net share.
         if company.government_take_pct > 0:
-            net_revenue_delta_usd = gross_revenue_delta_usd * (
-                1.0 - company.government_take_pct
-            )
+            net_revenue_delta_usd = gross_revenue_delta_usd * (1.0 - company.government_take_pct)
         else:
             net_revenue_delta_usd = gross_revenue_delta_usd
 
@@ -170,9 +158,7 @@ class ICPEnergyStockSensitivity:
         eps_impact = net_income_impact_idr / company.shares_outstanding
 
         impact_pct = (
-            abs(revenue_impact_idr) / company.trailing_revenue_idr * 100.0
-            if company.trailing_revenue_idr > 0
-            else 0.0
+            abs(revenue_impact_idr) / company.trailing_revenue_idr * 100.0 if company.trailing_revenue_idr > 0 else 0.0
         )
 
         # Upstream producers have higher confidence than midstream.
@@ -192,9 +178,7 @@ class ICPEnergyStockSensitivity:
             impact_pct_of_revenue=impact_pct,
             confidence=confidence,
             methodology=(
-                "oil_bopd * icp_change * sensitivity + "
-                "gas_boepd * (slope * icp_change) * 365 "
-                "* (1 - gov_take)"
+                "oil_bopd * icp_change * sensitivity + gas_boepd * (slope * icp_change) * 365 * (1 - gov_take)"
             ),
             assumptions=[
                 f"Oil production: {company.oil_production_bopd:,.0f} BOPD",
@@ -207,9 +191,7 @@ class ICPEnergyStockSensitivity:
             ],
         )
 
-    def compute_all_impacts(
-        self, icp_change_usd_per_barrel: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def compute_all_impacts(self, icp_change_usd_per_barrel: float) -> list[StockEarningsImpactEstimate]:
         """Compute impact across all covered energy stocks.
 
         Args:

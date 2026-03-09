@@ -19,20 +19,19 @@ import re
 import time
 from dataclasses import dataclass, field
 from datetime import date
-from decimal import Decimal
 from typing import Any
 
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -107,9 +106,7 @@ class GaikindoVehicleSalesIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="gaikindo", symbol="VEHICLE", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="gaikindo", symbol="VEHICLE", operation="inserted").inc(inserted)
 
         self._logger.info(
             "gaikindo_ingestion_complete",
@@ -142,9 +139,7 @@ class GaikindoVehicleSalesIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        GAIKINDO_URL, headers=headers, params={"year": year}
-                    )
+                    resp = await client.get(GAIKINDO_URL, headers=headers, params={"year": year})
                     resp.raise_for_status()
                     return self._parse_html(resp.text, year)
             except httpx.HTTPStatusError as exc:
@@ -174,20 +169,18 @@ class GaikindoVehicleSalesIngester:
         """
         records: list[dict[str, Any]] = []
         # Extract numeric cells from sales table rows
-        number_pattern = re.compile(r"[\d,]+")
+        re.compile(r"[\d,]+")
 
         # Simplified table extraction -- real implementation would use
         # a proper HTML parser (e.g. selectolax or BeautifulSoup)
         for month in range(1, 13):
             try:
-                ref_date = date(year, month, 1)
+                date(year, month, 1)
             except ValueError:
                 continue
 
             # Placeholder: actual parsing extracts from HTML table
-            self._logger.debug(
-                "gaikindo_parse_month", year=year, month=month
-            )
+            self._logger.debug("gaikindo_parse_month", year=year, month=month)
 
         return records
 
@@ -201,14 +194,10 @@ class GaikindoVehicleSalesIngester:
         """
         v = float(record["value"])
         if v < 0:
-            raise DataQualityError(
-                f"Negative sales {v} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Negative sales {v} on {record['reference_date']}")
         # Monthly sales historically 30k-120k units
         if v > 300000:
-            raise DataQualityError(
-                f"Sales {v} exceeds plausible monthly max of 300,000 units"
-            )
+            raise DataQualityError(f"Sales {v} exceeds plausible monthly max of 300,000 units")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

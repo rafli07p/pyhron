@@ -19,14 +19,14 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
 
-class ENSOPhase(str, Enum):
+class ENSOPhase(StrEnum):
     """ENSO phase classification based on ONI threshold."""
 
     STRONG_EL_NINO = "STRONG_EL_NINO"
@@ -109,18 +109,17 @@ class ENSOCPOProductionForecast:
         """
         if oni_value >= 1.5:
             return ENSOPhase.STRONG_EL_NINO
-        elif oni_value >= 1.0:
+        if oni_value >= 1.0:
             return ENSOPhase.MODERATE_EL_NINO
-        elif oni_value >= 0.5:
+        if oni_value >= 0.5:
             return ENSOPhase.WEAK_EL_NINO
-        elif oni_value > -0.5:
+        if oni_value > -0.5:
             return ENSOPhase.NEUTRAL
-        elif oni_value > -1.0:
+        if oni_value > -1.0:
             return ENSOPhase.WEAK_LA_NINA
-        elif oni_value > -1.5:
+        if oni_value > -1.5:
             return ENSOPhase.MODERATE_LA_NINA
-        else:
-            return ENSOPhase.STRONG_LA_NINA
+        return ENSOPhase.STRONG_LA_NINA
 
     def forecast_production_impact(self, oni_value: float) -> CPOProductionForecast:
         """Forecast CPO production impact given current ONI reading.
@@ -168,6 +167,6 @@ class ENSOCPOProductionForecast:
         """Determine most affected plantation regions by ENSO phase."""
         if phase in (ENSOPhase.STRONG_EL_NINO, ENSOPhase.MODERATE_EL_NINO):
             return ["South Sumatra", "Riau", "Central Kalimantan", "South Kalimantan"]
-        elif phase in (ENSOPhase.STRONG_LA_NINA, ENSOPhase.MODERATE_LA_NINA):
+        if phase in (ENSOPhase.STRONG_LA_NINA, ENSOPhase.MODERATE_LA_NINA):
             return ["Central Kalimantan", "South Kalimantan"]  # Flood-prone
         return ["All regions (baseline)"]

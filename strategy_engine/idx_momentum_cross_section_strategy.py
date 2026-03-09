@@ -14,32 +14,69 @@ Usage::
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.base_strategy_interface import (
-    BaseStrategyInterface,
     BarData,
+    BaseStrategyInterface,
     SignalDirection,
     StrategyParameters,
     StrategySignal,
     TickData,
 )
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
 logger = get_logger(__name__)
 
 # ── Default universe (LQ45 subset) ──────────────────────────────────────────
 
 _DEFAULT_UNIVERSE: list[str] = [
-    "BBCA", "BBRI", "BMRI", "BBNI", "TLKM", "ASII", "UNVR", "HMSP",
-    "GGRM", "KLBF", "ICBP", "INDF", "SMGR", "PTBA", "ADRO", "ITMG",
-    "UNTR", "PGAS", "JSMR", "MNCN", "CPIN", "INKP", "INTP", "SMRA",
-    "BSDE", "WIKA", "WSKT", "ANTM", "TINS", "INCO", "EXCL", "ISAT",
-    "TOWR", "TBIG", "MDKA", "EMTK", "ESSA", "ACES", "ERAA", "MAPI",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "BBNI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "HMSP",
+    "GGRM",
+    "KLBF",
+    "ICBP",
+    "INDF",
+    "SMGR",
+    "PTBA",
+    "ADRO",
+    "ITMG",
+    "UNTR",
+    "PGAS",
+    "JSMR",
+    "MNCN",
+    "CPIN",
+    "INKP",
+    "INTP",
+    "SMRA",
+    "BSDE",
+    "WIKA",
+    "WSKT",
+    "ANTM",
+    "TINS",
+    "INCO",
+    "EXCL",
+    "ISAT",
+    "TOWR",
+    "TBIG",
+    "MDKA",
+    "EMTK",
+    "ESSA",
+    "ACES",
+    "ERAA",
+    "MAPI",
 ]
 
 
@@ -241,9 +278,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
         for symbol in top_stocks.index:
             score = float(momentum_score[symbol])
             # Normalise confidence to [0, 1] using rank percentile
-            rank_pct = float(
-                (momentum_score.rank(ascending=True)[symbol]) / len(momentum_score)
-            )
+            rank_pct = float((momentum_score.rank(ascending=True)[symbol]) / len(momentum_score))
             signals.append(
                 StrategySignal(
                     symbol=symbol,

@@ -18,17 +18,19 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any
+from dataclasses import dataclass
+from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 logger = get_logger(__name__)
 
 
-class InsiderRole(str, Enum):
+class InsiderRole(StrEnum):
     """Role of the insider in the company."""
 
     DIRECTOR = "DIRECTOR"
@@ -37,7 +39,7 @@ class InsiderRole(str, Enum):
     AFFILIATED_PARTY = "AFFILIATED_PARTY"
 
 
-class ChangeDirection(str, Enum):
+class ChangeDirection(StrEnum):
     """Direction of ownership change."""
 
     INCREASE = "INCREASE"
@@ -129,9 +131,7 @@ class InsiderOwnershipChangeDetector:
             critical_threshold=critical_threshold_pct,
         )
 
-    def detect_changes(
-        self, filings: list[OwnershipFiling]
-    ) -> list[OwnershipChangeAlert]:
+    def detect_changes(self, filings: list[OwnershipFiling]) -> list[OwnershipChangeAlert]:
         """Analyse filings and detect material ownership changes.
 
         Args:
@@ -193,9 +193,7 @@ class InsiderOwnershipChangeDetector:
         return alerts
 
     @staticmethod
-    def _interpret_signal(
-        direction: ChangeDirection, role: InsiderRole, abs_change: float
-    ) -> str:
+    def _interpret_signal(direction: ChangeDirection, role: InsiderRole, abs_change: float) -> str:
         """Interpret ownership change as an investment signal."""
         if direction == ChangeDirection.FULL_EXIT:
             return "BEARISH — insider full exit"

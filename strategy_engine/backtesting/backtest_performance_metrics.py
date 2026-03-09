@@ -13,12 +13,14 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import pandas as pd
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 logger = get_logger(__name__)
 
@@ -179,9 +181,7 @@ class BacktestPerformanceMetrics:
             Dictionary of metric name to value.
         """
         dd = self.max_drawdown(returns)
-        annual_return = float(
-            (1 + returns).prod() ** (self._td / max(len(returns), 1)) - 1
-        )
+        annual_return = float((1 + returns).prod() ** (self._td / max(len(returns), 1)) - 1)
 
         result = {
             "annual_return": round(annual_return, 6),

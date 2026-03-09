@@ -13,16 +13,18 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
-import numpy as np
 import pandas as pd
 import vectorbt as vbt
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.backtesting.idx_transaction_cost_model import IDXTransactionCostModel
-from strategy_engine.base_strategy_interface import BaseStrategyInterface, StrategySignal
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from strategy_engine.base_strategy_interface import BaseStrategyInterface
 
 logger = get_logger(__name__)
 
@@ -109,14 +111,10 @@ class IDXVectorbtBacktestEngine:
         else:
             close = market_data.pivot(columns="symbol", values="close")
 
-        close = close.loc[
-            (close.index >= start_date) & (close.index <= end_date)
-        ].sort_index()
+        close = close.loc[(close.index >= start_date) & (close.index <= end_date)].sort_index()
 
         # Generate signals at each rebalance date.
-        rebalance_dates = self._get_rebalance_dates(
-            close.index, params.rebalance_frequency
-        )
+        rebalance_dates = self._get_rebalance_dates(close.index, params.rebalance_frequency)
 
         target_weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
 
@@ -159,9 +157,7 @@ class IDXVectorbtBacktestEngine:
         return result
 
     @staticmethod
-    def _get_rebalance_dates(
-        date_index: pd.DatetimeIndex, frequency: str
-    ) -> list[datetime]:
+    def _get_rebalance_dates(date_index: pd.DatetimeIndex, frequency: str) -> list[datetime]:
         """Extract rebalance dates from date index based on frequency.
 
         Args:
@@ -173,16 +169,12 @@ class IDXVectorbtBacktestEngine:
         """
         if frequency == "daily":
             return list(date_index)
-        elif frequency == "weekly":
+        if frequency == "weekly":
             return list(date_index[date_index.dayofweek == 4])
-        elif frequency == "monthly":
-            grouped = pd.Series(date_index, index=date_index).groupby(
-                date_index.to_period("M")
-            )
+        if frequency == "monthly":
+            grouped = pd.Series(date_index, index=date_index).groupby(date_index.to_period("M"))
             return [g.iloc[-1] for _, g in grouped]
-        elif frequency == "quarterly":
-            grouped = pd.Series(date_index, index=date_index).groupby(
-                date_index.to_period("Q")
-            )
+        if frequency == "quarterly":
+            grouped = pd.Series(date_index, index=date_index).groupby(date_index.to_period("Q"))
             return [g.iloc[-1] for _, g in grouped]
         return list(date_index)

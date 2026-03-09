@@ -14,8 +14,8 @@ Usage::
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import jwt
 from passlib.context import CryptContext
@@ -62,6 +62,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # JWT token management
 # ---------------------------------------------------------------------------
 
+
 class TokenError(Exception):
     """Raised when a JWT cannot be created or verified."""
 
@@ -80,22 +81,22 @@ class TokenPayload:
         raw: Full decoded payload dict.
     """
 
-    __slots__ = ("sub", "tenant_id", "role", "exp", "iat", "jti", "scopes", "raw")
+    __slots__ = ("exp", "iat", "jti", "raw", "role", "scopes", "sub", "tenant_id")
 
     def __init__(self, payload: dict[str, Any]) -> None:
         self.raw = payload
         self.sub: str = payload.get("sub", "")
         self.tenant_id: str = payload.get("tenant_id", "")
         self.role: str = payload.get("role", "")
-        self.exp: Optional[datetime] = None
-        self.iat: Optional[datetime] = None
-        self.jti: Optional[str] = payload.get("jti")
+        self.exp: datetime | None = None
+        self.iat: datetime | None = None
+        self.jti: str | None = payload.get("jti")
         self.scopes: list[str] = payload.get("scopes", [])
 
         if "exp" in payload:
-            self.exp = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+            self.exp = datetime.fromtimestamp(payload["exp"], tz=UTC)
         if "iat" in payload:
-            self.iat = datetime.fromtimestamp(payload["iat"], tz=timezone.utc)
+            self.iat = datetime.fromtimestamp(payload["iat"], tz=UTC)
 
     def __repr__(self) -> str:
         return f"TokenPayload(sub={self.sub!r}, tenant_id={self.tenant_id!r}, role={self.role!r})"
@@ -105,7 +106,7 @@ class TokenPayload:
         """Return ``True`` if the token has expired."""
         if self.exp is None:
             return False
-        return datetime.now(tz=timezone.utc) >= self.exp
+        return datetime.now(tz=UTC) >= self.exp
 
 
 def create_access_token(
@@ -135,7 +136,7 @@ def create_access_token(
         TokenError: If token creation fails.
     """
     settings = get_settings()
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
 
     if expires_delta is None:
         expires_delta = timedelta(minutes=settings.jwt_access_token_expire_minutes)
@@ -178,7 +179,7 @@ def create_refresh_token(
         Encoded JWT string.
     """
     settings = get_settings()
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
 
     if expires_delta is None:
         expires_delta = timedelta(days=settings.jwt_refresh_token_expire_days)
@@ -238,7 +239,7 @@ __all__ = [
     "TokenPayload",
     "create_access_token",
     "create_refresh_token",
-    "verify_token",
     "hash_password",
     "verify_password",
+    "verify_token",
 ]

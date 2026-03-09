@@ -7,8 +7,7 @@ fundamental data, enabling fast screening and ranking queries.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
@@ -22,6 +21,10 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IdxEquityComputedRatio(Base):
@@ -45,9 +48,7 @@ class IdxEquityComputedRatio(Base):
 
     __tablename__ = "idx_equity_computed_ratios"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
         ForeignKey("idx_equity_instruments.symbol"),
@@ -64,9 +65,7 @@ class IdxEquityComputedRatio(Base):
     debt_to_equity: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     current_ratio: Mapped[Decimal | None] = mapped_column(Numeric(8, 4))
     market_cap_idr: Mapped[int | None] = mapped_column(BigInteger)
-    computed_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False
-    )
+    computed_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
 
     __table_args__ = (
         Index(

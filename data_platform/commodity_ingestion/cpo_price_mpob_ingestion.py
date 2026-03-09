@@ -21,14 +21,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -117,9 +117,7 @@ class CPOPriceMPOBIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="mpob", symbol="CPO", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="mpob", symbol="CPO", operation="inserted").inc(inserted)
 
         self._logger.info(
             "cpo_ingestion_complete",
@@ -161,9 +159,7 @@ class CPOPriceMPOBIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        MPOB_API_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(MPOB_API_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     data = resp.json()
                     return self._parse_mpob_response(data, start, end)
@@ -244,9 +240,7 @@ class CPOPriceMPOBIngester:
 
         for item in items:
             try:
-                ref_date = date.fromisoformat(
-                    item.get("date", item.get("period", ""))[:10]
-                )
+                ref_date = date.fromisoformat(item.get("date", item.get("period", ""))[:10])
             except (ValueError, TypeError):
                 continue
             if ref_date < start or ref_date > end:
@@ -298,14 +292,10 @@ class CPOPriceMPOBIngester:
         """
         v = float(record["value"])
         if v <= 0:
-            raise DataQualityError(
-                f"Non-positive CPO price {v} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Non-positive CPO price {v} on {record['reference_date']}")
         # CPO historically ranges from ~1000 to ~7000 MYR/ton
         if record["unit"] == "myr_per_ton" and (v < 500 or v > 10000):
-            raise DataQualityError(
-                f"CPO price {v} MYR/ton outside plausible range [500, 10000]"
-            )
+            raise DataQualityError(f"CPO price {v} MYR/ton outside plausible range [500, 10000]")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

@@ -30,14 +30,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -130,9 +130,7 @@ class PanelHargaPanganIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="badan_pangan", symbol="PANGAN", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="badan_pangan", symbol="PANGAN", operation="inserted").inc(inserted)
 
         self._logger.info(
             "panel_harga_ingestion_complete",
@@ -144,9 +142,7 @@ class PanelHargaPanganIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_prices(
-        self, indicator: str, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_prices(self, indicator: str, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch food prices for a single commodity from Badan Pangan.
 
         Args:
@@ -177,9 +173,7 @@ class PanelHargaPanganIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        PANEL_HARGA_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(PANEL_HARGA_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -218,15 +212,10 @@ class PanelHargaPanganIngester:
         """
         v = float(record["value"])
         if v <= 0:
-            raise DataQualityError(
-                f"Non-positive price {v} for {record['indicator']} "
-                f"on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Non-positive price {v} for {record['indicator']} on {record['reference_date']}")
         # Sanity: most staple prices are 5,000-250,000 IDR/kg
         if v > 500000:
-            raise DataQualityError(
-                f"Price {v} IDR/kg exceeds plausible max for {record['indicator']}"
-            )
+            raise DataQualityError(f"Price {v} IDR/kg exceeds plausible max for {record['indicator']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

@@ -27,15 +27,17 @@ import csv
 import io
 import json
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from enum import StrEnum, unique
-from typing import Any, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
 
 import structlog
 
 from shared.utils import EnthopyJSONEncoder
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 # ---------------------------------------------------------------------------
 # Enumerations
@@ -93,17 +95,17 @@ class AuditRecord:
     """
 
     __slots__ = (
-        "record_id",
-        "timestamp",
-        "user_id",
-        "tenant_id",
         "action",
-        "resource",
         "details",
         "ip_address",
-        "user_agent",
+        "record_id",
+        "resource",
         "service",
         "success",
+        "tenant_id",
+        "timestamp",
+        "user_agent",
+        "user_id",
     )
 
     def __init__(
@@ -120,7 +122,7 @@ class AuditRecord:
         success: bool = True,
     ) -> None:
         self.record_id = str(uuid4())
-        self.timestamp = datetime.now(tz=timezone.utc)
+        self.timestamp = datetime.now(tz=UTC)
         self.user_id = user_id
         self.tenant_id = tenant_id
         self.action = action
@@ -176,7 +178,7 @@ class AuditLogger:
         self,
         service: str = "enthropy",
         buffer_size: int = 10_000,
-        on_record: Optional[Any] = None,
+        on_record: Any | None = None,
     ) -> None:
         self._service = service
         self._buffer_size = buffer_size
@@ -387,7 +389,7 @@ class AuditLogger:
 
 __all__ = [
     "AuditAction",
-    "ExportFormat",
-    "AuditRecord",
     "AuditLogger",
+    "AuditRecord",
+    "ExportFormat",
 ]

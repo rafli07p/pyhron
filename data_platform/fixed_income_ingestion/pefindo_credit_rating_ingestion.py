@@ -26,14 +26,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -42,13 +42,27 @@ MAX_RETRIES = 3
 
 # Numeric mapping for PEFINDO rating scale (higher = better)
 RATING_SCALE: dict[str, int] = {
-    "idAAA": 22, "idAA+": 21, "idAA": 20, "idAA-": 19,
-    "idA+": 18, "idA": 17, "idA-": 16,
-    "idBBB+": 15, "idBBB": 14, "idBBB-": 13,
-    "idBB+": 12, "idBB": 11, "idBB-": 10,
-    "idB+": 9, "idB": 8, "idB-": 7,
-    "idCCC": 6, "idCC": 5, "idC": 4,
-    "idSD": 2, "idD": 1,
+    "idAAA": 22,
+    "idAA+": 21,
+    "idAA": 20,
+    "idAA-": 19,
+    "idA+": 18,
+    "idA": 17,
+    "idA-": 16,
+    "idBBB+": 15,
+    "idBBB": 14,
+    "idBBB-": 13,
+    "idBB+": 12,
+    "idBB": 11,
+    "idBB-": 10,
+    "idB+": 9,
+    "idB": 8,
+    "idB-": 7,
+    "idCCC": 6,
+    "idCC": 5,
+    "idC": 4,
+    "idSD": 2,
+    "idD": 1,
 }
 
 
@@ -124,9 +138,7 @@ class PEFINDOCreditRatingIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="pefindo", symbol="RATING", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="pefindo", symbol="RATING", operation="inserted").inc(inserted)
 
         self._logger.info(
             "pefindo_ingestion_complete",
@@ -138,9 +150,7 @@ class PEFINDOCreditRatingIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_ratings(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_ratings(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch rating actions from PEFINDO.
 
         Args:
@@ -162,9 +172,7 @@ class PEFINDOCreditRatingIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        PEFINDO_API_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(PEFINDO_API_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -178,28 +186,32 @@ class PEFINDOCreditRatingIngester:
                         rating = row.get("rating", "")
                         rating_numeric = RATING_SCALE.get(rating)
                         if rating and rating_numeric is not None:
-                            records.append({
-                                "indicator": "pefindo_issuer_rating",
-                                "entity_code": entity,
-                                "reference_date": ref_date,
-                                "value": Decimal(str(rating_numeric)),
-                                "unit": "rating_score",
-                                "frequency": "event",
-                                "rating_label": rating,
-                                "action": row.get("action", ""),
-                            })
+                            records.append(
+                                {
+                                    "indicator": "pefindo_issuer_rating",
+                                    "entity_code": entity,
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(rating_numeric)),
+                                    "unit": "rating_score",
+                                    "frequency": "event",
+                                    "rating_label": rating,
+                                    "action": row.get("action", ""),
+                                }
+                            )
                         outlook = row.get("outlook", "")
                         if outlook:
                             outlook_score = {"positive": 1, "stable": 0, "negative": -1}
-                            records.append({
-                                "indicator": "pefindo_outlook",
-                                "entity_code": entity,
-                                "reference_date": ref_date,
-                                "value": Decimal(str(outlook_score.get(outlook.lower(), 0))),
-                                "unit": "score",
-                                "frequency": "event",
-                                "outlook_label": outlook,
-                            })
+                            records.append(
+                                {
+                                    "indicator": "pefindo_outlook",
+                                    "entity_code": entity,
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(outlook_score.get(outlook.lower(), 0))),
+                                    "unit": "score",
+                                    "frequency": "event",
+                                    "outlook_label": outlook,
+                                }
+                            )
                     return records
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (500, 502, 503) and attempt < MAX_RETRIES:
@@ -226,8 +238,7 @@ class PEFINDOCreditRatingIngester:
             v = float(record["value"])
             if v < 1 or v > 22:
                 raise DataQualityError(
-                    f"Rating score {v} outside valid range [1, 22] "
-                    f"for {record.get('entity_code', '?')}"
+                    f"Rating score {v} outside valid range [1, 22] for {record.get('entity_code', '?')}"
                 )
 
     # ── Persistence ──────────────────────────────────────────────────────

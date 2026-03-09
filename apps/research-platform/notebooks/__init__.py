@@ -32,9 +32,9 @@ class NotebookMetadata:
     cell_count: int = 0
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
-    last_executed: Optional[datetime] = None
+    last_executed: datetime | None = None
     execution_status: str = "idle"  # idle, running, completed, failed
-    file_path: Optional[str] = None
+    file_path: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize notebook metadata to a dictionary."""
@@ -78,9 +78,9 @@ class NotebookManager:
         name: str,
         description: str = "",
         author: str = "",
-        tags: Optional[list[str]] = None,
-        template: Optional[str] = None,
-        cells: Optional[list[dict[str, Any]]] = None,
+        tags: list[str] | None = None,
+        template: str | None = None,
+        cells: list[dict[str, Any]] | None = None,
     ) -> NotebookMetadata:
         """Create a new Jupyter notebook.
 
@@ -161,8 +161,8 @@ class NotebookManager:
 
     def list_notebooks(
         self,
-        tags: Optional[list[str]] = None,
-        author: Optional[str] = None,
+        tags: list[str] | None = None,
+        author: str | None = None,
     ) -> list[dict[str, Any]]:
         """List all available notebooks with optional filtering.
 
@@ -221,8 +221,8 @@ class NotebookManager:
     def execute_notebook(
         self,
         name: str,
-        parameters: Optional[dict[str, Any]] = None,
-        output_path: Optional[str | Path] = None,
+        parameters: dict[str, Any] | None = None,
+        output_path: str | Path | None = None,
         timeout: int = 600,
     ) -> dict[str, Any]:
         """Execute a notebook programmatically.

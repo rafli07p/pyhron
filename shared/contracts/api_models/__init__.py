@@ -37,7 +37,7 @@ class ServiceStatus(StrEnum):
 # Response envelopes
 # ---------------------------------------------------------------------------
 
-class APIResponse(BaseModel, Generic[T]):
+class APIResponse[T](BaseModel):
     """Standard API response envelope.
 
     Every API endpoint returns data wrapped in this envelope so clients
@@ -48,24 +48,24 @@ class APIResponse(BaseModel, Generic[T]):
     model_config = {"str_strip_whitespace": True}
 
     success: bool = Field(default=True, description="Whether the request succeeded")
-    data: Optional[T] = Field(default=None, description="Response payload")
-    message: Optional[str] = Field(default=None, max_length=1024, description="Human-readable message")
+    data: T | None = Field(default=None, description="Response payload")
+    message: str | None = Field(default=None, max_length=1024, description="Human-readable message")
     request_id: UUID = Field(default_factory=uuid4, description="Unique request trace identifier")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp (UTC)")
-    tenant_id: Optional[str] = Field(default=None, max_length=64, description="Tenant context")
+    tenant_id: str | None = Field(default=None, max_length=64, description="Tenant context")
 
     @classmethod
-    def ok(cls, data: T, *, message: str | None = None, tenant_id: str | None = None) -> "APIResponse[T]":
+    def ok(cls, data: T, *, message: str | None = None, tenant_id: str | None = None) -> APIResponse[T]:
         """Create a successful response."""
         return cls(success=True, data=data, message=message, tenant_id=tenant_id)
 
     @classmethod
-    def fail(cls, message: str, *, tenant_id: str | None = None) -> "APIResponse[None]":
+    def fail(cls, message: str, *, tenant_id: str | None = None) -> APIResponse[None]:
         """Create a failed response with no data."""
         return cls(success=False, data=None, message=message, tenant_id=tenant_id)
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
+class PaginatedResponse[T](BaseModel):
     """Paginated API response for list endpoints.
 
     Includes cursor-based and offset-based pagination metadata so
@@ -81,10 +81,10 @@ class PaginatedResponse(BaseModel, Generic[T]):
     page_size: int = Field(default=50, ge=1, le=1000, description="Number of records per page")
     has_next: bool = Field(default=False, description="Whether more pages are available")
     has_previous: bool = Field(default=False, description="Whether a previous page exists")
-    next_cursor: Optional[str] = Field(default=None, max_length=256, description="Cursor for next page (cursor-based)")
+    next_cursor: str | None = Field(default=None, max_length=256, description="Cursor for next page (cursor-based)")
     request_id: UUID = Field(default_factory=uuid4, description="Unique request trace identifier")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp (UTC)")
-    tenant_id: Optional[str] = Field(default=None, max_length=64, description="Tenant context")
+    tenant_id: str | None = Field(default=None, max_length=64, description="Tenant context")
 
     @property
     def total_pages(self) -> int:
@@ -99,7 +99,7 @@ class ErrorDetail(BaseModel):
 
     model_config = {"frozen": True, "str_strip_whitespace": True}
 
-    field: Optional[str] = Field(default=None, max_length=256, description="Field that caused the error")
+    field: str | None = Field(default=None, max_length=256, description="Field that caused the error")
     code: str = Field(..., max_length=64, description="Machine-readable error code")
     message: str = Field(..., max_length=1024, description="Human-readable error message")
     severity: ErrorSeverity = Field(default=ErrorSeverity.ERROR, description="Error severity")
@@ -121,8 +121,8 @@ class ErrorResponse(BaseModel):
     details: list[ErrorDetail] = Field(default_factory=list, description="Field-level error details")
     request_id: UUID = Field(default_factory=uuid4, description="Unique request trace identifier")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Error timestamp (UTC)")
-    path: Optional[str] = Field(default=None, max_length=512, description="Request path that caused the error")
-    tenant_id: Optional[str] = Field(default=None, max_length=64, description="Tenant context")
+    path: str | None = Field(default=None, max_length=512, description="Request path that caused the error")
+    tenant_id: str | None = Field(default=None, max_length=64, description="Tenant context")
 
 
 class DependencyHealth(BaseModel):
@@ -132,8 +132,8 @@ class DependencyHealth(BaseModel):
 
     name: str = Field(..., max_length=64, description="Dependency name (e.g. 'postgres', 'redis')")
     status: ServiceStatus = Field(..., description="Dependency health status")
-    latency_ms: Optional[float] = Field(default=None, ge=0, description="Last probe latency in milliseconds")
-    message: Optional[str] = Field(default=None, max_length=256, description="Optional status message")
+    latency_ms: float | None = Field(default=None, ge=0, description="Last probe latency in milliseconds")
+    message: str | None = Field(default=None, max_length=256, description="Optional status message")
 
 
 class HealthCheck(BaseModel):
@@ -166,12 +166,12 @@ class HealthCheck(BaseModel):
 
 
 __all__ = [
-    "ErrorSeverity",
-    "ServiceStatus",
     "APIResponse",
-    "PaginatedResponse",
+    "DependencyHealth",
     "ErrorDetail",
     "ErrorResponse",
-    "DependencyHealth",
+    "ErrorSeverity",
     "HealthCheck",
+    "PaginatedResponse",
+    "ServiceStatus",
 ]

@@ -16,21 +16,22 @@ Usage::
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
-import numpy as np
 import pandas as pd
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.base_strategy_interface import (
-    BaseStrategyInterface,
     BarData,
+    BaseStrategyInterface,
     SignalDirection,
     StrategyParameters,
     StrategySignal,
     TickData,
 )
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 logger = get_logger(__name__)
 
@@ -103,9 +104,7 @@ class IDXSectorRotationStrategy(BaseStrategyInterface):
             },
         )
 
-    async def generate_signals(
-        self, market_data: pd.DataFrame, as_of_date: datetime
-    ) -> list[StrategySignal]:
+    async def generate_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         logger.info("sector_rotation_signal_start", as_of_date=as_of_date.isoformat())
         try:
             return self._compute_rotation_signals(market_data, as_of_date)
@@ -119,9 +118,7 @@ class IDXSectorRotationStrategy(BaseStrategyInterface):
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
         return []
 
-    def _compute_rotation_signals(
-        self, market_data: pd.DataFrame, as_of_date: datetime
-    ) -> list[StrategySignal]:
+    def _compute_rotation_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         if isinstance(market_data.index, pd.MultiIndex):
             close = market_data["close"].unstack(level="symbol")
         else:

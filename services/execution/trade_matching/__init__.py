@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import heapq
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from decimal import Decimal
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 import structlog
@@ -90,7 +91,7 @@ class TradeMatchingEngine:
         Optional callback ``(OrderFill) -> None`` invoked on every match.
     """
 
-    def __init__(self, on_fill: Optional[Callable[[OrderFill], Any]] = None) -> None:
+    def __init__(self, on_fill: Callable[[OrderFill], Any] | None = None) -> None:
         self._lock = threading.Lock()
         self._on_fill = on_fill
         self._sequence = 0
@@ -121,7 +122,7 @@ class TradeMatchingEngine:
                 price=price,
                 quantity=order.qty,
                 remaining=order.qty,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 tenant_id=order.tenant_id,
                 sequence=self._sequence,
             )
@@ -301,7 +302,7 @@ class TradeMatchingEngine:
                 leaves_qty=incoming.remaining,
                 status=incoming_status,
                 exchange="INTERNAL",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
             fills.append(incoming_fill)
             self._emit_fill(incoming_fill)
@@ -322,7 +323,7 @@ class TradeMatchingEngine:
                 leaves_qty=resting.remaining,
                 status=resting_status,
                 exchange="INTERNAL",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
             self._emit_fill(resting_fill)
 
@@ -390,7 +391,7 @@ class TradeMatchingEngine:
                 leaves_qty=best_bid.remaining,
                 status=OrderStatusEnum.FILLED if best_bid.remaining == 0 else OrderStatusEnum.PARTIALLY_FILLED,
                 exchange="INTERNAL",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
             ask_fill = OrderFill(
                 fill_id=uuid4(),
@@ -407,7 +408,7 @@ class TradeMatchingEngine:
                 leaves_qty=best_ask.remaining,
                 status=OrderStatusEnum.FILLED if best_ask.remaining == 0 else OrderStatusEnum.PARTIALLY_FILLED,
                 exchange="INTERNAL",
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             )
 
             fills.extend([bid_fill, ask_fill])

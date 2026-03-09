@@ -13,7 +13,6 @@ from datetime import date, timedelta
 
 import pytest
 
-
 # ── IDX Cost Model (pure functions under test) ──────────────────────────────
 
 

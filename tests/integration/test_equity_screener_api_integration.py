@@ -7,10 +7,6 @@ using a mock database layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal
-
-import pytest
-
 
 # ── Mock Screener Models ────────────────────────────────────────────────────
 
@@ -18,6 +14,7 @@ import pytest
 @dataclass
 class ScreenerRow:
     """Simplified equity screener result row."""
+
     symbol: str
     name: str
     sector: str

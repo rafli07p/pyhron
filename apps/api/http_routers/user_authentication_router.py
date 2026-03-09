@@ -6,7 +6,7 @@ user registration, and profile management.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException, status
@@ -49,7 +49,7 @@ class UserProfileResponse(BaseModel):
     full_name: str
     is_active: bool = True
     subscription_tier: str = "free"
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────

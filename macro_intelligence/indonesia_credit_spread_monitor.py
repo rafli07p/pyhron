@@ -15,8 +15,8 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 from shared.structured_json_logger import get_logger
@@ -195,7 +195,7 @@ class IndonesiaCreditSpreadMonitor:
             stress = "LOW"
 
         dashboard = CreditSpreadDashboard(
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
             readings=readings,
             avg_spread_by_rating=avg_by_rating,
             avg_spread_by_sector=avg_by_sector,
@@ -211,9 +211,7 @@ class IndonesiaCreditSpreadMonitor:
         return dashboard
 
     @staticmethod
-    def _aggregate_by(
-        readings: list[CreditSpreadReading], key: str
-    ) -> dict[str, float]:
+    def _aggregate_by(readings: list[CreditSpreadReading], key: str) -> dict[str, float]:
         """Compute average spread by a grouping key."""
         groups: dict[str, list[float]] = {}
         for r in readings:

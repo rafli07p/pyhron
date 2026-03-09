@@ -7,12 +7,14 @@ forced selling risk if stock price declines trigger margin calls.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 
@@ -34,7 +36,8 @@ class SharePledgeRiskMonitor:
     """Monitor share pledge risks from governance filings."""
 
     async def get_active_pledges(
-        self, session: AsyncSession,
+        self,
+        session: AsyncSession,
     ) -> list[SharePledgeRisk]:
         """Get all active share pledges with risk assessment.
 
@@ -59,15 +62,17 @@ class SharePledgeRiskMonitor:
         for row in result.fetchall():
             pledge_ratio = abs(float(row[5])) if row[5] else 0.0
             risk = self._assess_risk(pledge_ratio)
-            pledges.append(SharePledgeRisk(
-                symbol=row[0],
-                pledgor_name=row[1] or "",
-                pledgor_role=row[2] or "",
-                shares_pledged=abs(row[3] or 0),
-                total_shares_owned=row[4] or 0,
-                pledge_ratio_pct=pledge_ratio,
-                risk_level=risk,
-            ))
+            pledges.append(
+                SharePledgeRisk(
+                    symbol=row[0],
+                    pledgor_name=row[1] or "",
+                    pledgor_role=row[2] or "",
+                    shares_pledged=abs(row[3] or 0),
+                    total_shares_owned=row[4] or 0,
+                    pledge_ratio_pct=pledge_ratio,
+                    risk_level=risk,
+                )
+            )
 
         pledges.sort(key=lambda p: ["LOW", "MEDIUM", "HIGH", "CRITICAL"].index(p.risk_level), reverse=True)
         logger.info("pledge_risks_assessed", total=len(pledges))
@@ -78,8 +83,8 @@ class SharePledgeRiskMonitor:
         """Assess pledge risk based on ratio of pledged shares."""
         if pledge_ratio >= 50:
             return "CRITICAL"
-        elif pledge_ratio >= 30:
+        if pledge_ratio >= 30:
             return "HIGH"
-        elif pledge_ratio >= 15:
+        if pledge_ratio >= 15:
             return "MEDIUM"
         return "LOW"

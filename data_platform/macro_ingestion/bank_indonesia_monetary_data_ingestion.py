@@ -29,14 +29,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -132,9 +132,7 @@ class BankIndonesiaMonetaryDataIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="bank_indonesia", symbol="MACRO", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="bank_indonesia", symbol="MACRO", operation="inserted").inc(inserted)
 
         self._logger.info(
             "bi_monetary_ingestion_complete",
@@ -180,9 +178,7 @@ class BankIndonesiaMonetaryDataIngester:
             raise IngestionError(f"Unknown indicator: {indicator}")
         return await fetcher(start, end)
 
-    async def _fetch_bi_rate(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_bi_rate(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch BI-7DRR (BI Rate) from the BI API.
 
         Returns:
@@ -203,9 +199,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date") or row.get("period")
         ]
 
-    async def _fetch_jisdor(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_jisdor(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch JISDOR (IDR/USD fixing) from the BI API.
 
         Returns:
@@ -226,9 +220,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date")
         ]
 
-    async def _fetch_m2(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_m2(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch M2 broad money supply from the BI SEKI dataset.
 
         Returns:
@@ -249,9 +241,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date") or row.get("period")
         ]
 
-    async def _fetch_fx_reserves(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_fx_reserves(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch foreign exchange reserves from BI.
 
         Returns:
@@ -272,9 +262,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date") or row.get("period")
         ]
 
-    async def _fetch_ikk(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_ikk(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch IKK (consumer confidence index) from BI.
 
         Returns:
@@ -295,9 +283,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date") or row.get("period")
         ]
 
-    async def _fetch_lending_rate(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_lending_rate(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch average lending rate from BI.
 
         Returns:
@@ -318,9 +304,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date") or row.get("period")
         ]
 
-    async def _fetch_deposit_rate(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_deposit_rate(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch average deposit rate from BI.
 
         Returns:
@@ -397,23 +381,17 @@ class BankIndonesiaMonetaryDataIngester:
         if record["indicator"] not in INDICATORS:
             raise DataQualityError(f"Unknown indicator: {record['indicator']}")
         if record["value"] is None:
-            raise DataQualityError(
-                f"Null value for {record['indicator']} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Null value for {record['indicator']} on {record['reference_date']}")
         # JISDOR sanity: IDR/USD should be between 1,000 and 100,000
         if record["indicator"] == "idr_usd_jisdor":
             v = float(record["value"])
             if v < 1000 or v > 100000:
-                raise DataQualityError(
-                    f"JISDOR value {v} outside plausible range [1000, 100000]"
-                )
+                raise DataQualityError(f"JISDOR value {v} outside plausible range [1000, 100000]")
         # BI rate sanity: between 0% and 30%
         if record["indicator"] == "bi_rate":
             v = float(record["value"])
             if v < 0 or v > 30:
-                raise DataQualityError(
-                    f"BI rate {v}% outside plausible range [0, 30]"
-                )
+                raise DataQualityError(f"BI rate {v}% outside plausible range [0, 30]")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

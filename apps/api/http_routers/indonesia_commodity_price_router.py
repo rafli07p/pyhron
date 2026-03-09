@@ -6,13 +6,16 @@ including palm oil, coal, nickel, tin, rubber, and crude oil.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
-from decimal import Decimal
+from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/commodities", tags=["commodities"])
@@ -49,7 +52,7 @@ class CommodityHistory(BaseModel):
 
 class CommodityDashboard(BaseModel):
     commodities: list[CommodityPrice]
-    last_updated: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────

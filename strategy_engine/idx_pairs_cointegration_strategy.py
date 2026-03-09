@@ -16,8 +16,7 @@ Usage::
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
@@ -25,13 +24,16 @@ from statsmodels.tsa.stattools import coint
 
 from shared.structured_json_logger import get_logger
 from strategy_engine.base_strategy_interface import (
-    BaseStrategyInterface,
     BarData,
+    BaseStrategyInterface,
     SignalDirection,
     StrategyParameters,
     StrategySignal,
     TickData,
 )
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 logger = get_logger(__name__)
 
@@ -137,9 +139,7 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
             },
         )
 
-    async def generate_signals(
-        self, market_data: pd.DataFrame, as_of_date: datetime
-    ) -> list[StrategySignal]:
+    async def generate_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         logger.info("pairs_signal_generation_start", as_of_date=as_of_date.isoformat())
         try:
             return self._compute_pairs_signals(market_data, as_of_date)
@@ -155,16 +155,14 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
         return []
 
-    def _compute_pairs_signals(
-        self, market_data: pd.DataFrame, as_of_date: datetime
-    ) -> list[StrategySignal]:
+    def _compute_pairs_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         if isinstance(market_data.index, pd.MultiIndex):
             close = market_data["close"].unstack(level="symbol")
         else:
             close = market_data.pivot(columns="symbol", values="close")
 
         close = close.loc[close.index <= as_of_date].sort_index()
-        close = close.iloc[-self._formation_days:]
+        close = close.iloc[-self._formation_days :]
         signals: list[StrategySignal] = []
 
         for sym_a, sym_b in self._pairs:
@@ -188,7 +186,7 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
                 self._kalman_filters[pair_key] = _KalmanHedgeRatio()
 
             kf = self._kalman_filters[pair_key]
-            for xa, xb in zip(sa.values, sb.values):
+            for xa, xb in zip(sa.values, sb.values, strict=False):
                 kf.update(xa, xb)
 
             spread = sb.values - kf.beta * sa.values

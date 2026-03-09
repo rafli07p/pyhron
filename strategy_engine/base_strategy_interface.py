@@ -15,17 +15,18 @@ from __future__ import annotations
 
 import abc
 from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from typing import Any
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any
 
-import pandas as pd
+if TYPE_CHECKING:
+    from datetime import datetime
 
+    import pandas as pd
 
 # ── Supporting Types ─────────────────────────────────────────────────────────
 
 
-class SignalDirection(str, Enum):
+class SignalDirection(StrEnum):
     """Direction of a trading signal."""
 
     LONG = "LONG"

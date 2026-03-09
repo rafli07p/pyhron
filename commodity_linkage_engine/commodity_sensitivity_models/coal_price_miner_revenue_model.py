@@ -15,13 +15,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from shared.structured_json_logger import get_logger
-
 from commodity_linkage_engine.commodity_to_stock_impact_engine import (
-    ConfidenceLevel,
     CommodityType,
+    ConfidenceLevel,
     StockEarningsImpactEstimate,
 )
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -184,17 +183,11 @@ class CoalPriceMinerRevenueModel:
         eps_impact = net_income_impact_idr / miner.shares_outstanding
 
         impact_pct = (
-            abs(revenue_impact_idr) / miner.trailing_revenue_idr * 100.0
-            if miner.trailing_revenue_idr > 0
-            else 0.0
+            abs(revenue_impact_idr) / miner.trailing_revenue_idr * 100.0 if miner.trailing_revenue_idr > 0 else 0.0
         )
 
         # Higher calorie coals have better price discovery → higher confidence.
-        confidence = (
-            ConfidenceLevel.HIGH
-            if miner.avg_calorie_kcal >= 5_000
-            else ConfidenceLevel.MEDIUM
-        )
+        confidence = ConfidenceLevel.HIGH if miner.avg_calorie_kcal >= 5_000 else ConfidenceLevel.MEDIUM
 
         return StockEarningsImpactEstimate(
             ticker=miner.ticker,
@@ -219,9 +212,7 @@ class CoalPriceMinerRevenueModel:
             ],
         )
 
-    def compute_all_impacts(
-        self, hba_change_usd_per_ton: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def compute_all_impacts(self, hba_change_usd_per_ton: float) -> list[StockEarningsImpactEstimate]:
         """Compute impact across all covered coal miners.
 
         Args:

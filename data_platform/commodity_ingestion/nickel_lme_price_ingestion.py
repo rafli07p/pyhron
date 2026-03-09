@@ -27,14 +27,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -123,9 +123,7 @@ class NickelLMEPriceIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="lme", symbol="NICKEL", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="lme", symbol="NICKEL", operation="inserted").inc(inserted)
 
         self._logger.info(
             "nickel_ingestion_complete",
@@ -137,9 +135,7 @@ class NickelLMEPriceIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_lme_nickel(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_lme_nickel(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch LME nickel cash and 3-month prices.
 
         Args:
@@ -161,9 +157,7 @@ class NickelLMEPriceIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        LME_API_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(LME_API_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -174,21 +168,25 @@ class NickelLMEPriceIngester:
                             continue
                         ref_date = date.fromisoformat(ref)
                         if row.get("cash"):
-                            records.append({
-                                "indicator": "nickel_lme_cash",
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row["cash"])),
-                                "unit": "usd_per_ton",
-                                "frequency": "daily",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "nickel_lme_cash",
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row["cash"])),
+                                    "unit": "usd_per_ton",
+                                    "frequency": "daily",
+                                }
+                            )
                         if row.get("three_month"):
-                            records.append({
-                                "indicator": "nickel_lme_3m",
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row["three_month"])),
-                                "unit": "usd_per_ton",
-                                "frequency": "daily",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "nickel_lme_3m",
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row["three_month"])),
+                                    "unit": "usd_per_ton",
+                                    "frequency": "daily",
+                                }
+                            )
                     return records
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (500, 502, 503) and attempt < MAX_RETRIES:
@@ -203,9 +201,7 @@ class NickelLMEPriceIngester:
 
         raise IngestionError(f"LME nickel failed after {MAX_RETRIES} retries")
 
-    async def _fetch_antam_domestic(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_antam_domestic(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch ANTAM domestic nickel prices.
 
         Args:
@@ -227,9 +223,7 @@ class NickelLMEPriceIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        ANTAM_PRICE_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(ANTAM_PRICE_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -267,14 +261,10 @@ class NickelLMEPriceIngester:
         """
         v = float(record["value"])
         if v <= 0:
-            raise DataQualityError(
-                f"Non-positive nickel price {v} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Non-positive nickel price {v} on {record['reference_date']}")
         # LME nickel historically ~5000-50000 USD/ton
         if record["unit"] == "usd_per_ton" and (v < 3000 or v > 60000):
-            raise DataQualityError(
-                f"Nickel price {v} USD/ton outside plausible range [3000, 60000]"
-            )
+            raise DataQualityError(f"Nickel price {v} USD/ton outside plausible range [3000, 60000]")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

@@ -6,13 +6,16 @@ for the Indonesia Stock Exchange.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
-from decimal import Decimal
+from datetime import UTC, date, datetime
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/market", tags=["market-data"])
@@ -31,7 +34,7 @@ class MarketOverview(BaseModel):
     advances: int
     declines: int
     unchanged: int
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class InstrumentResponse(BaseModel):

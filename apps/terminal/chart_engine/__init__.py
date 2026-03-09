@@ -51,8 +51,8 @@ class ChartData:
     lows: list[float] = field(default_factory=list)
     closes: list[float] = field(default_factory=list)
     volumes: list[float] = field(default_factory=list)
-    overlays: dict[str, list[Optional[float]]] = field(default_factory=dict)
-    studies: dict[str, list[Optional[float]] | dict[str, list[Optional[float]]]] = field(default_factory=dict)
+    overlays: dict[str, list[float | None]] = field(default_factory=dict)
+    studies: dict[str, list[float | None] | dict[str, list[float | None]]] = field(default_factory=dict)
 
 
 class ChartEngine:
@@ -67,7 +67,7 @@ class ChartEngine:
     def __init__(self) -> None:
         self._overlays: list[OverlayConfig] = []
         self._studies: list[StudyConfig] = []
-        self._chart_data: Optional[ChartData] = None
+        self._chart_data: ChartData | None = None
         logger.info("ChartEngine initialized")
 
     def create_chart(
@@ -109,9 +109,9 @@ class ChartEngine:
     def add_overlay(
         self,
         indicator_type: str,
-        params: Optional[dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         color: str = "#FFFFFF",
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> OverlayConfig:
         """Add a price overlay indicator.
 
@@ -144,9 +144,9 @@ class ChartEngine:
     def add_study(
         self,
         indicator_type: str,
-        params: Optional[dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
         height_ratio: float = 0.25,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> StudyConfig:
         """Add a sub-chart study indicator.
 
@@ -255,20 +255,20 @@ class ChartEngine:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _compute_sma(data: list[float], period: int) -> list[Optional[float]]:
+    def _compute_sma(data: list[float], period: int) -> list[float | None]:
         """Compute Simple Moving Average."""
-        result: list[Optional[float]] = [None] * min(period - 1, len(data))
+        result: list[float | None] = [None] * min(period - 1, len(data))
         for i in range(period - 1, len(data)):
             result.append(sum(data[i - period + 1 : i + 1]) / period)
         return result
 
     @staticmethod
-    def _compute_ema(data: list[float], period: int) -> list[Optional[float]]:
+    def _compute_ema(data: list[float], period: int) -> list[float | None]:
         """Compute Exponential Moving Average."""
         if len(data) < period:
             return [None] * len(data)
         multiplier = 2.0 / (period + 1)
-        result: list[Optional[float]] = [None] * (period - 1)
+        result: list[float | None] = [None] * (period - 1)
         ema_val = sum(data[:period]) / period
         result.append(ema_val)
         for i in range(period, len(data)):
@@ -277,12 +277,12 @@ class ChartEngine:
         return result
 
     @staticmethod
-    def _compute_rsi(data: list[float], period: int) -> list[Optional[float]]:
+    def _compute_rsi(data: list[float], period: int) -> list[float | None]:
         """Compute Relative Strength Index."""
         if len(data) < period + 1:
             return [None] * len(data)
         deltas = [data[i] - data[i - 1] for i in range(1, len(data))]
-        result: list[Optional[float]] = [None] * period
+        result: list[float | None] = [None] * period
 
         gains = [max(d, 0) for d in deltas[:period]]
         losses = [abs(min(d, 0)) for d in deltas[:period]]
@@ -314,12 +314,12 @@ class ChartEngine:
         fast_period: int = 12,
         slow_period: int = 26,
         signal_period: int = 9,
-    ) -> dict[str, list[Optional[float]]]:
+    ) -> dict[str, list[float | None]]:
         """Compute MACD (line, signal, histogram)."""
         fast_ema = ChartEngine._compute_ema(data, fast_period)
         slow_ema = ChartEngine._compute_ema(data, slow_period)
 
-        macd_line: list[Optional[float]] = []
+        macd_line: list[float | None] = []
         for f, s in zip(fast_ema, slow_ema):
             if f is not None and s is not None:
                 macd_line.append(f - s)
@@ -329,10 +329,10 @@ class ChartEngine:
         macd_values = [v for v in macd_line if v is not None]
         signal_line_raw = ChartEngine._compute_ema(macd_values, signal_period) if macd_values else []
 
-        signal_line: list[Optional[float]] = [None] * (len(macd_line) - len(signal_line_raw))
+        signal_line: list[float | None] = [None] * (len(macd_line) - len(signal_line_raw))
         signal_line.extend(signal_line_raw)
 
-        histogram: list[Optional[float]] = []
+        histogram: list[float | None] = []
         for m, s in zip(macd_line, signal_line):
             if m is not None and s is not None:
                 histogram.append(m - s)
@@ -350,11 +350,11 @@ class ChartEngine:
         data: list[float],
         period: int = 20,
         std_dev: float = 2.0,
-    ) -> tuple[list[Optional[float]], list[Optional[float]], list[Optional[float]]]:
+    ) -> tuple[list[float | None], list[float | None], list[float | None]]:
         """Compute Bollinger Bands (upper, middle, lower)."""
-        upper: list[Optional[float]] = [None] * min(period - 1, len(data))
-        middle: list[Optional[float]] = [None] * min(period - 1, len(data))
-        lower: list[Optional[float]] = [None] * min(period - 1, len(data))
+        upper: list[float | None] = [None] * min(period - 1, len(data))
+        middle: list[float | None] = [None] * min(period - 1, len(data))
+        lower: list[float | None] = [None] * min(period - 1, len(data))
         for i in range(period - 1, len(data)):
             window = data[i - period + 1 : i + 1]
             mean = sum(window) / period
@@ -367,8 +367,8 @@ class ChartEngine:
 
 
 __all__ = [
-    "ChartEngine",
     "ChartData",
+    "ChartEngine",
     "OverlayConfig",
     "StudyConfig",
 ]

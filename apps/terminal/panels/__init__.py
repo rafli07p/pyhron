@@ -13,8 +13,8 @@ from apps.terminal.panels.research_panel import ResearchPanel
 
 __all__ = [
     "ChartPanel",
-    "OrderBookPanel",
     "ExecutionPanel",
     "NewsPanel",
+    "OrderBookPanel",
     "ResearchPanel",
 ]

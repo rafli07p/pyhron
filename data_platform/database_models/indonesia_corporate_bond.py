@@ -7,14 +7,17 @@ and rating agencies (Pefindo, Fitch Indonesia).
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IndonesiaCorporateBond(Base):
@@ -39,9 +42,7 @@ class IndonesiaCorporateBond(Base):
 
     __tablename__ = "indonesia_corporate_bonds"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     isin: Mapped[str] = mapped_column(String(12), nullable=False)
     issuer_name: Mapped[str] = mapped_column(String(300), nullable=False)
     issuer_sector: Mapped[str | None] = mapped_column(String(100))
@@ -54,9 +55,7 @@ class IndonesiaCorporateBond(Base):
     yield_to_maturity: Mapped[Decimal | None] = mapped_column(Numeric(8, 4))
     price: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     price_date: Mapped[date] = mapped_column(Date, nullable=False)
-    ingested_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("isin", "price_date"),

@@ -7,12 +7,14 @@ Optionally records a Prometheus histogram for observability.
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from fastapi import Request, Response
 
 logger = get_logger(__name__)
 
@@ -23,7 +25,7 @@ _histogram: Any = None
 
 def _get_histogram() -> Any:
     """Lazily create the Prometheus histogram to avoid import errors."""
-    global _histogram  # noqa: PLW0603
+    global _histogram
     if _histogram is None:
         try:
             from prometheus_client import Histogram
@@ -51,9 +53,7 @@ def _normalize_path(path: str) -> str:
     normalized = []
     for part in parts:
         # Replace UUIDs and numeric IDs with placeholder
-        if len(part) == 36 and part.count("-") == 4:
-            normalized.append("{id}")
-        elif part.isdigit():
+        if (len(part) == 36 and part.count("-") == 4) or part.isdigit():
             normalized.append("{id}")
         else:
             normalized.append(part)
@@ -70,9 +70,7 @@ class RequestTimingMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.slow_request_threshold = slow_request_threshold
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         start_time = time.perf_counter()
 
         response = await call_next(request)

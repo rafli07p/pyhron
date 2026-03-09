@@ -21,11 +21,10 @@ import os
 import sys
 from pathlib import Path
 
-import sqlalchemy as sa
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from alembic import command
 from alembic.config import Config as AlembicConfig
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -254,10 +253,7 @@ $$;
 async def create_extensions(engine: AsyncEngine) -> None:
     """Create required PostgreSQL extensions."""
     logger.info("Creating PostgreSQL extensions...")
-    ext_statements = "\n".join(
-        f"    CREATE EXTENSION IF NOT EXISTS \"{ext}\";"
-        for ext in REQUIRED_EXTENSIONS
-    )
+    ext_statements = "\n".join(f'    CREATE EXTENSION IF NOT EXISTS "{ext}";' for ext in REQUIRED_EXTENSIONS)
     sql = CREATE_EXTENSIONS_SQL.format(extensions=ext_statements)
 
     async with engine.begin() as conn:
@@ -371,12 +367,14 @@ async def verify_setup(engine: AsyncEngine) -> bool:
                 checks_passed = False
 
         # Check tables
-        result = await conn.execute(text("""
+        result = await conn.execute(
+            text("""
             SELECT schemaname || '.' || tablename
             FROM pg_tables
             WHERE schemaname IN ('trading', 'market_data', 'risk', 'audit', 'analytics')
             ORDER BY schemaname, tablename
-        """))
+        """)
+        )
         tables = [row[0] for row in result.fetchall()]
         logger.info(f"  Found {len(tables)} tables: {', '.join(tables)}")
 

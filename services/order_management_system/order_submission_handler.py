@@ -8,26 +8,25 @@ Stateless consumer -- all state from DB/Redis. Kafka provides ordering guarantee
 
 from __future__ import annotations
 
-import uuid
-from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
-from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import select
 
 from data_platform.models.trading import Order, OrderStatusEnum
-from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
 from services.order_management_system.order_state_machine import OrderStateMachine
-from shared.redis_cache_client import get_redis
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
-from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
-from shared.structured_json_logger import get_logger
+from shared.configuration_settings import get_config
 from shared.kafka_producer_consumer import PyhronConsumer, PyhronProducer, Topics
+from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
 from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
-    OrderStatus,
     RiskDecision,
 )
+from shared.redis_cache_client import get_redis
+from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
 
 logger = get_logger(__name__)
 
@@ -192,9 +191,7 @@ class OrderSubmissionHandler:
             The Order ORM instance, or None if not found.
         """
         async with get_session() as session:
-            result = await session.execute(
-                select(Order).where(Order.client_order_id == client_order_id)
-            )
+            result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
             return result.scalar_one_or_none()
 
     def _resolve_broker(self, exchange: str) -> BrokerAdapterInterface | None:

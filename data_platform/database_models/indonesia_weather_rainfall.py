@@ -7,14 +7,17 @@ used for commodity impact analysis (agriculture, mining).
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Float, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
+    from decimal import Decimal
 
 
 class IndonesiaWeatherRainfall(Base):
@@ -34,9 +37,7 @@ class IndonesiaWeatherRainfall(Base):
 
     __tablename__ = "indonesia_weather_rainfall"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     province: Mapped[str] = mapped_column(String(100), nullable=False)
     station_name: Mapped[str] = mapped_column(String(200), nullable=False)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -44,9 +45,7 @@ class IndonesiaWeatherRainfall(Base):
     rainfall_mm: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
     observation_date: Mapped[date] = mapped_column(Date, nullable=False)
     source: Mapped[str] = mapped_column(String(50), nullable=False)
-    ingested_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("station_name", "observation_date"),

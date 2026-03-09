@@ -57,7 +57,7 @@ class BacktestResults:
     """Results from a completed backtest run."""
 
     backtest_id: UUID = field(default_factory=uuid4)
-    config: Optional[BacktestConfig] = None
+    config: BacktestConfig | None = None
     total_return: float = 0.0
     annualized_return: float = 0.0
     sharpe_ratio: float = 0.0
@@ -77,7 +77,7 @@ class BacktestResults:
     drawdown_series: list[float] = field(default_factory=list)
     monthly_returns: dict[str, float] = field(default_factory=dict)
     status: str = "completed"
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize results to a dictionary."""
@@ -178,7 +178,7 @@ class BacktestUI:
         self,
         strategy_name: str,
         price_data: pd.DataFrame,
-        signal_func: Optional[Any] = None,
+        signal_func: Any | None = None,
     ) -> BacktestResults:
         """Execute a configured backtest.
 
@@ -339,7 +339,7 @@ class BacktestUI:
 
 
 __all__ = [
-    "BacktestUI",
     "BacktestConfig",
     "BacktestResults",
+    "BacktestUI",
 ]

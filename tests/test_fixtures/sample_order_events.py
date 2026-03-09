@@ -6,7 +6,7 @@ plus examples of rejected and cancelled orders.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 ORDER_LIFECYCLE_HAPPY_PATH = [
     {
@@ -19,7 +19,7 @@ ORDER_LIFECYCLE_HAPPY_PATH = [
         "from_status": "pending_risk",
         "to_status": "risk_approved",
         "source": "risk_engine",
-        "occurred_at": datetime(2025, 1, 6, 2, 30, 0, tzinfo=timezone.utc),
+        "occurred_at": datetime(2025, 1, 6, 2, 30, 0, tzinfo=UTC),
         "filled_quantity": 0,
         "filled_price": 0.0,
         "commission": 0.0,
@@ -35,7 +35,7 @@ ORDER_LIFECYCLE_HAPPY_PATH = [
         "from_status": "risk_approved",
         "to_status": "submitted",
         "source": "oms",
-        "occurred_at": datetime(2025, 1, 6, 2, 30, 1, tzinfo=timezone.utc),
+        "occurred_at": datetime(2025, 1, 6, 2, 30, 1, tzinfo=UTC),
         "filled_quantity": 0,
         "filled_price": 0.0,
         "commission": 0.0,
@@ -51,7 +51,7 @@ ORDER_LIFECYCLE_HAPPY_PATH = [
         "from_status": "submitted",
         "to_status": "acknowledged",
         "source": "broker_ws",
-        "occurred_at": datetime(2025, 1, 6, 2, 30, 2, tzinfo=timezone.utc),
+        "occurred_at": datetime(2025, 1, 6, 2, 30, 2, tzinfo=UTC),
         "filled_quantity": 0,
         "filled_price": 0.0,
         "commission": 0.0,
@@ -67,7 +67,7 @@ ORDER_LIFECYCLE_HAPPY_PATH = [
         "from_status": "acknowledged",
         "to_status": "partial_fill",
         "source": "broker_ws",
-        "occurred_at": datetime(2025, 1, 6, 2, 31, 0, tzinfo=timezone.utc),
+        "occurred_at": datetime(2025, 1, 6, 2, 31, 0, tzinfo=UTC),
         "filled_quantity": 500,
         "filled_price": 9175.0,
         "commission": 6881.25,
@@ -83,7 +83,7 @@ ORDER_LIFECYCLE_HAPPY_PATH = [
         "from_status": "partial_fill",
         "to_status": "filled",
         "source": "broker_ws",
-        "occurred_at": datetime(2025, 1, 6, 2, 32, 0, tzinfo=timezone.utc),
+        "occurred_at": datetime(2025, 1, 6, 2, 32, 0, tzinfo=UTC),
         "filled_quantity": 1000,
         "filled_price": 9185.0,
         "commission": 13_777.50,
@@ -101,7 +101,7 @@ ORDER_RISK_REJECTED = {
     "from_status": "pending_risk",
     "to_status": "risk_rejected",
     "source": "risk_engine",
-    "occurred_at": datetime(2025, 1, 6, 3, 0, 0, tzinfo=timezone.utc),
+    "occurred_at": datetime(2025, 1, 6, 3, 0, 0, tzinfo=UTC),
     "rejection_reason": "Position would be 55.0% of portfolio (limit: 10.0%)",
     "filled_quantity": 0,
     "filled_price": 0.0,
@@ -117,7 +117,7 @@ ORDER_CANCELLED = {
     "from_status": "acknowledged",
     "to_status": "cancelled",
     "source": "user_request",
-    "occurred_at": datetime(2025, 1, 6, 4, 0, 0, tzinfo=timezone.utc),
+    "occurred_at": datetime(2025, 1, 6, 4, 0, 0, tzinfo=UTC),
     "filled_quantity": 0,
     "filled_price": 0.0,
 }

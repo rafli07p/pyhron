@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import text
@@ -21,7 +21,7 @@ from shared.structured_json_logger import get_logger
 logger = get_logger(__name__)
 
 
-class SentimentLabel(str, Enum):
+class SentimentLabel(StrEnum):
     """Sentiment classification labels."""
 
     POSITIVE = "positive"
@@ -51,30 +51,93 @@ class SentimentResult:
 # ── Indonesian financial sentiment lexicon ────────────────────────────────────
 
 POSITIVE_WORDS_ID: set[str] = {
-    "naik", "untung", "laba", "tumbuh", "positif", "surplus", "bullish",
-    "melonjak", "rekor", "ekspansi", "dividen", "optimis", "kuat",
-    "meningkat", "melesat", "menguat", "cerah", "membaik", "prospek",
-    "akumulasi", "breakout", "rally",
+    "naik",
+    "untung",
+    "laba",
+    "tumbuh",
+    "positif",
+    "surplus",
+    "bullish",
+    "melonjak",
+    "rekor",
+    "ekspansi",
+    "dividen",
+    "optimis",
+    "kuat",
+    "meningkat",
+    "melesat",
+    "menguat",
+    "cerah",
+    "membaik",
+    "prospek",
+    "akumulasi",
+    "breakout",
+    "rally",
 }
 
 NEGATIVE_WORDS_ID: set[str] = {
-    "turun", "rugi", "defisit", "negatif", "bearish", "anjlok", "jatuh",
-    "koreksi", "resesi", "gagal", "pesimis", "bangkrut", "lemah",
-    "melemah", "menurun", "merosot", "suram", "memburuk", "tekanan",
-    "distribusi", "breakdown", "crash",
+    "turun",
+    "rugi",
+    "defisit",
+    "negatif",
+    "bearish",
+    "anjlok",
+    "jatuh",
+    "koreksi",
+    "resesi",
+    "gagal",
+    "pesimis",
+    "bangkrut",
+    "lemah",
+    "melemah",
+    "menurun",
+    "merosot",
+    "suram",
+    "memburuk",
+    "tekanan",
+    "distribusi",
+    "breakdown",
+    "crash",
 }
 
 # English financial sentiment terms for bilingual articles
 POSITIVE_WORDS_EN: set[str] = {
-    "bullish", "rally", "surge", "gain", "profit", "growth", "upgrade",
-    "outperform", "buy", "strong", "positive", "upside", "breakout",
-    "accumulate", "dividend", "expansion", "recovery",
+    "bullish",
+    "rally",
+    "surge",
+    "gain",
+    "profit",
+    "growth",
+    "upgrade",
+    "outperform",
+    "buy",
+    "strong",
+    "positive",
+    "upside",
+    "breakout",
+    "accumulate",
+    "dividend",
+    "expansion",
+    "recovery",
 }
 
 NEGATIVE_WORDS_EN: set[str] = {
-    "bearish", "crash", "decline", "loss", "deficit", "downgrade",
-    "underperform", "sell", "weak", "negative", "downside", "breakdown",
-    "distribute", "recession", "contraction", "risk",
+    "bearish",
+    "crash",
+    "decline",
+    "loss",
+    "deficit",
+    "downgrade",
+    "underperform",
+    "sell",
+    "weak",
+    "negative",
+    "downside",
+    "breakdown",
+    "distribute",
+    "recession",
+    "contraction",
+    "risk",
 }
 
 # Combine all lexicons
@@ -171,9 +234,7 @@ class IndonesiaNewsSentimentScorer:
 
             model_name = "indobenchmark/indobert-base-p1"
             self._indobert_tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self._indobert_model = AutoModelForSequenceClassification.from_pretrained(
-                model_name, num_labels=3
-            )
+            self._indobert_model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=3)
             self._indobert_model.eval()
             self._indobert_initialized = True
             logger.info(
@@ -203,9 +264,7 @@ class IndonesiaNewsSentimentScorer:
             RuntimeError: If IndoBERT has not been initialized.
         """
         if not self._indobert_initialized:
-            raise RuntimeError(
-                "IndoBERT model not initialized. Call initialize_indobert() first."
-            )
+            raise RuntimeError("IndoBERT model not initialized. Call initialize_indobert() first.")
 
         import torch
 
@@ -225,7 +284,7 @@ class IndonesiaNewsSentimentScorer:
         # Map model outputs: index 0=negative, 1=neutral, 2=positive
         probs = probabilities[0].tolist()
         neg_prob: float = probs[0]
-        neutral_prob: float = probs[1]
+        probs[1]
         pos_prob: float = probs[2]
 
         # Compute continuous score from probabilities
@@ -296,10 +355,7 @@ class IndonesiaNewsSentimentScorer:
         """
         async with get_session() as session:
             await session.execute(
-                text(
-                    "UPDATE news_articles SET sentiment_score = :score, "
-                    "sentiment_label = :label WHERE url = :url"
-                ),
+                text("UPDATE news_articles SET sentiment_score = :score, sentiment_label = :label WHERE url = :url"),
                 {
                     "score": float(result.score),
                     "label": result.label.value,

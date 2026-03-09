@@ -8,8 +8,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
@@ -24,8 +23,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
 
+if TYPE_CHECKING:
+    from datetime import datetime
+    from decimal import Decimal
 
-class SentimentLabel(str, enum.Enum):
+
+class SentimentLabel(enum.StrEnum):
     """NLP sentiment classification."""
 
     POSITIVE = "positive"
@@ -53,28 +56,18 @@ class IdxEquityNewsArticle(Base):
 
     __tablename__ = "idx_equity_news_articles"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     source: Mapped[str | None] = mapped_column(String(100))
-    published_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False
-    )
+    published_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     content_summary: Mapped[str | None] = mapped_column(Text)
     full_content: Mapped[str | None] = mapped_column(Text)
     sentiment_score: Mapped[Decimal | None] = mapped_column(Numeric(4, 3))
-    sentiment_label: Mapped[SentimentLabel | None] = mapped_column(
-        Enum(SentimentLabel, name="sentiment_label_enum")
-    )
+    sentiment_label: Mapped[SentimentLabel | None] = mapped_column(Enum(SentimentLabel, name="sentiment_label_enum"))
     sentiment_model: Mapped[str | None] = mapped_column(String(100))
-    mentioned_tickers: Mapped[list[str] | None] = mapped_column(
-        ARRAY(String(20)), server_default="{}"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    mentioned_tickers: Mapped[list[str] | None] = mapped_column(ARRAY(String(20)), server_default="{}")
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         Index("ix_idx_equity_news_articles_published_at", published_at.desc()),

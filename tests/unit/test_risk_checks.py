@@ -6,13 +6,10 @@ We only mock protobuf objects to provide test inputs.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock
 
-import pytest
-
 from services.pre_trade_risk_engine.pre_trade_risk_checks import (
-    RiskCheckResult,
     check_buying_power_t2,
     check_daily_loss_limit,
     check_duplicate_order,
@@ -22,7 +19,6 @@ from services.pre_trade_risk_engine.pre_trade_risk_checks import (
     check_sector_concentration,
     check_signal_staleness,
 )
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -145,7 +141,7 @@ class TestMaxPositionSize:
         portfolio = _make_portfolio(total_market_value=5_000_000.0, cash_balance=5_000_000.0)
         result = check_max_position_size(order, portfolio, max_pct=0.10)
         assert result.passed is False
-        assert "max_position_size" == result.check_name
+        assert result.check_name == "max_position_size"
 
     def test_zero_portfolio_value(self):
         order = _make_order(quantity=100)
@@ -243,13 +239,13 @@ class TestDuplicateOrder:
 
 class TestSignalStaleness:
     def test_fresh_signal(self):
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         order = _make_order(signal_time=now - timedelta(seconds=10))
         result = check_signal_staleness(order, max_age_seconds=300)
         assert result.passed is True
 
     def test_stale_signal(self):
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         order = _make_order(signal_time=now - timedelta(seconds=600))
         result = check_signal_staleness(order, max_age_seconds=300)
         assert result.passed is False

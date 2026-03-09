@@ -6,8 +6,7 @@ and strategy performance reporting.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -46,8 +45,8 @@ class StrategyResponse(BaseModel):
     parameters: dict[str, Any] = Field(default_factory=dict)
     risk_limits: dict[str, float] = Field(default_factory=dict)
     description: str | None = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class StrategyPerformance(BaseModel):

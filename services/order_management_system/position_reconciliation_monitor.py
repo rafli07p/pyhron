@@ -11,26 +11,29 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from datetime import datetime, time, timezone
+from datetime import UTC, datetime, time
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import select
 
 from data_platform.models.trading import Order, OrderStatusEnum
-from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
-from shared.redis_cache_client import get_redis
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
-from shared.structured_json_logger import get_logger
+from shared.configuration_settings import get_config
 from shared.kafka_producer_consumer import PyhronProducer, Topics
-from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent, RiskLimitType
+from shared.proto_generated.pre_trade_risk_pb2 import RiskBreachEvent
+from shared.redis_cache_client import get_redis
+from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
 
 logger = get_logger(__name__)
 
 # Market hours (UTC) -- configurable per exchange in production
-MARKET_OPEN_UTC = time(13, 30)   # NYSE 9:30 ET = 13:30 UTC
-MARKET_CLOSE_UTC = time(20, 0)   # NYSE 16:00 ET = 20:00 UTC
+MARKET_OPEN_UTC = time(13, 30)  # NYSE 9:30 ET = 13:30 UTC
+MARKET_CLOSE_UTC = time(20, 0)  # NYSE 16:00 ET = 20:00 UTC
 
 # Reconciliation interval in seconds
 RECONCILIATION_INTERVAL_SECONDS = 300  # 5 minutes
@@ -97,7 +100,7 @@ class PositionReconciliationMonitor:
         Outside market hours, sleeps until the next market open.
         """
         while self._running:
-            now_utc = datetime.now(tz=timezone.utc)
+            now_utc = datetime.now(tz=UTC)
 
             if self._is_market_hours(now_utc):
                 try:
@@ -125,9 +128,7 @@ class PositionReconciliationMonitor:
 
         for exchange, adapter in self._broker_adapters.items():
             try:
-                exchange_discrepancies = await self._reconcile_exchange(
-                    exchange, adapter
-                )
+                exchange_discrepancies = await self._reconcile_exchange(exchange, adapter)
                 discrepancies_found += exchange_discrepancies
             except Exception:
                 logger.exception(
@@ -214,11 +215,13 @@ class PositionReconciliationMonitor:
             result = await session.execute(
                 select(Order).where(
                     Order.exchange == exchange,
-                    Order.status.in_([
-                        OrderStatusEnum.FILLED,
-                        OrderStatusEnum.PARTIAL_FILL,
-                        OrderStatusEnum.ACKNOWLEDGED,
-                    ]),
+                    Order.status.in_(
+                        [
+                            OrderStatusEnum.FILLED,
+                            OrderStatusEnum.PARTIAL_FILL,
+                            OrderStatusEnum.ACKNOWLEDGED,
+                        ]
+                    ),
                 )
             )
             orders = result.scalars().all()
@@ -303,7 +306,7 @@ class PositionReconciliationMonitor:
         )
 
         now = Timestamp()
-        now.FromDatetime(datetime.now(tz=timezone.utc))
+        now.FromDatetime(datetime.now(tz=UTC))
         breach.occurred_at.CopyFrom(now)
 
         await self._producer.send(
@@ -332,7 +335,7 @@ class PositionReconciliationMonitor:
         cb_key = CIRCUIT_BREAKER_KEY.format(strategy_id=exchange)
         await redis.set(
             cb_key,
-            f"POSITION_MISMATCH:{symbol}:{datetime.now(tz=timezone.utc).isoformat()}",
+            f"POSITION_MISMATCH:{symbol}:{datetime.now(tz=UTC).isoformat()}",
             ex=CIRCUIT_BREAKER_TTL_SECONDS,
         )
 

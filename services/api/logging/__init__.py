@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Any
 
 import structlog
@@ -36,7 +36,7 @@ class ELKJSONRenderer(structlog.dev.ConsoleRenderer):
         import json as _json
 
         record: dict[str, Any] = {
-            "@timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "@timestamp": datetime.now(tz=UTC).isoformat(),
             "level": event_dict.pop("level", name).upper(),
             "message": event_dict.pop("event", ""),
             "logger": event_dict.pop("logger", ""),
@@ -80,9 +80,9 @@ def configure_logging(
     ]
 
     if json_output:
-        renderer: structlog.types.Processor = structlog.processors.JSONRenderer(default=str)
+        structlog.processors.JSONRenderer(default=str)
     else:
-        renderer = structlog.dev.ConsoleRenderer()
+        structlog.dev.ConsoleRenderer()
 
     structlog.configure(
         processors=[
@@ -247,8 +247,8 @@ class AuditLogMiddleware:
 
 
 __all__ = [
-    "configure_logging",
+    "AuditLogMiddleware",
     "ELKJSONRenderer",
     "RequestLoggingMiddleware",
-    "AuditLogMiddleware",
+    "configure_logging",
 ]

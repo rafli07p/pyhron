@@ -9,7 +9,7 @@ Requires ALPACA_API_KEY, ALPACA_SECRET_KEY, and ALPACA_BASE_URL in config.
 from __future__ import annotations
 
 import json
-from typing import AsyncIterator
+from typing import TYPE_CHECKING
 
 import httpx
 import websockets
@@ -18,7 +18,11 @@ from services.broker_connectivity.broker_adapter_interface import BrokerAdapterI
 from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
 from shared.structured_json_logger import get_logger
-from shared.proto_generated.equity_orders_pb2 import OrderRequest
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from shared.proto_generated.equity_orders_pb2 import OrderRequest
 
 logger = get_logger(__name__)
 
@@ -31,15 +35,15 @@ HTTP_TIMEOUT = 30.0
 
 # Map proto OrderSide to Alpaca side strings
 _SIDE_MAP: dict[int, str] = {
-    1: "buy",   # ORDER_SIDE_BUY
+    1: "buy",  # ORDER_SIDE_BUY
     2: "sell",  # ORDER_SIDE_SELL
 }
 
 # Map proto OrderType to Alpaca type strings
 _ORDER_TYPE_MAP: dict[int, str] = {
-    1: "market",      # ORDER_TYPE_MARKET
-    2: "limit",       # ORDER_TYPE_LIMIT
-    3: "stop",        # ORDER_TYPE_STOP
+    1: "market",  # ORDER_TYPE_MARKET
+    2: "limit",  # ORDER_TYPE_LIMIT
+    3: "stop",  # ORDER_TYPE_STOP
     4: "stop_limit",  # ORDER_TYPE_STOP_LIMIT
 }
 
@@ -134,13 +138,9 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         try:
             response = await client.post("/v2/orders", json=payload)
         except httpx.TimeoutException as exc:
-            raise BrokerTimeoutError(
-                f"Alpaca order submission timed out for {order.symbol}: {exc}"
-            ) from exc
+            raise BrokerTimeoutError(f"Alpaca order submission timed out for {order.symbol}: {exc}") from exc
         except httpx.HTTPError as exc:
-            raise BrokerConnectionError(
-                f"Failed to connect to Alpaca for order submission: {exc}"
-            ) from exc
+            raise BrokerConnectionError(f"Failed to connect to Alpaca for order submission: {exc}") from exc
 
         if response.status_code in (403, 422):
             body = response.json()
@@ -151,9 +151,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
             )
 
         if response.status_code >= 400:
-            raise BrokerConnectionError(
-                f"Alpaca returned HTTP {response.status_code}: {response.text}"
-            )
+            raise BrokerConnectionError(f"Alpaca returned HTTP {response.status_code}: {response.text}")
 
         data = response.json()
         broker_order_id: str = data["id"]
@@ -186,13 +184,9 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         try:
             response = await client.delete(f"/v2/orders/{broker_order_id}")
         except httpx.TimeoutException as exc:
-            raise BrokerTimeoutError(
-                f"Alpaca cancel timed out for {broker_order_id}: {exc}"
-            ) from exc
+            raise BrokerTimeoutError(f"Alpaca cancel timed out for {broker_order_id}: {exc}") from exc
         except httpx.HTTPError as exc:
-            raise BrokerConnectionError(
-                f"Failed to connect to Alpaca for cancel: {exc}"
-            ) from exc
+            raise BrokerConnectionError(f"Failed to connect to Alpaca for cancel: {exc}") from exc
 
         if response.status_code == 204:
             logger.info("alpaca_order_cancelled", broker_order_id=broker_order_id)
@@ -214,9 +208,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
             return False
 
         if response.status_code >= 400:
-            raise BrokerConnectionError(
-                f"Alpaca cancel returned HTTP {response.status_code}: {response.text}"
-            )
+            raise BrokerConnectionError(f"Alpaca cancel returned HTTP {response.status_code}: {response.text}")
 
         return True
 
@@ -238,18 +230,12 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         try:
             response = await client.get(f"/v2/orders/{broker_order_id}")
         except httpx.TimeoutException as exc:
-            raise BrokerTimeoutError(
-                f"Alpaca get_order_status timed out for {broker_order_id}: {exc}"
-            ) from exc
+            raise BrokerTimeoutError(f"Alpaca get_order_status timed out for {broker_order_id}: {exc}") from exc
         except httpx.HTTPError as exc:
-            raise BrokerConnectionError(
-                f"Failed to connect to Alpaca for order status: {exc}"
-            ) from exc
+            raise BrokerConnectionError(f"Failed to connect to Alpaca for order status: {exc}") from exc
 
         if response.status_code >= 400:
-            raise BrokerConnectionError(
-                f"Alpaca order status returned HTTP {response.status_code}: {response.text}"
-            )
+            raise BrokerConnectionError(f"Alpaca order status returned HTTP {response.status_code}: {response.text}")
 
         data = response.json()
 
@@ -281,34 +267,30 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         try:
             response = await client.get("/v2/positions")
         except httpx.TimeoutException as exc:
-            raise BrokerTimeoutError(
-                f"Alpaca get_positions timed out: {exc}"
-            ) from exc
+            raise BrokerTimeoutError(f"Alpaca get_positions timed out: {exc}") from exc
         except httpx.HTTPError as exc:
-            raise BrokerConnectionError(
-                f"Failed to connect to Alpaca for positions: {exc}"
-            ) from exc
+            raise BrokerConnectionError(f"Failed to connect to Alpaca for positions: {exc}") from exc
 
         if response.status_code >= 400:
-            raise BrokerConnectionError(
-                f"Alpaca positions returned HTTP {response.status_code}: {response.text}"
-            )
+            raise BrokerConnectionError(f"Alpaca positions returned HTTP {response.status_code}: {response.text}")
 
         data = response.json()
         positions: list[dict] = []
 
         for pos in data:
-            positions.append({
-                "symbol": pos.get("symbol", ""),
-                "qty": int(pos.get("qty", 0) or 0),
-                "market_value": float(pos.get("market_value", 0) or 0),
-                "avg_entry_price": float(pos.get("avg_entry_price", 0) or 0),
-                "current_price": float(pos.get("current_price", 0) or 0),
-                "unrealized_pl": float(pos.get("unrealized_pl", 0) or 0),
-                "unrealized_plpc": float(pos.get("unrealized_plpc", 0) or 0),
-                "side": pos.get("side", "long"),
-                "exchange": pos.get("exchange", ""),
-            })
+            positions.append(
+                {
+                    "symbol": pos.get("symbol", ""),
+                    "qty": int(pos.get("qty", 0) or 0),
+                    "market_value": float(pos.get("market_value", 0) or 0),
+                    "avg_entry_price": float(pos.get("avg_entry_price", 0) or 0),
+                    "current_price": float(pos.get("current_price", 0) or 0),
+                    "unrealized_pl": float(pos.get("unrealized_pl", 0) or 0),
+                    "unrealized_plpc": float(pos.get("unrealized_plpc", 0) or 0),
+                    "side": pos.get("side", "long"),
+                    "exchange": pos.get("exchange", ""),
+                }
+            )
 
         logger.debug("alpaca_positions_fetched", count=len(positions))
         return positions
@@ -327,18 +309,12 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         try:
             response = await client.get("/v2/account")
         except httpx.TimeoutException as exc:
-            raise BrokerTimeoutError(
-                f"Alpaca get_account timed out: {exc}"
-            ) from exc
+            raise BrokerTimeoutError(f"Alpaca get_account timed out: {exc}") from exc
         except httpx.HTTPError as exc:
-            raise BrokerConnectionError(
-                f"Failed to connect to Alpaca for account info: {exc}"
-            ) from exc
+            raise BrokerConnectionError(f"Failed to connect to Alpaca for account info: {exc}") from exc
 
         if response.status_code >= 400:
-            raise BrokerConnectionError(
-                f"Alpaca account returned HTTP {response.status_code}: {response.text}"
-            )
+            raise BrokerConnectionError(f"Alpaca account returned HTTP {response.status_code}: {response.text}")
 
         data = response.json()
 
@@ -370,9 +346,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         Raises:
             BrokerConnectionError: If the WebSocket connection fails.
         """
-        ws_url = self._base_url.replace("https://", "wss://").replace(
-            "http://", "ws://"
-        ) + "/stream"
+        ws_url = self._base_url.replace("https://", "wss://").replace("http://", "ws://") + "/stream"
 
         try:
             async for websocket in websockets.connect(ws_url):
@@ -388,9 +362,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
                     auth_data = json.loads(auth_response)
 
                     if isinstance(auth_data, dict) and auth_data.get("data", {}).get("status") == "unauthorized":
-                        raise BrokerConnectionError(
-                            "Alpaca WebSocket authentication failed"
-                        )
+                        raise BrokerConnectionError("Alpaca WebSocket authentication failed")
 
                     # Subscribe to trade updates
                     subscribe_msg = {
@@ -460,6 +432,4 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
                     continue
 
         except Exception as exc:
-            raise BrokerConnectionError(
-                f"Alpaca WebSocket connection failed: {exc}"
-            ) from exc
+            raise BrokerConnectionError(f"Alpaca WebSocket connection failed: {exc}") from exc

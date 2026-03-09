@@ -8,15 +8,17 @@ open indefinitely.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
 from data_platform.models.trading import Order, OrderStatusEnum
 from services.order_management_system.order_state_machine import OrderStateMachine
-from shared.configuration_settings import get_config
 from shared.structured_json_logger import get_logger
-from shared.kafka_producer_consumer import PyhronProducer
+
+if TYPE_CHECKING:
+    from shared.kafka_producer_consumer import PyhronProducer
 
 logger = get_logger(__name__)
 
@@ -112,7 +114,7 @@ class OrderTimeoutMonitor:
         """
         from shared.async_database_session import get_session
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         expired_count = 0
 
         async with get_session() as session:
@@ -155,13 +157,10 @@ class OrderTimeoutMonitor:
 
         # Ensure timezone awareness
         if reference_time.tzinfo is None:
-            reference_time = reference_time.replace(tzinfo=timezone.utc)
+            reference_time = reference_time.replace(tzinfo=UTC)
 
         # Determine TTL based on order type
-        if order.order_type in ("LIMIT", "STOP_LIMIT"):
-            ttl = self._limit_order_ttl
-        else:
-            ttl = self._market_order_ttl
+        ttl = self._limit_order_ttl if order.order_type in ("LIMIT", "STOP_LIMIT") else self._market_order_ttl
 
         expiry_time = reference_time + timedelta(seconds=ttl)
         return now >= expiry_time
@@ -177,9 +176,7 @@ class OrderTimeoutMonitor:
             to_status=OrderStatusEnum.EXPIRED,
             event_data={
                 "rejection_reason": (
-                    f"Order timed out after exceeding TTL. "
-                    f"Order type: {order.order_type}, "
-                    f"Status: {order.status.value}"
+                    f"Order timed out after exceeding TTL. Order type: {order.order_type}, Status: {order.status.value}"
                 ),
             },
             source="timeout_monitor",

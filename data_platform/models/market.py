@@ -15,7 +15,7 @@ from __future__ import annotations
 import enum
 import uuid
 from datetime import date, datetime
-from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
@@ -35,17 +35,19 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
 
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 # ── Enums ───────────────────────────────────────────────────────────────────
 
 
-class StatementType(str, enum.Enum):
+class StatementType(enum.StrEnum):
     INCOME = "income"
     BALANCE = "balance"
     CASHFLOW = "cashflow"
 
 
-class ActionType(str, enum.Enum):
+class ActionType(enum.StrEnum):
     CASH_DIVIDEND = "cash_dividend"
     STOCK_DIVIDEND = "stock_dividend"
     SPLIT = "split"
@@ -53,7 +55,7 @@ class ActionType(str, enum.Enum):
     RIGHTS = "rights"
 
 
-class SentimentLabel(str, enum.Enum):
+class SentimentLabel(enum.StrEnum):
     POSITIVE = "positive"
     NEGATIVE = "negative"
     NEUTRAL = "neutral"
@@ -70,9 +72,7 @@ class MarketTick(Base):
 
     __tablename__ = "market_ticks"
 
-    time: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), primary_key=True, nullable=False
-    )
+    time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), primary_key=True, nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), primary_key=True, nullable=False)
     exchange: Mapped[str] = mapped_column(String(10), primary_key=True, nullable=False)
     open: Mapped[Decimal] = mapped_column(Numeric(18, 6), nullable=True)
@@ -112,9 +112,7 @@ class Instrument(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     listing_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     delisting_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default="now()", onupdate=datetime.utcnow
     )
@@ -133,9 +131,7 @@ class IndexConstituent(Base):
 
     __tablename__ = "index_constituents"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     index_name: Mapped[str] = mapped_column(String(20), nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
     weight: Mapped[Decimal] = mapped_column(Numeric(8, 6), nullable=False)
@@ -157,9 +153,7 @@ class FinancialStatement(Base):
 
     __tablename__ = "financial_statements"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
     period_end: Mapped[date] = mapped_column(Date, nullable=False)
     fiscal_year: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -190,9 +184,7 @@ class FinancialStatement(Base):
     shares_outstanding: Mapped[int | None] = mapped_column(BigInteger)
     eps: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     source_url: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         UniqueConstraint("symbol", "period_end", "statement_type"),
@@ -208,9 +200,7 @@ class ComputedRatio(Base):
 
     __tablename__ = "computed_ratios"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
     computed_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     price_used: Mapped[Decimal] = mapped_column(Numeric(18, 6), nullable=False)
@@ -257,13 +247,9 @@ class CorporateAction(Base):
 
     __tablename__ = "corporate_actions"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
-    action_type: Mapped[ActionType] = mapped_column(
-        Enum(ActionType, name="action_type_enum"), nullable=False
-    )
+    action_type: Mapped[ActionType] = mapped_column(Enum(ActionType, name="action_type_enum"), nullable=False)
     ex_date: Mapped[date] = mapped_column(Date, nullable=False)
     record_date: Mapped[date | None] = mapped_column(Date)
     payment_date: Mapped[date | None] = mapped_column(Date)
@@ -271,13 +257,9 @@ class CorporateAction(Base):
     ratio: Mapped[Decimal | None] = mapped_column(Numeric(10, 6))
     currency: Mapped[str] = mapped_column(String(3), default="IDR")
     notes: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    __table_args__ = (
-        UniqueConstraint("symbol", "action_type", "ex_date"),
-    )
+    __table_args__ = (UniqueConstraint("symbol", "action_type", "ex_date"),)
 
 
 # ── NewsArticle ─────────────────────────────────────────────────────────────
@@ -288,9 +270,7 @@ class NewsArticle(Base):
 
     __tablename__ = "news_articles"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     source: Mapped[str | None] = mapped_column(String(100))
@@ -298,15 +278,9 @@ class NewsArticle(Base):
     content_summary: Mapped[str | None] = mapped_column(Text)
     full_content: Mapped[str | None] = mapped_column(Text)
     sentiment_score: Mapped[Decimal | None] = mapped_column(Numeric(4, 3))
-    sentiment_label: Mapped[SentimentLabel | None] = mapped_column(
-        Enum(SentimentLabel, name="sentiment_label_enum")
-    )
-    mentioned_tickers: Mapped[list[str] | None] = mapped_column(
-        ARRAY(String), server_default="{}"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    sentiment_label: Mapped[SentimentLabel | None] = mapped_column(Enum(SentimentLabel, name="sentiment_label_enum"))
+    mentioned_tickers: Mapped[list[str] | None] = mapped_column(ARRAY(String), server_default="{}")
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         Index("ix_news_published_at", published_at.desc()),

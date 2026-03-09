@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import BigInteger, Boolean, Date, Index, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Date, Index, Integer, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -39,9 +39,7 @@ class IdxEquityInstrument(Base):
 
     __tablename__ = "idx_equity_instruments"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     isin: Mapped[str | None] = mapped_column(String(12), unique=True, nullable=True)
     name: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -55,9 +53,7 @@ class IdxEquityInstrument(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     listing_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     delisting_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default="now()", onupdate=datetime.utcnow
     )

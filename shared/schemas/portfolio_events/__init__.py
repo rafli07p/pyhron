@@ -15,7 +15,6 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
@@ -80,7 +79,7 @@ class PositionUpdate(PortfolioEventBase):
     currency: str = Field(default="USD", max_length=3, description="Position currency (ISO 4217)")
 
     @model_validator(mode="after")
-    def _validate_market_value(self) -> "PositionUpdate":
+    def _validate_market_value(self) -> PositionUpdate:
         """Market value should be consistent with quantity * market_price."""
         expected = self.quantity * self.market_price
         if self.market_value != Decimal("0") and self.market_price != Decimal("0"):
@@ -100,7 +99,7 @@ class PnLUpdate(PortfolioEventBase):
     give traders a real-time view of their P&L.
     """
 
-    symbol: Optional[str] = Field(default=None, max_length=20, description="Symbol (None = portfolio-level)")
+    symbol: str | None = Field(default=None, max_length=20, description="Symbol (None = portfolio-level)")
     unrealized_pnl: Decimal = Field(default=Decimal("0"), description="Total unrealized P&L")
     realized_pnl: Decimal = Field(default=Decimal("0"), description="Total realized P&L")
     total_pnl: Decimal = Field(default=Decimal("0"), description="Unrealized + realized P&L")
@@ -111,14 +110,13 @@ class PnLUpdate(PortfolioEventBase):
     currency: str = Field(default="USD", max_length=3, description="Reporting currency (ISO 4217)")
 
     @model_validator(mode="after")
-    def _validate_total_pnl(self) -> "PnLUpdate":
+    def _validate_total_pnl(self) -> PnLUpdate:
         expected = self.unrealized_pnl + self.realized_pnl
-        if self.total_pnl != Decimal("0"):
-            if abs(self.total_pnl - expected) > Decimal("0.01"):
-                raise ValueError(
-                    f"total_pnl ({self.total_pnl}) must equal "
-                    f"unrealized_pnl + realized_pnl ({expected})"
-                )
+        if self.total_pnl != Decimal("0") and abs(self.total_pnl - expected) > Decimal("0.01"):
+            raise ValueError(
+                f"total_pnl ({self.total_pnl}) must equal "
+                f"unrealized_pnl + realized_pnl ({expected})"
+            )
         return self
 
 
@@ -130,34 +128,34 @@ class ExposureUpdate(PortfolioEventBase):
     """
 
     exposure_type: ExposureType = Field(..., description="Type of exposure being reported")
-    symbol: Optional[str] = Field(default=None, max_length=20, description="Symbol (None = portfolio-level)")
+    symbol: str | None = Field(default=None, max_length=20, description="Symbol (None = portfolio-level)")
     quantity: Decimal = Field(default=Decimal("0"), description="Exposure in units / contracts")
     market_value: Decimal = Field(default=Decimal("0"), description="Exposure in monetary terms")
     notional_value: Decimal = Field(default=Decimal("0"), description="Notional exposure value")
-    weight_pct: Optional[Decimal] = Field(
+    weight_pct: Decimal | None = Field(
         default=None,
         ge=Decimal("-100"),
         le=Decimal("100"),
         description="Weight as percentage of total portfolio",
     )
-    limit_value: Optional[Decimal] = Field(default=None, ge=0, description="Risk limit for this exposure type")
-    utilization_pct: Optional[Decimal] = Field(
+    limit_value: Decimal | None = Field(default=None, ge=0, description="Risk limit for this exposure type")
+    utilization_pct: Decimal | None = Field(
         default=None,
         ge=0,
         description="Limit utilization (market_value / limit_value * 100)",
     )
     breach: bool = Field(default=False, description="True if exposure exceeds the defined limit")
     currency: str = Field(default="USD", max_length=3, description="Reporting currency (ISO 4217)")
-    asset_class: Optional[AssetClass] = Field(default=None, description="Asset class filter")
-    sector: Optional[str] = Field(default=None, max_length=64, description="GICS sector (for sector exposure)")
-    country: Optional[str] = Field(default=None, max_length=3, description="ISO 3166-1 alpha-3 country code")
+    asset_class: AssetClass | None = Field(default=None, description="Asset class filter")
+    sector: str | None = Field(default=None, max_length=64, description="GICS sector (for sector exposure)")
+    country: str | None = Field(default=None, max_length=3, description="ISO 3166-1 alpha-3 country code")
 
 
 __all__ = [
     "AssetClass",
     "ExposureType",
+    "ExposureUpdate",
+    "PnLUpdate",
     "PortfolioEventBase",
     "PositionUpdate",
-    "PnLUpdate",
-    "ExposureUpdate",
 ]

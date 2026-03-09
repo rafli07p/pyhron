@@ -17,22 +17,24 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import TYPE_CHECKING
 
-from shared.structured_json_logger import get_logger
-
-from commodity_linkage_engine.commodity_sensitivity_models.cpo_plantation_stock_sensitivity import (
-    CPOPlantationStockSensitivity,
-)
 from commodity_linkage_engine.commodity_sensitivity_models.coal_price_miner_revenue_model import (
     CoalPriceMinerRevenueModel,
 )
-from commodity_linkage_engine.commodity_sensitivity_models.nickel_price_miner_revenue_model import (
-    NickelPriceMinerRevenueModel,
+from commodity_linkage_engine.commodity_sensitivity_models.cpo_plantation_stock_sensitivity import (
+    CPOPlantationStockSensitivity,
 )
 from commodity_linkage_engine.commodity_sensitivity_models.icp_energy_stock_sensitivity import (
     ICPEnergyStockSensitivity,
 )
+from commodity_linkage_engine.commodity_sensitivity_models.nickel_price_miner_revenue_model import (
+    NickelPriceMinerRevenueModel,
+)
+from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 logger = get_logger(__name__)
 
@@ -127,9 +129,7 @@ class CommodityToStockImpactEngine:
 
     # ── CPO ─────────────────────────────────────────────────────────────
 
-    def estimate_cpo_price_impact(
-        self, cpo_price_change_pct: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def estimate_cpo_price_impact(self, cpo_price_change_pct: float) -> list[StockEarningsImpactEstimate]:
         """Estimate plantation stock earnings impact from CPO price change.
 
         Model: plantation_area * yield * OER * price_change, adjusted for
@@ -157,9 +157,7 @@ class CommodityToStockImpactEngine:
 
     # ── Coal ────────────────────────────────────────────────────────────
 
-    def estimate_coal_price_impact(
-        self, hba_change_usd_per_ton: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def estimate_coal_price_impact(self, hba_change_usd_per_ton: float) -> list[StockEarningsImpactEstimate]:
         """Estimate coal miner earnings impact from HBA price change.
 
         Model: production_vol * (hba_change * (1 - royalty_rate)).
@@ -186,9 +184,7 @@ class CommodityToStockImpactEngine:
 
     # ── Nickel ──────────────────────────────────────────────────────────
 
-    def estimate_nickel_price_impact(
-        self, lme_change_usd_per_ton: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def estimate_nickel_price_impact(self, lme_change_usd_per_ton: float) -> list[StockEarningsImpactEstimate]:
         """Estimate nickel producer earnings impact from LME nickel change.
 
         INCO has high correlation (matte product), ANTM partial
@@ -213,9 +209,7 @@ class CommodityToStockImpactEngine:
 
     # ── ICP Crude ───────────────────────────────────────────────────────
 
-    def estimate_icp_crude_impact(
-        self, icp_change_usd_per_barrel: float
-    ) -> list[StockEarningsImpactEstimate]:
+    def estimate_icp_crude_impact(self, icp_change_usd_per_barrel: float) -> list[StockEarningsImpactEstimate]:
         """Estimate energy stock earnings impact from ICP crude change.
 
         Affected: PGAS, MEDC, ENRG.  Secondary impact on APBN subsidy
@@ -241,9 +235,7 @@ class CommodityToStockImpactEngine:
 
     # ── Unified ─────────────────────────────────────────────────────────
 
-    def estimate_impact(
-        self, event: CommodityPriceChangeEvent
-    ) -> list[StockEarningsImpactEstimate]:
+    def estimate_impact(self, event: CommodityPriceChangeEvent) -> list[StockEarningsImpactEstimate]:
         """Dispatch a :class:`CommodityPriceChangeEvent` to the right model.
 
         Args:

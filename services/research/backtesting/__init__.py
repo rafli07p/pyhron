@@ -565,6 +565,6 @@ class BacktestEngine:
 
 
 __all__ = [
-    "Strategy",
     "BacktestEngine",
+    "Strategy",
 ]

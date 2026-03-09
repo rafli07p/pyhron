@@ -6,11 +6,9 @@ Uses mock httpx responses and a mock database session.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 
 # ── Mock BI Rate Response ───────────────────────────────────────────────────
 
@@ -35,12 +33,14 @@ def parse_bi_rate_response(html: str) -> list[dict]:
                 date_str = parts[1].split("</td>")[0].strip()
                 rate_str = parts[2].split("</td>")[0].replace("%", "").strip()
                 try:
-                    records.append({
-                        "date": date_str,
-                        "indicator": "bi_7day_reverse_repo_rate",
-                        "value": float(rate_str),
-                        "unit": "percent",
-                    })
+                    records.append(
+                        {
+                            "date": date_str,
+                            "indicator": "bi_7day_reverse_repo_rate",
+                            "value": float(rate_str),
+                            "unit": "percent",
+                        }
+                    )
                 except (ValueError, IndexError):
                     continue
     return records

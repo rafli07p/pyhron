@@ -26,14 +26,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -122,9 +122,7 @@ class CoalHBAPriceIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="esdm", symbol="COAL", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="esdm", symbol="COAL", operation="inserted").inc(inserted)
 
         self._logger.info(
             "coal_hba_ingestion_complete",
@@ -136,9 +134,7 @@ class CoalHBAPriceIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_hba(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_hba(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch monthly HBA prices from ESDM.
 
         Args:
@@ -160,9 +156,7 @@ class CoalHBAPriceIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        ESDM_HBA_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(ESDM_HBA_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -190,9 +184,7 @@ class CoalHBAPriceIngester:
 
         raise IngestionError(f"ESDM HBA failed after {MAX_RETRIES} retries")
 
-    async def _fetch_newcastle(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_newcastle(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch daily Newcastle coal futures prices.
 
         Args:
@@ -215,9 +207,7 @@ class CoalHBAPriceIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        NEWCASTLE_API_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(NEWCASTLE_API_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload if isinstance(payload, list) else [])
@@ -255,14 +245,10 @@ class CoalHBAPriceIngester:
         """
         v = float(record["value"])
         if v <= 0:
-            raise DataQualityError(
-                f"Non-positive coal price {v} on {record['reference_date']}"
-            )
+            raise DataQualityError(f"Non-positive coal price {v} on {record['reference_date']}")
         # HBA historically ranges from ~50 to ~350 USD/ton
         if v < 20 or v > 500:
-            raise DataQualityError(
-                f"Coal price {v} USD/ton outside plausible range [20, 500]"
-            )
+            raise DataQualityError(f"Coal price {v} USD/ton outside plausible range [20, 500]")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

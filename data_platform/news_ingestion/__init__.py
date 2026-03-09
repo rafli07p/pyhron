@@ -9,15 +9,15 @@ Modules:
 from data_platform.news_ingestion.indonesia_financial_news_aggregator import (
     IndonesiaFinancialNewsAggregator,
 )
-from data_platform.news_ingestion.indonesia_news_ticker_extractor import (
-    IndonesiaNewsTickerExtractor,
-)
 from data_platform.news_ingestion.indonesia_news_sentiment_scorer import (
     IndonesiaNewsSentimentScorer,
+)
+from data_platform.news_ingestion.indonesia_news_ticker_extractor import (
+    IndonesiaNewsTickerExtractor,
 )
 
 __all__: list[str] = [
     "IndonesiaFinancialNewsAggregator",
-    "IndonesiaNewsTickerExtractor",
     "IndonesiaNewsSentimentScorer",
+    "IndonesiaNewsTickerExtractor",
 ]

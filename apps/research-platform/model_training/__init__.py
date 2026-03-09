@@ -49,15 +49,15 @@ class ModelConfig:
 class ModelMetrics:
     """Evaluation metrics for a trained model."""
 
-    accuracy: Optional[float] = None
-    precision: Optional[float] = None
-    recall: Optional[float] = None
-    f1_score: Optional[float] = None
-    mse: Optional[float] = None
-    rmse: Optional[float] = None
-    mae: Optional[float] = None
-    r2: Optional[float] = None
-    sharpe_ratio: Optional[float] = None
+    accuracy: float | None = None
+    precision: float | None = None
+    recall: float | None = None
+    f1_score: float | None = None
+    mse: float | None = None
+    rmse: float | None = None
+    mae: float | None = None
+    r2: float | None = None
+    sharpe_ratio: float | None = None
     custom_metrics: dict[str, float] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -77,13 +77,13 @@ class TrainedModel:
 
     model_id: UUID = field(default_factory=uuid4)
     name: str = ""
-    config: Optional[ModelConfig] = None
-    metrics: Optional[ModelMetrics] = None
-    artifact_path: Optional[str] = None
-    mlflow_run_id: Optional[str] = None
+    config: ModelConfig | None = None
+    metrics: ModelMetrics | None = None
+    artifact_path: str | None = None
+    mlflow_run_id: str | None = None
     status: str = "created"  # created, training, trained, registered, failed
     created_at: datetime = field(default_factory=datetime.utcnow)
-    trained_at: Optional[datetime] = None
+    trained_at: datetime | None = None
     version: int = 1
 
 
@@ -116,7 +116,7 @@ class ModelTrainingManager:
         self,
         name: str,
         train_data: Any,
-        config: Optional[ModelConfig] = None,
+        config: ModelConfig | None = None,
         **hyperparameters: Any,
     ) -> TrainedModel:
         """Train a machine learning model with MLflow tracking.
@@ -288,9 +288,9 @@ class ModelTrainingManager:
     def register_model(
         self,
         name: str,
-        model_name: Optional[str] = None,
+        model_name: str | None = None,
         description: str = "",
-        tags: Optional[dict[str, str]] = None,
+        tags: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """Register a trained model in the MLflow model registry.
 
@@ -343,7 +343,7 @@ class ModelTrainingManager:
             "run_id": record.mlflow_run_id,
         }
 
-    def list_models(self, status: Optional[str] = None) -> list[dict[str, Any]]:
+    def list_models(self, status: str | None = None) -> list[dict[str, Any]]:
         """List all tracked models.
 
         Parameters
@@ -377,8 +377,8 @@ class ModelTrainingManager:
 
 
 __all__ = [
-    "ModelTrainingManager",
     "ModelConfig",
     "ModelMetrics",
+    "ModelTrainingManager",
     "TrainedModel",
 ]

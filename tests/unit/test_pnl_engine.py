@@ -7,12 +7,11 @@ fee handling, and multi-currency support.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
-
 from enthropy.pnl.engine import PnLEngine
 from enthropy.pnl.models import (
     FillRecord,
@@ -34,7 +33,7 @@ def pnl_engine() -> PnLEngine:
 @pytest.fixture
 def sample_fills() -> list[FillRecord]:
     """Sample fill records for a round-trip trade."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return [
         FillRecord(
             fill_id=uuid4(),
@@ -81,7 +80,7 @@ class TestRealizedPnL:
 
     def test_losing_round_trip(self, pnl_engine: PnLEngine):
         """Losing round-trip trade should have negative realized PnL."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         buy_fill = FillRecord(
             fill_id=uuid4(),
             order_id=uuid4(),
@@ -114,7 +113,7 @@ class TestRealizedPnL:
 
     def test_short_trade_profit(self, pnl_engine: PnLEngine):
         """Profitable short trade should have positive realized PnL."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         sell_fill = FillRecord(
             fill_id=uuid4(),
             order_id=uuid4(),
@@ -147,31 +146,35 @@ class TestRealizedPnL:
 
     def test_partial_close_pnl(self, pnl_engine: PnLEngine):
         """Partial position close should calculate PnL correctly."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         # Buy 1000 shares
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("1000"),
-            price=Decimal("9200.00"),
-            commission=Decimal("13800.00"),
-            timestamp=now - timedelta(hours=2),
-            strategy_id="momentum_v1",
-        ))
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("1000"),
+                price=Decimal("9200.00"),
+                commission=Decimal("13800.00"),
+                timestamp=now - timedelta(hours=2),
+                strategy_id="momentum_v1",
+            )
+        )
         # Sell 600 shares (partial)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.SELL,
-            quantity=Decimal("600"),
-            price=Decimal("9400.00"),
-            commission=Decimal("8460.00"),
-            timestamp=now,
-            strategy_id="momentum_v1",
-        ))
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.SELL,
+                quantity=Decimal("600"),
+                price=Decimal("9400.00"),
+                commission=Decimal("8460.00"),
+                timestamp=now,
+                strategy_id="momentum_v1",
+            )
+        )
 
         pnl = pnl_engine.get_realized_pnl("BBCA.JK")
         # Gross PnL on 600 shares: (9400 - 9200) * 600 = 120,000
@@ -189,18 +192,20 @@ class TestUnrealizedPnL:
 
     def test_unrealized_pnl_long(self, pnl_engine: PnLEngine):
         """Unrealized PnL for long position with price increase."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("1000"),
-            price=Decimal("9200.00"),
-            commission=Decimal("13800.00"),
-            timestamp=now,
-            strategy_id="momentum_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("1000"),
+                price=Decimal("9200.00"),
+                commission=Decimal("13800.00"),
+                timestamp=now,
+                strategy_id="momentum_v1",
+            )
+        )
 
         unrealized = pnl_engine.calculate_unrealized_pnl(
             symbol="BBCA.JK",
@@ -211,18 +216,20 @@ class TestUnrealizedPnL:
 
     def test_unrealized_pnl_short(self, pnl_engine: PnLEngine):
         """Unrealized PnL for short position with price decrease."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="TLKM.JK",
-            direction=TradeDirection.SELL,
-            quantity=Decimal("2000"),
-            price=Decimal("3900.00"),
-            commission=Decimal("11700.00"),
-            timestamp=now,
-            strategy_id="pairs_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="TLKM.JK",
+                direction=TradeDirection.SELL,
+                quantity=Decimal("2000"),
+                price=Decimal("3900.00"),
+                commission=Decimal("11700.00"),
+                timestamp=now,
+                strategy_id="pairs_v1",
+            )
+        )
 
         unrealized = pnl_engine.calculate_unrealized_pnl(
             symbol="TLKM.JK",
@@ -233,18 +240,20 @@ class TestUnrealizedPnL:
 
     def test_unrealized_loss(self, pnl_engine: PnLEngine):
         """Unrealized loss should be negative."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("1000"),
-            price=Decimal("9200.00"),
-            commission=Decimal("13800.00"),
-            timestamp=now,
-            strategy_id="momentum_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("1000"),
+                price=Decimal("9200.00"),
+                commission=Decimal("13800.00"),
+                timestamp=now,
+                strategy_id="momentum_v1",
+            )
+        )
 
         unrealized = pnl_engine.calculate_unrealized_pnl(
             symbol="BBCA.JK",
@@ -283,7 +292,7 @@ class TestDailyPnLAggregation:
 
     def test_multi_symbol_daily_report(self, pnl_engine: PnLEngine):
         """Daily report with multiple symbols should aggregate correctly."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         symbols_data = [
             ("BBCA.JK", Decimal("9200"), Decimal("9350"), Decimal("1000")),
@@ -292,28 +301,32 @@ class TestDailyPnLAggregation:
         ]
 
         for symbol, buy_price, sell_price, qty in symbols_data:
-            pnl_engine.process_fill(FillRecord(
-                fill_id=uuid4(),
-                order_id=uuid4(),
-                symbol=symbol,
-                direction=TradeDirection.BUY,
-                quantity=qty,
-                price=buy_price,
-                commission=buy_price * qty * Decimal("0.0015"),
-                timestamp=now - timedelta(hours=2),
-                strategy_id="multi_v1",
-            ))
-            pnl_engine.process_fill(FillRecord(
-                fill_id=uuid4(),
-                order_id=uuid4(),
-                symbol=symbol,
-                direction=TradeDirection.SELL,
-                quantity=qty,
-                price=sell_price,
-                commission=sell_price * qty * Decimal("0.0015"),
-                timestamp=now,
-                strategy_id="multi_v1",
-            ))
+            pnl_engine.process_fill(
+                FillRecord(
+                    fill_id=uuid4(),
+                    order_id=uuid4(),
+                    symbol=symbol,
+                    direction=TradeDirection.BUY,
+                    quantity=qty,
+                    price=buy_price,
+                    commission=buy_price * qty * Decimal("0.0015"),
+                    timestamp=now - timedelta(hours=2),
+                    strategy_id="multi_v1",
+                )
+            )
+            pnl_engine.process_fill(
+                FillRecord(
+                    fill_id=uuid4(),
+                    order_id=uuid4(),
+                    symbol=symbol,
+                    direction=TradeDirection.SELL,
+                    quantity=qty,
+                    price=sell_price,
+                    commission=sell_price * qty * Decimal("0.0015"),
+                    timestamp=now,
+                    strategy_id="multi_v1",
+                )
+            )
 
         report = pnl_engine.generate_daily_report(
             report_date=date.today(),
@@ -327,7 +340,7 @@ class TestDailyPnLAggregation:
 
     def test_pnl_summary_statistics(self, pnl_engine: PnLEngine):
         """PnL summary should include key statistics."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Create a series of trades over multiple days
         for day_offset in range(5):
@@ -335,28 +348,32 @@ class TestDailyPnLAggregation:
             buy_price = Decimal("9000") + Decimal(str(day_offset * 50))
             sell_price = buy_price + Decimal("100")
 
-            pnl_engine.process_fill(FillRecord(
-                fill_id=uuid4(),
-                order_id=uuid4(),
-                symbol="BBCA.JK",
-                direction=TradeDirection.BUY,
-                quantity=Decimal("100"),
-                price=buy_price,
-                commission=Decimal("1350"),
-                timestamp=trade_time - timedelta(hours=1),
-                strategy_id="test_v1",
-            ))
-            pnl_engine.process_fill(FillRecord(
-                fill_id=uuid4(),
-                order_id=uuid4(),
-                symbol="BBCA.JK",
-                direction=TradeDirection.SELL,
-                quantity=Decimal("100"),
-                price=sell_price,
-                commission=Decimal("1365"),
-                timestamp=trade_time,
-                strategy_id="test_v1",
-            ))
+            pnl_engine.process_fill(
+                FillRecord(
+                    fill_id=uuid4(),
+                    order_id=uuid4(),
+                    symbol="BBCA.JK",
+                    direction=TradeDirection.BUY,
+                    quantity=Decimal("100"),
+                    price=buy_price,
+                    commission=Decimal("1350"),
+                    timestamp=trade_time - timedelta(hours=1),
+                    strategy_id="test_v1",
+                )
+            )
+            pnl_engine.process_fill(
+                FillRecord(
+                    fill_id=uuid4(),
+                    order_id=uuid4(),
+                    symbol="BBCA.JK",
+                    direction=TradeDirection.SELL,
+                    quantity=Decimal("100"),
+                    price=sell_price,
+                    commission=Decimal("1365"),
+                    timestamp=trade_time,
+                    strategy_id="test_v1",
+                )
+            )
 
         summary = pnl_engine.get_summary(strategy_id="test_v1")
         assert isinstance(summary, PnLSummary)
@@ -373,29 +390,33 @@ class TestFeeHandling:
 
     def test_commission_deducted_from_pnl(self, pnl_engine: PnLEngine):
         """Commissions should reduce net PnL."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("1000"),
-            price=Decimal("9200.00"),
-            commission=Decimal("50000.00"),  # High commission
-            timestamp=now - timedelta(hours=1),
-            strategy_id="test_v1",
-        ))
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.SELL,
-            quantity=Decimal("1000"),
-            price=Decimal("9250.00"),
-            commission=Decimal("50000.00"),
-            timestamp=now,
-            strategy_id="test_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("1000"),
+                price=Decimal("9200.00"),
+                commission=Decimal("50000.00"),  # High commission
+                timestamp=now - timedelta(hours=1),
+                strategy_id="test_v1",
+            )
+        )
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.SELL,
+                quantity=Decimal("1000"),
+                price=Decimal("9250.00"),
+                commission=Decimal("50000.00"),
+                timestamp=now,
+                strategy_id="test_v1",
+            )
+        )
 
         pnl = pnl_engine.get_realized_pnl("BBCA.JK")
         # Gross: 50,000, Commissions: 100,000, Net: -50,000
@@ -404,29 +425,33 @@ class TestFeeHandling:
 
     def test_zero_commission(self, pnl_engine: PnLEngine):
         """Zero commission trades should have gross == net PnL."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("100"),
-            price=Decimal("9200.00"),
-            commission=Decimal("0"),
-            timestamp=now - timedelta(hours=1),
-            strategy_id="test_v1",
-        ))
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BBCA.JK",
-            direction=TradeDirection.SELL,
-            quantity=Decimal("100"),
-            price=Decimal("9300.00"),
-            commission=Decimal("0"),
-            timestamp=now,
-            strategy_id="test_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("100"),
+                price=Decimal("9200.00"),
+                commission=Decimal("0"),
+                timestamp=now - timedelta(hours=1),
+                strategy_id="test_v1",
+            )
+        )
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BBCA.JK",
+                direction=TradeDirection.SELL,
+                quantity=Decimal("100"),
+                price=Decimal("9300.00"),
+                commission=Decimal("0"),
+                timestamp=now,
+                strategy_id="test_v1",
+            )
+        )
 
         pnl = pnl_engine.get_realized_pnl("BBCA.JK")
         assert pnl.gross_pnl == pnl.net_pnl
@@ -440,29 +465,33 @@ class TestEdgeCases:
 
     def test_fractional_quantities(self, pnl_engine: PnLEngine):
         """Fractional share quantities should be handled correctly."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BTC-USD",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("0.5"),
-            price=Decimal("43000.00"),
-            commission=Decimal("21.50"),
-            timestamp=now - timedelta(hours=1),
-            strategy_id="crypto_v1",
-        ))
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="BTC-USD",
-            direction=TradeDirection.SELL,
-            quantity=Decimal("0.5"),
-            price=Decimal("44000.00"),
-            commission=Decimal("22.00"),
-            timestamp=now,
-            strategy_id="crypto_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BTC-USD",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("0.5"),
+                price=Decimal("43000.00"),
+                commission=Decimal("21.50"),
+                timestamp=now - timedelta(hours=1),
+                strategy_id="crypto_v1",
+            )
+        )
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="BTC-USD",
+                direction=TradeDirection.SELL,
+                quantity=Decimal("0.5"),
+                price=Decimal("44000.00"),
+                commission=Decimal("22.00"),
+                timestamp=now,
+                strategy_id="crypto_v1",
+            )
+        )
 
         pnl = pnl_engine.get_realized_pnl("BTC-USD")
         # Gross: (44000 - 43000) * 0.5 = 500
@@ -470,29 +499,33 @@ class TestEdgeCases:
 
     def test_very_small_price_differences(self, pnl_engine: PnLEngine):
         """Very small price differences should be tracked precisely."""
-        now = datetime.now(timezone.utc)
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="USDIDR",
-            direction=TradeDirection.BUY,
-            quantity=Decimal("1000000"),
-            price=Decimal("15450.50"),
-            commission=Decimal("1000.00"),
-            timestamp=now - timedelta(hours=1),
-            strategy_id="fx_v1",
-        ))
-        pnl_engine.process_fill(FillRecord(
-            fill_id=uuid4(),
-            order_id=uuid4(),
-            symbol="USDIDR",
-            direction=TradeDirection.SELL,
-            quantity=Decimal("1000000"),
-            price=Decimal("15451.00"),
-            commission=Decimal("1000.00"),
-            timestamp=now,
-            strategy_id="fx_v1",
-        ))
+        now = datetime.now(UTC)
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="USDIDR",
+                direction=TradeDirection.BUY,
+                quantity=Decimal("1000000"),
+                price=Decimal("15450.50"),
+                commission=Decimal("1000.00"),
+                timestamp=now - timedelta(hours=1),
+                strategy_id="fx_v1",
+            )
+        )
+        pnl_engine.process_fill(
+            FillRecord(
+                fill_id=uuid4(),
+                order_id=uuid4(),
+                symbol="USDIDR",
+                direction=TradeDirection.SELL,
+                quantity=Decimal("1000000"),
+                price=Decimal("15451.00"),
+                commission=Decimal("1000.00"),
+                timestamp=now,
+                strategy_id="fx_v1",
+            )
+        )
 
         pnl = pnl_engine.get_realized_pnl("USDIDR")
         # Gross: 0.50 * 1,000,000 = 500,000
@@ -501,7 +534,7 @@ class TestEdgeCases:
     def test_duplicate_fill_rejected(self, pnl_engine: PnLEngine):
         """Duplicate fill IDs should be rejected."""
         fill_id = uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         fill = FillRecord(
             fill_id=fill_id,
             order_id=uuid4(),

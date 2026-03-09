@@ -26,14 +26,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -113,9 +113,7 @@ class IDXCorporateBondIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="idx", symbol="CORPBOND", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="idx", symbol="CORPBOND", operation="inserted").inc(inserted)
 
         self._logger.info(
             "idx_bond_ingestion_complete",
@@ -127,9 +125,7 @@ class IDXCorporateBondIngester:
 
     # ── Data fetch ───────────────────────────────────────────────────────
 
-    async def _fetch_bonds(
-        self, start: date, end: date
-    ) -> list[dict[str, Any]]:
+    async def _fetch_bonds(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch corporate bond data from IDX.
 
         Args:
@@ -156,9 +152,7 @@ class IDXCorporateBondIngester:
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
-                    resp = await client.get(
-                        IDX_BOND_URL, params=params, headers=headers
-                    )
+                    resp = await client.get(IDX_BOND_URL, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
                     items = payload.get("data", payload.get("Results", []))
@@ -170,23 +164,27 @@ class IDXCorporateBondIngester:
                             continue
                         ref_date = date.fromisoformat(ref)
                         if row.get("price") or row.get("CleanPrice"):
-                            records.append({
-                                "indicator": "corp_bond_price",
-                                "bond_code": bond_code,
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row.get("price", row.get("CleanPrice", 0)))),
-                                "unit": "percent_of_par",
-                                "frequency": "daily",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "corp_bond_price",
+                                    "bond_code": bond_code,
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row.get("price", row.get("CleanPrice", 0)))),
+                                    "unit": "percent_of_par",
+                                    "frequency": "daily",
+                                }
+                            )
                         if row.get("ytm") or row.get("YTM"):
-                            records.append({
-                                "indicator": "corp_bond_yield",
-                                "bond_code": bond_code,
-                                "reference_date": ref_date,
-                                "value": Decimal(str(row.get("ytm", row.get("YTM", 0)))),
-                                "unit": "percent",
-                                "frequency": "daily",
-                            })
+                            records.append(
+                                {
+                                    "indicator": "corp_bond_yield",
+                                    "bond_code": bond_code,
+                                    "reference_date": ref_date,
+                                    "value": Decimal(str(row.get("ytm", row.get("YTM", 0)))),
+                                    "unit": "percent",
+                                    "frequency": "daily",
+                                }
+                            )
                     return records
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (500, 502, 503) and attempt < MAX_RETRIES:
@@ -214,15 +212,13 @@ class IDXCorporateBondIngester:
             # Bond price typically 50%-150% of par
             if v < 20 or v > 200:
                 raise DataQualityError(
-                    f"Bond price {v}% outside plausible range [20, 200] "
-                    f"for {record.get('bond_code', '?')}"
+                    f"Bond price {v}% outside plausible range [20, 200] for {record.get('bond_code', '?')}"
                 )
         if record["indicator"] == "corp_bond_yield":
             # Corporate yields typically 3%-20%
             if v < 0 or v > 30:
                 raise DataQualityError(
-                    f"Bond yield {v}% outside plausible range [0, 30] "
-                    f"for {record.get('bond_code', '?')}"
+                    f"Bond yield {v}% outside plausible range [0, 30] for {record.get('bond_code', '?')}"
                 )
 
     # ── Persistence ──────────────────────────────────────────────────────

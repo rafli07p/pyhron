@@ -7,13 +7,16 @@ radiative power, and optional concession mapping for ESG screening.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Float, Index, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
 
 
 class IndonesiaFireHotspotEvent(Base):
@@ -37,9 +40,7 @@ class IndonesiaFireHotspotEvent(Base):
 
     __tablename__ = "indonesia_fire_hotspot_events"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     brightness: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -51,9 +52,7 @@ class IndonesiaFireHotspotEvent(Base):
     province: Mapped[str | None] = mapped_column(String(100), nullable=True)
     district: Mapped[str | None] = mapped_column(String(100), nullable=True)
     company_concession: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    ingested_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
         Index(

@@ -53,9 +53,7 @@ def _user_tier_level(tier: str) -> int:
 class SubscriptionTierMiddleware(BaseHTTPMiddleware):
     """Enforce subscription tier requirements on premium endpoints."""
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         required_tier = _get_required_tier(request.url.path)
         if required_tier is None:
             return await call_next(request)
@@ -74,10 +72,7 @@ class SubscriptionTierMiddleware(BaseHTTPMiddleware):
                 required_tier=required_tier,
             )
             return Response(
-                content=(
-                    f'{{"detail":"Upgrade to {required_tier} tier or above '
-                    f'to access this endpoint"}}'
-                ),
+                content=(f'{{"detail":"Upgrade to {required_tier} tier or above to access this endpoint"}}'),
                 status_code=403,
                 media_type="application/json",
             )

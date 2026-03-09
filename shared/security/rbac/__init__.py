@@ -23,14 +23,18 @@ Standalone usage::
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from enum import StrEnum, unique
 from functools import wraps
-from typing import Any, Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from shared.security.auth import TokenPayload, verify_token
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # ---------------------------------------------------------------------------
 # Enumerations
@@ -261,9 +265,9 @@ def require_tenant(tenant_id: str) -> Callable[..., Any]:
 
 
 __all__ = [
-    "Role",
-    "Permission",
     "ROLE_PERMISSIONS",
+    "Permission",
+    "Role",
     "check_permission",
     "require_permission",
     "require_role",

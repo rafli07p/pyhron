@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Any
 
 from sqlalchemy import text
 
@@ -117,9 +116,7 @@ class IndonesiaNewsTickerExtractor:
     async def _load_symbols(self) -> None:
         """Load active instrument symbols from the database."""
         async with get_session() as session:
-            result = await session.execute(
-                text("SELECT symbol FROM instruments WHERE is_active = true")
-            )
+            result = await session.execute(text("SELECT symbol FROM instruments WHERE is_active = true"))
             self._known_symbols = {row[0] for row in result.fetchall()}
 
     async def _load_company_aliases(self) -> None:
@@ -131,10 +128,7 @@ class IndonesiaNewsTickerExtractor:
         try:
             async with get_session() as session:
                 result = await session.execute(
-                    text(
-                        "SELECT alias_name, symbol FROM instrument_aliases "
-                        "WHERE is_active = true"
-                    )
+                    text("SELECT alias_name, symbol FROM instrument_aliases WHERE is_active = true")
                 )
                 for row in result.fetchall():
                     self._company_aliases[row[0]] = row[1]
@@ -155,9 +149,7 @@ class IndonesiaNewsTickerExtractor:
             return
 
         # Sort by length descending so longer names match first
-        sorted_aliases = sorted(
-            self._company_aliases.keys(), key=len, reverse=True
-        )
+        sorted_aliases = sorted(self._company_aliases.keys(), key=len, reverse=True)
         escaped = [re.escape(alias) for alias in sorted_aliases]
         pattern_str = r"\b(" + "|".join(escaped) + r")\b"
         self._alias_pattern = re.compile(pattern_str, re.IGNORECASE)
@@ -220,9 +212,7 @@ class IndonesiaNewsTickerExtractor:
         result.tickers = sorted(seen_symbols)
         return result
 
-    async def extract_and_update(
-        self, article_url: str, text_content: str
-    ) -> ExtractionResult:
+    async def extract_and_update(self, article_url: str, text_content: str) -> ExtractionResult:
         """Extract tickers and update the article record in the database.
 
         Convenience method that combines extraction with a database update
@@ -241,10 +231,7 @@ class IndonesiaNewsTickerExtractor:
             tickers_sql = "{" + ",".join(result.tickers) + "}"
             async with get_session() as session:
                 await session.execute(
-                    text(
-                        "UPDATE news_articles SET mentioned_tickers = :tickers::varchar[] "
-                        "WHERE url = :url"
-                    ),
+                    text("UPDATE news_articles SET mentioned_tickers = :tickers::varchar[] WHERE url = :url"),
                     {"tickers": tickers_sql, "url": article_url},
                 )
 

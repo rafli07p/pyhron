@@ -6,12 +6,15 @@ tracking for IDX-listed companies.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from shared.structured_json_logger import get_logger
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/governance", tags=["governance"])
@@ -24,8 +27,7 @@ class GovernanceFlag(BaseModel):
     id: str
     symbol: str
     flag_type: str = Field(
-        description="related_party_txn, board_change, delayed_filing, "
-        "unusual_audit, insider_trading"
+        description="related_party_txn, board_change, delayed_filing, unusual_audit, insider_trading"
     )
     severity: str = Field(description="low, medium, high, critical")
     title: str
@@ -51,9 +53,7 @@ class AuditOpinion(BaseModel):
     symbol: str
     fiscal_year: int
     auditor: str
-    opinion: str = Field(
-        description="unqualified, qualified, adverse, disclaimer"
-    )
+    opinion: str = Field(description="unqualified, qualified, adverse, disclaimer")
     key_audit_matters: list[str] = Field(default_factory=list)
     going_concern: bool = False
     report_date: date | None = None
@@ -65,9 +65,7 @@ class AuditOpinion(BaseModel):
 @router.get("/flags", response_model=list[GovernanceFlag])
 async def get_governance_flags(
     symbol: str | None = Query(None, description="Filter by ticker symbol"),
-    severity: str | None = Query(
-        None, pattern="^(low|medium|high|critical)$", description="Min severity"
-    ),
+    severity: str | None = Query(None, pattern="^(low|medium|high|critical)$", description="Min severity"),
     resolved: bool | None = Query(None, description="Filter by resolution status"),
     limit: int = Query(50, ge=1, le=200),
 ) -> list[GovernanceFlag]:

@@ -15,7 +15,6 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
@@ -87,11 +86,11 @@ class BacktestRequest(ResearchEventBase):
     """
 
     strategy_id: str = Field(..., min_length=1, max_length=128, description="Strategy identifier / name")
-    strategy_version: Optional[str] = Field(default=None, max_length=64, description="Strategy version tag")
+    strategy_version: str | None = Field(default=None, max_length=64, description="Strategy version tag")
     start_date: date = Field(..., description="Backtest start date (inclusive)")
     end_date: date = Field(..., description="Backtest end date (inclusive)")
     symbols: list[str] = Field(..., min_length=1, description="Universe of symbols to include")
-    benchmark: Optional[str] = Field(default=None, max_length=20, description="Benchmark symbol (e.g. SPY)")
+    benchmark: str | None = Field(default=None, max_length=20, description="Benchmark symbol (e.g. SPY)")
     initial_capital: Decimal = Field(default=Decimal("1000000"), gt=0, description="Starting capital")
     frequency: Frequency = Field(default=Frequency.DAILY, description="Return calculation frequency")
     slippage_bps: Decimal = Field(default=Decimal("5"), ge=0, description="Assumed slippage in basis points")
@@ -102,7 +101,7 @@ class BacktestRequest(ResearchEventBase):
     )
 
     @model_validator(mode="after")
-    def _validate_dates(self) -> "BacktestRequest":
+    def _validate_dates(self) -> BacktestRequest:
         if self.start_date >= self.end_date:
             raise ValueError("start_date must be before end_date")
         return self
@@ -126,22 +125,22 @@ class BacktestResult(ResearchEventBase):
     # -- Performance metrics --
     total_return: Decimal = Field(default=Decimal("0"), description="Total return (e.g. 0.25 = 25%)")
     annualized_return: Decimal = Field(default=Decimal("0"), description="Annualized return")
-    sharpe_ratio: Optional[Decimal] = Field(default=None, description="Annualized Sharpe ratio")
-    sortino_ratio: Optional[Decimal] = Field(default=None, description="Sortino ratio")
-    calmar_ratio: Optional[Decimal] = Field(default=None, description="Calmar ratio")
+    sharpe_ratio: Decimal | None = Field(default=None, description="Annualized Sharpe ratio")
+    sortino_ratio: Decimal | None = Field(default=None, description="Sortino ratio")
+    calmar_ratio: Decimal | None = Field(default=None, description="Calmar ratio")
     max_drawdown: Decimal = Field(default=Decimal("0"), le=0, description="Maximum drawdown (negative)")
-    max_drawdown_duration_days: Optional[int] = Field(default=None, ge=0, description="Longest drawdown in days")
-    volatility: Optional[Decimal] = Field(default=None, ge=0, description="Annualized volatility")
-    beta: Optional[Decimal] = Field(default=None, description="Portfolio beta to benchmark")
-    alpha: Optional[Decimal] = Field(default=None, description="Jensen's alpha")
-    information_ratio: Optional[Decimal] = Field(default=None, description="Information ratio")
+    max_drawdown_duration_days: int | None = Field(default=None, ge=0, description="Longest drawdown in days")
+    volatility: Decimal | None = Field(default=None, ge=0, description="Annualized volatility")
+    beta: Decimal | None = Field(default=None, description="Portfolio beta to benchmark")
+    alpha: Decimal | None = Field(default=None, description="Jensen's alpha")
+    information_ratio: Decimal | None = Field(default=None, description="Information ratio")
 
     # -- Trade statistics --
     total_trades: int = Field(default=0, ge=0, description="Total number of trades")
-    win_rate: Optional[Decimal] = Field(default=None, ge=0, le=1, description="Fraction of winning trades")
-    profit_factor: Optional[Decimal] = Field(default=None, ge=0, description="Gross profit / gross loss")
-    avg_trade_pnl: Optional[Decimal] = Field(default=None, description="Average P&L per trade")
-    avg_holding_period_days: Optional[Decimal] = Field(default=None, ge=0, description="Avg holding period")
+    win_rate: Decimal | None = Field(default=None, ge=0, le=1, description="Fraction of winning trades")
+    profit_factor: Decimal | None = Field(default=None, ge=0, description="Gross profit / gross loss")
+    avg_trade_pnl: Decimal | None = Field(default=None, description="Average P&L per trade")
+    avg_holding_period_days: Decimal | None = Field(default=None, ge=0, description="Avg holding period")
 
     # -- Costs --
     total_commission: Decimal = Field(default=Decimal("0"), ge=0, description="Total commissions paid")
@@ -154,7 +153,7 @@ class BacktestResult(ResearchEventBase):
     initial_capital: Decimal = Field(default=Decimal("1000000"), gt=0, description="Starting capital")
     final_capital: Decimal = Field(default=Decimal("0"), ge=0, description="Ending capital")
     currency: str = Field(default="USD", max_length=3, description="Reporting currency")
-    error_message: Optional[str] = Field(default=None, max_length=2048, description="Error details if failed")
+    error_message: str | None = Field(default=None, max_length=2048, description="Error details if failed")
 
 
 class FactorResult(ResearchEventBase):
@@ -165,7 +164,7 @@ class FactorResult(ResearchEventBase):
     universe and time window.
     """
 
-    strategy_id: Optional[str] = Field(default=None, max_length=128, description="Associated strategy")
+    strategy_id: str | None = Field(default=None, max_length=128, description="Associated strategy")
     factor_name: str = Field(..., min_length=1, max_length=128, description="Factor name (e.g. 'Earnings Yield')")
     factor_category: FactorCategory = Field(default=FactorCategory.CUSTOM, description="Factor category")
     start_date: date = Field(..., description="Analysis start date")
@@ -177,35 +176,35 @@ class FactorResult(ResearchEventBase):
     returns: list[float] = Field(default_factory=list, description="Factor return series")
     cumulative_return: Decimal = Field(default=Decimal("0"), description="Cumulative factor return")
     annualized_return: Decimal = Field(default=Decimal("0"), description="Annualized factor return")
-    sharpe_ratio: Optional[Decimal] = Field(default=None, description="Factor Sharpe ratio")
+    sharpe_ratio: Decimal | None = Field(default=None, description="Factor Sharpe ratio")
     max_drawdown: Decimal = Field(default=Decimal("0"), le=0, description="Maximum drawdown (negative)")
-    t_statistic: Optional[Decimal] = Field(default=None, description="T-statistic of factor return")
-    p_value: Optional[Decimal] = Field(default=None, ge=0, le=1, description="P-value of factor return")
-    ic_mean: Optional[Decimal] = Field(default=None, description="Mean information coefficient")
-    ic_ir: Optional[Decimal] = Field(default=None, description="IC information ratio (IC mean / IC std)")
-    turnover: Optional[Decimal] = Field(default=None, ge=0, description="Average portfolio turnover")
+    t_statistic: Decimal | None = Field(default=None, description="T-statistic of factor return")
+    p_value: Decimal | None = Field(default=None, ge=0, le=1, description="P-value of factor return")
+    ic_mean: Decimal | None = Field(default=None, description="Mean information coefficient")
+    ic_ir: Decimal | None = Field(default=None, description="IC information ratio (IC mean / IC std)")
+    turnover: Decimal | None = Field(default=None, ge=0, description="Average portfolio turnover")
 
     # -- Quintile / decile spreads --
-    long_short_return: Optional[Decimal] = Field(default=None, description="Long-short portfolio return")
+    long_short_return: Decimal | None = Field(default=None, description="Long-short portfolio return")
     quintile_returns: list[float] = Field(
         default_factory=list,
         description="Average returns per quintile (Q1..Q5)",
     )
 
     @model_validator(mode="after")
-    def _validate_dates(self) -> "FactorResult":
+    def _validate_dates(self) -> FactorResult:
         if self.start_date >= self.end_date:
             raise ValueError("start_date must be before end_date")
         return self
 
 
 __all__ = [
-    "BacktestStatus",
-    "FactorCategory",
-    "Frequency",
-    "SimulationType",
-    "ResearchEventBase",
     "BacktestRequest",
     "BacktestResult",
+    "BacktestStatus",
+    "FactorCategory",
     "FactorResult",
+    "Frequency",
+    "ResearchEventBase",
+    "SimulationType",
 ]

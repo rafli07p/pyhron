@@ -23,14 +23,14 @@ from typing import Any
 import httpx
 from sqlalchemy import text
 
-from shared.configuration_settings import get_config
 from shared.async_database_session import get_session
+from shared.configuration_settings import get_config
 from shared.platform_exception_hierarchy import (
     DataQualityError,
     IngestionError,
 )
-from shared.structured_json_logger import get_logger
 from shared.prometheus_metrics_registry import INGESTION_ROWS
+from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -40,8 +40,18 @@ MAX_RETRIES = 3
 
 # 3-month season labels used in NOAA ONI data
 SEASON_TO_MONTH: dict[str, int] = {
-    "DJF": 1, "JFM": 2, "FMA": 3, "MAM": 4, "AMJ": 5, "MJJ": 6,
-    "JJA": 7, "JAS": 8, "ASO": 9, "SON": 10, "OND": 11, "NDJ": 12,
+    "DJF": 1,
+    "JFM": 2,
+    "FMA": 3,
+    "MAM": 4,
+    "AMJ": 5,
+    "MJJ": 6,
+    "JJA": 7,
+    "JAS": 8,
+    "ASO": 9,
+    "SON": 10,
+    "OND": 11,
+    "NDJ": 12,
 }
 
 
@@ -126,9 +136,7 @@ class ENSOClimateIndexIngester:
         result.rows_updated = updated
         result.duration_ms = (time.monotonic() - t0) * 1000
 
-        INGESTION_ROWS.labels(
-            source="noaa", symbol="ENSO", operation="inserted"
-        ).inc(inserted)
+        INGESTION_ROWS.labels(source="noaa", symbol="ENSO", operation="inserted").inc(inserted)
 
         self._logger.info(
             "enso_ingestion_complete",
@@ -353,15 +361,10 @@ class ENSOClimateIndexIngester:
             # ONI historically ranges from about -2.5 to +2.5
             if v < -4.0 or v > 4.0:
                 raise DataQualityError(
-                    f"ONI value {v} outside plausible range [-4.0, 4.0] "
-                    f"on {record['reference_date']}"
+                    f"ONI value {v} outside plausible range [-4.0, 4.0] on {record['reference_date']}"
                 )
-        if record["indicator"] == "soi_index":
-            if v < -50 or v > 50:
-                raise DataQualityError(
-                    f"SOI value {v} outside plausible range [-50, 50] "
-                    f"on {record['reference_date']}"
-                )
+        if record["indicator"] == "soi_index" and (v < -50 or v > 50):
+            raise DataQualityError(f"SOI value {v} outside plausible range [-50, 50] on {record['reference_date']}")
 
     # ── Persistence ──────────────────────────────────────────────────────
 

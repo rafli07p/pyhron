@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING
 
 from shared.structured_json_logger import get_logger
-from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
+
+if TYPE_CHECKING:
+    from shared.proto_generated.equity_positions_pb2 import PortfolioSnapshot
 
 logger = get_logger(__name__)
 
@@ -98,9 +100,7 @@ class PortfolioVaRCalculator:
         """
         self._volatilities[symbol] = daily_volatility
 
-    def set_correlation(
-        self, symbol_a: str, symbol_b: str, correlation: float
-    ) -> None:
+    def set_correlation(self, symbol_a: str, symbol_b: str, correlation: float) -> None:
         """Set the correlation between two instruments.
 
         Args:
@@ -134,13 +134,9 @@ class PortfolioVaRCalculator:
         """
         if symbol_a == symbol_b:
             return 1.0
-        return self._correlations.get(
-            (symbol_a, symbol_b), DEFAULT_CORRELATION
-        )
+        return self._correlations.get((symbol_a, symbol_b), DEFAULT_CORRELATION)
 
-    def compute_portfolio_var(
-        self, portfolio: PortfolioSnapshot
-    ) -> VaRResult:
+    def compute_portfolio_var(self, portfolio: PortfolioSnapshot) -> VaRResult:
         """Compute parametric VaR for the entire portfolio.
 
         Uses the variance-covariance method:
@@ -182,23 +178,19 @@ class PortfolioVaRCalculator:
 
         # Compute portfolio variance using correlation matrix
         portfolio_variance = 0.0
-        for i, (sym_i, val_i) in enumerate(positions):
+        for _i, (sym_i, val_i) in enumerate(positions):
             vol_i = self.get_volatility(sym_i)
             var_i = val_i * vol_i
             component_vars[sym_i] = var_i * self._z_score
 
-            for j, (sym_j, val_j) in enumerate(positions):
+            for _j, (sym_j, val_j) in enumerate(positions):
                 vol_j = self.get_volatility(sym_j)
                 corr = self.get_correlation(sym_i, sym_j)
                 portfolio_variance += val_i * vol_i * val_j * vol_j * corr
 
         # Portfolio VaR = Z * sqrt(portfolio_variance) * sqrt(holding_period)
         portfolio_std = math.sqrt(max(0.0, portfolio_variance))
-        var_absolute = (
-            self._z_score
-            * portfolio_std
-            * math.sqrt(self._holding_period_days)
-        )
+        var_absolute = self._z_score * portfolio_std * math.sqrt(self._holding_period_days)
         var_percentage = var_absolute / total_value if total_value > 0 else 0.0
 
         logger.debug(
@@ -255,9 +247,7 @@ class PortfolioVaRCalculator:
         # Account for diversification benefit via average correlation
         avg_corr = DEFAULT_CORRELATION
         diversified_contribution = additional_var_standalone * math.sqrt(
-            1.0 + 2.0 * avg_corr * (current_var / additional_var_standalone)
-            if additional_var_standalone > 0
-            else 1.0
+            1.0 + 2.0 * avg_corr * (current_var / additional_var_standalone) if additional_var_standalone > 0 else 1.0
         )
 
         incremental_var = diversified_contribution - current_var
