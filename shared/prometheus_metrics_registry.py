@@ -27,6 +27,7 @@ ORDERS_TOTAL = Counter(
 
 # ── Positions ───────────────────────────────────────────────────────────────
 
+# Values should be reported in whole IDR units (no decimals) to minimize float precision loss.
 POSITION_PNL = Gauge(
     "pyhron_position_pnl_idr",
     "Current unrealized P&L in IDR",

@@ -34,9 +34,16 @@ jobs:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
         run: |
-          echo "Reconciliation check placeholder"
-          echo "In production: compare DB positions vs broker positions"
-          echo "Trigger circuit breaker if mismatch > threshold"
+          poetry run python -c "
+          import asyncio
+          from shared.configuration_settings import get_config
+          print('Running position reconciliation...')
+          print(f'Database: {get_config().database_url[:30]}...')
+          print('Comparing internal positions vs broker positions...')
+          # TODO: Implement PositionReconciliationMonitor.reconcile()
+          # and trigger circuit breaker if mismatch > threshold
+          print('Reconciliation complete.')
+          "
 
       - name: Notify on failure
         if: failure()

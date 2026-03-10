@@ -133,7 +133,7 @@ class BacktestPerformanceMetrics:
         recovery_mask = cum.loc[trough_idx:] >= cum.loc[peak_idx]
         recovery_idx = recovery_mask[recovery_mask].index[0] if recovery_mask.any() else None
 
-        duration = (trough_idx - peak_idx).days if hasattr(trough_idx, "days") else 0
+        duration = (trough_idx - peak_idx).days
 
         return DrawdownInfo(
             max_drawdown=max_dd,

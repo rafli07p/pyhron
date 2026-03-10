@@ -14,6 +14,7 @@ Usage::
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
@@ -32,7 +33,7 @@ class Config(BaseSettings):
     # -- General --
     app_name: str = Field(default="pyhron", max_length=64, description="Application name")
     app_env: str = Field(default="development", description="Deployment environment")
-    app_secret_key: str = Field(default="local-dev-secret-key-min-32-chars-long", min_length=8)
+    app_secret_key: str = Field(default="local-dev-secret-key-min-32-chars-long", min_length=32)
     app_debug: bool = Field(default=False)
     app_host: str = Field(default="0.0.0.0")
     app_port: int = Field(default=8000)
@@ -66,7 +67,7 @@ class Config(BaseSettings):
     alpaca_base_url: str = Field(default="https://paper-api.alpaca.markets")
 
     # -- JWT / Auth --
-    jwt_secret_key: str = Field(default="local-dev-jwt-secret-change-in-prod-min-64", min_length=16)
+    jwt_secret_key: str = Field(default="local-dev-jwt-secret-change-in-prod-min-64", min_length=32)
     jwt_algorithm: str = Field(default="HS256")
     jwt_access_token_expire_minutes: int = Field(default=15, ge=1)
     jwt_refresh_token_expire_days: int = Field(default=7, ge=1)
@@ -87,9 +88,30 @@ class Config(BaseSettings):
     sentry_dsn: str = Field(default="")
     prometheus_port: int = Field(default=9090)
 
+    # -- CORS --
+    allowed_cors_origins: str = Field(default="http://localhost:3000", description="Comma-separated allowed CORS origins")
+
     # -- Notifications --
     slack_webhook_url: str = Field(default="")
     alert_email: str = Field(default="")
+
+    @field_validator("app_secret_key")
+    @classmethod
+    def _validate_app_secret(cls, v: str, info: Any) -> str:
+        _dev_defaults = {"local-dev-secret-key-min-32-chars-long"}
+        if info.data.get("app_env") == "production" and v in _dev_defaults:
+            msg = "app_secret_key must be changed from the default in production"
+            raise ValueError(msg)
+        return v
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def _validate_jwt_secret(cls, v: str, info: Any) -> str:
+        _dev_defaults = {"local-dev-jwt-secret-change-in-prod-min-64"}
+        if info.data.get("app_env") == "production" and v in _dev_defaults:
+            msg = "jwt_secret_key must be changed from the default in production"
+            raise ValueError(msg)
+        return v
 
     @field_validator("database_url")
     @classmethod

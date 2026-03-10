@@ -13,14 +13,20 @@ from fastapi import Request, Response
 from jose import JWTError, jwt
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
+from shared.configuration_settings import get_config
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
 # ── Configuration ────────────────────────────────────────────────────────────
 
-JWT_SECRET_KEY = "CHANGE_ME_IN_PRODUCTION"
-JWT_ALGORITHM = "HS256"
+
+def _get_jwt_secret() -> str:
+    return get_config().jwt_secret_key
+
+
+def _get_jwt_algorithm() -> str:
+    return get_config().jwt_algorithm
 
 PUBLIC_PATHS: set[str] = {
     "/v1/auth/login",
@@ -38,7 +44,7 @@ PUBLIC_PATHS: set[str] = {
 
 def _decode_token(token: str) -> dict[str, Any]:
     """Decode and validate a JWT token, returning the payload claims."""
-    return jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+    return jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
 
 
 def _is_public_path(path: str) -> bool:

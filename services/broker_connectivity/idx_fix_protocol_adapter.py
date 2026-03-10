@@ -39,7 +39,14 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
     All methods raise NotImplementedError until the FIX engine is integrated.
     """
 
+    _STUB = True
+
     def __init__(self) -> None:
+        if self._STUB:
+            raise RuntimeError(
+                "IDX FIX protocol adapter is not implemented. "
+                "Configure a different broker adapter for IDX connectivity."
+            )
         logger.warning(
             "idx_fix_protocol_adapter_stub_initialized",
             message="IDX FIX protocol adapter is not yet implemented",

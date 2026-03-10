@@ -12,9 +12,17 @@ Tables:
 
 from __future__ import annotations
 
+import warnings
+
+warnings.warn(
+    "data_platform.models.market is deprecated. Use data_platform.database_models instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import enum
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -114,7 +122,7 @@ class Instrument(Base):
     delisting_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()", onupdate=datetime.utcnow
+        TIMESTAMP(timezone=True), server_default="now()", onupdate=lambda: datetime.now(timezone.utc)
     )
 
     __table_args__ = (

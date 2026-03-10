@@ -53,6 +53,15 @@ class _InMemoryStore:
 # ── Redis Store ──────────────────────────────────────────────────────────────
 
 
+_RATE_LIMIT_LUA = """
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then
+    redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return current
+"""
+
+
 class _RedisStore:
     """Redis-backed sliding window rate limiter."""
 
@@ -62,9 +71,7 @@ class _RedisStore:
     async def is_rate_limited(self, key: str, limit: int, window: int) -> tuple[bool, int, int]:
         """Atomic increment with TTL-based expiration in Redis."""
         redis_key = f"rate_limit:{key}"
-        current = await self._redis.incr(redis_key)
-        if current == 1:
-            await self._redis.expire(redis_key, window)
+        current = await self._redis.eval(_RATE_LIMIT_LUA, 1, redis_key, window)
         ttl = await self._redis.ttl(redis_key)
         if current > limit:
             return True, 0, max(ttl, 1)

@@ -1,4 +1,4 @@
-"""Enthropy WebSocket Gateway.
+"""Pyhron WebSocket Gateway.
 
 Provides real-time streaming of market data, order updates, and
 portfolio events over WebSocket connections.  Supports per-symbol
@@ -27,8 +27,18 @@ logger = structlog.stdlib.get_logger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
-JWT_SECRET = "enthropy-jwt-secret"
-JWT_ALGORITHM = "HS256"
+from shared.configuration_settings import get_config as _get_config
+
+JWT_SECRET: str = ""  # Loaded lazily from config
+JWT_ALGORITHM: str = ""  # Loaded lazily from config
+
+
+def _get_jwt_secret() -> str:
+    return _get_config().jwt_secret_key
+
+
+def _get_jwt_algorithm() -> str:
+    return _get_config().jwt_algorithm
 HEARTBEAT_INTERVAL_SECONDS = 15
 HEARTBEAT_TIMEOUT_SECONDS = 30
 
@@ -222,7 +232,7 @@ manager = ConnectionManager()
 def authenticate_ws_token(token: str) -> dict[str, str]:
     """Validate JWT and return claims.  Raises ValueError on failure."""
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
         required = {"sub", "tenant_id"}
         if not required.issubset(payload.keys()):
             raise ValueError("Missing required claims")
@@ -366,38 +376,58 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws")
     async def websocket_endpoint(
         websocket: WebSocket,
-        token: str | None = Query(None),
     ) -> None:
         """Primary WebSocket endpoint.
 
-        Clients connect with ``?token=<jwt>`` for authentication, then
-        send JSON messages to subscribe/unsubscribe to symbols and
-        channels.
+        Clients connect without a token, then send a first message of
+        ``{"type": "auth", "token": "<jwt>"}`` to authenticate.  After
+        successful authentication they may subscribe/unsubscribe to
+        symbols and channels.
         """
-        # Authenticate
-        if not token:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing token")
+        await websocket.accept()
+
+        # Wait for auth message as the first message
+        try:
+            raw = await asyncio.wait_for(websocket.receive_text(), timeout=10.0)
+        except (asyncio.TimeoutError, WebSocketDisconnect):
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Auth timeout")
             return
 
         try:
-            claims = authenticate_ws_token(token)
+            auth_msg = json.loads(raw)
+        except json.JSONDecodeError:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid JSON")
+            return
+
+        if auth_msg.get("type") != "auth" or not auth_msg.get("token"):
+            await websocket.close(
+                code=status.WS_1008_POLICY_VIOLATION,
+                reason="First message must be {\"type\": \"auth\", \"token\": \"...\"}",
+            )
+            return
+
+        try:
+            claims = authenticate_ws_token(auth_msg["token"])
         except ValueError as exc:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=str(exc))
             return
 
         connection_id = str(uuid4())
-        await manager.connect(
-            websocket,
-            connection_id=connection_id,
-            tenant_id=claims["tenant_id"],
-            user_id=claims["user_id"],
-            role=claims["role"],
-        )
+        # Connection already accepted above, so register directly
+        async with manager._lock:
+            manager._connections[connection_id] = websocket
+            manager._connection_meta[connection_id] = {
+                "tenant_id": claims["tenant_id"],
+                "user_id": claims["user_id"],
+                "role": claims["role"],
+            }
+            manager._last_pong[connection_id] = time.monotonic()
+        logger.info("ws_connected", connection_id=connection_id, tenant_id=claims["tenant_id"], user_id=claims["user_id"])
 
         # Send welcome message
         await manager.send_personal(connection_id, WSMessage(
             type=WSMessageType.ACK,
-            data={"connection_id": connection_id, "message": "Connected to Enthropy WebSocket Gateway"},
+            data={"connection_id": connection_id, "message": "Connected to Pyhron WebSocket Gateway"},
         ))
 
         try:

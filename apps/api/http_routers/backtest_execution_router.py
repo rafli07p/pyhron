@@ -10,9 +10,11 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
@@ -78,7 +80,10 @@ class BacktestHistoryEntry(BaseModel):
 
 
 @router.post("/run", response_model=BacktestSubmission, status_code=202)
-async def run_backtest(body: BacktestRequest) -> BacktestSubmission:
+async def run_backtest(
+    body: BacktestRequest,
+    _user: TokenPayload = Depends(require_role(Role.ANALYST)),
+) -> BacktestSubmission:
     """Submit an asynchronous backtest job. Returns task_id for polling."""
     logger.info(
         "backtest_submitted",
@@ -91,7 +96,10 @@ async def run_backtest(body: BacktestRequest) -> BacktestSubmission:
 
 
 @router.get("/{task_id}", response_model=BacktestResult)
-async def get_backtest_result(task_id: UUID) -> BacktestResult:
+async def get_backtest_result(
+    task_id: UUID,
+    _user: TokenPayload = Depends(require_role(Role.ANALYST)),
+) -> BacktestResult:
     """Get backtest result and status by task_id."""
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -100,7 +108,10 @@ async def get_backtest_result(task_id: UUID) -> BacktestResult:
 
 
 @router.get("/{task_id}/metrics", response_model=BacktestMetrics)
-async def get_backtest_metrics(task_id: UUID) -> BacktestMetrics:
+async def get_backtest_metrics(
+    task_id: UUID,
+    _user: TokenPayload = Depends(require_role(Role.ANALYST)),
+) -> BacktestMetrics:
     """Get detailed performance metrics for a completed backtest."""
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -113,6 +124,7 @@ async def get_backtest_history(
     strategy_id: str | None = Query(None),
     status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(20, ge=1, le=100),
+    _user: TokenPayload = Depends(require_role(Role.ANALYST)),
 ) -> list[BacktestHistoryEntry]:
     """Browse backtest submission history."""
     return []

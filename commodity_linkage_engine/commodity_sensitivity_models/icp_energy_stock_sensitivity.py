@@ -3,6 +3,9 @@
 Models the impact of ICP (Indonesian Crude Price) changes on energy
 companies listed on IDX.
 
+# TODO: Move hardcoded company profiles and production data to database-backed
+# or config-file-based reference data with quarterly update process.
+
 ICP is the government reference price for Indonesian crude oil,
 determined monthly by ESDM.  It affects:
   - Direct revenue for upstream producers (MEDC, ENRG).

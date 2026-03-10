@@ -9,9 +9,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -77,6 +79,7 @@ class CircuitBreakerClearRequest(BaseModel):
 async def get_positions(
     strategy_id: str | None = Query(None),
     symbol: str | None = Query(None),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[PositionResponse]:
     """Get all open positions, optionally filtered by strategy or symbol."""
     logger.info("positions_queried", strategy_id=strategy_id, symbol=symbol)
@@ -92,6 +95,7 @@ async def get_orders(
     symbol: str | None = Query(None),
     status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(50, ge=1, le=500),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[OrderResponse]:
     """Get order history with filters."""
     return []
@@ -104,6 +108,7 @@ async def get_orders(
 async def get_daily_pnl(
     days: int = Query(30, ge=1, le=365),
     strategy_id: str | None = Query(None),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[PnLResponse]:
     """Get daily P&L summary across all strategies or a specific one."""
     return []
@@ -113,13 +118,18 @@ async def get_daily_pnl(
 
 
 @router.get("/circuit-breaker/status", response_model=list[CircuitBreakerStatus])
-async def get_circuit_breaker_status() -> list[CircuitBreakerStatus]:
+async def get_circuit_breaker_status(
+    _user: TokenPayload = Depends(require_role(Role.TRADER)),
+) -> list[CircuitBreakerStatus]:
     """Get circuit breaker status for all strategies."""
     return []
 
 
 @router.post("/circuit-breaker/clear")
-async def clear_circuit_breaker(body: CircuitBreakerClearRequest) -> dict[str, str]:
+async def clear_circuit_breaker(
+    body: CircuitBreakerClearRequest,
+    _user: TokenPayload = Depends(require_role(Role.ADMIN)),
+) -> dict[str, str]:
     """Clear a tripped circuit breaker. Requires admin role and audit reason."""
     logger.info(
         "circuit_breaker_cleared",

@@ -8,6 +8,7 @@ limiting (slowapi), structured logging, and OpenAPI documentation.
 
 from __future__ import annotations
 
+import secrets
 import time
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -22,6 +23,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from starlette.responses import Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -242,8 +244,135 @@ def require_role(minimum_role: Role):
 
 
 # ---------------------------------------------------------------------------
+# CSRF protection middleware (double-submit cookie)
+# ---------------------------------------------------------------------------
+
+_CSRF_SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+_CSRF_EXEMPT_PREFIXES = ("/v1/auth/", "/health")
+
+
+class CSRFMiddleware:
+    """ASGI middleware implementing double-submit cookie CSRF protection.
+
+    - On safe methods (GET, HEAD, OPTIONS): sets a ``csrf_token`` cookie
+      if one is not already present.
+    - On state-changing methods (POST, PUT, DELETE, PATCH): verifies
+      that the ``X-CSRF-Token`` header matches the ``csrf_token`` cookie.
+    - Skips CSRF checks for ``/v1/auth/*`` and ``/health`` endpoints.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope, receive)
+        path = request.url.path
+
+        # Check if path is exempt from CSRF
+        is_exempt = any(path.startswith(prefix) for prefix in _CSRF_EXEMPT_PREFIXES)
+
+        if request.method not in _CSRF_SAFE_METHODS and not is_exempt:
+            cookie_token = request.cookies.get("csrf_token")
+            header_token = request.headers.get("X-CSRF-Token")
+            if not cookie_token or not header_token or cookie_token != header_token:
+                response = JSONResponse(
+                    status_code=403,
+                    content={"detail": "CSRF token missing or mismatched"},
+                )
+                await response(scope, receive, send)
+                return
+
+        # For safe methods, set the CSRF cookie if not present
+        needs_cookie = (
+            request.method in _CSRF_SAFE_METHODS
+            and not is_exempt
+            and "csrf_token" not in request.cookies
+        )
+        if needs_cookie:
+            new_token = secrets.token_urlsafe(32)
+
+            async def send_with_cookie(message):
+                if message["type"] == "http.response.start":
+                    headers = list(message.get("headers", []))
+                    cookie_val = (
+                        f"csrf_token={new_token}; Path=/; HttpOnly=false; "
+                        f"SameSite=Strict; Secure"
+                    )
+                    headers.append((b"set-cookie", cookie_val.encode()))
+                    message = {**message, "headers": headers}
+                await send(message)
+
+            await self.app(scope, receive, send_with_cookie)
+        else:
+            await self.app(scope, receive, send)
+
+
+# ---------------------------------------------------------------------------
+# Security headers middleware
+# ---------------------------------------------------------------------------
+
+_SECURITY_HEADERS = [
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"DENY"),
+    (b"strict-transport-security", b"max-age=31536000; includeSubDomains"),
+    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+    (b"content-security-policy", b"default-src 'self'"),
+]
+
+
+class SecurityHeadersMiddleware:
+    """ASGI middleware that adds security headers to every response."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_security_headers(message):
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                headers.extend(_SECURITY_HEADERS)
+                message = {**message, "headers": headers}
+            await send(message)
+
+        await self.app(scope, receive, send_with_security_headers)
+
+
+# ---------------------------------------------------------------------------
 # Structlog request-logging middleware
 # ---------------------------------------------------------------------------
+
+
+class RequestIDMiddleware:
+    """ASGI middleware that generates/propagates X-Request-ID header."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = dict(scope.get("headers", []))
+        request_id = headers.get(b"x-request-id", b"").decode() or str(uuid4())
+        scope.setdefault("state", {})
+
+        async def send_with_request_id(message):
+            if message["type"] == "http.response.start":
+                resp_headers = list(message.get("headers", []))
+                resp_headers.append((b"x-request-id", request_id.encode()))
+                message = {**message, "headers": resp_headers}
+            await send(message)
+
+        await self.app(scope, receive, send_with_request_id)
 
 
 class RequestLoggingMiddleware:
@@ -291,8 +420,8 @@ def create_rest_app() -> FastAPI:
     limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
     app = FastAPI(
-        title="Enthropy Trading Platform API",
-        description="REST API for the Enthropy quant research and trading platform",
+        title="Pyhron Trading Platform API",
+        description="REST API for the Pyhron quant research and trading platform",
         version="0.1.0",
         docs_url="/docs",
         redoc_url="/redoc",
@@ -305,11 +434,20 @@ def create_rest_app() -> FastAPI:
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=_get_settings().allowed_cors_origins.split(","),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Security headers
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # CSRF protection
+    app.add_middleware(CSRFMiddleware)
+
+    # Request ID propagation
+    app.add_middleware(RequestIDMiddleware)
 
     # Structlog request logging
     app.add_middleware(RequestLoggingMiddleware)

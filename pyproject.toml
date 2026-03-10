@@ -144,7 +144,6 @@ select = [
 ]
 ignore = [
     "S101",   # allow assert in tests
-    "S105",   # allow hardcoded password variable names
     "B008",   # function call in default argument (FastAPI Depends pattern)
     "S311",   # allow random for non-cryptographic use
     "RUF002", # allow ambiguous unicode characters in strings
@@ -214,6 +213,7 @@ addopts = [
     "--cov=macro_intelligence",
     "--cov=governance_intelligence",
     "--cov-report=term-missing",
+    "--cov-fail-under=25",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

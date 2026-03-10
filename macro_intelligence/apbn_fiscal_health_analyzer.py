@@ -125,7 +125,7 @@ class APBNFiscalHealthAnalyzer:
             FiscalHealthReport with metrics and risk assessment.
         """
         total_revenue = data.tax_revenue_realized + data.non_tax_revenue_realized
-        data.tax_revenue_budget + data.non_tax_revenue_budget
+        total_budget = data.tax_revenue_budget + data.non_tax_revenue_budget  # noqa: F841
 
         tax_real_pct = data.tax_revenue_realized / data.tax_revenue_budget * 100 if data.tax_revenue_budget > 0 else 0.0
         exp_real_pct = data.expenditure_realized / data.expenditure_budget * 100 if data.expenditure_budget > 0 else 0.0

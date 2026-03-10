@@ -17,10 +17,13 @@ from services.order_management_system.order_state_machine import OrderStateMachi
 from shared.async_database_session import get_session
 from shared.configuration_settings import get_config
 from shared.kafka_producer_consumer import PyhronConsumer, PyhronProducer, Topics
-from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError
+from shared.platform_exception_hierarchy import BrokerConnectionError, BrokerTimeoutError, OrderRejectedError, RiskCheckFailedError
 from shared.proto_generated.equity_orders_pb2 import (
     OrderRequest,
     RiskDecision,
+)
+from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
+    CIRCUIT_BREAKER_KEY,
 )
 from shared.redis_cache_client import get_redis
 from shared.structured_json_logger import get_logger
@@ -126,6 +129,22 @@ class OrderSubmissionHandler:
         Args:
             decision: The RiskDecision protobuf from the risk engine.
         """
+        # Circuit breaker check — must be the FIRST gate before any submission
+        redis = await get_redis()
+        strategy_cb_key = CIRCUIT_BREAKER_KEY.format(entity_id=decision.strategy_id)
+        exchange_cb_key = CIRCUIT_BREAKER_KEY.format(entity_id=decision.exchange)
+        if await redis.get(strategy_cb_key) or await redis.get(exchange_cb_key):
+            logger.warning(
+                "order_blocked_circuit_breaker",
+                client_order_id=decision.client_order_id,
+                strategy_id=decision.strategy_id,
+                exchange=decision.exchange,
+            )
+            raise RiskCheckFailedError(
+                "Circuit breaker is tripped",
+                reasons=["trading_halted"],
+            )
+
         # Only process approved decisions
         if decision.status != RISK_APPROVED:
             logger.debug(
