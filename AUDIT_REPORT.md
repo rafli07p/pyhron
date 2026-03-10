@@ -45,11 +45,14 @@
 - **Risk:** SECURITY — The platform has no functional authentication system. The JWT middleware uses a hardcoded secret and there's no way to legitimately obtain tokens.
 - **Fix:** Implement full auth flow: password hashing with bcrypt, user table queries, JWT token generation with proper claims, refresh token rotation with blacklisting.
 
-### C-5. Trading Endpoints Lack Authorization Enforcement
-- **File:** `apps/api/http_routers/live_trading_position_router.py`
-- **Description:** The `/v1/trading/circuit-breaker/clear` endpoint (line 121) has no role check — anyone with a valid JWT can clear a circuit breaker. Similarly, position/order endpoints have no tenant isolation.
-- **Risk:** SECURITY — Unauthorized users can clear risk controls or view other users' positions.
-- **Fix:** Add `Depends(require_role(Role.ADMIN))` to circuit breaker clear; add tenant_id filtering to all trading queries.
+### C-5. Trading, Strategy, and Backtest Endpoints All Lack Authorization
+- **Files:**
+  - `apps/api/http_routers/live_trading_position_router.py` — positions, orders, P&L, circuit breaker clear
+  - `apps/api/http_routers/strategy_management_router.py` — strategy CRUD, enable/disable
+  - `apps/api/http_routers/backtest_execution_router.py` — backtest submission and results
+- **Description:** None of these routers use authentication dependencies. Any unauthenticated user can: view all positions/orders, clear circuit breakers, create/delete strategies, enable live trading, and submit computationally expensive backtests. No tenant isolation.
+- **Risk:** SECURITY — Complete absence of access control on all trading and strategy management operations. Enables unauthorized trading, data theft, and resource exhaustion via backtest abuse.
+- **Fix:** Add `Depends(require_role(Role.TRADER))` to all trading/strategy endpoints; `Depends(require_role(Role.ADMIN))` to circuit breaker clear and strategy enable/disable; add tenant_id filtering to all queries.
 
 ### C-6. Circuit Breaker Is Advisory Only — Not Enforced in Order Submission
 - **File:** `services/order_management_system/order_submission_handler.py`
@@ -83,11 +86,11 @@
 
 ## HIGH (Fix Within 1 Sprint)
 
-### H-1. CORS Not Configured — Wildcard by Default
-- **File:** `services/api/main.py` (FastAPI app setup)
-- **Description:** No explicit CORS middleware configured. FastAPI defaults to rejecting cross-origin requests, but if CORS is added later without careful configuration, it may default to `allow_origins=["*"]`.
-- **Risk:** SECURITY — If wildcard CORS is enabled, malicious sites could make authenticated API calls.
-- **Fix:** Add explicit CORS middleware with allowed origins whitelist.
+### H-1. CORS Wildcard Origins with Credentials Enabled
+- **File:** `services/api/rest_gateway/__init__.py:305-312`
+- **Description:** `allow_origins=["*"]` combined with `allow_credentials=True`. This allows any website to make authenticated cross-origin requests, enabling session hijacking and unauthorized trading actions.
+- **Risk:** SECURITY — Any malicious site can steal user tokens and execute trades on their behalf.
+- **Fix:** Replace wildcard with explicit allowed origins list: `allow_origins=get_settings().allowed_cors_origins` (e.g., `["https://app.pyhron.com"]`).
 
 ### H-2. IDX FIX Protocol Adapter is Entirely Stub
 - **File:** `services/broker_connectivity/idx_fix_protocol_adapter.py:48-163`
@@ -191,32 +194,45 @@
 - **Description:** JWT token passed as query parameter is logged in access logs — security anti-pattern.
 - **Fix:** Accept token in first WebSocket message or via header.
 
-### M-5. Rate Limiter Race Condition in Redis
+### M-5. No Rate Limiting on Authentication Endpoints
+- **File:** `apps/api/http_routers/user_authentication_router.py:58-88`
+- **Description:** Login, register, and refresh endpoints have no rate limiting. Auth paths are in the `PUBLIC_PATHS` set and bypass the global rate limiter. Enables brute-force password attacks and credential stuffing.
+- **Fix:** Add `@limiter.limit("5/minute")` per IP for login; implement per-account lockout after 3 failed attempts.
+
+### M-6. Rate Limiter Race Condition in Redis
 - **File:** `apps/api/api_middleware/per_ip_rate_limiter.py:65-67`
 - **Description:** `INCR` + separate `EXPIRE` is not atomic. Under high concurrency, keys may never expire.
 - **Fix:** Use Lua script for atomic increment-with-expiry.
 
-### M-6. Database Port Exposure in Docker Compose
+### M-7. No CSRF Protection on State-Changing Endpoints
+- **Description:** The React frontend makes POST/PUT/DELETE requests without CSRF tokens. The FastAPI backend does not validate CSRF tokens. Combined with the CORS wildcard issue (H-1), this enables cross-site request forgery attacks on trading operations.
+- **Fix:** Implement double-submit cookie pattern; add CSRF middleware to FastAPI.
+
+### M-8. Missing HTTP Security Headers
+- **Description:** No Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, HSTS, or Referrer-Policy headers set. Leaves the platform vulnerable to clickjacking, MIME sniffing, and protocol downgrade attacks.
+- **Fix:** Add security headers middleware to FastAPI.
+
+### M-9. Database Port Exposure in Docker Compose
 - **File:** `infra/docker/docker-compose.yaml:26,50,99`
 - **Description:** PostgreSQL (5432), Redis (6379), and Kafka (9092) ports mapped to host.
 - **Fix:** Remove port mappings; access via Docker network only.
 
-### M-7. Incomplete Kubernetes Security Context
+### M-10. Incomplete Kubernetes Security Context
 - **File:** `infra/kubernetes/deployment.yaml:44-48`
 - **Description:** Missing `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false`, and `capabilities.drop: ["ALL"]`.
 - **Fix:** Add full security context.
 
-### M-8. Hardcoded Commodity/Equity Company Profiles
+### M-11. Hardcoded Commodity/Equity Company Profiles
 - **Files:** `commodity_linkage_engine/commodity_sensitivity_models/*.py`
 - **Description:** Coal miner, plantation, energy company profiles with production data and exchange rates hardcoded for 2024. Will become stale.
 - **Fix:** Move to database-backed or config-file-based reference data with quarterly update process.
 
-### M-9. Kelly Criterion Uses Confidence as Win Probability
+### M-12. Kelly Criterion Uses Confidence as Win Probability
 - **File:** `strategy_engine/live_execution/strategy_position_sizer.py:92-111`
 - **Description:** Model confidence score is treated as win probability, which is incorrect. Win/loss ratio is hardcoded at 1.5.
 - **Fix:** Derive win rate and W/L ratio from historical backtest statistics per strategy.
 
-### M-10. Missing Health Checks for Celery Workers
+### M-13. Missing Health Checks for Celery Workers
 - **File:** `infra/docker/docker-compose.yaml`
 - **Description:** `worker` and `beat` services have no health check defined.
 - **Fix:** Add Celery inspect-based health checks.
@@ -305,7 +321,7 @@
 
 | Dimension | Score (1-10) | Key Issues |
 |-----------|:---:|---|
-| **Security** | 3 | Hardcoded JWT secrets (3 locations), stub auth, no CORS config, credentials in scripts |
+| **Security** | 2 | Hardcoded JWT secrets (3 locations), CORS wildcard + credentials, stub auth, no authz on trading endpoints, no CSRF, credentials in scripts |
 | **Trading Logic Correctness** | 4 | Look-ahead bias in backtest, walk-forward broken, conflicting exit logic, advisory-only circuit breaker |
 | **Data Integrity** | 6 | Good DB schema design, tz-aware timestamps, but float VWAP calculation, no data quality validation module |
 | **Code Quality** | 7 | Strong typing, good patterns, structured logging; but float for money in some paths, dead code |
