@@ -82,10 +82,79 @@ jobs:
       - name: Mypy
         run: poetry run mypy apps/ shared/ services/ data_platform/ strategy_engine/ commodity_linkage_engine/ macro_intelligence/ governance_intelligence/ --ignore-missing-imports
 
+  migration-test:
+    name: Migration Test
+    runs-on: ubuntu-latest
+    needs: [lint]
+
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: pyhron
+          POSTGRES_PASSWORD: pyhron
+          POSTGRES_DB: pyhron_migration_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-mig-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            venv-${{ runner.os }}-mig-
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run migrations (upgrade head)
+        env:
+          DATABASE_URL: postgresql+asyncpg://pyhron:pyhron@localhost:5433/pyhron_migration_test
+        run: |
+          poetry run alembic -c data_platform/alembic_migrations/alembic.ini upgrade head
+
+      - name: Validate schema
+        env:
+          DATABASE_URL: postgresql+asyncpg://pyhron:pyhron@localhost:5433/pyhron_migration_test
+        run: |
+          poetry run python scripts/validate_migrations.py
+
+      - name: Test full rollback (downgrade base)
+        env:
+          DATABASE_URL: postgresql+asyncpg://pyhron:pyhron@localhost:5433/pyhron_migration_test
+        run: |
+          poetry run alembic -c data_platform/alembic_migrations/alembic.ini downgrade base
+
+      - name: Test idempotency (upgrade head again)
+        env:
+          DATABASE_URL: postgresql+asyncpg://pyhron:pyhron@localhost:5433/pyhron_migration_test
+        run: |
+          poetry run alembic -c data_platform/alembic_migrations/alembic.ini upgrade head
+
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: [lint]
+    needs: [lint, migration-test]
 
     services:
       postgres:

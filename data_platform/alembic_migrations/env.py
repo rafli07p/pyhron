@@ -8,15 +8,24 @@ from __future__ import annotations
 
 import asyncio
 import os
+from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import pool, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # Import all models so Alembic sees them for autogenerate
-import data_platform.models.market
-import data_platform.models.trading  # noqa: F401
+import data_platform.database_models  # noqa: F401
 from shared.async_database_session import Base
+
+config = context.config
+
+# Override sqlalchemy.url from environment
+if os.environ.get("DATABASE_URL"):
+    config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
 
@@ -41,6 +50,9 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+        compare_server_default=True,
+        include_schemas=True,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -48,7 +60,18 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection) -> None:
     """Execute migrations against a live database connection."""
-    context.configure(connection=connection, target_metadata=target_metadata)
+    # Enable required extensions before any migration runs
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"))
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm CASCADE;"))
+    connection.commit()
+
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_type=True,
+        compare_server_default=True,
+        include_schemas=True,
+    )
     with context.begin_transaction():
         context.run_migrations()
 

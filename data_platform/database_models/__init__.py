@@ -40,9 +40,16 @@ from database_models.strategy_trade_execution_log import (
     StrategyTradeExecutionLog,
     TradeSideEnum,
 )
+from database_models.user import User, UserRole
+from database_models.strategy import Strategy
+from database_models.backtest_run import BacktestRun, BacktestStatus
+from database_models.signal import Signal, SignalType
 
 __all__ = [
     "ActionType",
+    # Backtest
+    "BacktestRun",
+    "BacktestStatus",
     "IdxEquityComputedRatio",
     "IdxEquityCorporateAction",
     "IdxEquityFinancialStatement",
@@ -66,10 +73,18 @@ __all__ = [
     "OrderStatusEnum",
     "OrderTypeEnum",
     "SentimentLabel",
+    # Signals
+    "Signal",
+    "SignalType",
     # Market data - Enums
     "StatementType",
+    # Strategy
+    "Strategy",
     "StrategyPositionSnapshot",
     "StrategyTradeExecutionLog",
     "TimeInForceEnum",
     "TradeSideEnum",
+    # User
+    "User",
+    "UserRole",
 ]
