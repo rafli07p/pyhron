@@ -325,7 +325,7 @@
 | **Trading Logic Correctness** | 4 | Look-ahead bias in backtest, walk-forward broken, conflicting exit logic, advisory-only circuit breaker |
 | **Data Integrity** | 6 | Good DB schema design, tz-aware timestamps, but float VWAP calculation, no data quality validation module |
 | **Code Quality** | 7 | Strong typing, good patterns, structured logging; but float for money in some paths, dead code |
-| **Test Coverage** | 5 | Good OMS/risk unit tests; zero tests for strategies, ingestion, commodity engine, macro intelligence |
+| **Test Coverage** | 4 | ~25-30% estimated coverage; E2E tests disabled; zero tests for strategies, broker adapters, API auth, ingestion; no backtest regression snapshots |
 | **Infrastructure** | 6 | Good K8s/Terraform foundation; unpinned images, exposed ports, incomplete security context |
 | **Performance** | 6 | Proper async patterns, TimescaleDB; but blocking yfinance, no batch inserts, single-threaded executors |
 | **Overall** | **5** | Solid architectural foundation with critical security and correctness gaps blocking production |
@@ -353,17 +353,34 @@
 
 ## MODULES WITH ZERO TEST COVERAGE
 
+**Estimated overall coverage: 25-30%** (33 test files, ~5,600 lines, 450+ test functions)
+**E2E tests all disabled** via `@SKIP_E2E` — never run in CI
+
 | Module | Files | Criticality |
 |--------|-------|-------------|
-| `strategy_engine/idx_*.py` (all 5 strategies) | 5 | HIGH — No strategy logic tests |
-| `strategy_engine/backtesting/` | 4 | HIGH — No backtest engine tests |
+| `strategy_engine/idx_*.py` (all 5 strategies) | 5 | HIGH — No signal generation, parameter edge case, or regime tests |
+| `strategy_engine/backtesting/` | 4 | HIGH — No backtest engine or walk-forward tests; no regression snapshots |
 | `strategy_engine/live_execution/` | 2 | HIGH — No position sizer / signal publisher tests |
-| `commodity_linkage_engine/` | 12 | MEDIUM — No commodity sensitivity model tests (except `cpo_plantation`) |
+| `services/broker_connectivity/` | 4 | HIGH — No broker adapter tests (Alpaca, IDX FIX) |
+| `services/execution/` | 4 | HIGH — No exchange connector, order router, or trade matching tests |
+| `services/order_management_system/` (handlers) | 4 | HIGH — OMS state machine tested, but submission handler, fill processor, timeout monitor untested |
+| `services/pre_trade_risk_engine/` (engine) | 3 | MEDIUM — Individual checks tested, but circuit breaker manager, VaR calculator, Kafka consumer untested |
+| `apps/api/api_middleware/` | 4 | HIGH — No middleware tests (JWT validation, rate limiter, subscription tier) |
+| `apps/api/http_routers/` | 12 | HIGH — No endpoint tests; no auth flow tests at all |
+| `data_platform/*_ingestion/` | 20+ | MEDIUM — No ingestion pipeline tests |
+| `commodity_linkage_engine/` | 12 | MEDIUM — Only `cpo_plantation` sensitivity tested |
 | `governance_intelligence/` | 5 | LOW — No governance analyzer tests |
 | `macro_intelligence/` | 5 | LOW — No macro analysis tests |
-| `data_platform/*_ingestion/` | 20+ | MEDIUM — No ingestion pipeline tests |
-| `apps/api/api_middleware/` | 4 | HIGH — No middleware tests (JWT, rate limiter) |
-| `apps/api/http_routers/` | 12 | HIGH — No router endpoint tests |
+
+### What IS Well-Tested
+- Order state machine transitions (2 dedicated test files, exhaustive valid/invalid path coverage)
+- Pre-trade risk checks (position limits, concentration, buying power, lot size — excellent edge cases)
+- P&L engine (553 lines — realized/unrealized PnL, fees, fractional quantities, uses Decimal correctly)
+- OHLCV quality validation (high/low ordering, zero prices, doji bars, timestamp ordering)
+- Encryption (AES-256-GCM roundtrip, tampering detection, key rotation, UU PDP compliance)
+- IDX trading calendar (weekends, 11 Indonesian holidays, T+2 settlement)
+- Transaction cost model (buy 0.15%, sell 0.25%, lot rounding)
+- Risk limit schemas (Pydantic validation with Decimal, boundary conditions)
 
 ---
 
