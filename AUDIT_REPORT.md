@@ -241,8 +241,9 @@
 
 ## LOW (Tech Debt / Nice-to-Have)
 
-### L-1. Copyright/Name Inconsistency
+### L-1. Copyright/Name Inconsistency & Documentation Stale References
 - `LICENSE:3` says "Enthropy" but project is "Pyhron". `.gitignore:2` also says "Enthropy".
+- All docs reference `src/enthropy/` import paths that don't exist (see Documentation Discrepancies D-1, D-3).
 
 ### L-2. docker-compose.override.yml in .gitignore but Tracked in Repo
 - Contradiction between `.gitignore` (line 68) and the file existing in version control.
@@ -270,6 +271,35 @@
 
 ### L-10. Missing Request ID Propagation
 - No `X-Request-ID` header tracking through the request lifecycle for distributed tracing.
+
+---
+
+## DOCUMENTATION DISCREPANCIES
+
+### D-1. System Name Mismatch — "Enthropy" vs "Pyhron"
+- Documentation references "**Enthropy**" in 20+ locations (API docs, compliance guides, architecture overview)
+- Actual codebase is named "**Pyhron**" (repository, Docker containers, config files)
+- Docs reference `src/enthropy/` import paths (e.g., `from enthropy.compliance.engine import ComplianceEngine`) but actual code lives at `/services/risk/compliance/`
+- **Impact:** Onboarding confusion; import paths in compliance/API docs are non-functional
+
+### D-2. ADR #006 (vectorbt) Status Incorrect
+- Marked as **"Proposed"** but implementation is fully built at `strategy_engine/backtesting/idx_vectorbt_backtest_engine.py`
+- Should be updated to **"Accepted"**
+
+### D-3. Documented Paths Don't Match Actual Structure
+- Docs reference `src/enthropy/shared/encryption/service.py` — actual encryption code at `shared/encryption/` (if it exists) or `data_platform/encryption/` (empty stub)
+- Docs reference `src/enthropy/compliance/data_subject.py` — actual compliance code at `services/risk/compliance/__init__.py`
+- Getting started guide references `src/enthropy/backtest/` — actual location is `strategy_engine/backtesting/`
+
+### D-4. Features Documented but Not Implemented
+- **gRPC support** — Architecture docs say "gRPC (future)" but no gRPC code exists
+- **Polygon.io API** — Getting started mentions Polygon as a data source, but `.env.example` only has EODHD
+- **Alpaca US trading** — Docs reference Alpaca for US markets, but platform is IDX-focused
+
+### D-5. Operational Runbook — Good Practices
+- No hardcoded secrets in runbook (uses `registry.example.com` placeholder) ✓
+- `.env.example` uses `REPLACE-with-*` placeholders for all sensitive values ✓
+- Commands use dynamic values (`$(git rev-parse --short HEAD)`) ✓
 
 ---
 
