@@ -8,6 +8,7 @@ state machine to PARTIAL_FILL or FILLED status.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
@@ -120,14 +121,20 @@ class OrderFillEventProcessor:
         current_filled: int = order.filled_quantity or 0
         cumulative_filled: int = current_filled + fill.filled_quantity
 
-        # Compute volume-weighted average price
-        current_avg: float = order.avg_fill_price or 0.0
+        # Compute volume-weighted average price using Decimal to avoid
+        # floating-point precision errors in financial arithmetic.
+        current_avg = Decimal(str(order.avg_fill_price)) if order.avg_fill_price else Decimal("0")
+        filled_price = Decimal(str(fill.filled_price))
+        filled_quantity = Decimal(str(fill.filled_quantity))
+        current_filled_dec = Decimal(str(current_filled))
+        cumulative_filled_dec = Decimal(str(cumulative_filled))
         if cumulative_filled > 0:
-            new_avg_price: float = (
-                (current_avg * current_filled) + (fill.filled_price * fill.filled_quantity)
-            ) / cumulative_filled
+            new_avg_price_dec = (
+                (current_avg * current_filled_dec) + (filled_price * filled_quantity)
+            ) / cumulative_filled_dec
         else:
-            new_avg_price = fill.filled_price
+            new_avg_price_dec = filled_price
+        new_avg_price: float = float(new_avg_price_dec)
 
         # Determine target status
         target_status = OrderStatusEnum.FILLED if cumulative_filled >= order.quantity else OrderStatusEnum.PARTIAL_FILL

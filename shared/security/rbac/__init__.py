@@ -1,4 +1,4 @@
-"""Role-Based Access Control (RBAC) for the Enthropy platform.
+"""Role-Based Access Control (RBAC) for the Pyhron platform.
 
 Provides role and permission enumerations, a ``require_role`` FastAPI
 dependency, and a ``check_permission`` helper for imperative checks.

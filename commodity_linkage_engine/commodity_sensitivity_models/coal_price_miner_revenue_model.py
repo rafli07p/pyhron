@@ -3,6 +3,9 @@
 Models the impact of HBA (Harga Batubara Acuan) price changes on
 Indonesian coal mining companies listed on IDX.
 
+# TODO: Move hardcoded company profiles and production data to database-backed
+# or config-file-based reference data with quarterly update process.
+
 Key regulatory features:
   - Royalty rates are progressive based on coal calorie value and
     mine type (open pit vs underground).

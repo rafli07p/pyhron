@@ -64,7 +64,9 @@ class StrategyPositionSizer:
         kelly_scale: Fraction of full Kelly to use (default 0.25 = quarter Kelly).
         max_position_pct: Maximum single-position weight (default 10%).
         max_portfolio_heat: Maximum total portfolio allocation (default 95%).
-        expected_win_loss_ratio: Assumed average win/loss ratio.
+        win_rate: Historical win probability from backtest statistics (default 0.5).
+            Should be derived from actual backtest results, not signal confidence.
+        win_loss_ratio: Average win/loss ratio from backtest statistics (default 1.5).
         lot_size: IDX lot size (default 100).
     """
 
@@ -73,13 +75,15 @@ class StrategyPositionSizer:
         kelly_scale: float = 0.25,
         max_position_pct: float = 0.10,
         max_portfolio_heat: float = 0.95,
-        expected_win_loss_ratio: float = 1.5,
+        win_rate: float = 0.5,
+        win_loss_ratio: float = 1.5,
         lot_size: int = _IDX_LOT_SIZE,
     ) -> None:
         self._kelly_scale = kelly_scale
         self._max_position_pct = max_position_pct
         self._max_portfolio_heat = max_portfolio_heat
-        self._win_loss_ratio = expected_win_loss_ratio
+        self._win_rate = win_rate
+        self._win_loss_ratio = win_loss_ratio
         self._lot_size = lot_size
 
         logger.info(
@@ -90,18 +94,24 @@ class StrategyPositionSizer:
         )
 
     def compute_kelly_fraction(self, confidence: float) -> float:
-        """Compute Kelly fraction from signal confidence.
+        """Compute Kelly fraction using historical win rate.
 
         Kelly formula: f* = p - (1 - p) / b
-        where p = win probability (confidence), b = win/loss ratio.
+        where p = win probability (from backtest win_rate), b = win/loss ratio.
+
+        Note:
+            ``win_rate`` should be derived from historical backtest statistics,
+            not from per-signal confidence. The ``confidence`` parameter is
+            accepted for API compatibility but is not used in the Kelly
+            calculation.
 
         Args:
-            confidence: Signal confidence in [0, 1] as win probability.
+            confidence: Signal confidence in [0, 1] (unused in Kelly calc).
 
         Returns:
             Kelly fraction (may be negative if edge is insufficient).
         """
-        p = max(0.0, min(1.0, confidence))
+        p = max(0.0, min(1.0, self._win_rate))
         q = 1.0 - p
         b = self._win_loss_ratio
 

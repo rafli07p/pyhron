@@ -1,4 +1,4 @@
-"""Enthropy shared security module.
+"""Pyhron shared security module.
 
 Re-exports authentication, RBAC, and audit logging utilities::
 

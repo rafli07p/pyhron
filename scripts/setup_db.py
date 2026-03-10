@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Database setup script for the Enthropy Trading Platform.
+Database setup script for the Pyhron Trading Platform.
 
 Creates database tables, runs Alembic migrations, and sets up initial
 schema including indices, partitions, and extensions.
@@ -34,15 +34,14 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
-logger = logging.getLogger("enthropy.setup_db")
+logger = logging.getLogger("pyhron.setup_db")
 
 # =============================================================================
 # Configuration
 # =============================================================================
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql+asyncpg://enthropy:enthropy_secret@localhost:5432/enthropy",
-)
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required. Example: postgresql+asyncpg://user:pass@localhost:5432/dbname")
 SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")
 
 REQUIRED_EXTENSIONS = [
@@ -409,7 +408,7 @@ async def full_setup() -> None:
 
 def main() -> None:
     """Entry point for the setup script."""
-    parser = argparse.ArgumentParser(description="Enthropy Database Setup")
+    parser = argparse.ArgumentParser(description="Pyhron Database Setup")
     parser.add_argument(
         "--migrate-only",
         action="store_true",

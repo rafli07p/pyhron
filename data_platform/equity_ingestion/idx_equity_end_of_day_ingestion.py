@@ -278,27 +278,31 @@ class IDXEquityEODIngester:
         end_date: date,
     ) -> list[dict[str, Any]]:
         """Fetch from yfinance as fallback source."""
-        import yfinance as yf
 
-        ticker = yf.Ticker(f"{symbol}.JK")
-        hist = ticker.history(
-            start=start_date.isoformat(),
-            end=end_date.isoformat(),
-        )
-        rows: list[dict[str, Any]] = []
-        for ts, row in hist.iterrows():
-            rows.append(
-                {
-                    "time": ts.strftime("%Y-%m-%d"),
-                    "open": Decimal(str(round(row["Open"], 6))),
-                    "high": Decimal(str(round(row["High"], 6))),
-                    "low": Decimal(str(round(row["Low"], 6))),
-                    "close": Decimal(str(round(row["Close"], 6))),
-                    "adjusted_close": Decimal(str(round(row["Close"], 6))),
-                    "volume": int(row["Volume"]),
-                }
+        def _sync_yfinance_fetch() -> list[dict[str, Any]]:
+            import yfinance as yf
+
+            ticker = yf.Ticker(f"{symbol}.JK")
+            hist = ticker.history(
+                start=start_date.isoformat(),
+                end=end_date.isoformat(),
             )
-        return rows
+            sync_rows: list[dict[str, Any]] = []
+            for ts, row in hist.iterrows():
+                sync_rows.append(
+                    {
+                        "time": ts.strftime("%Y-%m-%d"),
+                        "open": Decimal(str(round(row["Open"], 6))),
+                        "high": Decimal(str(round(row["High"], 6))),
+                        "low": Decimal(str(round(row["Low"], 6))),
+                        "close": Decimal(str(round(row["Close"], 6))),
+                        "adjusted_close": Decimal(str(round(row["Close"], 6))),
+                        "volume": int(row["Volume"]),
+                    }
+                )
+            return sync_rows
+
+        return await asyncio.to_thread(_sync_yfinance_fetch)
 
     # ── Validation ───────────────────────────────────────────────────────
 

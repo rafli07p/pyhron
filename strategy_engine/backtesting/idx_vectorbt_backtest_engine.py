@@ -119,11 +119,19 @@ class IDXVectorbtBacktestEngine:
         target_weights = pd.DataFrame(0.0, index=close.index, columns=close.columns)
 
         for rdate in rebalance_dates:
-            hist = market_data.loc[market_data.index.get_level_values(0) <= rdate]
+            # Use strict less-than to avoid look-ahead bias: signals are
+            # generated from data *before* rdate, not including rdate itself.
+            hist = market_data.loc[market_data.index.get_level_values(0) < rdate]
             signals = await strategy.generate_signals(hist, rdate)
+            # Apply weights starting from the next bar after rdate to prevent
+            # trading on the same bar used for signal generation.
+            future_dates = close.index[close.index > rdate]
+            if len(future_dates) == 0:
+                continue
+            next_bar = future_dates[0]
             for sig in signals:
                 if sig.symbol in target_weights.columns:
-                    target_weights.loc[rdate:, sig.symbol] = sig.target_weight
+                    target_weights.loc[next_bar:, sig.symbol] = sig.target_weight
 
         # Apply lot-size rounding.
         shares = (target_weights * self._initial_capital) / close

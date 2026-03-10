@@ -22,8 +22,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ../../infra/init-timescaledb.sql:/docker-entrypoint-initdb.d/001-timescaledb.sql:ro
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # ports:
+    #   - "${POSTGRES_PORT:-5432}:5432"  # Accessible via Docker network; no host exposure needed
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pyhron} -d ${POSTGRES_DB:-pyhron}"]
       interval: 5s
@@ -46,8 +46,8 @@ services:
         --maxmemory-policy allkeys-lru
     volumes:
       - redisdata:/data
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    # ports:
+    #   - "${REDIS_PORT:-6379}:6379"  # Accessible via Docker network; no host exposure needed
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -95,8 +95,8 @@ services:
       KAFKA_MESSAGE_MAX_BYTES: 10485760
     volumes:
       - kafkadata:/var/lib/kafka/data
-    ports:
-      - "${KAFKA_PORT:-9092}:9092"
+    # ports:
+    #   - "${KAFKA_PORT:-9092}:9092"  # Accessible via Docker network; no host exposure needed
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 10s
@@ -173,6 +173,12 @@ services:
       DATABASE_SYNC_URL: postgresql+psycopg://${POSTGRES_USER:-pyhron}:${POSTGRES_PASSWORD:-pyhron}@postgres:5432/${POSTGRES_DB:-pyhron}
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
+    healthcheck:
+      test: ["CMD", "celery", "-A", "shared.celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # ---------------------------------------------------------------------------
   # Celery Beat — Scheduler
@@ -191,6 +197,12 @@ services:
       celery -A data_platform.tasks.celery_tasks:celery_app beat
         --loglevel=info
         --scheduler celery.beat:PersistentScheduler
+    healthcheck:
+      test: ["CMD", "celery", "-A", "shared.celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   # ---------------------------------------------------------------------------
   # MLflow — ML experiment tracking

@@ -1,7 +1,7 @@
 # =============================================================================
 # Pyhron Celery Worker — Multi-Stage Dockerfile
 # =============================================================================
-FROM python:3.12-slim AS builder
+FROM python:3.12.8-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -36,7 +36,7 @@ COPY governance_intelligence/ ./governance_intelligence/
 RUN poetry install --only main
 
 # ---------------------------------------------------------------------------
-FROM python:3.12-slim AS runtime
+FROM python:3.12.8-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1

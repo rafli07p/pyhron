@@ -168,8 +168,16 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
             return []
 
         # Cross-sectional z-scores.
-        pbv_z = -(fundamentals["pbv"] - fundamentals["pbv"].mean()) / (fundamentals["pbv"].std() + 1e-9)
-        roe_z = (fundamentals["roe"] - fundamentals["roe"].mean()) / (fundamentals["roe"].std() + 1e-9)
+        pbv_std = fundamentals["pbv"].std()
+        roe_std = fundamentals["roe"].std()
+        if pbv_std < 1e-6:
+            pbv_z = pd.Series(0.0, index=fundamentals.index)
+        else:
+            pbv_z = -(fundamentals["pbv"] - fundamentals["pbv"].mean()) / (pbv_std + 1e-6)
+        if roe_std < 1e-6:
+            roe_z = pd.Series(0.0, index=fundamentals.index)
+        else:
+            roe_z = (fundamentals["roe"] - fundamentals["roe"].mean()) / (roe_std + 1e-6)
 
         composite = self._pbv_weight * pbv_z + self._roe_weight * roe_z
 

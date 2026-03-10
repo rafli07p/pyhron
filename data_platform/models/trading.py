@@ -9,6 +9,14 @@ Tables:
 
 from __future__ import annotations
 
+import warnings
+
+warnings.warn(
+    "data_platform.models.trading is deprecated. Use data_platform.database_models instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import enum
 import uuid
 from decimal import Decimal

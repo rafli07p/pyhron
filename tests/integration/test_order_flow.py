@@ -39,10 +39,9 @@ SKIP_INTEGRATION = pytest.mark.skipif(
     reason="SKIP_INTEGRATION is set.",
 )
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql+asyncpg://enthropy:enthropy_secret@localhost:5432/enthropy_test",
-)
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+if not DATABASE_URL:
+    DATABASE_URL = "postgresql+asyncpg://pyhron:pyhron@localhost:5432/pyhron_test"
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/1")
 API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:8000")
 

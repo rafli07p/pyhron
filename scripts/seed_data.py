@@ -37,7 +37,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
-logger = logging.getLogger("enthropy.seed_data")
+logger = logging.getLogger("pyhron.seed_data")
 
 # =============================================================================
 # Configuration
@@ -67,14 +67,10 @@ DEFAULT_SYMBOLS = {
     "fx": ["USDIDR=X", "EURUSD=X"],
 }
 
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql+asyncpg://enthropy:enthropy_secret@localhost:5432/enthropy",
-)
-SYNC_DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://enthropy:enthropy_secret@localhost:5432/enthropy",
-).replace("+asyncpg", "")
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required. Example: postgresql+asyncpg://user:pass@localhost:5432/dbname")
+SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")
 DEFAULT_TENANT = "dev"
 
 
@@ -309,7 +305,7 @@ def get_symbol_list(args: argparse.Namespace) -> list[str]:
 
 def main() -> None:
     """Entry point for the seed data script."""
-    parser = argparse.ArgumentParser(description="Seed historical market data for Enthropy development")
+    parser = argparse.ArgumentParser(description="Seed historical market data for Pyhron development")
     parser.add_argument(
         "--symbols",
         nargs="+",

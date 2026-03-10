@@ -7,11 +7,11 @@ Stock Exchange, including sector classification and listing lifecycle dates.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from sqlalchemy import BigInteger, Boolean, Date, Index, Integer, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -55,7 +55,18 @@ class IdxEquityInstrument(Base):
     delisting_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()", onupdate=datetime.utcnow
+        TIMESTAMP(timezone=True), server_default="now()", onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    # ── Relationships ────────────────────────────────────────────────────────
+    financial_statements = relationship(
+        "IdxEquityFinancialStatement", back_populates="instrument", lazy="selectin"
+    )
+    corporate_actions = relationship(
+        "IdxEquityCorporateAction", back_populates="instrument", lazy="selectin"
+    )
+    computed_ratios = relationship(
+        "IdxEquityComputedRatio", back_populates="instrument", lazy="selectin"
     )
 
     __table_args__ = (

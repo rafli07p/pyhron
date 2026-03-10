@@ -174,27 +174,11 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
         Returns:
             Possible CLOSE signals for mean-reverted positions.
         """
-        signals: list[StrategySignal] = []
-
-        if bar.symbol in self._open_positions:
-            # Simplified exit check: if bar's close is above the entry price
-            # (proxy for middle band hit) — real logic lives in generate_signals
-            entry_price = self._open_positions[bar.symbol]
-            if bar.close >= entry_price * 1.02:
-                signals.append(
-                    StrategySignal(
-                        symbol=bar.symbol,
-                        direction=SignalDirection.CLOSE,
-                        target_weight=0.0,
-                        confidence=0.8,
-                        strategy_id=self._strategy_id,
-                        generated_at=bar.timestamp,
-                        metadata={"exit_reason": "middle_band_proxy"},
-                    )
-                )
-                del self._open_positions[bar.symbol]
-
-        return signals
+        # Exit logic is consolidated in _compute_bollinger_signals() which
+        # uses the middle band (SMA) as the canonical exit rule.  The previous
+        # 2% profit-target exit here was removed to avoid conflicting with the
+        # middle-band exit and to keep a single source of truth for exits.
+        return []
 
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
         """No-op for a daily-rebalance mean-reversion strategy.

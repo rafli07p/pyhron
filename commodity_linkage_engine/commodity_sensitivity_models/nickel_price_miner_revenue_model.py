@@ -3,6 +3,9 @@
 Models the impact of LME nickel price changes on Indonesian nickel
 producers listed on IDX.
 
+# TODO: Move hardcoded company profiles and production data to database-backed
+# or config-file-based reference data with quarterly update process.
+
 Product mix matters significantly:
   - INCO: Nickel matte (high-grade, strong LME correlation ~0.85).
   - ANTM: Ferronickel (partial LME correlation ~0.55, also gold/bauxite).

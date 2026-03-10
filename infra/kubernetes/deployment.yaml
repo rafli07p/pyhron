@@ -1,5 +1,5 @@
 # =============================================================================
-# Enthropy API - Kubernetes Deployment, Service, and HPA
+# Pyhron API - Kubernetes Deployment, Service, and HPA
 # =============================================================================
 # Apply: kubectl apply -f infra/kubernetes/namespace.yaml
 #        kubectl apply -f infra/kubernetes/deployment.yaml
@@ -9,12 +9,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: enthropy-api
-  namespace: enthropy
+  name: pyhron-api
+  namespace: pyhron
   labels:
-    app: enthropy-api
+    app: pyhron-api
     component: backend
-    part-of: enthropy-platform
+    part-of: pyhron-platform
     version: "1.0.0"
   annotations:
     kubernetes.io/change-cause: "Initial deployment"
@@ -28,24 +28,29 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: enthropy-api
+      app: pyhron-api
   template:
     metadata:
       labels:
-        app: enthropy-api
+        app: pyhron-api
         component: backend
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
-      serviceAccountName: enthropy-api
+      serviceAccountName: pyhron-api
       terminationGracePeriodSeconds: 60
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
         runAsGroup: 1001
         fsGroup: 1001
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - "ALL"
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -56,11 +61,11 @@ spec:
                     - key: app
                       operator: In
                       values:
-                        - enthropy-api
+                        - pyhron-api
                 topologyKey: kubernetes.io/hostname
       containers:
-        - name: enthropy-api
-          image: enthropy-api:latest
+        - name: pyhron-api
+          image: pyhron-api:latest
           imagePullPolicy: Always
           ports:
             - name: http
@@ -70,32 +75,32 @@ spec:
             - name: ENVIRONMENT
               valueFrom:
                 configMapKeyRef:
-                  name: enthropy-config
+                  name: pyhron-config
                   key: environment
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: enthropy-secrets
+                  name: pyhron-secrets
                   key: database-url
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
-                  name: enthropy-secrets
+                  name: pyhron-secrets
                   key: redis-url
             - name: KAFKA_BOOTSTRAP_SERVERS
               valueFrom:
                 configMapKeyRef:
-                  name: enthropy-config
+                  name: pyhron-config
                   key: kafka-bootstrap-servers
             - name: ENCRYPTION_KEY
               valueFrom:
                 secretKeyRef:
-                  name: enthropy-secrets
+                  name: pyhron-secrets
                   key: encryption-key
             - name: LOG_LEVEL
               valueFrom:
                 configMapKeyRef:
-                  name: enthropy-config
+                  name: pyhron-config
                   key: log-level
           resources:
             requests:
@@ -146,15 +151,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: enthropy-api
-  namespace: enthropy
+  name: pyhron-api
+  namespace: pyhron
   labels:
-    app: enthropy-api
+    app: pyhron-api
     component: backend
 spec:
   type: ClusterIP
   selector:
-    app: enthropy-api
+    app: pyhron-api
   ports:
     - name: http
       port: 80
@@ -166,15 +171,15 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: enthropy-api-hpa
-  namespace: enthropy
+  name: pyhron-api-hpa
+  namespace: pyhron
   labels:
-    app: enthropy-api
+    app: pyhron-api
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: enthropy-api
+    name: pyhron-api
   minReplicas: 2
   maxReplicas: 20
   behavior:
@@ -220,19 +225,19 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: enthropy-api
-  namespace: enthropy
+  name: pyhron-api
+  namespace: pyhron
   labels:
-    app: enthropy-api
+    app: pyhron-api
 
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: enthropy-api-pdb
-  namespace: enthropy
+  name: pyhron-api-pdb
+  namespace: pyhron
 spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app: enthropy-api
+      app: pyhron-api

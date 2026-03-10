@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Index, Numeric, String
+from sqlalchemy import BigInteger, CheckConstraint, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -63,4 +63,6 @@ class IdxEquityOhlcvTick(Base):
             "symbol",
             time.desc(),
         ),
+        CheckConstraint("high >= low", name="ck_ohlcv_high_gte_low"),
+        CheckConstraint("volume IS NULL OR volume >= 0", name="ck_ohlcv_volume_non_negative"),
     )

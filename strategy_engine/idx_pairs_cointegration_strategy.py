@@ -124,6 +124,15 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
             num_pairs=len(self._pairs),
         )
 
+    def reset(self) -> None:
+        """Clear Kalman filter state to avoid stale hedge ratios across runs.
+
+        Call this at the beginning of a backtest formation period or whenever
+        historical data is being re-processed from scratch.
+        """
+        self._kalman_filters.clear()
+        logger.info("pairs_strategy_kalman_filters_reset", strategy_id=self._strategy_id)
+
     def get_parameters(self) -> StrategyParameters:
         universe = list({s for pair in self._pairs for s in pair})
         return StrategyParameters(
@@ -141,6 +150,7 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
 
     async def generate_signals(self, market_data: pd.DataFrame, as_of_date: datetime) -> list[StrategySignal]:
         logger.info("pairs_signal_generation_start", as_of_date=as_of_date.isoformat())
+        self.reset()
         try:
             return self._compute_pairs_signals(market_data, as_of_date)
         except (KeyError, ValueError) as exc:

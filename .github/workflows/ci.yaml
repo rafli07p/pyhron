@@ -81,7 +81,6 @@ jobs:
 
       - name: Mypy
         run: poetry run mypy apps/ shared/ services/ data_platform/ strategy_engine/ commodity_linkage_engine/ macro_intelligence/ governance_intelligence/ --ignore-missing-imports
-        continue-on-error: true
 
   test:
     name: Test
@@ -177,13 +176,11 @@ jobs:
 
       - name: Check for known vulnerabilities
         run: pip install pip-audit && pip-audit
-        continue-on-error: true
 
       - name: Check for secrets
         uses: trufflesecurity/trufflehog@main
         with:
           extra_args: --only-verified
-        continue-on-error: true
 
   docker-build:
     name: Docker Build

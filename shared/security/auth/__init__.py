@@ -1,4 +1,4 @@
-"""JWT authentication utilities for the Enthropy platform.
+"""JWT authentication utilities for the Pyhron platform.
 
 Provides token creation, verification, and password hashing using
 :pypi:`PyJWT` and :pypi:`passlib`.  Designed to be used as FastAPI

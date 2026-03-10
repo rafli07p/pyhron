@@ -223,12 +223,14 @@ class PyhronConsumer[ProtoT: Message]:
         proto_type: type[ProtoT],
         group_id: str,
         dlq_topic: str | None = None,
+        auto_offset_reset: str = "latest",
     ) -> None:
         self._bootstrap_servers = bootstrap_servers
         self._topic = topic
         self._proto_type = proto_type
         self._group_id = group_id
         self._dlq_topic = dlq_topic
+        self._auto_offset_reset = auto_offset_reset
         self._consumer: AIOKafkaConsumer | None = None
         self._dlq_producer: PyhronProducer | None = None
 
@@ -238,7 +240,7 @@ class PyhronConsumer[ProtoT: Message]:
             self._topic,
             bootstrap_servers=self._bootstrap_servers,
             group_id=self._group_id,
-            auto_offset_reset="earliest",
+            auto_offset_reset=self._auto_offset_reset,
             enable_auto_commit=False,
         )
         await self._consumer.start()

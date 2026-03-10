@@ -55,6 +55,8 @@ class WalkForwardFold:
     oos_end: datetime
     oos_result: BacktestResult
     oos_metrics: dict[str, float] = field(default_factory=dict)
+    is_metrics: dict[str, float] = field(default_factory=dict)
+    is_oos_degradation: float = 0.0
 
 
 @dataclass
@@ -139,8 +141,17 @@ class IDXWalkForwardValidator:
             oos_start = is_end + timedelta(days=1)
             oos_end = oos_start + timedelta(days=self._oos_months * 30)
 
+            # Run backtest on the in-sample window for performance comparison
+            is_result = await self._engine.run(strategy, market_data, is_start, is_end)
+            is_metrics = self._metrics.compute_all(is_result.returns)
+
             oos_result = await self._engine.run(strategy, market_data, oos_start, oos_end)
             oos_metrics = self._metrics.compute_all(oos_result.returns)
+
+            # Compute IS/OOS performance degradation ratio (OOS Sharpe / IS Sharpe)
+            is_sharpe = is_metrics.get("sharpe_ratio", 0.0)
+            oos_sharpe = oos_metrics.get("sharpe_ratio", 0.0)
+            degradation = oos_sharpe / is_sharpe if is_sharpe != 0.0 else 0.0
 
             fold = WalkForwardFold(
                 fold_index=i,
@@ -150,6 +161,8 @@ class IDXWalkForwardValidator:
                 oos_end=oos_end,
                 oos_result=oos_result,
                 oos_metrics=oos_metrics,
+                is_metrics=is_metrics,
+                is_oos_degradation=round(degradation, 4),
             )
             folds.append(fold)
             all_oos_returns.append(oos_result.returns)

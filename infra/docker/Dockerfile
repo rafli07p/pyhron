@@ -1,14 +1,14 @@
 # =============================================================================
-# Enthropy Trading Platform - Multi-Stage Dockerfile
+# Pyhron Trading Platform - Multi-Stage Dockerfile
 # =============================================================================
-# Build:  docker build -t enthropy-api:latest -f infra/docker/Dockerfile .
-# Run:    docker run -p 8000:8000 enthropy-api:latest
+# Build:  docker build -t pyhron-api:latest -f infra/docker/Dockerfile .
+# Run:    docker run -p 8000:8000 pyhron-api:latest
 # =============================================================================
 
 # ---------------------------------------------------------------------------
 # Stage 1: Install dependencies with Poetry
 # ---------------------------------------------------------------------------
-FROM python:3.12-slim AS builder
+FROM python:3.12.8-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -49,10 +49,10 @@ RUN poetry install --only main
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
 # ---------------------------------------------------------------------------
-FROM python:3.12-slim AS runtime
+FROM python:3.12.8-slim AS runtime
 
-LABEL maintainer="Enthropy Engineering <eng@enthropy.dev>" \
-      description="Enthropy Quantitative Trading Platform API" \
+LABEL maintainer="Pyhron Engineering <eng@pyhron.dev>" \
+      description="Pyhron Quantitative Trading Platform API" \
       version="0.1.0"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

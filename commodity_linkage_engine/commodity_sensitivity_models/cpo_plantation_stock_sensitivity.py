@@ -3,6 +3,9 @@
 Detailed model mapping CPO price movements to revenue and earnings
 impact for Indonesian listed plantation companies.
 
+# TODO: Move hardcoded company profiles and production data to database-backed
+# or config-file-based reference data with quarterly update process.
+
 Revenue model per company:
     revenue_delta = plantation_area_ha * ffb_yield_ton_per_ha * oer
                     * cpo_price_change_per_ton * (1 - hedging_ratio)
