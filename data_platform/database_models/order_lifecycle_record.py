@@ -10,7 +10,7 @@ import enum
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Index, Numeric, String
+from sqlalchemy import BigInteger, CheckConstraint, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -127,6 +127,7 @@ class OrderLifecycleRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (
+        CheckConstraint("filled_quantity <= quantity", name="ck_orders_filled_lte_quantity"),
         Index(
             "ix_order_lifecycle_records_strategy_created",
             "strategy_id",

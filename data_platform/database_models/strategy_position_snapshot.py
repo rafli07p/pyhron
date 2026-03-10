@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Numeric, String, UniqueConstraint
+from sqlalchemy import BigInteger, CheckConstraint, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -51,4 +51,7 @@ class StrategyPositionSnapshot(Base):
     market_value: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     last_updated: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    __table_args__ = (UniqueConstraint("strategy_id", "symbol", "exchange"),)
+    __table_args__ = (
+        CheckConstraint("quantity >= 0", name="ck_positions_quantity_non_negative"),
+        UniqueConstraint("strategy_id", "symbol", "exchange"),
+    )
