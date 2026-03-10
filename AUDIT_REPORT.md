@@ -71,12 +71,13 @@
   current_avg = Decimal(str(order.avg_fill_price)) if order.avg_fill_price else Decimal("0")
   ```
 
-### C-8. Hardcoded Database Credentials in Scripts
+### C-8. Hardcoded Database Credentials in Scripts and Alembic Config
 - **Files:**
   - `scripts/setup_db.py:44` — `postgresql+asyncpg://enthropy:enthropy_secret@localhost:5432/enthropy`
   - `scripts/seed_data.py:72-76` — Same credentials
+  - `data_platform/alembic_migrations/alembic.ini:3` — `postgresql+asyncpg://pyhron:pyhron@postgres:5432/pyhron`
 - **Risk:** SECURITY — Credentials committed to source control.
-- **Fix:** Remove all default credentials; require explicit `DATABASE_URL` environment variable with validation.
+- **Fix:** Remove all default credentials; require explicit `DATABASE_URL` environment variable with validation. In alembic.ini, use `%(DATABASE_URL)s` interpolation or leave blank (env.py already has env var fallback).
 
 ---
 
@@ -136,7 +137,31 @@
 - **Risk:** SECURITY — Supply chain attack vector; unreproducible builds.
 - **Fix:** Pin all images to specific SHA256 digests.
 
-### H-10. Synchronous yfinance Call Blocks Async Event Loop
+### H-10. Duplicate ORM Model Definitions Create Schema Mismatch Risk
+- **Files:** `data_platform/database_models/*.py` vs `data_platform/models/market.py` and `data_platform/models/trading.py`
+- **Description:** Two parallel sets of ORM models exist with different table names (e.g., `idx_equity_instruments` in migrations vs `instruments` in `models/market.py`). Creates maintenance burden, import confusion, and potential schema drift.
+- **Risk:** DATA INTEGRITY — Code may write to wrong table or use wrong schema.
+- **Fix:** Consolidate to a single model definition source. Keep `database_models/` (matches migrations) and delete or repurpose `models/`.
+
+### H-11. `datetime.utcnow` (Timezone-Naive) Used in ORM Model Defaults
+- **Files:** `data_platform/database_models/idx_equity_instrument.py:58`, `data_platform/models/market.py:117`
+- **Description:** `onupdate=datetime.utcnow` produces timezone-naive datetime objects. When mixed with tz-aware timestamps from `TIMESTAMP(timezone=True)` columns, comparisons will raise `TypeError`.
+- **Risk:** DATA INTEGRITY — Runtime crashes on timestamp comparison.
+- **Fix:** Replace with `onupdate=lambda: datetime.now(timezone.utc)`
+
+### H-12. Missing OHLCV Data Validation Constraints in Database
+- **File:** `data_platform/database_models/idx_equity_ohlcv_tick.py`, migration `002`
+- **Description:** No `CHECK` constraints ensuring `high >= low`, `volume >= 0`, or price ordering (`low <= open/close <= high`). All OHLC columns are nullable.
+- **Risk:** DATA INTEGRITY — Invalid price bars (e.g., `low > high`) can be persisted and corrupt strategy signals.
+- **Fix:** Add database-level CHECK constraints: `CHECK (low <= high)`, `CHECK (volume IS NULL OR volume >= 0)`.
+
+### H-13. No SQLAlchemy Relationships Defined — N+1 Query Risk
+- **Files:** All `data_platform/database_models/*.py`
+- **Description:** Foreign keys exist (e.g., `idx_equity_financial_statement.symbol → idx_equity_instruments.symbol`) but no SQLAlchemy `relationship()` properties. Any code iterating over statements and accessing instrument data will execute N+1 queries.
+- **Risk:** PERFORMANCE — Database query amplification under load.
+- **Fix:** Add `relationship()` with `lazy="selectin"` or `lazy="joined"` for common access patterns.
+
+### H-14. Synchronous yfinance Call Blocks Async Event Loop
 - **File:** `data_platform/equity_ingestion/idx_equity_end_of_day_ingestion.py:281-287`
 - **Description:** `yfinance.Ticker.history()` is synchronous and blocks the asyncio event loop during data fetching.
 - **Risk:** PERFORMANCE — Freezes all concurrent async operations during fetch.
