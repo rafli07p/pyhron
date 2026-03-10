@@ -324,6 +324,13 @@
 | CPO BMD settlement parsing | `cpo_price_mpob_ingestion.py` | Returns empty list |
 | OJK governance HTML parsing | `idx_equity_governance_flag_ingestion.py` | Returns empty list |
 | ESDM oil/gas lifting parsing | `esdm_energy_production_ingestion.py` | Returns empty list |
+| DataSubjectService (UU PDP data rights) | `docs/compliance/uu_pdp_guide.md:136-166` | Not implemented — `export_user_data()`, `purge_user_data()` documented but no code |
+| AML transaction monitoring | `docs/compliance/sec_ojk_reporting.md:113-144` | Not implemented — IDR 500M threshold checks, PPATK/OFAC screening, `file_suspicious_report()` |
+| CAT (Consolidated Audit Trail) reporting | `docs/compliance/sec_ojk_reporting.md:50-69` | Not implemented — `get_cat_events()` for SEC compliance |
+| FieldEncryptor (granular PII encryption) | `docs/compliance/uu_pdp_guide.md:49-58` | Not implemented — only bulk `EncryptionService` exists |
+| Scheduled compliance report generation | `docs/compliance/sec_ojk_reporting.md:203-222` | Not implemented — no cron scheduler for SEC 13F, OJK daily reports |
+| S3 encrypted report export | `docs/compliance/sec_ojk_reporting.md:154-155` | Not implemented — `export_report(encrypt=True)` with S3 storage |
+| Yield curve interpolation & bond pricing | `docs/database_schema_dictionary.md:288-309` | Schema exists, no pricing/analytics engine |
 
 ---
 
