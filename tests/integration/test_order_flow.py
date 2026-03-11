@@ -136,11 +136,11 @@ class TestOrderStateMachine:
     """Tests for the order state machine transition graph."""
 
     def test_valid_transitions_from_pending_risk(self) -> None:
-        """PENDING_RISK can transition to RISK_APPROVED, RISK_REJECTED, SUBMITTED, REJECTED."""
+        """PENDING_RISK can transition to RISK_APPROVED or RISK_REJECTED only."""
         allowed = VALID_TRANSITIONS[OrderStatusEnum.PENDING_RISK]
         assert OrderStatusEnum.RISK_APPROVED in allowed
         assert OrderStatusEnum.RISK_REJECTED in allowed
-        assert OrderStatusEnum.SUBMITTED in allowed
+        assert len(allowed) == 2
 
     def test_acknowledged_to_filled(self) -> None:
         """ACKNOWLEDGED can transition to FILLED."""
