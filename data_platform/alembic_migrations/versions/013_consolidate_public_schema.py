@@ -49,16 +49,10 @@ def upgrade() -> None:
     """Move all tables to public schema and rename to canonical names."""
     for old_schema, old_table, new_table in TABLE_MOVES:
         # Move table from source schema to public
-        op.execute(
-            f"ALTER TABLE IF EXISTS {old_schema}.{old_table} "
-            f"SET SCHEMA public"
-        )
+        op.execute(f"ALTER TABLE IF EXISTS {old_schema}.{old_table} SET SCHEMA public")
         # Rename to canonical name (if different from the moved name)
         if old_table != new_table:
-            op.execute(
-                f"ALTER TABLE IF EXISTS public.{old_table} "
-                f"RENAME TO {new_table}"
-            )
+            op.execute(f"ALTER TABLE IF EXISTS public.{old_table} RENAME TO {new_table}")
 
     # Drop now-empty schemas (they still exist but are empty)
     # Keep them around — they can be dropped manually if desired
@@ -69,12 +63,6 @@ def downgrade() -> None:
     for old_schema, old_table, new_table in reversed(TABLE_MOVES):
         # Rename back to original name
         if old_table != new_table:
-            op.execute(
-                f"ALTER TABLE IF EXISTS public.{new_table} "
-                f"RENAME TO {old_table}"
-            )
+            op.execute(f"ALTER TABLE IF EXISTS public.{new_table} RENAME TO {old_table}")
         # Move back to original schema
-        op.execute(
-            f"ALTER TABLE IF EXISTS public.{old_table} "
-            f"SET SCHEMA {old_schema}"
-        )
+        op.execute(f"ALTER TABLE IF EXISTS public.{old_table} SET SCHEMA {old_schema}")

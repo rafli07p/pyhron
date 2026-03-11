@@ -67,12 +67,8 @@ class Signal(Base):
         nullable=False,
     )
     strength: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False)
-    bar_timestamp: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False
-    )
-    generated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
-    )
+    bar_timestamp: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default="now()")
     acted_on: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     resulting_order_id: Mapped[str | None] = mapped_column(String(36))
     metadata_json: Mapped[dict | None] = mapped_column(JSONB)

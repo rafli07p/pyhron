@@ -19,10 +19,7 @@ def upgrade() -> None:
     # ── Enum types ────────────────────────────────────────────────────────
     op.execute("CREATE TYPE user_role AS ENUM ('admin', 'trader', 'analyst', 'readonly')")
     op.execute("CREATE TYPE backtest_status AS ENUM ('pending', 'running', 'completed', 'failed')")
-    op.execute(
-        "CREATE TYPE signal_type AS ENUM "
-        "('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance')"
-    )
+    op.execute("CREATE TYPE signal_type AS ENUM ('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance')")
 
     # ── users ─────────────────────────────────────────────────────────────
     op.create_table(
@@ -50,9 +47,7 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
     )
     # Expression index for case-insensitive email lookup
-    op.execute(
-        "CREATE UNIQUE INDEX ix_users_email_lower ON users (lower(email))"
-    )
+    op.execute("CREATE UNIQUE INDEX ix_users_email_lower ON users (lower(email))")
 
     # ── strategies ────────────────────────────────────────────────────────
     op.create_table(
@@ -155,7 +150,11 @@ def upgrade() -> None:
         sa.Column(
             "signal_type",
             sa.Enum(
-                "entry_long", "entry_short", "exit_long", "exit_short", "rebalance",
+                "entry_long",
+                "entry_short",
+                "exit_long",
+                "exit_short",
+                "rebalance",
                 name="signal_type",
                 create_type=False,
             ),
@@ -185,10 +184,7 @@ def upgrade() -> None:
     )
 
     # CHECK constraints
-    op.execute(
-        "ALTER TABLE signals ADD CONSTRAINT ck_signals_strength_range "
-        "CHECK (strength BETWEEN -1.0 AND 1.0)"
-    )
+    op.execute("ALTER TABLE signals ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)")
 
     # Convert signals to TimescaleDB hypertable
     op.execute("""

@@ -89,7 +89,9 @@ class Config(BaseSettings):
     prometheus_port: int = Field(default=9090)
 
     # -- CORS --
-    allowed_cors_origins: str = Field(default="http://localhost:3000", description="Comma-separated allowed CORS origins")
+    allowed_cors_origins: str = Field(
+        default="http://localhost:3000", description="Comma-separated allowed CORS origins"
+    )
 
     # -- Notifications --
     slack_webhook_url: str = Field(default="")

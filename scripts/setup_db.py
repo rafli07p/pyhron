@@ -41,7 +41,9 @@ logger = logging.getLogger("pyhron.setup_db")
 # =============================================================================
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is required. Example: postgresql+asyncpg://user:pass@localhost:5432/dbname")
+    raise ValueError(
+        "DATABASE_URL environment variable is required. Example: postgresql+asyncpg://user:pass@localhost:5432/dbname"
+    )
 SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")
 
 REQUIRED_EXTENSIONS = [

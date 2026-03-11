@@ -28,6 +28,7 @@ def _get_jwt_secret() -> str:
 def _get_jwt_algorithm() -> str:
     return get_config().jwt_algorithm
 
+
 PUBLIC_PATHS: set[str] = {
     "/v1/auth/login",
     "/v1/auth/register",

@@ -102,9 +102,7 @@ def check_tables(conn) -> list[str]:
 def check_hypertables(conn) -> list[str]:
     """Verify TimescaleDB hypertables are configured."""
     errors = []
-    result = conn.execute(
-        text("SELECT hypertable_name FROM timescaledb_information.hypertables")
-    ).fetchall()
+    result = conn.execute(text("SELECT hypertable_name FROM timescaledb_information.hypertables")).fetchall()
     existing = {r[0] for r in result}
     for table in EXPECTED_HYPERTABLES:
         if table not in existing:
@@ -147,14 +145,10 @@ def check_check_constraints(conn) -> list[str]:
 def check_seed_data(conn) -> list[str]:
     """Verify LQ45 seed data is present."""
     errors = []
-    count = conn.execute(
-        text("SELECT COUNT(*) FROM instruments WHERE board = 'IDX'")
-    ).scalar()
+    count = conn.execute(text("SELECT COUNT(*) FROM instruments WHERE board = 'IDX'")).scalar()
     if count is None or count < 50:
         errors.append(f"Expected >= 50 IDX instruments, found {count}")
-    ihsg = conn.execute(
-        text("SELECT 1 FROM instruments WHERE symbol = '^JKSE'")
-    ).scalar()
+    ihsg = conn.execute(text("SELECT 1 FROM instruments WHERE symbol = '^JKSE'")).scalar()
     if not ihsg:
         errors.append("IHSG index (^JKSE) missing from instruments")
     if not errors:

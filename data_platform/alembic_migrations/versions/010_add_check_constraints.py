@@ -18,10 +18,7 @@ depends_on = None
 def upgrade() -> None:
     """Add CHECK constraints to existing tables."""
     # OHLCV: high must be >= low
-    op.execute(
-        "ALTER TABLE market_data.idx_equity_ohlcv_tick "
-        "ADD CONSTRAINT ck_ohlcv_high_gte_low CHECK (high >= low)"
-    )
+    op.execute("ALTER TABLE market_data.idx_equity_ohlcv_tick ADD CONSTRAINT ck_ohlcv_high_gte_low CHECK (high >= low)")
 
     # OHLCV: volume must be non-negative
     op.execute(
@@ -49,14 +46,7 @@ def downgrade() -> None:
         "DROP CONSTRAINT IF EXISTS ck_positions_quantity_non_negative"
     )
     op.execute(
-        "ALTER TABLE trading.strategy_order_lifecycle_record "
-        "DROP CONSTRAINT IF EXISTS ck_orders_filled_lte_quantity"
+        "ALTER TABLE trading.strategy_order_lifecycle_record DROP CONSTRAINT IF EXISTS ck_orders_filled_lte_quantity"
     )
-    op.execute(
-        "ALTER TABLE market_data.idx_equity_ohlcv_tick "
-        "DROP CONSTRAINT IF EXISTS ck_ohlcv_volume_non_negative"
-    )
-    op.execute(
-        "ALTER TABLE market_data.idx_equity_ohlcv_tick "
-        "DROP CONSTRAINT IF EXISTS ck_ohlcv_high_gte_low"
-    )
+    op.execute("ALTER TABLE market_data.idx_equity_ohlcv_tick DROP CONSTRAINT IF EXISTS ck_ohlcv_volume_non_negative")
+    op.execute("ALTER TABLE market_data.idx_equity_ohlcv_tick DROP CONSTRAINT IF EXISTS ck_ohlcv_high_gte_low")

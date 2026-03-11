@@ -23,7 +23,6 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from starlette.responses import Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -287,21 +286,14 @@ class CSRFMiddleware:
                 return
 
         # For safe methods, set the CSRF cookie if not present
-        needs_cookie = (
-            request.method in _CSRF_SAFE_METHODS
-            and not is_exempt
-            and "csrf_token" not in request.cookies
-        )
+        needs_cookie = request.method in _CSRF_SAFE_METHODS and not is_exempt and "csrf_token" not in request.cookies
         if needs_cookie:
             new_token = secrets.token_urlsafe(32)
 
             async def send_with_cookie(message):
                 if message["type"] == "http.response.start":
                     headers = list(message.get("headers", []))
-                    cookie_val = (
-                        f"csrf_token={new_token}; Path=/; HttpOnly=false; "
-                        f"SameSite=Strict; Secure"
-                    )
+                    cookie_val = f"csrf_token={new_token}; Path=/; HttpOnly=false; SameSite=Strict; Secure"
                     headers.append((b"set-cookie", cookie_val.encode()))
                     message = {**message, "headers": headers}
                 await send(message)

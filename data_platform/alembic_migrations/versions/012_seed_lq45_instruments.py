@@ -90,7 +90,4 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Remove seeded LQ45 instruments."""
     symbols = ", ".join(f"'{s}'" for s, _ in LQ45_SYMBOLS)
-    op.execute(
-        f"DELETE FROM market_data.idx_equity_instrument "
-        f"WHERE symbol IN ({symbols}, '^JKSE')"
-    )
+    op.execute(f"DELETE FROM market_data.idx_equity_instrument WHERE symbol IN ({symbols}, '^JKSE')")
