@@ -88,6 +88,7 @@ class OrderLifecycleRecord(Base):
 
     client_order_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     broker_order_id: Mapped[str | None] = mapped_column(String(100))
+    user_id: Mapped[str | None] = mapped_column(String(100))
     strategy_id: Mapped[str] = mapped_column(String(100), nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
     exchange: Mapped[str | None] = mapped_column(String(10))
@@ -114,6 +115,7 @@ class OrderLifecycleRecord(Base):
     commission: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=Decimal("0"))
     tax: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=Decimal("0"))
 
+    rejection_reason: Mapped[str | None] = mapped_column(String(500))
     signal_time: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     submitted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     acknowledged_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))

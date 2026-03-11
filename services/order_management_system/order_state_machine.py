@@ -37,9 +37,12 @@ VALID_TRANSITIONS: dict[OrderStatusEnum, set[OrderStatusEnum]] = {
     OrderStatusEnum.PENDING_RISK: {
         OrderStatusEnum.RISK_APPROVED,
         OrderStatusEnum.RISK_REJECTED,
+        OrderStatusEnum.SUBMITTED,  # direct API path (risk checks done synchronously)
+        OrderStatusEnum.REJECTED,  # direct API path (broker rejection)
     },
     OrderStatusEnum.RISK_APPROVED: {
         OrderStatusEnum.SUBMITTED,
+        OrderStatusEnum.REJECTED,  # broker rejection after risk approval
         OrderStatusEnum.CANCELLED,
     },
     OrderStatusEnum.SUBMITTED: {
@@ -168,6 +171,10 @@ class OrderStateMachine:
                     update_values["avg_fill_price"] = event_data["avg_fill_price"]
                 if to_status == OrderStatusEnum.FILLED:
                     update_values["filled_at"] = now
+
+            if to_status == OrderStatusEnum.REJECTED:
+                if "rejection_reason" in event_data:
+                    update_values["rejection_reason"] = event_data["rejection_reason"]
 
             if "commission" in event_data:
                 update_values["commission"] = event_data["commission"]

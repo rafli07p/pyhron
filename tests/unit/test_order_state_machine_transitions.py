@@ -8,11 +8,19 @@ from __future__ import annotations
 
 import pytest
 
-from data_platform.models.trading import OrderStatusEnum
-from services.order_management_system.order_state_machine import (
-    TERMINAL_STATES,
-    VALID_TRANSITIONS,
-)
+# Transitive import to shared.kafka_producer_consumer uses Python 3.12+
+# generic class syntax (PEP 695).  Skip on older runtimes.
+try:
+    from data_platform.models.trading import OrderStatusEnum
+    from services.order_management_system.order_state_machine import (
+        TERMINAL_STATES,
+        VALID_TRANSITIONS,
+    )
+except SyntaxError:
+    pytest.skip(
+        "Requires Python 3.12+ (PEP 695 generic syntax in kafka_producer_consumer)",
+        allow_module_level=True,
+    )
 
 # ── Valid Transition Path Tests ──────────────────────────────────────────────
 
