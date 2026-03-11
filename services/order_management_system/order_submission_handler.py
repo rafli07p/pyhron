@@ -545,8 +545,10 @@ class OrderSubmissionHandler:
                 check_lot_size_constraint,
             )
 
+            risk_order = OrderRequest()
+            risk_order.quantity = quantity_lots * 100
             lot_check: RiskCheckResult = check_lot_size_constraint(
-                quantity=quantity_lots * 100,
+                order=risk_order,
                 lot_size=100,
             )
             if not lot_check.passed:
@@ -619,9 +621,10 @@ class OrderSubmissionHandler:
 
             # Success: transition to SUBMITTED, update broker_order_id
             if state_machine is not None:
-                # Re-fetch the record as an Order (compat alias) for the state machine
                 async with self._db_session_factory() as session:
-                    result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
+                    result = await session.execute(
+                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                    )
                     order_obj = result.scalar_one()
 
                 await state_machine.transition(
@@ -655,7 +658,9 @@ class OrderSubmissionHandler:
             # Broker explicitly rejected
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
+                    result = await session.execute(
+                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                    )
                     order_obj = result.scalar_one()
 
                 await state_machine.transition(
@@ -708,7 +713,9 @@ class OrderSubmissionHandler:
             )
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
+                    result = await session.execute(
+                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                    )
                     order_obj = result.scalar_one()
 
                 await state_machine.transition(
