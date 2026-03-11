@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Boolean, ForeignKey, Index, Numeric, String, text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
@@ -71,7 +71,7 @@ class Signal(Base):
     generated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default="now()")
     acted_on: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     resulting_order_id: Mapped[str | None] = mapped_column(String(36))
-    metadata_json: Mapped[dict | None] = mapped_column(JSONB)
+    metadata_json: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
     __table_args__ = (
         Index(

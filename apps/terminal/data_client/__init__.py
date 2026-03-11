@@ -14,7 +14,7 @@ import asyncio
 import json
 import logging
 from collections.abc import Callable
-from typing import Any, Optional
+from typing import Any, cast
 from urllib.parse import urljoin
 
 import httpx
@@ -149,7 +149,7 @@ class DataClient:
         try:
             response = await client.get("/market-data", params=params)
             response.raise_for_status()
-            data = response.json()
+            data = cast(list[dict[str, Any]] | dict[str, Any], response.json())
             logger.debug("Fetched %s data for %s: %d records", data_type, symbol, len(data) if isinstance(data, list) else 1)
             return data
         except httpx.HTTPStatusError as exc:
@@ -237,7 +237,7 @@ class DataClient:
         try:
             response = await client.post("/orders", json=order_data)
             response.raise_for_status()
-            result = response.json()
+            result = cast(dict[str, Any], response.json())
             logger.info("Order submitted: %s", result.get("order_id", "unknown"))
             return result
         except httpx.HTTPStatusError as exc:
@@ -272,7 +272,8 @@ class DataClient:
         try:
             response = await client.get("/portfolio", params=params)
             response.raise_for_status()
-            return response.json()
+            portfolio_data = cast(dict[str, Any], response.json())
+            return portfolio_data
         except httpx.HTTPStatusError as exc:
             logger.error("Portfolio request failed (%d): %s", exc.response.status_code, exc)
             raise
@@ -296,7 +297,7 @@ class DataClient:
         try:
             response = await client.post("/research/backtest", json=config)
             response.raise_for_status()
-            result = response.json()
+            result = cast(dict[str, Any], response.json())
             logger.info("Backtest submitted: %s", result.get("backtest_id", "unknown"))
             return result
         except httpx.HTTPStatusError as exc:

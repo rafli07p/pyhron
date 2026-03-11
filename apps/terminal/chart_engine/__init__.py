@@ -225,7 +225,8 @@ class ChartEngine:
                 signal = study.params.get("signal_period", 9)
                 self._chart_data.studies[study.name] = self._compute_macd(closes, fast, slow, signal)
             elif study.indicator_type == "VOLUME":
-                self._chart_data.studies[study.name] = self._chart_data.volumes
+                volume_data: list[float | None] = [float(v) for v in self._chart_data.volumes]
+                self._chart_data.studies[study.name] = volume_data
 
         result = {
             "symbol": self._chart_data.symbol,

@@ -8,15 +8,14 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import structlog
-from sqlalchemy import Column, DateTime, Index, Numeric, String, Text
+from sqlalchemy import DateTime, Index, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from shared.schemas.order_events import OrderFill, OrderSide
 from shared.schemas.portfolio_events import AssetClass, PositionUpdate
@@ -46,20 +45,20 @@ class Position(Base):
         Index("ix_positions_tenant_symbol", "tenant_id", "symbol"),
     )
 
-    id: str = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
-    tenant_id: str = Column(String(64), nullable=False, index=True)
-    portfolio_id: str = Column(String(64), nullable=False)
-    symbol: str = Column(String(20), nullable=False, index=True)
-    quantity: Decimal = Column(Numeric(20, 8), nullable=False, default=0)
-    avg_cost: Decimal = Column(Numeric(20, 8), nullable=False, default=0)
-    realized_pnl: Decimal = Column(Numeric(20, 8), nullable=False, default=0)
-    market_price: Decimal = Column(Numeric(20, 8), nullable=False, default=0)
-    asset_class: str = Column(String(32), nullable=False, default=AssetClass.EQUITY.value)
-    currency: str = Column(String(3), nullable=False, default="USD")
-    sector: str | None = Column(String(64), nullable=True)
-    last_fill_id: str | None = Column(Text, nullable=True)
-    updated_at: datetime = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_at: datetime = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    id: Mapped[str] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    portfolio_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(20, 8), nullable=False, default=0)
+    avg_cost: Mapped[Decimal] = mapped_column(Numeric(20, 8), nullable=False, default=0)
+    realized_pnl: Mapped[Decimal] = mapped_column(Numeric(20, 8), nullable=False, default=0)
+    market_price: Mapped[Decimal] = mapped_column(Numeric(20, 8), nullable=False, default=0)
+    asset_class: Mapped[str] = mapped_column(String(32), nullable=False, default=AssetClass.EQUITY.value)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="USD")
+    sector: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    last_fill_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
 
 # ---------------------------------------------------------------------------

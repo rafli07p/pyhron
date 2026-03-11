@@ -16,7 +16,7 @@ import shutil
 import subprocess
 from datetime import UTC, datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import structlog
 from tenacity import (
@@ -107,7 +107,7 @@ class BackupManager:
         include_redis: bool = True,
         label: str | None = None,
         compression: bool = True,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Create a new backup snapshot.
 
         Parameters
@@ -133,7 +133,7 @@ class BackupManager:
         backup_path = self._backup_root / backup_name
         backup_path.mkdir(parents=True, exist_ok=True)
 
-        manifest: dict = {
+        manifest: dict[str, Any] = {
             "name": backup_name,
             "tenant_id": self.tenant_id,
             "created_at": datetime.now(UTC).isoformat(),
@@ -190,7 +190,7 @@ class BackupManager:
         restore_pg: bool = True,
         restore_redis: bool = True,
         verify_first: bool = True,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Restore from a named backup.
 
         Parameters
@@ -222,7 +222,7 @@ class BackupManager:
                     f"Integrity check failed: {integrity.get('errors')}"
                 )
 
-        result: dict = {"backup_name": backup_name, "restored": []}
+        result: dict[str, Any] = {"backup_name": backup_name, "restored": []}
 
         # --- PostgreSQL -------------------------------------------------------
         if restore_pg and "postgresql" in manifest.get("components", {}):
@@ -257,12 +257,12 @@ class BackupManager:
     # List backups
     # ------------------------------------------------------------------
 
-    async def list_backups(self) -> list[dict]:
+    async def list_backups(self) -> list[dict[str, Any]]:
         """List all available backups for this tenant.
 
         Returns a list of manifest dicts sorted newest-first.
         """
-        backups: list[dict] = []
+        backups: list[dict[str, Any]] = []
         if not self._backup_root.exists():
             return backups
 
@@ -292,7 +292,7 @@ class BackupManager:
     # Verify integrity
     # ------------------------------------------------------------------
 
-    async def verify_backup_integrity(self, backup_name: str) -> dict:
+    async def verify_backup_integrity(self, backup_name: str) -> dict[str, Any]:
         """Verify SHA-256 checksums for all components in a backup.
 
         Returns
@@ -365,7 +365,7 @@ class BackupManager:
     # ------------------------------------------------------------------
 
     async def _run_pg_dump(self, output_path: Path, *, compression: bool = True) -> None:
-        cmd = [
+        cmd: list[str | None] = [
             self._pg_dump,
             "--dbname", self._pg_conn,
             "--format=custom",
@@ -374,9 +374,10 @@ class BackupManager:
         if compression:
             cmd.append("--compress=6")
 
-        self._log.debug("pg_dump_start", cmd=" ".join(cmd))
+        filtered_cmd: list[str] = [x for x in cmd if x is not None]
+        self._log.debug("pg_dump_start", cmd=" ".join(filtered_cmd))
         proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            *filtered_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         stdout, stderr = await proc.communicate()
         if proc.returncode != 0:
@@ -385,16 +386,17 @@ class BackupManager:
             )
 
     async def _run_pg_restore(self, dump_path: Path) -> None:
-        cmd = [
+        cmd: list[str | None] = [
             self._pg_restore,
             "--dbname", self._pg_conn,
             "--clean",
             "--if-exists",
             str(dump_path),
         ]
-        self._log.debug("pg_restore_start", cmd=" ".join(cmd))
+        filtered_cmd: list[str] = [x for x in cmd if x is not None]
+        self._log.debug("pg_restore_start", cmd=" ".join(filtered_cmd))
         proc = await asyncio.create_subprocess_exec(
-            *cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            *filtered_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         stdout, stderr = await proc.communicate()
         if proc.returncode != 0:
@@ -418,11 +420,12 @@ class BackupManager:
         return h.hexdigest()
 
     @staticmethod
-    def _load_manifest(backup_path: Path) -> dict:
+    def _load_manifest(backup_path: Path) -> dict[str, Any]:
         manifest_file = backup_path / _MANIFEST_FILE
         if not manifest_file.exists():
             return {"components": {}}
-        return json.loads(manifest_file.read_text())
+        result: dict[str, Any] = json.loads(manifest_file.read_text())
+        return result
 
 
 __all__ = [

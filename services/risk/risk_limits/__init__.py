@@ -10,9 +10,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+import numpy.typing as npt
 import pybreaker
 import structlog
 
@@ -335,7 +336,7 @@ class RiskLimitEngine:
     def check_portfolio_var(
         self,
         tenant_id: str,
-        returns: np.ndarray,
+        returns: npt.NDArray[np.floating[Any]],
         portfolio_value: Decimal,
         confidence_level: float = 0.95,
     ) -> LimitCheckResult:
@@ -410,7 +411,8 @@ class RiskLimitEngine:
     def get_breaker_state(self, tenant_id: str) -> str:
         """Return the current circuit breaker state for a tenant."""
         breaker = self._get_breaker(tenant_id)
-        return breaker.current_state
+        state: str = breaker.current_state
+        return state
 
     def reset_breaker(self, tenant_id: str) -> None:
         """Manually reset the circuit breaker for a tenant."""

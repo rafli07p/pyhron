@@ -59,10 +59,10 @@ class APIResponse[T](BaseModel):
         """Create a successful response."""
         return cls(success=True, data=data, message=message, tenant_id=tenant_id)
 
-    @classmethod
-    def fail(cls, message: str, *, tenant_id: str | None = None) -> APIResponse[None]:
+    @staticmethod
+    def fail(message: str, *, tenant_id: str | None = None) -> APIResponse[None]:
         """Create a failed response with no data."""
-        return cls(success=False, data=None, message=message, tenant_id=tenant_id)
+        return APIResponse[None](success=False, data=None, message=message, tenant_id=tenant_id)
 
 
 class PaginatedResponse[T](BaseModel):

@@ -154,7 +154,7 @@ class GlobalCommodityIndexIngester:
         if ticker is None:
             raise IngestionError(f"Unknown indicator: {indicator}")
 
-        api_key = self._config.get("EODHD_API_KEY", "")
+        api_key = self._config.eodhd_api_key
         url = f"{EODHD_BASE_URL}/{ticker}"
         headers = {"User-Agent": "Pyhron/1.0 (Data Platform)"}
         params = {

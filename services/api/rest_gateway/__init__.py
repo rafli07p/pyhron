@@ -10,24 +10,28 @@ from __future__ import annotations
 
 import secrets
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
 from enum import StrEnum
 from functools import wraps
-from typing import Any
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 from uuid import UUID, uuid4
 
 import jwt
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from shared.configuration_settings import get_config as _get_settings
+
+if TYPE_CHECKING:
+    from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from shared.schemas.market_events import BarEvent, QuoteEvent  # noqa: F401
 from shared.schemas.order_events import (
     CancelReason,
@@ -221,12 +225,15 @@ def get_tenant_id(user: TokenPayload = Depends(get_current_user)) -> str:
 # ---------------------------------------------------------------------------
 
 
-def require_role(minimum_role: Role):
+_F = TypeVar("_F", bound=Callable[..., Any])
+
+
+def require_role(minimum_role: Role) -> Callable[[_F], _F]:
     """Decorator that enforces a minimum RBAC role on an endpoint."""
 
-    def decorator(func):
+    def decorator(func: _F) -> _F:
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             user: TokenPayload | None = kwargs.get("user")
             if user is None:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
@@ -237,7 +244,7 @@ def require_role(minimum_role: Role):
                 )
             return await func(*args, **kwargs)
 
-        return wrapper
+        return cast(_F, wrapper)
 
     return decorator
 
@@ -260,10 +267,10 @@ class CSRFMiddleware:
     - Skips CSRF checks for ``/v1/auth/*`` and ``/health`` endpoints.
     """
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -290,7 +297,7 @@ class CSRFMiddleware:
         if needs_cookie:
             new_token = secrets.token_urlsafe(32)
 
-            async def send_with_cookie(message):
+            async def send_with_cookie(message: Message) -> None:
                 if message["type"] == "http.response.start":
                     headers = list(message.get("headers", []))
                     cookie_val = f"csrf_token={new_token}; Path=/; HttpOnly=false; SameSite=Strict; Secure"
@@ -319,15 +326,15 @@ _SECURITY_HEADERS = [
 class SecurityHeadersMiddleware:
     """ASGI middleware that adds security headers to every response."""
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
-        async def send_with_security_headers(message):
+        async def send_with_security_headers(message: Message) -> None:
             if message["type"] == "http.response.start":
                 headers = list(message.get("headers", []))
                 headers.extend(_SECURITY_HEADERS)
@@ -345,10 +352,10 @@ class SecurityHeadersMiddleware:
 class RequestIDMiddleware:
     """ASGI middleware that generates/propagates X-Request-ID header."""
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -357,7 +364,7 @@ class RequestIDMiddleware:
         request_id = headers.get(b"x-request-id", b"").decode() or str(uuid4())
         scope.setdefault("state", {})
 
-        async def send_with_request_id(message):
+        async def send_with_request_id(message: Message) -> None:
             if message["type"] == "http.response.start":
                 resp_headers = list(message.get("headers", []))
                 resp_headers.append((b"x-request-id", request_id.encode()))
@@ -370,10 +377,10 @@ class RequestIDMiddleware:
 class RequestLoggingMiddleware:
     """ASGI middleware that logs every HTTP request with timing."""
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -382,7 +389,7 @@ class RequestLoggingMiddleware:
         start = time.perf_counter()
         response_status = 500
 
-        async def send_wrapper(message):
+        async def send_wrapper(message: Message) -> None:
             nonlocal response_status
             if message["type"] == "http.response.start":
                 response_status = message["status"]
@@ -421,7 +428,12 @@ def create_rest_app() -> FastAPI:
     )
 
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+    async def _handle_rate_limit(request: Request, exc: Exception) -> Response:
+        assert isinstance(exc, RateLimitExceeded)
+        return _rate_limit_exceeded_handler(request, exc)
+
+    app.add_exception_handler(RateLimitExceeded, _handle_rate_limit)
 
     # CORS
     app.add_middleware(

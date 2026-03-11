@@ -7,6 +7,7 @@ user registration, and profile management.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -30,7 +31,7 @@ router = APIRouter(prefix="/v1/auth", tags=["authentication"])
 
 # ── In-memory user store (swap for database in production) ───────────────────
 
-_users_db: dict[str, dict] = {}
+_users_db: dict[str, dict[str, Any]] = {}
 
 
 # ── Request/Response Models ──────────────────────────────────────────────────

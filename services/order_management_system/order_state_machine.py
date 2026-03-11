@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from typing import cast
 
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import update
@@ -162,7 +163,7 @@ class OrderStateMachine:
 
             elif to_status in (OrderStatusEnum.PARTIAL_FILL, OrderStatusEnum.FILLED):
                 if "filled_quantity" in event_data:
-                    update_values["filled_quantity"] = int(event_data["filled_quantity"])
+                    update_values["filled_quantity"] = int(cast(float, event_data["filled_quantity"]))
                 if "avg_fill_price" in event_data:
                     update_values["avg_fill_price"] = event_data["avg_fill_price"]
                 if to_status == OrderStatusEnum.FILLED:
@@ -225,10 +226,10 @@ class OrderStateMachine:
         event.broker_order_id = str(event_data.get("broker_order_id", "")) or (order.broker_order_id or "")
         event.from_status = _STATUS_TO_PROTO[from_status]
         event.to_status = _STATUS_TO_PROTO[to_status]
-        event.filled_quantity = float(event_data.get("filled_quantity", 0))
-        event.filled_price = float(event_data.get("filled_price", 0))
-        event.commission = float(event_data.get("commission", 0))
-        event.tax = float(event_data.get("tax", 0))
+        event.filled_quantity = cast(float, event_data.get("filled_quantity", 0))
+        event.filled_price = cast(float, event_data.get("filled_price", 0))
+        event.commission = cast(float, event_data.get("commission", 0))
+        event.tax = cast(float, event_data.get("tax", 0))
         event.rejection_reason = str(event_data.get("rejection_reason", ""))
         event.source = source
 

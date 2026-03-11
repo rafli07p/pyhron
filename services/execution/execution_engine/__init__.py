@@ -25,7 +25,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any, Optional, cast
 from uuid import UUID
 
 import pybreaker
@@ -165,7 +165,7 @@ class ExecutionEngine:
             # if native_result is not None:
             #     return native_result
 
-            fill = await self._submit_with_breaker(connector, order)
+            fill = cast(OrderFill, await self._submit_with_breaker(connector, order))
             latency_ns = time.perf_counter_ns() - t0
             self._latency_samples.append(latency_ns)
             self._total_fills += 1

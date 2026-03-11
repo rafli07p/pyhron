@@ -13,7 +13,7 @@ import asyncio
 import uuid
 from datetime import UTC, datetime, time
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import select
@@ -160,7 +160,7 @@ class PositionReconciliationMonitor:
         """
         # Fetch broker positions
         broker_positions = await adapter.get_positions()
-        broker_position_map: dict[str, dict] = {}
+        broker_position_map: dict[str, dict[str, object]] = {}
         for pos in broker_positions:
             symbol = pos.get("symbol", "")
             broker_position_map[symbol] = pos
@@ -176,7 +176,8 @@ class PositionReconciliationMonitor:
         for symbol in all_symbols:
             internal_qty = internal_positions.get(symbol, 0)
             broker_data = broker_position_map.get(symbol, {})
-            broker_qty = int(broker_data.get("qty", broker_data.get("quantity", 0)))
+            raw_qty = broker_data.get("qty", broker_data.get("quantity", 0))
+            broker_qty = int(cast(float, raw_qty))
 
             if abs(internal_qty - broker_qty) > POSITION_QUANTITY_TOLERANCE:
                 discrepancies += 1

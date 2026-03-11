@@ -15,7 +15,7 @@ from strategy_engine.backtesting.idx_transaction_cost_model import (
     IDXTransactionCostModel,
 )
 from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
-    IDXVectorBTBacktestEngine,
+    IDXVectorbtBacktestEngine,
 )
 from strategy_engine.backtesting.idx_walk_forward_validator import (
     IDXWalkForwardValidator,
@@ -24,6 +24,6 @@ from strategy_engine.backtesting.idx_walk_forward_validator import (
 __all__ = [
     "BacktestPerformanceMetrics",
     "IDXTransactionCostModel",
-    "IDXVectorBTBacktestEngine",
+    "IDXVectorbtBacktestEngine",
     "IDXWalkForwardValidator",
 ]

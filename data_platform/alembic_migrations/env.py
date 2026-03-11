@@ -11,7 +11,7 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import pool, text
+from sqlalchemy import Connection, pool, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # Import all models so Alembic sees them for autogenerate
@@ -58,7 +58,7 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection) -> None:
+def do_run_migrations(connection: Connection) -> None:
     """Execute migrations against a live database connection."""
     # Enable required extensions before any migration runs
     connection.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"))

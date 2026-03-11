@@ -134,7 +134,7 @@ class NASAFIRMSFireHotspotIngester:
         Raises:
             IngestionError: On fetch failure.
         """
-        api_key = self._config.get("NASA_FIRMS_API_KEY", "")
+        api_key = self._config.nasa_firms_api_key
         url = f"{FIRMS_API_URL}/{api_key}/VIIRS_SNPP_NRT/IDN/{days}"
         headers = {"User-Agent": "Pyhron/1.0 (Data Platform)"}
 

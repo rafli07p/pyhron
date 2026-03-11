@@ -87,6 +87,8 @@ class StrategySignalPublisher:
         for signal in signals:
             payload = self._serialise_signal(signal)
             try:
+                if self._producer._producer is None:
+                    raise RuntimeError("Kafka producer not initialized")
                 await self._producer._producer.send_and_wait(
                     self._topic,
                     value=json.dumps(payload).encode("utf-8"),

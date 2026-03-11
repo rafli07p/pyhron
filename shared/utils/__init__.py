@@ -71,7 +71,8 @@ def retry_with_backoff(
             retry=retry_if_exception_type(retry_on),
             reraise=True,
         )
-        return tenacity_decorator(func)  # type: ignore[return-value]
+        wrapped: F = tenacity_decorator(func)
+        return wrapped
 
     return decorator
 

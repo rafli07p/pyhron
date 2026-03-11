@@ -45,7 +45,8 @@ PUBLIC_PATHS: set[str] = {
 
 def _decode_token(token: str) -> dict[str, Any]:
     """Decode and validate a JWT token, returning the payload claims."""
-    return jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
+    result: dict[str, Any] = jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
+    return result
 
 
 def _is_public_path(path: str) -> bool:

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import asyncio
 import os
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from celery import Celery
 from celery.schedules import crontab
@@ -55,8 +57,21 @@ celery_app.conf.beat_schedule = {
     },
 }
 
+_F = TypeVar("_F", bound=Callable[..., Any])
 
-def _run_async(coro):
+
+def _task(**kwargs: Any) -> Callable[[_F], _F]:
+    """Typed wrapper around celery_app.task to preserve function signatures."""
+    raw_decorator: Any = celery_app.task(**kwargs)
+
+    def decorator(fn: _F) -> _F:
+        result: _F = raw_decorator(fn)
+        return result
+
+    return decorator
+
+
+def _run_async(coro: Any) -> Any:
     """Run an async coroutine in a new event loop."""
     loop = asyncio.new_event_loop()
     try:
@@ -65,13 +80,13 @@ def _run_async(coro):
         loop.close()
 
 
-@celery_app.task(
+@_task(
     bind=True,
     name="data_platform.tasks.celery_tasks.ingest_idx_eod_daily",
     max_retries=3,
     default_retry_delay=300,
 )
-def ingest_idx_eod_daily(self):
+def ingest_idx_eod_daily(self: Any) -> dict[str, int]:
     """Ingest IDX EOD data for all LQ45 symbols."""
     from shared.structured_json_logger import get_logger
 
@@ -79,8 +94,8 @@ def ingest_idx_eod_daily(self):
     try:
         from data_platform.ingestion.idx_eod import IDXEODIngester
 
-        ingester = IDXEODIngester()
-        results = _run_async(ingester.ingest_all())
+        ingester: Any = IDXEODIngester()
+        results: Any = _run_async(ingester.ingest_all())
         total_inserted = sum(r.rows_inserted for r in results)
         total_errors = sum(len(r.errors) for r in results)
         logger.info(
@@ -95,13 +110,13 @@ def ingest_idx_eod_daily(self):
         raise self.retry(exc=exc)
 
 
-@celery_app.task(
+@_task(
     bind=True,
     name="data_platform.tasks.celery_tasks.compute_daily_ratios",
     max_retries=2,
     default_retry_delay=600,
 )
-def compute_daily_ratios(self):
+def compute_daily_ratios(self: Any) -> dict[str, str]:
     """Compute valuation ratios for all active instruments."""
     from shared.structured_json_logger import get_logger
 
@@ -109,9 +124,9 @@ def compute_daily_ratios(self):
     try:
         from data_platform.ingestion.idx_fundamentals import IDXFundamentalsIngester
 
-        ingester = IDXFundamentalsIngester()
+        ingester: Any = IDXFundamentalsIngester()
 
-        async def _compute():
+        async def _compute() -> None:
             from data_platform.ingestion.idx_eod import IDX_LQ45_SYMBOLS
 
             for sym in IDX_LQ45_SYMBOLS:
@@ -128,13 +143,13 @@ def compute_daily_ratios(self):
         raise self.retry(exc=exc)
 
 
-@celery_app.task(
+@_task(
     bind=True,
     name="data_platform.tasks.celery_tasks.aggregate_news",
     max_retries=2,
     default_retry_delay=120,
 )
-def aggregate_news(self):
+def aggregate_news(self: Any) -> Any:
     """Aggregate news from all RSS sources."""
     from shared.structured_json_logger import get_logger
 
@@ -142,8 +157,8 @@ def aggregate_news(self):
     try:
         from data_platform.ingestion.news_aggregator import NewsAggregator
 
-        aggregator = NewsAggregator()
-        result = _run_async(aggregator.aggregate())
+        aggregator: Any = NewsAggregator()
+        result: Any = _run_async(aggregator.aggregate())
         logger.info("celery_news_complete", **result)
         return result
     except Exception as exc:
@@ -151,13 +166,13 @@ def aggregate_news(self):
         raise self.retry(exc=exc)
 
 
-@celery_app.task(
+@_task(
     bind=True,
     name="data_platform.tasks.celery_tasks.ingest_idx_fundamentals",
     max_retries=2,
     default_retry_delay=600,
 )
-def ingest_idx_fundamentals(self):
+def ingest_idx_fundamentals(self: Any) -> dict[str, int]:
     """Ingest fundamentals for all LQ45 symbols."""
     from shared.structured_json_logger import get_logger
 
@@ -166,10 +181,10 @@ def ingest_idx_fundamentals(self):
         from data_platform.ingestion.idx_eod import IDX_LQ45_SYMBOLS
         from data_platform.ingestion.idx_fundamentals import IDXFundamentalsIngester
 
-        ingester = IDXFundamentalsIngester()
+        ingester: Any = IDXFundamentalsIngester()
 
-        async def _ingest():
-            results = []
+        async def _ingest() -> list[Any]:
+            results: list[Any] = []
             for sym in IDX_LQ45_SYMBOLS:
                 try:
                     r = await ingester.ingest_symbol(sym)

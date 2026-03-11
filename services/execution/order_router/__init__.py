@@ -110,7 +110,8 @@ class _RiskServiceClient:
                     },
                 )
                 resp.raise_for_status()
-                return resp.json()
+                result: dict[str, Any] = resp.json()
+                return result
         except Exception as exc:
             logger.warning(
                 "risk.pre_trade_check_failed",

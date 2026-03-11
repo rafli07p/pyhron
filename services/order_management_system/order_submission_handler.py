@@ -193,6 +193,12 @@ class OrderSubmissionHandler:
         await redis.set(idempotency_key, "processing", ex=IDEMPOTENCY_TTL_SECONDS)
 
         # Resolve broker adapter based on order exchange
+        if order.exchange is None:
+            logger.error(
+                "order_missing_exchange",
+                client_order_id=client_order_id,
+            )
+            return
         adapter = self._resolve_broker(order.exchange)
         if adapter is None:
             logger.error(
@@ -254,6 +260,7 @@ class OrderSubmissionHandler:
             adapter: The resolved BrokerAdapterInterface.
             decision: The original RiskDecision for metadata.
         """
+        assert self._state_machine is not None, "OrderSubmissionHandler not started"
         order_request = self._build_order_request(order, decision)
 
         try:
@@ -335,7 +342,7 @@ class OrderSubmissionHandler:
         request.client_order_id = order.client_order_id
         request.strategy_id = order.strategy_id
         request.symbol = order.symbol
-        request.exchange = order.exchange
+        request.exchange = order.exchange or ""
 
         # Map DB side to proto side
         if order.side == "BUY":
@@ -354,7 +361,7 @@ class OrderSubmissionHandler:
 
         # Use approved quantity from risk decision if available, else order quantity
         if decision.approved_quantity > 0:
-            request.quantity = decision.approved_quantity
+            request.quantity = int(decision.approved_quantity)
         else:
             request.quantity = order.quantity
 
@@ -371,6 +378,7 @@ class OrderSubmissionHandler:
             "IOC": 3,
             "FOK": 4,
         }
-        request.time_in_force = tif_map.get(order.time_in_force, 1)
+        tif_value = order.time_in_force.value if order.time_in_force is not None else "DAY"
+        request.time_in_force = tif_map.get(tif_value, 1)
 
         return request

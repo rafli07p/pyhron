@@ -34,7 +34,7 @@ from commodity_linkage_engine.commodity_sensitivity_models.nickel_price_miner_re
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
 logger = get_logger(__name__)
 
@@ -247,7 +247,7 @@ class CommodityToStockImpactEngine:
         Raises:
             ValueError: If the commodity type is unsupported.
         """
-        dispatch = {
+        dispatch: dict[CommodityType, Callable[[], list[StockEarningsImpactEstimate]]] = {
             CommodityType.CPO: lambda: self.estimate_cpo_price_impact(event.change_pct),
             CommodityType.COAL: lambda: self.estimate_coal_price_impact(event.change_absolute),
             CommodityType.NICKEL: lambda: self.estimate_nickel_price_impact(event.change_absolute),

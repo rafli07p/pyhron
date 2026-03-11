@@ -6,6 +6,8 @@ requirements. Premium endpoints return 403 for free-tier users.
 
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -59,7 +61,7 @@ class SubscriptionTierMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Extract user tier from request state (set by JWT middleware)
-        user_claims: dict = getattr(request.state, "user_claims", {})
+        user_claims: dict[str, Any] = getattr(request.state, "user_claims", {})
         user_tier = user_claims.get("subscription_tier", "free")
         required_level = _user_tier_level(required_tier)
         user_level = _user_tier_level(user_tier)

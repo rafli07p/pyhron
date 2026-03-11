@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Date, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
@@ -93,7 +93,7 @@ class BacktestRun(Base):
     win_rate_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     profit_factor: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     omega_ratio: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
-    parameters_snapshot: Mapped[dict | None] = mapped_column(JSONB)
+    parameters_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     error_message: Mapped[str | None] = mapped_column(Text)
     started_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
