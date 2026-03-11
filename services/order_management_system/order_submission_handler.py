@@ -599,11 +599,35 @@ class OrderSubmissionHandler:
             quantity_lots=quantity_lots,
         )
 
-        # Step 6-7: Submit to broker, transition state
+        # Step 6: Transition PENDING_RISK → RISK_APPROVED (risk passed inline)
         state_machine = self._api_state_machine
         if state_machine is None and self._kafka_producer is not None:
             state_machine = OrderStateMachine(self._kafka_producer)
 
+        if state_machine is not None:
+            async with self._db_session_factory() as session:
+                order_result = await session.execute(
+                    select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                )
+                order_obj = order_result.scalar_one()
+
+            await state_machine.transition(
+                order=order_obj,
+                to_status=OrderStatusEnum.RISK_APPROVED,
+                event_data={},
+                source="api_submission",
+            )
+        else:
+            async with self._db_session_factory() as session:
+                order_result = await session.execute(
+                    select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                )
+                rec = order_result.scalar_one()
+                rec.status = OrderStatusEnum.RISK_APPROVED
+                rec.updated_at = datetime.now(tz=UTC)
+                await session.commit()
+
+        # Step 7-8: Submit to broker, transition RISK_APPROVED → SUBMITTED
         try:
             order_request = OrderRequest()
             order_request.client_order_id = client_order_id
@@ -619,7 +643,7 @@ class OrderSubmissionHandler:
 
             broker_order_id = await self._broker_adapter.submit_order(order_request)
 
-            # Success: transition to SUBMITTED, update broker_order_id
+            # Success: transition RISK_APPROVED → SUBMITTED
             if state_machine is not None:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
@@ -634,7 +658,6 @@ class OrderSubmissionHandler:
                     source="api_submission",
                 )
             else:
-                # No state machine — update DB directly
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
                         select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
@@ -655,7 +678,7 @@ class OrderSubmissionHandler:
             )
 
         except OrderRejectedError as exc:
-            # Broker explicitly rejected
+            # Broker rejected: transition RISK_APPROVED → REJECTED
             if state_machine is not None:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(

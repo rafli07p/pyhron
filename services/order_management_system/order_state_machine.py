@@ -37,12 +37,10 @@ VALID_TRANSITIONS: dict[OrderStatusEnum, set[OrderStatusEnum]] = {
     OrderStatusEnum.PENDING_RISK: {
         OrderStatusEnum.RISK_APPROVED,
         OrderStatusEnum.RISK_REJECTED,
-        OrderStatusEnum.SUBMITTED,  # direct API path (risk checks done synchronously)
-        OrderStatusEnum.REJECTED,  # direct API path (broker rejection)
     },
     OrderStatusEnum.RISK_APPROVED: {
         OrderStatusEnum.SUBMITTED,
-        OrderStatusEnum.REJECTED,  # broker rejection after risk approval
+        OrderStatusEnum.REJECTED,
         OrderStatusEnum.CANCELLED,
     },
     OrderStatusEnum.SUBMITTED: {

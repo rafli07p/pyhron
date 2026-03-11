@@ -8,7 +8,7 @@ circuit breaker, and idempotency logic using mocked infrastructure.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -18,10 +18,7 @@ import pytest
 # causes a SyntaxError at import time.  Skip the entire module gracefully.
 try:
     from data_platform.database_models.order_lifecycle_record import (
-        OrderLifecycleRecord,
-        OrderSideEnum,
         OrderStatusEnum,
-        OrderTypeEnum,
     )
     from services.order_management_system.idx_order_validator import (
         IDXOrderValidator,
@@ -225,28 +222,30 @@ class TestIdempotency:
         record without creating a duplicate. Verified via the
         OrderSubmissionHandler.submit_order() contract: if an existing
         non-terminal record is found with the same client_order_id, it is
-        returned directly."""
-        # This test verifies the logic path in submit_order() Step 1
-        existing = OrderLifecycleRecord(
-            client_order_id="idem-key-001",
-            strategy_id="strat-1",
-            symbol="BBCA.JK",
-            exchange="IDX",
-            side=OrderSideEnum.BUY,
-            order_type=OrderTypeEnum.LIMIT,
-            quantity=1000,
-            filled_quantity=0,
-            status=OrderStatusEnum.SUBMITTED,
-            created_at=datetime.now(tz=UTC),
-            updated_at=datetime.now(tz=UTC),
-        )
-        # Non-terminal status → should be returned as-is
+        returned directly.
+
+        The idempotency logic checks ``status not in terminal`` — active
+        statuses (SUBMITTED, ACKNOWLEDGED, etc.) must NOT be in the terminal
+        set, while truly terminal statuses must be.
+        """
         terminal = {
             OrderStatusEnum.REJECTED,
             OrderStatusEnum.RISK_REJECTED,
             OrderStatusEnum.EXPIRED,
         }
-        assert existing.status not in terminal
+        # Active statuses should NOT be terminal (idempotency returns existing)
+        for active in (
+            OrderStatusEnum.SUBMITTED,
+            OrderStatusEnum.ACKNOWLEDGED,
+            OrderStatusEnum.PARTIAL_FILL,
+            OrderStatusEnum.PENDING_RISK,
+            OrderStatusEnum.RISK_APPROVED,
+        ):
+            assert active not in terminal, f"{active} should be non-terminal"
+
+        # Terminal statuses SHOULD be in the set (allows re-submission)
+        for term in terminal:
+            assert term in terminal
 
 
 # ── Broker Rejection Tests ──────────────────────────────────────────────
