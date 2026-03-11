@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
@@ -102,7 +102,7 @@ def _compute_metrics(
     trade_log: pd.DataFrame,
     initial_capital: Decimal,
     benchmark_returns: pd.Series | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Compute all BacktestResult metrics from equity curve and trade log."""
     returns = equity_curve.pct_change().dropna()
     n_days = len(returns)
@@ -294,7 +294,7 @@ def run_momentum_backtest(
     holdings: dict[str, int] = {}  # symbol -> shares
     equity_values: list[float] = []
     equity_dates: list[pd.Timestamp] = []
-    trade_records: list[dict] = []
+    trade_records: list[dict[str, Any]] = []
     total_cost_paid = 0.0
 
     # Build rebalance lookup: date -> target lots per symbol
@@ -393,7 +393,7 @@ def run_momentum_backtest(
     metrics = _compute_metrics(equity_curve, trade_log, initial_capital_idr, benchmark_returns)
 
     # Portfolio size
-    avg_size = np.mean([len(holdings)]) if holdings else 0.0
+    avg_size = float(np.mean([len(holdings)])) if holdings else 0.0
 
     return BacktestResult(
         strategy_name=strategy.get_parameters().name,

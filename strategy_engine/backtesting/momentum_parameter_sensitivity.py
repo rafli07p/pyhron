@@ -13,13 +13,14 @@ Usage::
 from __future__ import annotations
 
 import itertools
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
+    from datetime import date
     from decimal import Decimal
 
     from strategy_engine.backtesting.idx_transaction_cost_model import (
@@ -36,8 +37,8 @@ def run_parameter_sensitivity(
     instrument_metadata: pd.DataFrame,
     initial_capital_idr: Decimal,
     cost_model: IDXTransactionCostModel,
-    start_date: object | None = None,
-    end_date: object | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> pd.DataFrame:
     """Systematic sensitivity analysis across parameter grid.
 
@@ -81,7 +82,7 @@ def run_parameter_sensitivity(
     if end_date is None:
         end_date = prices.index[-1].date() if hasattr(prices.index[-1], "date") else prices.index[-1]
 
-    param_grid = {
+    param_grid: dict[str, list[Any]] = {
         "formation_months": [3, 6, 9, 12],
         "skip_months": [0, 1],
         "top_pct": [0.10, 0.20, 0.30],
@@ -89,10 +90,10 @@ def run_parameter_sensitivity(
     }
 
     keys = list(param_grid.keys())
-    values = list(param_grid.values())
-    combos = list(itertools.product(*values))
+    value_lists = list(param_grid.values())
+    combos: list[tuple[Any, ...]] = list(itertools.product(*value_lists))
 
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
 
     for combo in combos:
         params = dict(zip(keys, combo, strict=False))

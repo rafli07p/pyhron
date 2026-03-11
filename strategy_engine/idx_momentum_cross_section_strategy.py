@@ -474,7 +474,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
         raw_weight = Decimal("1") / Decimal(str(len(top)))
         capped_weight = min(raw_weight, Decimal(str(max_position_pct)))
 
-        rows: list[dict] = []
+        rows: list[dict[str, object]] = []
         for rank_idx, (symbol, score) in enumerate(top.items(), start=1):
             sector = ""
             lot_size = _IDX_LOT_SIZE
@@ -550,7 +550,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
 
         all_symbols = set(current_positions.keys()) | set(target_lots_map.keys())
 
-        trades: list[dict] = []
+        trades: list[dict[str, object]] = []
         for symbol in all_symbols:
             current = current_positions.get(symbol, 0)
             target = target_lots_map.get(symbol, 0)

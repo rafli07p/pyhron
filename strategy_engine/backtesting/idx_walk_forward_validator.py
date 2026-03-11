@@ -16,7 +16,7 @@ from __future__ import annotations
 import itertools
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
@@ -28,6 +28,9 @@ from strategy_engine.backtesting.backtest_performance_metrics import (
 if TYPE_CHECKING:
     from decimal import Decimal
 
+    from strategy_engine.backtesting.idx_transaction_cost_model import (
+        IDXTransactionCostModel,
+    )
     from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
         BacktestResult,
         IDXVectorbtBacktestEngine,
@@ -72,7 +75,7 @@ class WalkForwardResult:
     oos_max_drawdown: float
     oos_calmar: float
     is_oos_sharpe_ratio: float
-    best_params_per_fold: list[dict]
+    best_params_per_fold: list[dict[str, Any]]
     param_stability_score: float
     fold_results: list[BacktestResult]
     equity_curve_oos: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))
@@ -124,7 +127,8 @@ class IDXWalkForwardValidator:
             oos_end = oos_start + timedelta(days=self._oos_months * 30)
 
             is_result = await self._engine.run(strategy, market_data, is_start, is_end)
-            is_metrics = self._metrics.compute_all(is_result.returns)
+            is_returns = is_result.equity_curve.pct_change().dropna()
+            is_metrics = self._metrics.compute_all(is_returns)
 
             oos_result = await self._engine.run(
                 strategy,
@@ -132,7 +136,8 @@ class IDXWalkForwardValidator:
                 oos_start,
                 oos_end,
             )
-            oos_metrics = self._metrics.compute_all(oos_result.returns)
+            oos_returns = oos_result.equity_curve.pct_change().dropna()
+            oos_metrics = self._metrics.compute_all(oos_returns)
 
             is_sharpe = is_metrics.get("sharpe_ratio", 0.0)
             oos_sharpe = oos_metrics.get("sharpe_ratio", 0.0)
@@ -150,7 +155,7 @@ class IDXWalkForwardValidator:
                 is_oos_degradation=round(degradation, 4),
             )
             folds.append(fold)
-            all_oos_returns.append(oos_result.returns)
+            all_oos_returns.append(oos_returns)
 
             logger.info(
                 "walk_forward_fold_complete",
@@ -183,10 +188,10 @@ def run_walk_forward(
     trading_values: pd.DataFrame,
     instrument_metadata: pd.DataFrame,
     initial_capital_idr: Decimal,
-    param_grid: dict,
+    param_grid: dict[str, list[Any]],
     n_splits: int = 5,
     train_pct: float = 0.70,
-    cost_model: object | None = None,
+    cost_model: IDXTransactionCostModel | None = None,
     optimization_metric: str = "sharpe_ratio",
 ) -> WalkForwardResult:
     """Walk-forward optimization with grid search over parameter space.
@@ -234,8 +239,8 @@ def run_walk_forward(
     values = list(param_grid.values())
     param_combos = [dict(zip(keys, combo, strict=False)) for combo in itertools.product(*values)]
 
-    best_params_per_fold: list[dict] = []
-    fold_results: list = []
+    best_params_per_fold: list[dict[str, Any]] = []
+    fold_results: list[BacktestResult] = []
     all_oos_curves: list[pd.Series] = []
     all_is_sharpes: list[float] = []
     all_oos_sharpes: list[float] = []
