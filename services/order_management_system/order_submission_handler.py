@@ -512,13 +512,13 @@ class OrderSubmissionHandler:
         # Step 2: Get current position for IDX validator (no-short-selling check)
         current_position_lots = 0
         async with self._db_session_factory() as session:
-            result = await session.execute(
+            pos_result = await session.execute(
                 select(StrategyPositionSnapshot).where(
                     StrategyPositionSnapshot.strategy_id == (strategy_id or user_id),
                     StrategyPositionSnapshot.symbol == symbol,
                 )
             )
-            position = result.scalar_one_or_none()
+            position = pos_result.scalar_one_or_none()
             if position is not None and position.quantity is not None:
                 from services.order_management_system.idx_order_validator import IDX_LOT_SIZE
 
@@ -622,10 +622,10 @@ class OrderSubmissionHandler:
             # Success: transition to SUBMITTED, update broker_order_id
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
+                    order_result = await session.execute(
                         select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
-                    order_obj = result.scalar_one()
+                    order_obj = order_result.scalar_one()
 
                 await state_machine.transition(
                     order=order_obj,
@@ -636,10 +636,10 @@ class OrderSubmissionHandler:
             else:
                 # No state machine — update DB directly
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
+                    order_result = await session.execute(
                         select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
-                    rec = result.scalar_one()
+                    rec = order_result.scalar_one()
                     rec.broker_order_id = broker_order_id
                     rec.status = OrderStatusEnum.SUBMITTED
                     rec.submitted_at = datetime.now(tz=UTC)
@@ -658,10 +658,10 @@ class OrderSubmissionHandler:
             # Broker explicitly rejected
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
+                    order_result = await session.execute(
                         select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
-                    order_obj = result.scalar_one()
+                    order_obj = order_result.scalar_one()
 
                 await state_machine.transition(
                     order=order_obj,
@@ -674,10 +674,10 @@ class OrderSubmissionHandler:
                 )
             else:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
+                    order_result = await session.execute(
                         select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
-                    rec = result.scalar_one()
+                    rec = order_result.scalar_one()
                     rec.status = OrderStatusEnum.REJECTED
                     rec.rejection_reason = exc.reason or str(exc)
                     rec.updated_at = datetime.now(tz=UTC)
@@ -713,10 +713,10 @@ class OrderSubmissionHandler:
             )
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
+                    order_result = await session.execute(
                         select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
-                    order_obj = result.scalar_one()
+                    order_obj = order_result.scalar_one()
 
                 await state_machine.transition(
                     order=order_obj,
@@ -758,7 +758,7 @@ class OrderSubmissionHandler:
 
         # Step 9: Return the persisted record
         async with self._db_session_factory() as session:
-            result = await session.execute(
+            order_result = await session.execute(
                 select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
             )
-            return result.scalar_one()
+            return order_result.scalar_one()
