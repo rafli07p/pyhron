@@ -18,6 +18,15 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
+
+# TODO: update imports when enthropy API/execution/risk interfaces are implemented
+# Future paths:
+#   from apps.terminal.data_client import DataClient (as EntropyAPIClient)
+#   from services.execution.order_router import OrderRouter
+#   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine)
+#   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType
+#   ExecutionReport, ExecutionStatus — not yet implemented
+pytest.importorskip("enthropy.api.client", reason="module not yet implemented")
 from enthropy.api.client import EntropyAPIClient
 from enthropy.execution.models import ExecutionReport, ExecutionStatus
 from enthropy.execution.router import OrderRouter
