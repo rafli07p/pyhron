@@ -4,20 +4,15 @@ Tracks daily prices for commodities critical to Indonesian markets:
 CPO (palm oil), HBA coal, LME nickel, ICP crude oil, and others.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class IndonesiaCommodityPrice(Base):
@@ -35,7 +30,7 @@ class IndonesiaCommodityPrice(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_commodity_prices"
+    __tablename__ = "commodity_prices"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     commodity_code: Mapped[str] = mapped_column(String(30), nullable=False)

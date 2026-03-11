@@ -28,6 +28,7 @@ def _get_jwt_secret() -> str:
 def _get_jwt_algorithm() -> str:
     return get_config().jwt_algorithm
 
+
 PUBLIC_PATHS: set[str] = {
     "/v1/auth/login",
     "/v1/auth/register",
@@ -44,7 +45,8 @@ PUBLIC_PATHS: set[str] = {
 
 def _decode_token(token: str) -> dict[str, Any]:
     """Decode and validate a JWT token, returning the payload claims."""
-    return jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
+    result: dict[str, Any] = jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
+    return result
 
 
 def _is_public_path(path: str) -> bool:

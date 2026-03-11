@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 
@@ -65,10 +65,10 @@ class SystemHealth:
             try:
                 import redis.asyncio as aioredis
 
-                r = aioredis.from_url(self._redis_url)
+                r: aioredis.Redis = aioredis.Redis.from_url(self._redis_url)
                 await r.ping()
                 results["redis"] = True
-                await r.aclose()
+                await r.close()
             except Exception:
                 results["redis"] = False
 
@@ -77,8 +77,9 @@ class SystemHealth:
                 from sqlalchemy.ext.asyncio import create_async_engine
 
                 engine = create_async_engine(self._db_url)
+                from sqlalchemy import text
                 async with engine.connect() as conn:
-                    await conn.execute("SELECT 1")
+                    await conn.execute(text("SELECT 1"))
                 results["postgres"] = True
                 await engine.dispose()
             except Exception:

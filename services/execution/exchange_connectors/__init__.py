@@ -167,6 +167,7 @@ class AlpacaConnector(BaseConnector):
             alpaca_side = AlpacaSide.BUY if order.side == OrderSide.BUY else AlpacaSide.SELL
             alpaca_tif = tif_map.get(order.time_in_force.value, AlpacaTIF.DAY)
 
+            req: MarketOrderRequest | LimitOrderRequest | StopOrderRequest | StopLimitOrderRequest
             if order.order_type == OrderType.MARKET:
                 req = MarketOrderRequest(
                     symbol=order.symbol,
@@ -180,7 +181,7 @@ class AlpacaConnector(BaseConnector):
                     qty=float(order.qty),
                     side=alpaca_side,
                     time_in_force=alpaca_tif,
-                    limit_price=float(order.price),
+                    limit_price=float(order.price or Decimal("0")),
                 )
             elif order.order_type == OrderType.STOP:
                 req = StopOrderRequest(
@@ -188,7 +189,7 @@ class AlpacaConnector(BaseConnector):
                     qty=float(order.qty),
                     side=alpaca_side,
                     time_in_force=alpaca_tif,
-                    stop_price=float(order.stop_price),
+                    stop_price=float(order.stop_price or Decimal("0")),
                 )
             elif order.order_type == OrderType.STOP_LIMIT:
                 req = StopLimitOrderRequest(
@@ -196,8 +197,8 @@ class AlpacaConnector(BaseConnector):
                     qty=float(order.qty),
                     side=alpaca_side,
                     time_in_force=alpaca_tif,
-                    limit_price=float(order.price),
-                    stop_price=float(order.stop_price),
+                    limit_price=float(order.price or Decimal("0")),
+                    stop_price=float(order.stop_price or Decimal("0")),
                 )
             else:
                 raise ValueError(f"Unsupported Alpaca order type: {order.order_type}")
@@ -321,7 +322,7 @@ class CCXTConnector(BaseConnector):
 
     def __init__(self, exchange_id: str | None = None) -> None:
         super().__init__(name="ccxt")
-        self._exchange_id = exchange_id or os.environ.get("CCXT_EXCHANGE", "binance")
+        self._exchange_id: str = exchange_id if exchange_id is not None else os.environ.get("CCXT_EXCHANGE", "binance")
         self._exchange: Any = None
 
     async def connect(self) -> None:

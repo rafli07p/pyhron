@@ -11,6 +11,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any, cast
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from google.protobuf.timestamp_pb2 import Timestamp
 
@@ -140,7 +144,9 @@ class RiskEngineKafkaConsumer:
         portfolio = await self._get_portfolio_snapshot(signal.strategy_id)
 
         # Get recent orders for dedup check
-        recent_orders = await redis.lrange(RECENT_ORDERS_KEY, 0, 999)
+        recent_orders_coro: Any = redis.lrange(RECENT_ORDERS_KEY, 0, 999)
+        recent_orders_raw = await recent_orders_coro
+        recent_orders: list[str] = list(recent_orders_raw) if recent_orders_raw else []
         if recent_orders is None:
             recent_orders = []
 
@@ -148,7 +154,7 @@ class RiskEngineKafkaConsumer:
         checks: list[RiskCheckResult] = []
         rejection_reasons: list[str] = []
 
-        for check_fn, kwargs in [
+        check_pipeline: list[tuple[Callable[..., RiskCheckResult], dict[str, Any]]] = [
             (check_lot_size_constraint, {"order": order, "lot_size": self._lot_size}),
             (
                 check_daily_loss_limit,
@@ -175,7 +181,8 @@ class RiskEngineKafkaConsumer:
                     "var_limit_pct": self._max_var_pct,
                 },
             ),
-        ]:
+        ]
+        for check_fn, kwargs in check_pipeline:
             result = check_fn(**kwargs)
             checks.append(result)
             if not result.passed:
@@ -188,9 +195,9 @@ class RiskEngineKafkaConsumer:
         else:
             await self._publish_approval(signal, order, portfolio)
             # Track order for dedup
-            await redis.lpush(RECENT_ORDERS_KEY, order.client_order_id)
-            await redis.ltrim(RECENT_ORDERS_KEY, 0, 9999)
-            await redis.expire(RECENT_ORDERS_KEY, 300)
+            await cast(Any, redis.lpush(RECENT_ORDERS_KEY, order.client_order_id))
+            await cast(Any, redis.ltrim(RECENT_ORDERS_KEY, 0, 9999))
+            await cast(Any, redis.expire(RECENT_ORDERS_KEY, 300))
 
         logger.info(
             "risk_evaluation_complete",

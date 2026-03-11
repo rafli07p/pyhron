@@ -186,8 +186,8 @@ class PostTradeAnalytics:
                 continue
 
             # Weighted average fill price
-            total_qty = sum(f.fill_qty for f in sym_fills)
-            wavg_fill = sum(f.fill_price * f.fill_qty for f in sym_fills) / total_qty
+            total_qty = sum((f.fill_qty for f in sym_fills), Decimal("0"))
+            wavg_fill = sum((f.fill_price * f.fill_qty for f in sym_fills), Decimal("0")) / total_qty
 
             direction = 1 if sym_fills[0].side == OrderSide.BUY else -1
 

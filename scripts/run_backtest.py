@@ -36,12 +36,25 @@ logger = logging.getLogger("enthropy.run_backtest")
 
 import contextlib
 
-from enthropy.backtest.config import BacktestConfig
-from enthropy.backtest.engine import BacktestEngine
-from enthropy.market_data.historical import HistoricalDataLoader
-from enthropy.pnl.engine import PnLEngine
-from enthropy.risk.engine import RiskEngine
-from enthropy.shared.schemas.risk import RiskLimits
+# TODO: update imports when enthropy interfaces are implemented
+# Future paths:
+#   from strategy_engine.backtesting.idx_vectorbt_backtest_engine import IDXVectorbtBacktestEngine (as BacktestEngine)
+#   from services.portfolio.pnl_engine import PnLEngine
+#   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
+#   BacktestConfig, HistoricalDataLoader — not yet implemented
+try:
+    from enthropy.backtest.config import BacktestConfig
+    from enthropy.backtest.engine import BacktestEngine
+    from enthropy.market_data.historical import HistoricalDataLoader
+    from enthropy.pnl.engine import PnLEngine
+    from enthropy.risk.engine import RiskEngine
+    from enthropy.shared.schemas.risk import RiskLimits
+except ImportError:
+    logger.error(
+        "enthropy.* modules not yet implemented. "
+        "This script will be available once the enthropy interface layer is complete."
+    )
+    sys.exit(1)
 
 # =============================================================================
 # Strategy Registry

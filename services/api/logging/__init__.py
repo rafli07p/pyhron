@@ -15,6 +15,7 @@ from typing import Any
 
 import structlog
 from fastapi import Request
+from structlog.types import EventDict, WrappedLogger
 
 # ---------------------------------------------------------------------------
 # JSON log formatter (ELK / Elasticsearch compatible)
@@ -32,7 +33,7 @@ class ELKJSONRenderer(structlog.dev.ConsoleRenderer):
     def __init__(self, service_name: str = "enthropy") -> None:
         self._service_name = service_name
 
-    def __call__(self, logger_obj: Any, name: str, event_dict: dict[str, Any]) -> str:
+    def __call__(self, logger_obj: WrappedLogger, name: str, event_dict: EventDict) -> str:
         import json as _json
 
         record: dict[str, Any] = {

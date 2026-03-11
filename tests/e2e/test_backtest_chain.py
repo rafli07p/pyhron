@@ -12,6 +12,16 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+
+# TODO: update imports when enthropy backtest/strategy interfaces are implemented
+# Future paths:
+#   from strategy_engine.backtesting.idx_vectorbt_backtest_engine import IDXVectorbtBacktestEngine (as BacktestEngine), BacktestResult
+#   from strategy_engine.idx_momentum_cross_section_strategy import IDXMomentumCrossSectionStrategy (as MomentumStrategy)
+#   from strategy_engine.idx_bollinger_mean_reversion_strategy import IDXBollingerMeanReversionStrategy (as MeanReversionStrategy)
+#   from services.portfolio.pnl_engine import PnLEngine
+#   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
+#   BacktestConfig, HistoricalDataLoader — not yet implemented
+pytest.importorskip("enthropy.backtest.config", reason="module not yet implemented")
 from enthropy.backtest.config import BacktestConfig
 from enthropy.backtest.engine import BacktestEngine
 from enthropy.backtest.result import BacktestResult

@@ -55,7 +55,7 @@ def validate_macro_record(record: dict) -> list[str]:
         errors.append("Missing indicator field")
     if "value" not in record:
         errors.append("Missing value field")
-    elif not isinstance(record["value"], (int, float)):
+    elif not isinstance(record["value"], int | float):
         errors.append(f"Value must be numeric, got {type(record['value'])}")
     return errors
 

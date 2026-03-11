@@ -4,19 +4,15 @@ Persists strategy definitions, hyperparameters, risk configuration, and
 the instrument universe for each trading strategy.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 class Strategy(Base):
@@ -38,9 +34,7 @@ class Strategy(Base):
 
     __tablename__ = "strategies"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
@@ -48,18 +42,12 @@ class Strategy(Base):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     strategy_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    parameters: Mapped[dict | None] = mapped_column(JSONB)
+    parameters: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_live: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    universe: Mapped[dict | None] = mapped_column(JSONB)
-    risk_config: Mapped[dict | None] = mapped_column(JSONB)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    universe: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    risk_config: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    __table_args__ = (
-        Index("ix_strategies_user_created", "user_id", created_at.desc()),
-    )
+    __table_args__ = (Index("ix_strategies_user_created", "user_id", created_at.desc()),)

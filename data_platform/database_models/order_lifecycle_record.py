@@ -4,20 +4,15 @@ Persists the full order state machine alongside Kafka event log,
 serving as the source of truth for order management.
 """
 
-from __future__ import annotations
-
 import enum
+from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, CheckConstraint, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 class OrderSideEnum(enum.StrEnum):
@@ -89,7 +84,7 @@ class OrderLifecycleRecord(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "order_lifecycle_records"
+    __tablename__ = "orders"
 
     client_order_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     broker_order_id: Mapped[str | None] = mapped_column(String(100))

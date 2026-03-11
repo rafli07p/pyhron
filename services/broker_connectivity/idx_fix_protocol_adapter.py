@@ -11,7 +11,7 @@ what would be needed for a production FIX implementation.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
 from shared.structured_json_logger import get_logger
@@ -97,7 +97,7 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
             f"Would cancel order {broker_order_id}."
         )
 
-    async def get_order_status(self, broker_order_id: str) -> dict:
+    async def get_order_status(self, broker_order_id: str) -> dict[str, Any]:
         """Query order status on IDX via FIX protocol.
 
         Would send a FIX OrderStatusRequest (MsgType=H) or rely on
@@ -115,7 +115,7 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
             f"ExecutionReports for order {broker_order_id}."
         )
 
-    async def get_positions(self) -> list[dict]:
+    async def get_positions(self) -> list[dict[str, Any]]:
         """Fetch positions from IDX via FIX protocol or broker API.
 
         IDX positions would typically be retrieved via:
@@ -132,7 +132,7 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
             "REST API for position data from KSEI."
         )
 
-    async def get_account(self) -> dict:
+    async def get_account(self) -> dict[str, Any]:
         """Fetch account information from IDX broker.
 
         IDX account data includes:
@@ -149,7 +149,7 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
             "information from the IDX member broker."
         )
 
-    async def stream_fills(self) -> AsyncIterator[dict]:
+    async def stream_fills(self) -> AsyncIterator[dict[str, Any]]:
         """Stream fill events from IDX via FIX ExecutionReport messages.
 
         Would listen for FIX ExecutionReport (MsgType=8) messages with:

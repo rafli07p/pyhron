@@ -4,11 +4,10 @@ Tracks dividends, stock splits, reverse splits, and rights issues for
 IDX-listed equities.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import (
     Date,
@@ -24,10 +23,6 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class ActionType(enum.StrEnum):
@@ -57,12 +52,12 @@ class IdxEquityCorporateAction(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "idx_equity_corporate_actions"
+    __tablename__ = "corporate_actions"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("idx_equity_instruments.symbol"),
+        ForeignKey("instruments.symbol"),
         nullable=False,
         index=True,
     )

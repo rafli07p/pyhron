@@ -21,8 +21,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 from scipy.optimize import minimize
 
 from shared.structured_json_logger import get_logger
@@ -91,14 +93,14 @@ class IndonesiaYieldCurveCalculator:
 
     @staticmethod
     def _nss_yield(
-        t: np.ndarray,
+        t: npt.NDArray[np.floating[Any]],
         b0: float,
         b1: float,
         b2: float,
         b3: float,
         t1: float,
         t2: float,
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.floating[Any]]:
         """Evaluate NSS model at given tenors.
 
         Args:
@@ -118,7 +120,8 @@ class IndonesiaYieldCurveCalculator:
         factor2 = factor1 - np.exp(-x1)
         factor3 = np.where(x2 > 0, (1 - np.exp(-x2)) / x2 - np.exp(-x2), 0.0)
 
-        return b0 + b1 * factor1 + b2 * factor2 + b3 * factor3
+        result: npt.NDArray[np.floating[Any]] = b0 + b1 * factor1 + b2 * factor2 + b3 * factor3
+        return result
 
     def fit_curve(self, observed: list[ObservedYield]) -> YieldCurveSnapshot:
         """Fit NSS model to observed benchmark yields.
@@ -132,7 +135,7 @@ class IndonesiaYieldCurveCalculator:
         tenors = np.array([o.tenor_years for o in observed])
         yields = np.array([o.yield_pct for o in observed])
 
-        def objective(params: np.ndarray) -> float:
+        def objective(params: npt.NDArray[np.floating[Any]]) -> float:
             b0, b1, b2, b3, t1, t2 = params
             fitted = self._nss_yield(tenors, b0, b1, b2, b3, t1, t2)
             return float(np.sum((yields - fitted) ** 2))

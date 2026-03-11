@@ -4,11 +4,10 @@ Stores quarterly and annual fundamentals sourced from IDX filings or
 third-party providers such as EODHD.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import (
     BigInteger,
@@ -27,10 +26,6 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class StatementType(enum.StrEnum):
@@ -70,17 +65,15 @@ class IdxEquityFinancialStatement(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "idx_equity_financial_statements"
+    __tablename__ = "financial_statements"
 
     # ── Relationships ────────────────────────────────────────────────────────
-    instrument = relationship(
-        "IdxEquityInstrument", back_populates="financial_statements", lazy="selectin"
-    )
+    instrument = relationship("IdxEquityInstrument", back_populates="financial_statements", lazy="selectin")
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("idx_equity_instruments.symbol"),
+        ForeignKey("instruments.symbol"),
         nullable=False,
         index=True,
     )

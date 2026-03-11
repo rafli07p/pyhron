@@ -4,19 +4,14 @@ Stores satellite-detected fire hotspot observations with geolocation,
 radiative power, and optional concession mapping for ESG screening.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
 
 from sqlalchemy import Date, Float, Index, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
 
 
 class IndonesiaFireHotspotEvent(Base):
@@ -38,7 +33,7 @@ class IndonesiaFireHotspotEvent(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_fire_hotspot_events"
+    __tablename__ = "fire_hotspot_events"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)

@@ -356,7 +356,8 @@ class BankIndonesiaMonetaryDataIngester:
                     resp = await client.get(url, params=params, headers=headers)
                     resp.raise_for_status()
                     payload = resp.json()
-                    return payload.get("data", payload if isinstance(payload, list) else [])
+                    result: list[dict[str, Any]] = payload.get("data", payload if isinstance(payload, list) else [])
+                    return result
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (500, 502, 503) and attempt < MAX_RETRIES:
                     await asyncio.sleep(2 ** (attempt - 1))

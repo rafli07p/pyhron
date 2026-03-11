@@ -13,6 +13,7 @@ from decimal import Decimal
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import structlog
 
 from shared.schemas.research_events import SimulationType
@@ -28,8 +29,8 @@ logger = structlog.get_logger(__name__)
 class SimulationOutput:
     """Raw output from a Monte Carlo simulation."""
 
-    paths: np.ndarray  # shape (num_paths, num_timesteps + 1)
-    terminal_values: np.ndarray  # shape (num_paths,)
+    paths: npt.NDArray[np.float64]  # shape (num_paths, num_timesteps + 1)
+    terminal_values: npt.NDArray[np.float64]  # shape (num_paths,)
     simulation_type: str
     num_paths: int
     num_timesteps: int
@@ -61,7 +62,7 @@ class StressTestResult:
     probability_of_loss: float
     var_95: float
     cvar_95: float
-    paths: np.ndarray | None = None
+    paths: npt.NDArray[np.float64] | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -171,7 +172,7 @@ class MonteCarloSimulator:
         n_paths: int,
         n_steps: int,
         dt: float,
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.float64]:
         """Vectorised Geometric Brownian Motion."""
         # Generate all random increments at once
         z = self._rng.standard_normal((n_paths, n_steps))
@@ -184,7 +185,8 @@ class MonteCarloSimulator:
             [np.zeros((n_paths, 1)), np.cumsum(log_returns, axis=1)],
             axis=1,
         )
-        return s0 * np.exp(log_paths)
+        result: npt.NDArray[np.float64] = s0 * np.exp(log_paths)
+        return result
 
     def _simulate_jump_diffusion(
         self,
@@ -197,7 +199,7 @@ class MonteCarloSimulator:
         lam: float,
         jump_mu: float,
         jump_sigma: float,
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.float64]:
         """Vectorised Merton jump-diffusion model."""
         z = self._rng.standard_normal((n_paths, n_steps))
         drift = (mu - 0.5 * sigma**2 - lam * (np.exp(jump_mu + 0.5 * jump_sigma**2) - 1)) * dt
@@ -217,13 +219,14 @@ class MonteCarloSimulator:
             [np.zeros((n_paths, 1)), np.cumsum(log_returns, axis=1)],
             axis=1,
         )
-        return s0 * np.exp(log_paths)
+        jd_result: npt.NDArray[np.float64] = s0 * np.exp(log_paths)
+        return jd_result
 
     # -- Portfolio-level simulation ------------------------------------------
 
     def simulate_portfolio_returns(
         self,
-        historical_returns: np.ndarray,
+        historical_returns: npt.NDArray[np.float64],
         initial_value: float,
         num_paths: int = 10_000,
         num_timesteps: int = 252,
@@ -284,7 +287,7 @@ class MonteCarloSimulator:
         num_paths: int = 10_000,
         num_timesteps: int = 252,
         tenant_id: str = "default",
-        scenarios: dict[str, dict[str, float]] | None = None,
+        scenarios: dict[str, dict[str, Any]] | None = None,
     ) -> list[StressTestResult]:
         """Run Monte Carlo stress tests for predefined market scenarios.
 

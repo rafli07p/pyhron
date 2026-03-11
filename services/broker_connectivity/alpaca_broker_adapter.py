@@ -9,7 +9,7 @@ Requires ALPACA_API_KEY, ALPACA_SECRET_KEY, and ALPACA_BASE_URL in config.
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import websockets
@@ -212,7 +212,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
 
         return True
 
-    async def get_order_status(self, broker_order_id: str) -> dict:
+    async def get_order_status(self, broker_order_id: str) -> dict[str, Any]:
         """Get order status via GET /v2/orders/{id}.
 
         Args:
@@ -253,7 +253,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
             "updated_at": data.get("updated_at", ""),
         }
 
-    async def get_positions(self) -> list[dict]:
+    async def get_positions(self) -> list[dict[str, Any]]:
         """Fetch all positions via GET /v2/positions.
 
         Returns:
@@ -275,7 +275,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
             raise BrokerConnectionError(f"Alpaca positions returned HTTP {response.status_code}: {response.text}")
 
         data = response.json()
-        positions: list[dict] = []
+        positions: list[dict[str, Any]] = []
 
         for pos in data:
             positions.append(
@@ -295,7 +295,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
         logger.debug("alpaca_positions_fetched", count=len(positions))
         return positions
 
-    async def get_account(self) -> dict:
+    async def get_account(self) -> dict[str, Any]:
         """Fetch account info via GET /v2/account.
 
         Returns:
@@ -333,7 +333,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
             "currency": data.get("currency", "USD"),
         }
 
-    async def stream_fills(self) -> AsyncIterator[dict]:
+    async def stream_fills(self) -> AsyncIterator[dict[str, Any]]:
         """Stream real-time trade updates via Alpaca WebSocket.
 
         Connects to the Alpaca streaming API, authenticates, subscribes
@@ -389,7 +389,7 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
 
                         # Only yield fill-related events
                         if event_type in ("fill", "partial_fill"):
-                            fill_event: dict = {
+                            fill_event: dict[str, Any] = {
                                 "broker_order_id": order_data.get("id", ""),
                                 "client_order_id": order_data.get("client_order_id", ""),
                                 "symbol": order_data.get("symbol", ""),

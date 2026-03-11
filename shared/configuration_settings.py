@@ -60,6 +60,9 @@ class Config(BaseSettings):
     kafka_consumer_group: str = Field(default="pyhron-consumers")
 
     # -- Market Data --
+    bps_api_key: str = Field(default="")
+    nasa_firms_api_key: str = Field(default="")
+    globalcoal_api_key: str = Field(default="")
     eodhd_api_key: str = Field(default="")
     polygon_api_key: str = Field(default="")
     alpaca_api_key: str = Field(default="")
@@ -89,7 +92,9 @@ class Config(BaseSettings):
     prometheus_port: int = Field(default=9090)
 
     # -- CORS --
-    allowed_cors_origins: str = Field(default="http://localhost:3000", description="Comma-separated allowed CORS origins")
+    allowed_cors_origins: str = Field(
+        default="http://localhost:3000", description="Comma-separated allowed CORS origins"
+    )
 
     # -- Notifications --
     slack_webhook_url: str = Field(default="")

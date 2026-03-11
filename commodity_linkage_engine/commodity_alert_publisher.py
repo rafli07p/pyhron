@@ -114,6 +114,8 @@ class CommodityAlertPublisher:
 
             alert = self._build_alert_payload(event, estimate, severity)
             try:
+                if self._producer._producer is None:
+                    raise RuntimeError("Kafka producer not initialized")
                 await self._producer._producer.send_and_wait(
                     self._topic,
                     value=json.dumps(alert).encode("utf-8"),

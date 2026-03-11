@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> object:
     """Lazy imports to avoid heavy startup cost."""
     if name == "create_rest_app":
         from services.api.rest_gateway import create_rest_app

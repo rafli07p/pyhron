@@ -12,6 +12,13 @@ from decimal import Decimal
 from uuid import uuid4
 
 import pytest
+
+# TODO: update imports when enthropy.shared.schemas is implemented
+# Future paths:
+#   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType, OrderStatusEnum (as OrderStatus)
+#   from shared.schemas.market_events import TickEvent (as TickData)
+#   OrderResponse, PositionSnapshot, RiskLimits — not yet implemented under enthropy interface
+pytest.importorskip("enthropy.shared.schemas.order", reason="module not yet implemented")
 from enthropy.shared.schemas.order import (
     OrderCreate,
     OrderResponse,

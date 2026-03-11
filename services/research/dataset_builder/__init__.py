@@ -8,6 +8,7 @@ and outputs pandas or Dask DataFrames for downstream research.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any, Literal
 
@@ -178,7 +179,7 @@ async def _fetch_ohlcv_polygon(
 # ---------------------------------------------------------------------------
 
 # Map of supported feature groups to their engineering functions
-_FEATURE_MAP = {
+_FEATURE_MAP: dict[str, Callable[[pd.DataFrame], pd.DataFrame]] = {
     "returns": _add_returns,
     "volatility": _add_volatility,
     "volume_profile": _add_volume_profile,
@@ -260,7 +261,7 @@ class DatasetBuilder:
 
         frames: list[pd.DataFrame] = []
         for sym, result in zip(symbols, results):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 self._log.warning("fetch_failed", symbol=sym, error=str(result))
                 continue
             if result.empty:

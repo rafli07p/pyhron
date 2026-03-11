@@ -15,6 +15,7 @@ from typing import Any, Protocol, runtime_checkable
 
 import dask.dataframe as dd
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import structlog
 import yfinance as yf
@@ -126,14 +127,14 @@ async def _fetch_polygon(
 # Performance metrics (vectorised)
 # ---------------------------------------------------------------------------
 
-def _compute_returns(equity_curve: np.ndarray) -> np.ndarray:
+def _compute_returns(equity_curve: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Compute log returns from an equity curve."""
     with np.errstate(divide="ignore", invalid="ignore"):
         returns = np.diff(np.log(equity_curve))
     return np.nan_to_num(returns, nan=0.0, posinf=0.0, neginf=0.0)
 
 
-def _sharpe_ratio(returns: np.ndarray, trading_days: int = 252) -> float:
+def _sharpe_ratio(returns: npt.NDArray[np.float64], trading_days: int = 252) -> float:
     """Annualised Sharpe ratio (excess return / volatility)."""
     if len(returns) < 2:
         return 0.0
@@ -144,7 +145,7 @@ def _sharpe_ratio(returns: np.ndarray, trading_days: int = 252) -> float:
     return float(mean_r / std_r * np.sqrt(trading_days))
 
 
-def _max_drawdown(equity_curve: np.ndarray) -> float:
+def _max_drawdown(equity_curve: npt.NDArray[np.float64]) -> float:
     """Maximum drawdown as a negative fraction."""
     if len(equity_curve) < 2:
         return 0.0
@@ -153,14 +154,14 @@ def _max_drawdown(equity_curve: np.ndarray) -> float:
     return float(np.min(drawdowns))
 
 
-def _win_rate(trade_pnls: np.ndarray) -> float:
+def _win_rate(trade_pnls: npt.NDArray[np.float64]) -> float:
     """Fraction of winning trades."""
     if len(trade_pnls) == 0:
         return 0.0
     return float(np.sum(trade_pnls > 0) / len(trade_pnls))
 
 
-def _profit_factor(trade_pnls: np.ndarray) -> float:
+def _profit_factor(trade_pnls: npt.NDArray[np.float64]) -> float:
     """Gross profit divided by gross loss."""
     gross_profit = np.sum(trade_pnls[trade_pnls > 0])
     gross_loss = abs(np.sum(trade_pnls[trade_pnls < 0]))
@@ -169,7 +170,7 @@ def _profit_factor(trade_pnls: np.ndarray) -> float:
     return float(gross_profit / gross_loss)
 
 
-def _sortino_ratio(returns: np.ndarray, trading_days: int = 252) -> float:
+def _sortino_ratio(returns: npt.NDArray[np.float64], trading_days: int = 252) -> float:
     """Annualised Sortino ratio."""
     if len(returns) < 2:
         return 0.0
@@ -193,7 +194,7 @@ def _annualized_return(total_return: float, days: int) -> float:
     return float((1 + total_return) ** (1 / years) - 1)
 
 
-def _annualized_volatility(returns: np.ndarray, trading_days: int = 252) -> float:
+def _annualized_volatility(returns: npt.NDArray[np.float64], trading_days: int = 252) -> float:
     """Annualised volatility."""
     if len(returns) < 2:
         return 0.0
@@ -538,7 +539,8 @@ class BacktestEngine:
         bsm_process = ql.BlackScholesMertonProcess(spot_handle, flat_ts, flat_ts, flat_vol)
         option.setPricingEngine(ql.AnalyticEuropeanEngine(bsm_process))
 
-        return option.NPV()
+        npv: float = option.NPV()
+        return npv
 
     # -- Helpers -------------------------------------------------------------
 

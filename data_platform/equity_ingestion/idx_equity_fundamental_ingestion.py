@@ -178,7 +178,8 @@ class IDXEquityFundamentalIngester:
                     if resp.status_code == 429:
                         raise RateLimitExceededError("EODHD rate limit (HTTP 429)")
                     resp.raise_for_status()
-                    return resp.json()
+                    result: dict[str, Any] = resp.json()
+                    return result
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code in (429, 500, 502, 503) and attempt < MAX_RETRIES:
                     await asyncio.sleep(2 ** (attempt - 1))

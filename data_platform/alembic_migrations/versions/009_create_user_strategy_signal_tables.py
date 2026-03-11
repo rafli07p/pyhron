@@ -6,7 +6,7 @@ Create Date: 2026-03-10 00:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ENUM, JSONB, UUID
 
 revision = "009"
 down_revision = "008"
@@ -17,11 +17,14 @@ depends_on = None
 def upgrade() -> None:
     """Create enum types and tables for users, strategies, backtests, and signals."""
     # ── Enum types ────────────────────────────────────────────────────────
-    op.execute("CREATE TYPE user_role AS ENUM ('admin', 'trader', 'analyst', 'readonly')")
-    op.execute("CREATE TYPE backtest_status AS ENUM ('pending', 'running', 'completed', 'failed')")
     op.execute(
-        "CREATE TYPE signal_type AS ENUM "
-        "('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance')"
+        "DO $$ BEGIN CREATE TYPE user_role AS ENUM ('admin', 'trader', 'analyst', 'readonly'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
+    )
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE backtest_status AS ENUM ('pending', 'running', 'completed', 'failed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
+    )
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE signal_type AS ENUM ('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
     )
 
     # ── users ─────────────────────────────────────────────────────────────
@@ -37,7 +40,7 @@ def upgrade() -> None:
         sa.Column("hashed_password", sa.String(255), nullable=False),
         sa.Column(
             "role",
-            sa.Enum("admin", "trader", "analyst", "readonly", name="user_role", create_type=False),
+            ENUM("admin", "trader", "analyst", "readonly", name="user_role", create_type=False),
             nullable=False,
             server_default="readonly",
         ),
@@ -50,9 +53,7 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
     )
     # Expression index for case-insensitive email lookup
-    op.execute(
-        "CREATE UNIQUE INDEX ix_users_email_lower ON users (lower(email))"
-    )
+    op.execute("CREATE UNIQUE INDEX ix_users_email_lower ON users (lower(email))")
 
     # ── strategies ────────────────────────────────────────────────────────
     op.create_table(
@@ -108,7 +109,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum("pending", "running", "completed", "failed", name="backtest_status", create_type=False),
+            ENUM("pending", "running", "completed", "failed", name="backtest_status", create_type=False),
             nullable=False,
             server_default="pending",
         ),
@@ -143,7 +144,7 @@ def upgrade() -> None:
             "id",
             UUID(as_uuid=True),
             server_default=sa.text("uuid_generate_v4()"),
-            primary_key=True,
+            nullable=False,
         ),
         sa.Column(
             "strategy_id",
@@ -154,8 +155,12 @@ def upgrade() -> None:
         sa.Column("instrument_symbol", sa.String(20), nullable=False),
         sa.Column(
             "signal_type",
-            sa.Enum(
-                "entry_long", "entry_short", "exit_long", "exit_short", "rebalance",
+            ENUM(
+                "entry_long",
+                "entry_short",
+                "exit_long",
+                "exit_short",
+                "rebalance",
                 name="signal_type",
                 create_type=False,
             ),
@@ -172,6 +177,7 @@ def upgrade() -> None:
         sa.Column("acted_on", sa.Boolean(), nullable=False, server_default="false"),
         sa.Column("resulting_order_id", sa.String(36)),
         sa.Column("metadata_json", JSONB()),
+        sa.PrimaryKeyConstraint("id", "generated_at", name="pk_signals"),
     )
     op.create_index(
         "ix_signals_strategy_bar_ts",
@@ -185,10 +191,7 @@ def upgrade() -> None:
     )
 
     # CHECK constraints
-    op.execute(
-        "ALTER TABLE signals ADD CONSTRAINT ck_signals_strength_range "
-        "CHECK (strength BETWEEN -1.0 AND 1.0)"
-    )
+    op.execute("ALTER TABLE signals ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)")
 
     # Convert signals to TimescaleDB hypertable
     op.execute("""

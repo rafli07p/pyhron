@@ -200,7 +200,7 @@ class CoalHBAPriceIngester:
         headers = {
             "User-Agent": "Pyhron/1.0 (Data Platform)",
             "Accept": "application/json",
-            "Authorization": f"Bearer {self._config.get('GLOBALCOAL_API_KEY', '')}",
+            "Authorization": f"Bearer {self._config.globalcoal_api_key}",
         }
         params = {"from": start.isoformat(), "to": end.isoformat()}
 

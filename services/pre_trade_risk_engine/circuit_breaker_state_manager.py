@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Any, cast
 
 from shared.redis_cache_client import get_redis
 from shared.structured_json_logger import get_logger
@@ -126,8 +127,8 @@ class CircuitBreakerStateManager:
         # Append to history
         history_key = CIRCUIT_BREAKER_HISTORY_KEY.format(entity_id=entity_id)
         history_entry = f"{now.isoformat()}|HALT|{reason.value}|{detail}"
-        await redis.lpush(history_key, history_entry)
-        await redis.ltrim(history_key, 0, MAX_HISTORY_ENTRIES - 1)
+        await cast(Any, redis.lpush(history_key, history_entry))
+        await cast(Any, redis.ltrim(history_key, 0, MAX_HISTORY_ENTRIES - 1))
 
         state = CircuitBreakerState(
             entity_id=entity_id,
@@ -170,8 +171,8 @@ class CircuitBreakerStateManager:
         now = datetime.now(tz=UTC)
         history_key = CIRCUIT_BREAKER_HISTORY_KEY.format(entity_id=entity_id)
         history_entry = f"{now.isoformat()}|RESUME|{reason}|"
-        await redis.lpush(history_key, history_entry)
-        await redis.ltrim(history_key, 0, MAX_HISTORY_ENTRIES - 1)
+        await cast(Any, redis.lpush(history_key, history_entry))
+        await cast(Any, redis.ltrim(history_key, 0, MAX_HISTORY_ENTRIES - 1))
 
         if existed:
             logger.info(
@@ -255,11 +256,11 @@ class CircuitBreakerStateManager:
         """
         redis = await get_redis()
         history_key = CIRCUIT_BREAKER_HISTORY_KEY.format(entity_id=entity_id)
-        entries = await redis.lrange(history_key, 0, limit - 1)
+        entries = cast(list[str], await cast(Any, redis.lrange(history_key, 0, limit - 1)))
 
         results: list[dict[str, str]] = []
         for entry in entries or []:
-            entry_str = entry if isinstance(entry, str) else entry.decode()
+            entry_str = entry if isinstance(entry, str) else str(entry)
             parts = entry_str.split("|", 3)
             results.append(
                 {

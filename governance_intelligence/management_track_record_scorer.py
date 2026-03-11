@@ -65,7 +65,7 @@ class ManagementTrackRecordScorer:
             text("""
                 SELECT filer_name, filer_type, COUNT(*) as events,
                        MIN(event_date) as first_event
-                FROM governance.idx_equity_governance_flag
+                FROM governance_flags
                 WHERE symbol = :symbol
                   AND filer_type IN ('DIRECTOR', 'COMMISSIONER', 'CEO', 'CFO')
                 GROUP BY filer_name, filer_type

@@ -4,20 +4,15 @@ Stores yield curve data, pricing, and duration analytics for Indonesian
 sovereign bonds including FR (fixed rate) and PBS (sukuk) series.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class IndonesiaGovernmentBond(Base):
@@ -43,7 +38,7 @@ class IndonesiaGovernmentBond(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_government_bonds"
+    __tablename__ = "government_bonds"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     series_code: Mapped[str] = mapped_column(String(30), nullable=False)

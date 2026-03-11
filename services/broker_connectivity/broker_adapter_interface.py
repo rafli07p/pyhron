@@ -9,7 +9,7 @@ concrete adapters.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -64,7 +64,7 @@ class BrokerAdapterInterface(ABC):
         raise NotImplementedError("cancel_order must be implemented by subclass")
 
     @abstractmethod
-    async def get_order_status(self, broker_order_id: str) -> dict:
+    async def get_order_status(self, broker_order_id: str) -> dict[str, Any]:
         """Retrieve the current status of an order from the broker.
 
         Args:
@@ -81,7 +81,7 @@ class BrokerAdapterInterface(ABC):
         raise NotImplementedError("get_order_status must be implemented by subclass")
 
     @abstractmethod
-    async def get_positions(self) -> list[dict]:
+    async def get_positions(self) -> list[dict[str, Any]]:
         """Fetch all current positions from the broker.
 
         Returns:
@@ -94,7 +94,7 @@ class BrokerAdapterInterface(ABC):
         raise NotImplementedError("get_positions must be implemented by subclass")
 
     @abstractmethod
-    async def get_account(self) -> dict:
+    async def get_account(self) -> dict[str, Any]:
         """Fetch account information from the broker.
 
         Returns:
@@ -107,7 +107,7 @@ class BrokerAdapterInterface(ABC):
         raise NotImplementedError("get_account must be implemented by subclass")
 
     @abstractmethod
-    async def stream_fills(self) -> AsyncIterator[dict]:
+    async def stream_fills(self) -> AsyncIterator[dict[str, Any]]:
         """Stream real-time fill events from the broker.
 
         Yields dicts with at minimum: ``{"broker_order_id": str,

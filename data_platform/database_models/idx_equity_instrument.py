@@ -4,10 +4,8 @@ Provides the canonical reference for all listed equities on the Indonesia
 Stock Exchange, including sector classification and listing lifecycle dates.
 """
 
-from __future__ import annotations
-
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from sqlalchemy import BigInteger, Boolean, Date, Index, Integer, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
@@ -37,7 +35,7 @@ class IdxEquityInstrument(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "idx_equity_instruments"
+    __tablename__ = "instruments"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
@@ -55,19 +53,13 @@ class IdxEquityInstrument(Base):
     delisting_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()", onupdate=lambda: datetime.now(timezone.utc)
+        TIMESTAMP(timezone=True), server_default="now()", onupdate=lambda: datetime.now(UTC)
     )
 
     # ── Relationships ────────────────────────────────────────────────────────
-    financial_statements = relationship(
-        "IdxEquityFinancialStatement", back_populates="instrument", lazy="selectin"
-    )
-    corporate_actions = relationship(
-        "IdxEquityCorporateAction", back_populates="instrument", lazy="selectin"
-    )
-    computed_ratios = relationship(
-        "IdxEquityComputedRatio", back_populates="instrument", lazy="selectin"
-    )
+    financial_statements = relationship("IdxEquityFinancialStatement", back_populates="instrument", lazy="selectin")
+    corporate_actions = relationship("IdxEquityCorporateAction", back_populates="instrument", lazy="selectin")
+    computed_ratios = relationship("IdxEquityComputedRatio", back_populates="instrument", lazy="selectin")
 
     __table_args__ = (
         Index("ix_idx_equity_instruments_exchange_active", "exchange", "is_active"),

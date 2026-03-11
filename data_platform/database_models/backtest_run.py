@@ -4,21 +4,17 @@ Records the full lifecycle and performance metrics of a strategy backtest,
 including a frozen snapshot of parameters used at run time.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Any
 
-from sqlalchemy import Date, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class BacktestStatus(enum.StrEnum):
@@ -62,9 +58,7 @@ class BacktestRun(Base):
 
     __tablename__ = "backtest_runs"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("strategies.id", ondelete="CASCADE"),
@@ -82,9 +76,7 @@ class BacktestRun(Base):
     )
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
-    initial_capital_idr: Mapped[Decimal] = mapped_column(
-        Numeric(30, 2), nullable=False
-    )
+    initial_capital_idr: Mapped[Decimal] = mapped_column(Numeric(30, 2), nullable=False)
     final_capital_idr: Mapped[Decimal | None] = mapped_column(Numeric(30, 2))
     total_return_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     cagr_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
@@ -97,10 +89,8 @@ class BacktestRun(Base):
     win_rate_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     profit_factor: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     omega_ratio: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
-    parameters_snapshot: Mapped[dict | None] = mapped_column(JSONB)
+    parameters_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     error_message: Mapped[str | None] = mapped_column(Text)
     started_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()"
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")

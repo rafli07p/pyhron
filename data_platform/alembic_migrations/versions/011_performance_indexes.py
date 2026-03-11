@@ -19,14 +19,14 @@ def upgrade() -> None:
     """Create performance indexes."""
     # Partial index: only active instruments for symbol lookups
     op.execute(
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_instruments_active_symbol "
+        "CREATE INDEX IF NOT EXISTS ix_instruments_active_symbol "
         "ON market_data.idx_equity_instrument (symbol) "
         "WHERE is_active = TRUE"
     )
 
     # Partial index: open orders only (common query pattern)
     op.execute(
-        "CREATE INDEX CONCURRENTLY IF NOT EXISTS ix_orders_open "
+        "CREATE INDEX IF NOT EXISTS ix_orders_open "
         "ON trading.strategy_order_lifecycle_record "
         "(strategy_id, symbol, created_at DESC) "
         "WHERE status IN ('pending_risk', 'risk_approved', 'submitted', "
