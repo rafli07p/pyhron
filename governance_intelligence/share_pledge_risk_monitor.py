@@ -51,7 +51,7 @@ class SharePledgeRiskMonitor:
             text("""
                 SELECT symbol, filer_name, filer_type,
                        shares_before, shares_after, change_pct
-                FROM governance.idx_equity_governance_flag
+                FROM governance_flags
                 WHERE flag_type = 'SHARE_PLEDGE'
                   AND severity IN ('HIGH', 'CRITICAL')
                 ORDER BY event_date DESC

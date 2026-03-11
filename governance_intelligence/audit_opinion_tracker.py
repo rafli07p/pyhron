@@ -66,7 +66,7 @@ class AuditOpinionTracker:
         result = await session.execute(
             text("""
                 SELECT symbol, title, description, event_date
-                FROM governance.idx_equity_governance_flag
+                FROM governance_flags
                 WHERE flag_type = 'AUDIT_OPINION'
                   AND EXTRACT(YEAR FROM event_date) = :year
                   AND severity IN ('HIGH', 'CRITICAL')

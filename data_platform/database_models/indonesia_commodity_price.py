@@ -35,7 +35,7 @@ class IndonesiaCommodityPrice(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_commodity_prices"
+    __tablename__ = "commodity_prices"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     commodity_code: Mapped[str] = mapped_column(String(30), nullable=False)

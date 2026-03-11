@@ -40,13 +40,13 @@ class IdxEquityIndexConstituent(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "idx_equity_index_constituents"
+    __tablename__ = "index_constituents"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     index_name: Mapped[str] = mapped_column(String(20), nullable=False)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("idx_equity_instruments.symbol"),
+        ForeignKey("instruments.symbol"),
         nullable=False,
         index=True,
     )

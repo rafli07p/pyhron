@@ -54,7 +54,7 @@ class IdxEquityNewsArticle(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "idx_equity_news_articles"
+    __tablename__ = "news_articles"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(Text, nullable=False)

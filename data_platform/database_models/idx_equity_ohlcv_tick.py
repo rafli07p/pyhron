@@ -40,7 +40,7 @@ class IdxEquityOhlcvTick(Base):
         adjusted_close: Split/dividend-adjusted close.
     """
 
-    __tablename__ = "idx_equity_ohlcv_ticks"
+    __tablename__ = "ohlcv"
 
     time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), primary_key=True, nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), primary_key=True, nullable=False)

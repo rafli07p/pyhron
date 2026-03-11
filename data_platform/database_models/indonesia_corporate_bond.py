@@ -40,7 +40,7 @@ class IndonesiaCorporateBond(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_corporate_bonds"
+    __tablename__ = "corporate_bonds"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     isin: Mapped[str] = mapped_column(String(12), nullable=False)

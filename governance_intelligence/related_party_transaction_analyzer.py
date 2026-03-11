@@ -64,7 +64,7 @@ class RelatedPartyTransactionAnalyzer:
         result = await session.execute(
             text("""
                 SELECT symbol, title, description, event_date
-                FROM governance.idx_equity_governance_flag
+                FROM governance_flags
                 WHERE flag_type = 'RELATED_PARTY_TRANSACTION'
                   AND event_date >= CURRENT_DATE - :days
                 ORDER BY event_date DESC

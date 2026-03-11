@@ -38,7 +38,7 @@ class IndonesiaFireHotspotEvent(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_fire_hotspot_events"
+    __tablename__ = "fire_hotspot_events"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)

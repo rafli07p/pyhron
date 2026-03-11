@@ -43,7 +43,7 @@ class IndonesiaGovernmentBond(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_government_bonds"
+    __tablename__ = "government_bonds"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     series_code: Mapped[str] = mapped_column(String(30), nullable=False)

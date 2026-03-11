@@ -25,47 +25,61 @@ sync_url = DATABASE_URL.replace("+asyncpg", "+psycopg").replace("+aiopg", "+psyc
 engine = create_engine(sync_url)
 
 # ── Expected schema artifacts ────────────────────────────────────────────
+# After migration 013, ALL tables live in the public schema with canonical names.
 EXPECTED_TABLES_BY_SCHEMA: dict[str, list[str]] = {
-    "market_data": [
-        "idx_equity_instrument",
-        "idx_equity_ohlcv_tick",
-        "idx_equity_financial_statement",
-        "idx_equity_computed_ratio",
-        "idx_equity_corporate_action",
-        "idx_equity_index_constituent",
-        "idx_equity_news_article",
-    ],
-    "trading": [
-        "strategy_order_lifecycle_record",
-        "strategy_position_current_snapshot",
-        "strategy_trade_execution_log",
-    ],
     "public": [
+        # Market data (formerly market_data schema)
+        "instruments",
+        "ohlcv",
+        "financial_statements",
+        "computed_ratios",
+        "corporate_actions",
+        "index_constituents",
+        "news_articles",
+        # Trading (formerly trading schema)
+        "orders",
+        "positions",
+        "trade_executions",
+        # Macro (formerly macro schema)
+        "macro_indicators",
+        # Commodity (formerly commodity schema)
+        "commodity_prices",
+        # Alternative data (formerly alternative_data schema)
+        "fire_hotspot_events",
+        "weather_rainfall",
+        # Fixed income (formerly fixed_income schema)
+        "government_bonds",
+        "government_bond_yield_curve",
+        "corporate_bonds",
+        # Governance (formerly governance schema)
+        "governance_flags",
+        # User/strategy/backtest/signal (always public)
         "users",
         "strategies",
         "backtest_runs",
         "signals",
+        # Alembic
         "alembic_version",
     ],
 }
 
-EXPECTED_HYPERTABLES = ["idx_equity_ohlcv_tick", "signals"]
+EXPECTED_HYPERTABLES = ["ohlcv", "signals"]
 
 EXPECTED_INDEXES: dict[str, list[str]] = {
-    "market_data.idx_equity_instrument": ["ix_instruments_active_symbol"],
-    "market_data.idx_equity_ohlcv_tick": ["ix_ohlcv_brin_time"],
-    "trading.strategy_order_lifecycle_record": ["ix_orders_open"],
+    "public.instruments": ["ix_instruments_active_symbol"],
+    "public.ohlcv": ["ix_ohlcv_brin_time"],
+    "public.orders": ["ix_orders_open"],
     "public.users": ["ix_users_email_lower"],
     "public.signals": ["ix_signals_strategy_bar_ts", "ix_signals_instrument_generated"],
 }
 
 EXPECTED_CHECK_CONSTRAINTS: dict[str, list[str]] = {
-    "market_data.idx_equity_ohlcv_tick": [
+    "public.ohlcv": [
         "ck_ohlcv_high_gte_low",
         "ck_ohlcv_volume_non_negative",
     ],
-    "trading.strategy_order_lifecycle_record": ["ck_orders_filled_lte_quantity"],
-    "trading.strategy_position_current_snapshot": ["ck_positions_quantity_non_negative"],
+    "public.orders": ["ck_orders_filled_lte_quantity"],
+    "public.positions": ["ck_positions_quantity_non_negative"],
     "public.signals": ["ck_signals_strength_range"],
 }
 
@@ -134,12 +148,12 @@ def check_seed_data(conn) -> list[str]:
     """Verify LQ45 seed data is present."""
     errors = []
     count = conn.execute(
-        text("SELECT COUNT(*) FROM market_data.idx_equity_instrument WHERE board = 'IDX'")
+        text("SELECT COUNT(*) FROM instruments WHERE board = 'IDX'")
     ).scalar()
     if count is None or count < 50:
         errors.append(f"Expected >= 50 IDX instruments, found {count}")
     ihsg = conn.execute(
-        text("SELECT 1 FROM market_data.idx_equity_instrument WHERE symbol = '^JKSE'")
+        text("SELECT 1 FROM instruments WHERE symbol = '^JKSE'")
     ).scalar()
     if not ihsg:
         errors.append("IHSG index (^JKSE) missing from instruments")

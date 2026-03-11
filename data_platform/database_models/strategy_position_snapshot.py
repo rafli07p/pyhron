@@ -37,7 +37,7 @@ class StrategyPositionSnapshot(Base):
         last_updated: Timestamp of the most recent update.
     """
 
-    __tablename__ = "strategy_position_snapshots"
+    __tablename__ = "positions"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     strategy_id: Mapped[str] = mapped_column(String(100), nullable=False)

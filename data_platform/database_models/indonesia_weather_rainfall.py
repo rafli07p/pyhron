@@ -35,7 +35,7 @@ class IndonesiaWeatherRainfall(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "indonesia_weather_rainfall"
+    __tablename__ = "weather_rainfall"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     province: Mapped[str] = mapped_column(String(100), nullable=False)

@@ -39,12 +39,12 @@ class IdxEquityGovernanceFlag(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "idx_equity_governance_flags"
+    __tablename__ = "governance_flags"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("idx_equity_instruments.symbol"),
+        ForeignKey("instruments.symbol"),
         nullable=False,
         index=True,
     )

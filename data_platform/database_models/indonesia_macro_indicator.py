@@ -38,7 +38,7 @@ class IndonesiaMacroIndicator(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "indonesia_macro_indicators"
+    __tablename__ = "macro_indicators"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     indicator_code: Mapped[str] = mapped_column(String(100), nullable=False)
