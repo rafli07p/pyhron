@@ -18,6 +18,8 @@ warnings.warn(
 # Re-export canonical models for backward compatibility
 from data_platform.database_models.order_lifecycle_record import (
     OrderLifecycleRecord as Order,
+)
+from data_platform.database_models.order_lifecycle_record import (
     OrderSideEnum,
     OrderStatusEnum,
     OrderTypeEnum,

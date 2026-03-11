@@ -16,15 +16,19 @@ warnings.warn(
 )
 
 # Re-export canonical models for backward compatibility
-from data_platform.database_models.idx_equity_corporate_action import (
-    ActionType,
-    IdxEquityCorporateAction as CorporateAction,
-)
 from data_platform.database_models.idx_equity_computed_ratio import (
     IdxEquityComputedRatio as ComputedRatio,
 )
+from data_platform.database_models.idx_equity_corporate_action import (
+    ActionType,
+)
+from data_platform.database_models.idx_equity_corporate_action import (
+    IdxEquityCorporateAction as CorporateAction,
+)
 from data_platform.database_models.idx_equity_financial_statement import (
     IdxEquityFinancialStatement as FinancialStatement,
+)
+from data_platform.database_models.idx_equity_financial_statement import (
     StatementType,
 )
 from data_platform.database_models.idx_equity_index_constituent import (
@@ -35,6 +39,8 @@ from data_platform.database_models.idx_equity_instrument import (
 )
 from data_platform.database_models.idx_equity_news_article import (
     IdxEquityNewsArticle as NewsArticle,
+)
+from data_platform.database_models.idx_equity_news_article import (
     SentimentLabel,
 )
 from data_platform.database_models.idx_equity_ohlcv_tick import (
