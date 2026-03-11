@@ -42,6 +42,14 @@ class PyhronError(Exception):
         self.context = context or {}
 
 
+class PyhronValidationError(PyhronError):
+    """Input validation failed (IDX rules, schema constraints, etc.)."""
+
+    def __init__(self, message: str, *, errors: list[str] | None = None) -> None:
+        super().__init__(message)
+        self.errors = errors or []
+
+
 # ── Configuration ───────────────────────────────────────────────────────────
 
 

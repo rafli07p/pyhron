@@ -6,10 +6,10 @@ TimescaleDB hypertable partitioned on trade_time.
 
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import BigInteger, Index, Numeric, String
+from sqlalchemy import BigInteger, Date, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -56,6 +56,7 @@ class StrategyTradeExecutionLog(Base):
     commission: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=Decimal("0"))
     tax: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=Decimal("0"))
     trade_time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    settlement_date: Mapped[date | None] = mapped_column(Date)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
     __table_args__ = (

@@ -177,15 +177,82 @@ class OrderStatus(OrderEventBase):
     last_updated: datetime = Field(default_factory=datetime.utcnow, description="Last status change time")
 
 
+# ---------------------------------------------------------------------------
+# Kafka Event Schemas (OMS domain events)
+# ---------------------------------------------------------------------------
+
+
+class OrderSubmittedEvent(BaseModel):
+    """Published when an order is submitted to a broker."""
+
+    model_config = {"frozen": True}
+
+    event_id: str = Field(default_factory=lambda: str(uuid4()))
+    event_type: str = "ORDER_SUBMITTED"
+    timestamp: str = Field(description="ISO8601 UTC")
+    order_id: str
+    client_order_id: str
+    user_id: str
+    strategy_id: str | None = None
+    symbol: str
+    exchange: str = "IDX"
+    side: str
+    order_type: str
+    quantity_lots: int
+    limit_price: str | None = None
+    submitted_at: str = ""
+
+
+class OrderFilledEvent(BaseModel):
+    """Published when an order fill is processed."""
+
+    model_config = {"frozen": True}
+
+    event_id: str = Field(default_factory=lambda: str(uuid4()))
+    event_type: str = "ORDER_FILLED"
+    timestamp: str = Field(description="ISO8601 UTC")
+    order_id: str
+    symbol: str
+    side: str
+    fill_price: str
+    fill_quantity_lots: int
+    total_filled_lots: int
+    avg_fill_price: str
+    commission_idr: str
+    settlement_date: str
+    is_full_fill: bool
+
+
+class PositionUpdatedEvent(BaseModel):
+    """Published when a position is updated after a fill."""
+
+    model_config = {"frozen": True}
+
+    event_id: str = Field(default_factory=lambda: str(uuid4()))
+    event_type: str = "POSITION_UPDATED"
+    timestamp: str = Field(description="ISO8601 UTC")
+    user_id: str
+    strategy_id: str | None = None
+    symbol: str
+    quantity_lots: int
+    avg_cost_idr: str
+    unrealized_pnl_idr: str
+    realized_pnl_idr: str
+    last_fill_price: str
+
+
 __all__ = [
     "CancelReason",
     "OrderCancel",
     "OrderEventBase",
     "OrderFill",
+    "OrderFilledEvent",
     "OrderRequest",
     "OrderSide",
     "OrderStatus",
     "OrderStatusEnum",
+    "OrderSubmittedEvent",
     "OrderType",
+    "PositionUpdatedEvent",
     "TimeInForce",
 ]
