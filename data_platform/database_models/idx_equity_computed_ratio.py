@@ -4,10 +4,9 @@ Stores daily snapshots of key financial ratios derived from price and
 fundamental data, enabling fast screening and ranking queries.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import (
     BigInteger,
@@ -21,10 +20,6 @@ from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class IdxEquityComputedRatio(Base):

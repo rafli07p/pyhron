@@ -4,20 +4,15 @@ Stores authentication credentials, role-based access, and brute-force
 lockout state for platform users.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
-from typing import TYPE_CHECKING
+from datetime import datetime
 
 from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 class UserRole(enum.StrEnum):

@@ -5,21 +5,17 @@ metadata for audit and backtesting analysis.  Designed as a TimescaleDB
 hypertable partitioned by ``generated_at``.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
-from typing import TYPE_CHECKING, Any
+from datetime import datetime
+from decimal import Decimal
+from typing import Any
 
 from sqlalchemy import Boolean, ForeignKey, Index, Numeric, String, text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
-    from decimal import Decimal
 
 
 class SignalType(enum.StrEnum):

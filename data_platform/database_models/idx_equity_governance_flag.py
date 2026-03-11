@@ -4,20 +4,15 @@ Tracks governance-relevant events such as ownership changes, audit opinions,
 related-party transaction disclosures, and share pledges for ESG screening.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import Date, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class IdxEquityGovernanceFlag(Base):

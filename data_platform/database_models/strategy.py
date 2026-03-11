@@ -4,19 +4,15 @@ Persists strategy definitions, hyperparameters, risk configuration, and
 the instrument universe for each trading strategy.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING, Any
+from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 class Strategy(Base):

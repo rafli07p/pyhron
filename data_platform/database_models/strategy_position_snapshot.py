@@ -4,20 +4,15 @@ Tracks the current position state per strategy per symbol, including
 unrealised and realised PnL.
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import BigInteger, CheckConstraint, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
-    from decimal import Decimal
 
 
 class StrategyPositionSnapshot(Base):

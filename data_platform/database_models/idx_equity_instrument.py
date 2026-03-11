@@ -4,8 +4,6 @@ Provides the canonical reference for all listed equities on the Indonesia
 Stock Exchange, including sector classification and listing lifecycle dates.
 """
 
-from __future__ import annotations
-
 import uuid
 from datetime import UTC, date, datetime
 

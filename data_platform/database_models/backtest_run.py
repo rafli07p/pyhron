@@ -4,21 +4,17 @@ Records the full lifecycle and performance metrics of a strategy backtest,
 including a frozen snapshot of parameters used at run time.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
-from typing import TYPE_CHECKING, Any
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Any
 
 from sqlalchemy import Date, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class BacktestStatus(enum.StrEnum):

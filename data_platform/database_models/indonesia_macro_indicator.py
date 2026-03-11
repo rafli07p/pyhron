@@ -4,20 +4,15 @@ Stores macro indicators from Bank Indonesia, BPS, KEMENKEU, and other
 government sources (BI Rate, CPI, GDP, M2, forex reserves, IKK, etc.).
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class IndonesiaMacroIndicator(Base):

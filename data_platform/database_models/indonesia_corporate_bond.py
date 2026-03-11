@@ -4,20 +4,15 @@ Stores corporate bond pricing, ratings, and yield data from KSEI, IBPA,
 and rating agencies (Pefindo, Fitch Indonesia).
 """
 
-from __future__ import annotations
-
 import uuid
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import Date, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 
 class IndonesiaCorporateBond(Base):

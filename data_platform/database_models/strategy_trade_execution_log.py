@@ -4,21 +4,16 @@ Stores immutable fill records for all trade executions, designed as a
 TimescaleDB hypertable partitioned on trade_time.
 """
 
-from __future__ import annotations
-
 import enum
 import uuid
+from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 class TradeSideEnum(enum.StrEnum):

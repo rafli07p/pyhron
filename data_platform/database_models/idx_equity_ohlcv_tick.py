@@ -4,19 +4,14 @@ Stores intraday and daily price/volume bars for all IDX-listed equities.
 Designed as a TimescaleDB hypertable partitioned by time in 7-day chunks.
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
+from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import BigInteger, CheckConstraint, Index, Numeric, String
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shared.async_database_session import Base
-
-if TYPE_CHECKING:
-    from datetime import datetime
-    from decimal import Decimal
 
 
 class IdxEquityOhlcvTick(Base):
