@@ -302,8 +302,7 @@ class ESDMEnergyProductionIngester:
 
         # Pattern: month year ... USD value
         pattern = re.compile(
-            r"(?P<month>\w+)\s+(?P<year>\d{4})\s+.*?"
-            r"(?:USD|US\$)\s*(?P<value>[\d.,]+)",
+            r"(?P<month>\w+)\s+(?P<year>\d{4})\s+.*?" r"(?:USD|US\$)\s*(?P<value>[\d.,]+)",
             re.IGNORECASE,
         )
 
@@ -354,8 +353,7 @@ class ESDMEnergyProductionIngester:
         """
         records: list[dict[str, Any]] = []
         pattern = re.compile(
-            r"(?P<month>\d{1,2})[/\-](?P<year>\d{4})\s+.*?"
-            r"(?:USD|US\$)\s*(?P<value>[\d.,]+)",
+            r"(?P<month>\d{1,2})[/\-](?P<year>\d{4})\s+.*?" r"(?:USD|US\$)\s*(?P<value>[\d.,]+)",
             re.IGNORECASE,
         )
 
