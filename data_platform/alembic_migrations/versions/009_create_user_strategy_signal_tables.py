@@ -6,7 +6,7 @@ Create Date: 2026-03-10 00:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ENUM, JSONB, UUID
 
 revision = "009"
 down_revision = "008"
@@ -17,9 +17,15 @@ depends_on = None
 def upgrade() -> None:
     """Create enum types and tables for users, strategies, backtests, and signals."""
     # ── Enum types ────────────────────────────────────────────────────────
-    op.execute("CREATE TYPE user_role AS ENUM ('admin', 'trader', 'analyst', 'readonly')")
-    op.execute("CREATE TYPE backtest_status AS ENUM ('pending', 'running', 'completed', 'failed')")
-    op.execute("CREATE TYPE signal_type AS ENUM ('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance')")
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE user_role AS ENUM ('admin', 'trader', 'analyst', 'readonly'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
+    )
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE backtest_status AS ENUM ('pending', 'running', 'completed', 'failed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
+    )
+    op.execute(
+        "DO $$ BEGIN CREATE TYPE signal_type AS ENUM ('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
+    )
 
     # ── users ─────────────────────────────────────────────────────────────
     op.create_table(
@@ -34,7 +40,7 @@ def upgrade() -> None:
         sa.Column("hashed_password", sa.String(255), nullable=False),
         sa.Column(
             "role",
-            sa.Enum("admin", "trader", "analyst", "readonly", name="user_role", create_type=False),
+            ENUM("admin", "trader", "analyst", "readonly", name="user_role", create_type=False),
             nullable=False,
             server_default="readonly",
         ),
@@ -103,7 +109,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "status",
-            sa.Enum("pending", "running", "completed", "failed", name="backtest_status", create_type=False),
+            ENUM("pending", "running", "completed", "failed", name="backtest_status", create_type=False),
             nullable=False,
             server_default="pending",
         ),
@@ -149,7 +155,7 @@ def upgrade() -> None:
         sa.Column("instrument_symbol", sa.String(20), nullable=False),
         sa.Column(
             "signal_type",
-            sa.Enum(
+            ENUM(
                 "entry_long",
                 "entry_short",
                 "exit_long",
