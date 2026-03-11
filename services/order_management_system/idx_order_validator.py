@@ -13,8 +13,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from shared.platform_exception_hierarchy import PyhronValidationError
-
 IDX_LOT_SIZE = 100  # shares per lot — fixed by IDX regulation
 IDX_MAX_PRICE_MOVE = Decimal("0.35")  # ±35% auto-rejection circuit breaker (ARA/ARB)
 IDX_MIN_PRICE_IDR = Decimal("1")
@@ -86,8 +84,7 @@ class IDXOrderValidator:
             if price % tick != 0:
                 rounded = round(price / tick) * tick
                 warnings.append(
-                    f"Price {price} not conformant with IDX tick size {tick}. "
-                    f"Will be adjusted to {rounded}."
+                    f"Price {price} not conformant with IDX tick size {tick}. " f"Will be adjusted to {rounded}."
                 )
 
         # Rule 4: Price must be positive

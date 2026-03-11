@@ -7,6 +7,7 @@ machine, writes trade execution logs, and updates positions.
 
 from __future__ import annotations
 
+import contextlib
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
@@ -14,7 +15,6 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from data_platform.database_models.strategy_position_snapshot import (
     StrategyPositionSnapshot,
@@ -37,20 +37,20 @@ logger = get_logger(__name__)
 # ── IDX T+2 Settlement ──────────────────────────────────────────────────────
 
 IDX_MARKET_HOLIDAYS_2025 = [
-    date(2025, 1, 1),   # New Year
+    date(2025, 1, 1),  # New Year
     date(2025, 1, 27),  # Isra Mi'raj
     date(2025, 1, 29),  # Chinese New Year
     date(2025, 3, 29),  # Nyepi
     date(2025, 4, 18),  # Good Friday
-    date(2025, 5, 1),   # Labour Day
+    date(2025, 5, 1),  # Labour Day
     date(2025, 5, 12),  # Eid al-Fitr
     date(2025, 5, 29),  # Ascension Day
-    date(2025, 6, 1),   # Pancasila Day
-    date(2025, 6, 6),   # Eid al-Adha
+    date(2025, 6, 1),  # Pancasila Day
+    date(2025, 6, 6),  # Eid al-Adha
     date(2025, 6, 27),  # Islamic New Year
     date(2025, 8, 17),  # Independence Day
-    date(2025, 9, 5),   # Prophet's Birthday
-    date(2025, 12, 25), # Christmas
+    date(2025, 9, 5),  # Prophet's Birthday
+    date(2025, 12, 25),  # Christmas
 ]
 
 
@@ -135,9 +135,7 @@ class OrderFillEventProcessor:
         async with get_session() as session:
             # Step 1: Fetch order with SELECT FOR UPDATE for concurrency safety
             result = await session.execute(
-                select(Order)
-                .where(Order.client_order_id == fill.client_order_id)
-                .with_for_update()
+                select(Order).where(Order.client_order_id == fill.client_order_id).with_for_update()
             )
             order = result.scalar_one_or_none()
 
@@ -166,9 +164,7 @@ class OrderFillEventProcessor:
             fill_id = fill.fill_id or str(uuid.uuid4())
             if fill.fill_id:
                 existing_trade = await session.execute(
-                    select(StrategyTradeExecutionLog).where(
-                        StrategyTradeExecutionLog.broker_trade_id == fill.fill_id
-                    )
+                    select(StrategyTradeExecutionLog).where(StrategyTradeExecutionLog.broker_trade_id == fill.fill_id)
                 )
                 if existing_trade.scalar_one_or_none() is not None:
                     logger.warning(
@@ -202,10 +198,8 @@ class OrderFillEventProcessor:
         # Step 5: Calculate T+2 settlement date
         trade_date = datetime.now(tz=UTC).date()
         if fill.timestamp:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 trade_date = datetime.fromisoformat(fill.timestamp).date()
-            except (ValueError, TypeError):
-                pass
         settlement = calculate_settlement_date(trade_date)
 
         # Step 6: State transition
@@ -290,10 +284,12 @@ class OrderFillEventProcessor:
         async with get_session() as session:
             # Fetch current position for VWAP / realized PnL calculation
             result = await session.execute(
-                select(StrategyPositionSnapshot).where(
+                select(StrategyPositionSnapshot)
+                .where(
                     StrategyPositionSnapshot.strategy_id == strategy_id,
                     StrategyPositionSnapshot.symbol == symbol,
-                ).with_for_update()
+                )
+                .with_for_update()
             )
             existing = result.scalar_one_or_none()
 
@@ -324,8 +320,7 @@ class OrderFillEventProcessor:
                     new_qty = current_qty + fill_qty
                     if new_qty > 0:
                         new_avg = (
-                            current_avg * Decimal(str(current_qty))
-                            + filled_price_dec * Decimal(str(fill_qty))
+                            current_avg * Decimal(str(current_qty)) + filled_price_dec * Decimal(str(fill_qty))
                         ) / Decimal(str(new_qty))
                     else:
                         new_avg = filled_price_dec
@@ -343,9 +338,8 @@ class OrderFillEventProcessor:
                 existing.current_price = filled_price_dec
                 existing.market_value = filled_price_dec * Decimal(str(existing.quantity))
                 if existing.avg_entry_price and existing.quantity > 0:
-                    existing.unrealized_pnl = (
-                        (filled_price_dec - existing.avg_entry_price)
-                        * Decimal(str(existing.quantity))
+                    existing.unrealized_pnl = (filled_price_dec - existing.avg_entry_price) * Decimal(
+                        str(existing.quantity)
                     )
                 else:
                     existing.unrealized_pnl = Decimal("0")

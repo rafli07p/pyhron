@@ -14,11 +14,9 @@ from __future__ import annotations
 import traceback
 import uuid
 from datetime import UTC, datetime
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from data_platform.database_models.order_lifecycle_record import (
     OrderLifecycleRecord,
@@ -41,7 +39,6 @@ from shared.platform_exception_hierarchy import (
     BrokerConnectionError,
     BrokerTimeoutError,
     CircuitBreakerOpenError,
-    DuplicateOrderError,
     OrderRejectedError,
     PyhronValidationError,
     RiskCheckFailedError,
@@ -54,6 +51,10 @@ from shared.redis_cache_client import get_redis
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
+    from decimal import Decimal
+
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
     from services.broker_connectivity.broker_adapter_interface import BrokerAdapterInterface
     from services.order_management_system.idx_order_validator import IDXOrderValidator
     from services.pre_trade_risk_engine.pre_trade_risk_checks import RiskCheckResult
@@ -494,9 +495,7 @@ class OrderSubmissionHandler:
         # Step 1: Idempotency — check DB for existing order with this client_order_id
         async with self._db_session_factory() as session:
             existing = await session.execute(
-                select(OrderLifecycleRecord).where(
-                    OrderLifecycleRecord.client_order_id == idempotency_key
-                )
+                select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == idempotency_key)
             )
             existing_record = existing.scalar_one_or_none()
 
@@ -622,9 +621,7 @@ class OrderSubmissionHandler:
             if state_machine is not None:
                 # Re-fetch the record as an Order (compat alias) for the state machine
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
-                        select(Order).where(Order.client_order_id == client_order_id)
-                    )
+                    result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
                     order_obj = result.scalar_one()
 
                 await state_machine.transition(
@@ -637,9 +634,7 @@ class OrderSubmissionHandler:
                 # No state machine — update DB directly
                 async with self._db_session_factory() as session:
                     result = await session.execute(
-                        select(OrderLifecycleRecord).where(
-                            OrderLifecycleRecord.client_order_id == client_order_id
-                        )
+                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
                     rec = result.scalar_one()
                     rec.broker_order_id = broker_order_id
@@ -660,9 +655,7 @@ class OrderSubmissionHandler:
             # Broker explicitly rejected
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
-                        select(Order).where(Order.client_order_id == client_order_id)
-                    )
+                    result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
                     order_obj = result.scalar_one()
 
                 await state_machine.transition(
@@ -677,9 +670,7 @@ class OrderSubmissionHandler:
             else:
                 async with self._db_session_factory() as session:
                     result = await session.execute(
-                        select(OrderLifecycleRecord).where(
-                            OrderLifecycleRecord.client_order_id == client_order_id
-                        )
+                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
                     )
                     rec = result.scalar_one()
                     rec.status = OrderStatusEnum.REJECTED
@@ -717,9 +708,7 @@ class OrderSubmissionHandler:
             )
             if state_machine is not None:
                 async with self._db_session_factory() as session:
-                    result = await session.execute(
-                        select(Order).where(Order.client_order_id == client_order_id)
-                    )
+                    result = await session.execute(select(Order).where(Order.client_order_id == client_order_id))
                     order_obj = result.scalar_one()
 
                 await state_machine.transition(
@@ -763,8 +752,6 @@ class OrderSubmissionHandler:
         # Step 9: Return the persisted record
         async with self._db_session_factory() as session:
             result = await session.execute(
-                select(OrderLifecycleRecord).where(
-                    OrderLifecycleRecord.client_order_id == client_order_id
-                )
+                select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
             )
             return result.scalar_one()
