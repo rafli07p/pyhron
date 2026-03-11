@@ -144,7 +144,7 @@ def upgrade() -> None:
             "id",
             UUID(as_uuid=True),
             server_default=sa.text("uuid_generate_v4()"),
-            primary_key=True,
+            nullable=False,
         ),
         sa.Column(
             "strategy_id",
@@ -177,6 +177,7 @@ def upgrade() -> None:
         sa.Column("acted_on", sa.Boolean(), nullable=False, server_default="false"),
         sa.Column("resulting_order_id", sa.String(36)),
         sa.Column("metadata_json", JSONB()),
+        sa.PrimaryKeyConstraint("id", "generated_at", name="pk_signals"),
     )
     op.create_index(
         "ix_signals_strategy_bar_ts",
