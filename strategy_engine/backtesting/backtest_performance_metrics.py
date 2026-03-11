@@ -12,15 +12,13 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
+import pandas as pd
 
 from shared.structured_json_logger import get_logger
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 logger = get_logger(__name__)
 
@@ -197,3 +195,102 @@ class BacktestPerformanceMetrics:
 
         logger.info("performance_metrics_computed", **result)
         return result
+
+
+@dataclass
+class MomentumAttributionReport:
+    """Decomposed momentum strategy returns."""
+
+    sector_returns: pd.DataFrame = field(default_factory=pd.DataFrame)
+    top_10_contributors: pd.DataFrame = field(default_factory=pd.DataFrame)
+    bottom_10_detractors: pd.DataFrame = field(default_factory=pd.DataFrame)
+    turnover_by_month: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))
+    avg_momentum_score_long: float = 0.0
+    momentum_score_return_correlation: float = 0.0
+
+
+def compute_momentum_attribution(
+    trade_log: pd.DataFrame,
+    instrument_metadata: pd.DataFrame,
+    prices: pd.DataFrame,
+) -> MomentumAttributionReport:
+    """Decompose momentum strategy returns by sector and other dimensions.
+
+    Parameters
+    ----------
+    trade_log:
+        Per-trade log from backtest.
+    instrument_metadata:
+        Columns: symbol, sector, lot_size, is_active.
+    prices:
+        (dates, symbols) adjusted close prices.
+
+    Returns
+    -------
+    MomentumAttributionReport
+    """
+    if trade_log.empty:
+        return MomentumAttributionReport()
+
+    meta = instrument_metadata.set_index("symbol")
+
+    # Add sector to trade log
+    trades = trade_log.copy()
+    trades["sector"] = trades["symbol"].map(
+        lambda s: str(meta.loc[s, "sector"]) if s in meta.index else "Unknown",
+    )
+
+    # PnL per trade (use existing pnl column or compute from value)
+    if "pnl" not in trades.columns:
+        trades["pnl"] = 0.0
+
+    # Sector attribution
+    sector_pnl = trades.groupby("sector")["pnl"].sum().reset_index()
+    total_pnl = sector_pnl["pnl"].sum()
+    sector_pnl["return_pct"] = sector_pnl["pnl"] / abs(total_pnl) * 100 if total_pnl != 0 else 0.0
+    sector_pnl["contribution_pct"] = sector_pnl["pnl"] / abs(total_pnl) * 100 if total_pnl != 0 else 0.0
+    sector_pnl.columns = ["sector", "pnl", "return_pct", "contribution_pct"]
+
+    # Per-symbol attribution
+    symbol_pnl = (
+        trades.groupby("symbol")
+        .agg(
+            pnl=("pnl", "sum"),
+            total_value=("value", "sum"),
+        )
+        .reset_index()
+    )
+    symbol_pnl["return_pct"] = symbol_pnl["pnl"] / symbol_pnl["total_value"] * 100
+    symbol_pnl["weight"] = symbol_pnl["total_value"] / symbol_pnl["total_value"].sum()
+    symbol_pnl["contribution"] = symbol_pnl["pnl"] / abs(total_pnl) * 100 if total_pnl != 0 else 0.0
+
+    top_10 = symbol_pnl.nlargest(10, "pnl")[["symbol", "return_pct", "weight", "contribution"]]
+    bottom_10 = symbol_pnl.nsmallest(10, "pnl")[["symbol", "return_pct", "weight", "contribution"]]
+
+    # Turnover by month
+    if "date" in trades.columns:
+        trades["month"] = pd.to_datetime(trades["date"]).dt.to_period("M")
+        turnover = trades.groupby("month")["value"].sum()
+    else:
+        turnover = pd.Series(dtype=float)
+
+    # Momentum score stats
+    avg_score = 0.0
+    correlation = 0.0
+    if "momentum_score" in trades.columns and "pnl" in trades.columns:
+        buys = trades[trades["action"] == "BUY"]
+        if not buys.empty:
+            avg_score = float(buys["momentum_score"].mean())
+            if len(buys) > 2:
+                correlation = float(buys["momentum_score"].corr(buys["pnl"]))
+                if np.isnan(correlation):
+                    correlation = 0.0
+
+    return MomentumAttributionReport(
+        sector_returns=sector_pnl,
+        top_10_contributors=top_10,
+        bottom_10_detractors=bottom_10,
+        turnover_by_month=turnover,
+        avg_momentum_score_long=avg_score,
+        momentum_score_return_correlation=correlation,
+    )

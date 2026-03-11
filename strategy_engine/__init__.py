@@ -29,9 +29,13 @@ from strategy_engine.idx_bollinger_mean_reversion_strategy import (
 from strategy_engine.idx_momentum_cross_section_strategy import (
     IDXMomentumCrossSectionStrategy,
 )
-from strategy_engine.idx_pairs_cointegration_strategy import (
-    IDXPairsCointegrationStrategy,
-)
+
+try:
+    from strategy_engine.idx_pairs_cointegration_strategy import (
+        IDXPairsCointegrationStrategy,
+    )
+except ImportError:
+    IDXPairsCointegrationStrategy = None  # type: ignore[assignment, misc]
 from strategy_engine.idx_sector_rotation_strategy import (
     IDXSectorRotationStrategy,
 )

@@ -14,12 +14,20 @@ from strategy_engine.backtesting.backtest_performance_metrics import (
 from strategy_engine.backtesting.idx_transaction_cost_model import (
     IDXTransactionCostModel,
 )
-from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
-    IDXVectorbtBacktestEngine,
-)
-from strategy_engine.backtesting.idx_walk_forward_validator import (
-    IDXWalkForwardValidator,
-)
+
+try:
+    from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
+        IDXVectorbtBacktestEngine,
+    )
+except ImportError:
+    IDXVectorbtBacktestEngine = None  # type: ignore[assignment, misc]
+
+try:
+    from strategy_engine.backtesting.idx_walk_forward_validator import (
+        IDXWalkForwardValidator,
+    )
+except ImportError:
+    IDXWalkForwardValidator = None  # type: ignore[assignment, misc]
 
 __all__ = [
     "BacktestPerformanceMetrics",
