@@ -9,9 +9,10 @@ Reference: Advances in Financial Machine Learning, Chapter 7.
 
 from __future__ import annotations
 
-from typing import Iterator
+from typing import Any, Iterator
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 
@@ -49,7 +50,7 @@ class PurgedKFold:
         X: pd.DataFrame,
         y: pd.Series | None = None,
         groups: pd.Series | None = None,
-    ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
+    ) -> Iterator[tuple[npt.NDArray[Any], npt.NDArray[Any]]]:
         """Generate purged train/test splits.
 
         Parameters
@@ -76,9 +77,7 @@ class PurgedKFold:
         n_dates = len(unique_dates)
 
         if n_dates < self._n_splits:
-            raise ValueError(
-                f"Not enough unique dates ({n_dates}) for {self._n_splits} splits"
-            )
+            raise ValueError(f"Not enough unique dates ({n_dates}) for {self._n_splits} splits")
 
         # Create date-based folds
         fold_size = n_dates // self._n_splits
@@ -151,15 +150,17 @@ class PurgedKFold:
             test_start = test_dates.min()
             gap = (test_start - train_end).days if hasattr(test_start - train_end, "days") else 0
 
-            metadata.append({
-                "fold": fold_idx,
-                "train_size": len(train_idx),
-                "test_size": len(test_idx),
-                "purge_days": self._purge_days,
-                "embargo_days": max(1, int(len(test_idx) * self._embargo_pct)),
-                "train_end_date": train_end,
-                "test_start_date": test_start,
-                "gap_days": gap,
-            })
+            metadata.append(
+                {
+                    "fold": fold_idx,
+                    "train_size": len(train_idx),
+                    "test_size": len(test_idx),
+                    "purge_days": self._purge_days,
+                    "embargo_days": max(1, int(len(test_idx) * self._embargo_pct)),
+                    "train_end_date": train_end,
+                    "test_start_date": test_start,
+                    "gap_days": gap,
+                }
+            )
 
         return metadata

@@ -20,6 +20,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from services.research.ml_signal.idx_feature_builder import IDXFeatureBuilder
@@ -36,7 +37,7 @@ class InferenceResult:
 
     timestamp: datetime
     signals: pd.DataFrame  # symbol × (combined_alpha, lgbm_alpha, lstm_alpha, rank)
-    shap_values: dict[str, np.ndarray]  # model_name → SHAP array
+    shap_values: dict[str, npt.NDArray[Any]]  # model_name → SHAP array
     feature_matrix: pd.DataFrame
     model_weights: dict[str, float]
     ic_estimates: dict[str, float]
@@ -142,9 +143,7 @@ class IDXLiveInferenceEngine:
         lstm_alpha = None
         if self._lstm is not None and self._lstm.model is not None:
             try:
-                sequences, _ = self._lstm.prepare_sequences(
-                    features, pd.Series(0, index=features.index)
-                )
+                sequences, _ = self._lstm.prepare_sequences(features, pd.Series(0, index=features.index))
                 if len(sequences) > 0:
                     lstm_preds = self._lstm.predict(sequences)
                     # Map back to symbols
@@ -152,7 +151,7 @@ class IDXLiveInferenceEngine:
                         symbols = features.index.get_level_values(1).unique()
                         if len(lstm_preds) >= len(symbols):
                             lstm_alpha = pd.Series(
-                                lstm_preds[-len(symbols):],
+                                lstm_preds[-len(symbols) :],
                                 index=lgbm_alpha.index,
                                 name="lstm_alpha",
                             )
@@ -170,10 +169,12 @@ class IDXLiveInferenceEngine:
         )
 
         # Build output DataFrame
-        result_df = pd.DataFrame({
-            "combined_alpha": combined,
-            "lgbm_alpha": lgbm_alpha,
-        })
+        result_df = pd.DataFrame(
+            {
+                "combined_alpha": combined,
+                "lgbm_alpha": lgbm_alpha,
+            }
+        )
         if lstm_alpha is not None:
             result_df["lstm_alpha"] = lstm_alpha
 
@@ -181,7 +182,7 @@ class IDXLiveInferenceEngine:
         result_df["rank"] = result_df["combined_alpha"].rank(ascending=False, method="min")
 
         # Step 5: SHAP values
-        shap_values: dict[str, np.ndarray] = {}
+        shap_values: dict[str, npt.NDArray[Any]] = {}
         if self._compute_shap:
             shap_values = self._compute_shap_values(lgbm_input)
 
@@ -191,12 +192,11 @@ class IDXLiveInferenceEngine:
             timestamp=now,
             signals=result_df,
             shap_values=shap_values,
-            feature_matrix=latest_features if isinstance(latest_features, pd.DataFrame) else latest_features.to_frame().T,
+            feature_matrix=latest_features
+            if isinstance(latest_features, pd.DataFrame)
+            else latest_features.to_frame().T,
             model_weights=self._combiner.current_weights,
-            ic_estimates={
-                name: ics[-1] if ics else 0.0
-                for name, ics in self._combiner.model_ics.items()
-            },
+            ic_estimates={name: ics[-1] if ics else 0.0 for name, ics in self._combiner.model_ics.items()},
             latency_ms=latency_ms,
             n_symbols=len(result_df),
             metadata={
@@ -212,7 +212,7 @@ class IDXLiveInferenceEngine:
     def _compute_shap_values(
         self,
         X: pd.DataFrame,
-    ) -> dict[str, np.ndarray]:
+    ) -> dict[str, npt.NDArray[Any]]:
         """Compute SHAP values for LightGBM model."""
         try:
             import shap
@@ -285,9 +285,6 @@ class IDXLiveInferenceEngine:
             # Top 5 contributing features
             abs_shap = np.abs(shap_vals)
             top_idx = abs_shap.argsort()[-5:][::-1]
-            result["top_features"] = [
-                {"feature": feature_names[i], "shap_value": float(shap_vals[i])}
-                for i in top_idx
-            ]
+            result["top_features"] = [{"feature": feature_names[i], "shap_value": float(shap_vals[i])} for i in top_idx]
 
         return result

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -46,8 +47,8 @@ class MomentumSequenceDataset(Dataset):  # type: ignore[misc]
 
     def __init__(
         self,
-        sequences: np.ndarray,
-        labels: np.ndarray,
+        sequences: npt.NDArray[Any],
+        labels: npt.NDArray[Any],
     ) -> None:
         self._sequences = torch.FloatTensor(sequences)
         self._labels = torch.FloatTensor(labels)
@@ -162,7 +163,7 @@ class IDXLSTMTrainer:
         features: pd.DataFrame,
         labels: pd.Series,
         sequence_length: int | None = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
         """Convert cross-sectional features to LSTM sequences.
 
         Parameters
@@ -223,10 +224,10 @@ class IDXLSTMTrainer:
 
     def train(
         self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        X_val: np.ndarray | None = None,
-        y_val: np.ndarray | None = None,
+        X_train: npt.NDArray[Any],
+        y_train: npt.NDArray[Any],
+        X_val: npt.NDArray[Any] | None = None,
+        y_val: npt.NDArray[Any] | None = None,
     ) -> dict[str, Any]:
         """Train the LSTM model.
 
@@ -351,7 +352,7 @@ class IDXLSTMTrainer:
 
         return total_loss / max(n_batches, 1)
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
+    def predict(self, X: npt.NDArray[Any]) -> npt.NDArray[Any]:
         """Generate predictions from sequences.
 
         Parameters
@@ -371,10 +372,10 @@ class IDXLSTMTrainer:
         with torch.no_grad():
             tensor = torch.FloatTensor(X).to(device)
             output = self._model(tensor)
-            result: np.ndarray = output.sum(dim=1).cpu().numpy()
+            result: npt.NDArray[Any] = output.sum(dim=1).cpu().numpy()
             return result
 
-    def decompose(self, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def decompose(self, X: npt.NDArray[Any]) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
         """Decompose into persistent and transient momentum.
 
         Returns
@@ -400,12 +401,15 @@ class IDXLSTMTrainer:
             raise RuntimeError("No model to save.")
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        torch.save({
-            "model_state_dict": self._model.state_dict(),
-            "config": self.config,
-            "train_losses": self._train_losses,
-            "val_losses": self._val_losses,
-        }, path)
+        torch.save(
+            {
+                "model_state_dict": self._model.state_dict(),
+                "config": self.config,
+                "train_losses": self._train_losses,
+                "val_losses": self._val_losses,
+            },
+            path,
+        )
 
     def load(self, path: str | Path) -> None:
         """Load model from checkpoint."""

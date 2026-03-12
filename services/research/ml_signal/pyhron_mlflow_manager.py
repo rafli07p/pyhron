@@ -13,6 +13,7 @@ from typing import Any, Iterator
 
 import mlflow
 import mlflow.lightgbm
+import numpy.typing as npt
 import mlflow.pytorch
 import numpy as np
 import pandas as pd
@@ -106,10 +107,12 @@ class PyhronMLflowManager:
         for key in all_keys:
             values = [m[key] for m in fold_metrics if key in m]
             if values:
-                self.log_metrics({
-                    f"cv_mean_{key}": float(np.mean(values)),
-                    f"cv_std_{key}": float(np.std(values)),
-                })
+                self.log_metrics(
+                    {
+                        f"cv_mean_{key}": float(np.mean(values)),
+                        f"cv_std_{key}": float(np.std(values)),
+                    }
+                )
 
     def log_ic_series(self, ic_series: pd.Series) -> None:
         """Log IC time series as metric steps."""
@@ -118,11 +121,13 @@ class PyhronMLflowManager:
                 mlflow.log_metric("ic", float(ic_value), step=step)
 
         # Log summary
-        self.log_metrics({
-            "ic_mean": float(ic_series.mean()),
-            "ic_std": float(ic_series.std()),
-            "icir": float(ic_series.mean() / ic_series.std()) if ic_series.std() > 0 else 0.0,
-        })
+        self.log_metrics(
+            {
+                "ic_mean": float(ic_series.mean()),
+                "ic_std": float(ic_series.std()),
+                "icir": float(ic_series.mean() / ic_series.std()) if ic_series.std() > 0 else 0.0,
+            }
+        )
 
     def log_feature_importance(
         self,
@@ -212,7 +217,7 @@ class PyhronMLflowManager:
 
     def log_shap_summary(
         self,
-        shap_values: np.ndarray,
+        shap_values: npt.NDArray[Any],
         feature_names: list[str],
         artifact_name: str = "shap_summary.json",
     ) -> None:

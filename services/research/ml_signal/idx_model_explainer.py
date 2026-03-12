@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import shap
 
@@ -21,7 +22,7 @@ from services.research.ml_signal.idx_lgbm_alpha_model import IDXLGBMAlphaModel
 class ExplanationResult:
     """SHAP explanation for a set of predictions."""
 
-    shap_values: np.ndarray  # (n_samples, n_features)
+    shap_values: npt.NDArray[Any]  # (n_samples, n_features)
     feature_names: list[str]
     base_value: float
     feature_importance: pd.Series  # mean |SHAP| per feature
@@ -152,10 +153,12 @@ class IDXModelExplainer:
             "prediction": prediction,
             "base_value": explanation.base_value,
             "top_features": explanation.top_features_per_sample[0],
-            "all_shap_values": dict(zip(
-                explanation.feature_names,
-                explanation.shap_values[0].tolist(),
-            )),
+            "all_shap_values": dict(
+                zip(
+                    explanation.feature_names,
+                    explanation.shap_values[0].tolist(),
+                )
+            ),
         }
 
     def feature_interaction(
@@ -182,11 +185,14 @@ class IDXModelExplainer:
         idx_a = feat_names.index(feature_a)
         idx_b = feat_names.index(feature_b)
 
-        return pd.DataFrame({
-            "feature_a_value": X[feature_a].values,
-            "feature_b_value": X[feature_b].values,
-            "interaction_shap": interaction_array[:, idx_a, idx_b],
-        }, index=X.index)
+        return pd.DataFrame(
+            {
+                "feature_a_value": X[feature_a].values,
+                "feature_b_value": X[feature_b].values,
+                "interaction_shap": interaction_array[:, idx_a, idx_b],
+            },
+            index=X.index,
+        )
 
     def cross_sectional_report(
         self,
@@ -214,15 +220,17 @@ class IDXModelExplainer:
         top_long_idx = sorted_idx[-5:][::-1] if len(sorted_idx) >= 5 else sorted_idx[::-1]
         top_short_idx = sorted_idx[:5] if len(sorted_idx) >= 5 else sorted_idx
 
-        def _build_explanation(idx_list: np.ndarray | pd.Index) -> list[dict[str, Any]]:
+        def _build_explanation(idx_list: npt.NDArray[Any] | pd.Index) -> list[dict[str, Any]]:
             results = []
             for i in idx_list:
                 symbol = X.index[i] if not isinstance(X.index[i], tuple) else X.index[i]
-                results.append({
-                    "symbol": str(symbol),
-                    "prediction": float(predictions.iloc[i]),
-                    "top_features": explanation.top_features_per_sample[i],
-                })
+                results.append(
+                    {
+                        "symbol": str(symbol),
+                        "prediction": float(predictions.iloc[i]),
+                        "top_features": explanation.top_features_per_sample[i],
+                    }
+                )
             return results
 
         return {
@@ -259,5 +267,5 @@ class IDXModelExplainer:
 
         return {
             group: float(np.mean(values))
-            for group, values in sorted(groups.items(), key=lambda x: -np.mean(x[1]))
+            for group, values in sorted(groups.items(), key=lambda x: -float(np.mean(x[1])))
         }
