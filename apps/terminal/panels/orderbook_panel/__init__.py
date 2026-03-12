@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,9 @@ class OrderBookPanel:
             self._subscriptions.add(symbol)
 
         self._state.last_update = datetime.utcnow()
-        logger.info("Rendered order book for %s (%d bids, %d asks)", symbol, len(self._state.bids), len(self._state.asks))
+        logger.info(
+            "Rendered order book for %s (%d bids, %d asks)", symbol, len(self._state.bids), len(self._state.asks)
+        )
 
         return self._serialize_book()
 
@@ -166,12 +168,10 @@ class OrderBookPanel:
         raw_bids = snapshot.get("bids", [])
         raw_asks = snapshot.get("asks", [])
         self._state.bids = [
-            PriceLevel(price=Decimal(str(b[0])), size=Decimal(str(b[1])))
-            for b in raw_bids[: self._max_depth]
+            PriceLevel(price=Decimal(str(b[0])), size=Decimal(str(b[1]))) for b in raw_bids[: self._max_depth]
         ]
         self._state.asks = [
-            PriceLevel(price=Decimal(str(a[0])), size=Decimal(str(a[1])))
-            for a in raw_asks[: self._max_depth]
+            PriceLevel(price=Decimal(str(a[0])), size=Decimal(str(a[1]))) for a in raw_asks[: self._max_depth]
         ]
 
     async def _on_book_update(self, update: dict[str, Any]) -> None:

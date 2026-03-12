@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -120,10 +120,7 @@ class NewsPanel:
             Matching articles.
         """
         query_lower = query.lower()
-        matches = [
-            a for a in self._articles
-            if query_lower in a.title.lower() or query_lower in a.summary.lower()
-        ]
+        matches = [a for a in self._articles if query_lower in a.title.lower() or query_lower in a.summary.lower()]
 
         if self._data_client is not None and not matches:
             try:

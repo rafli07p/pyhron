@@ -10,8 +10,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 from shared.schemas.market_events import BarEvent
 
@@ -120,7 +119,9 @@ class ChartPanel:
             "last_update": self._state.last_update.isoformat(),
         }
 
-    def add_indicator(self, name: str, params: dict[str, Any] | None = None, color: str | None = None) -> IndicatorConfig:
+    def add_indicator(
+        self, name: str, params: dict[str, Any] | None = None, color: str | None = None
+    ) -> IndicatorConfig:
         """Add a technical indicator overlay to the chart.
 
         Parameters
