@@ -240,9 +240,9 @@ class TestIDXSignalCombiner:
         weights = combiner.current_weights
 
         # Good model should have higher weight
-        assert weights["good_model"] > weights["bad_model"], (
-            f"Good model weight {weights['good_model']:.3f} should be > bad model weight {weights['bad_model']:.3f}"
-        )
+        assert (
+            weights["good_model"] > weights["bad_model"]
+        ), f"Good model weight {weights['good_model']:.3f} should be > bad model weight {weights['bad_model']:.3f}"
 
     def test_ic_summary_returns_dataframe(self) -> None:
         """IC summary should return a valid DataFrame."""
