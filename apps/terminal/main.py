@@ -301,7 +301,8 @@ class PyhronTerminal(App[None]):
         """Show order confirmation dialog."""
         symbol = cmd.symbol or ""
         side = str(cmd.params.get("side", ""))
-        lots = int(cmd.params.get("quantity_lots", 0))
+        raw_lots = cmd.params.get("quantity_lots", 0)
+        lots = int(raw_lots) if isinstance(raw_lots, int | float | str) else 0
         order_type = str(cmd.params.get("order_type", ""))
 
         # Estimate value from current price
@@ -329,7 +330,7 @@ class PyhronTerminal(App[None]):
             current_lots=current_lots,
         )
 
-        def on_confirm(confirmed: bool) -> None:
+        def on_confirm(confirmed: bool | None) -> None:
             if confirmed:
                 self._submit_order(symbol, side, order_type, lots)
             else:

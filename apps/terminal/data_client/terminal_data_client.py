@@ -122,7 +122,8 @@ class PyhronDataClient:
         data = await self._get(f"/api/v1/market-data/{symbol}", {"interval": "1min", "limit": "1"})
         if data:
             self._save_cache(f"quote_{symbol}", data)
-        return data
+        result: dict[str, Any] | None = data
+        return result
 
     async def get_ohlcv(self, symbol: str, timeframe: str = "1day", n_bars: int = 60) -> Any:
         """Fetch OHLCV data."""
