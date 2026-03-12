@@ -13,7 +13,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +280,7 @@ class CommandPalette:
             # Parse key=value pairs or positional arguments
             kv_matches = re.findall(r"(\w+)=(\S+)", arg_text)
             if kv_matches:
-                args = {k: v for k, v in kv_matches}
+                args = dict(kv_matches)
             else:
                 args["args"] = arg_text.split()
 

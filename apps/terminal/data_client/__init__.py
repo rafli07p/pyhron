@@ -11,11 +11,11 @@ streaming connections.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 from collections.abc import Callable
 from typing import Any, cast
-from urllib.parse import urljoin
 
 import httpx
 
@@ -62,6 +62,7 @@ class DataClient:
         self._timeout = timeout
         self._http_client: httpx.AsyncClient | None = None
         self._ws_connections: dict[str, Any] = {}
+        self._ws_tasks: dict[str, asyncio.Task[None]] = {}
         self._subscriptions: dict[str, Callable[..., Any]] = {}
         logger.info("DataClient initialized (base_url=%s, tenant_id=%s)", base_url, tenant_id)
 
@@ -93,10 +94,8 @@ class DataClient:
             logger.info("HTTP client disconnected")
 
         for channel, ws in self._ws_connections.items():
-            try:
+            with contextlib.suppress(Exception):
                 await ws.close()
-            except Exception:
-                pass
             logger.info("WebSocket closed for channel '%s'", channel)
         self._ws_connections.clear()
         self._subscriptions.clear()
@@ -201,7 +200,7 @@ class DataClient:
             logger.info("Subscribed to %s for %s", channel, symbol)
 
             # Start background listener
-            asyncio.create_task(self._ws_listener(sub_key, ws))
+            self._ws_tasks[sub_key] = asyncio.create_task(self._ws_listener(sub_key, ws))
         except Exception as exc:
             logger.error("WebSocket connection failed for %s: %s", sub_key, exc)
             raise
@@ -274,8 +273,7 @@ class DataClient:
         try:
             response = await client.get("/portfolio", params=params)
             response.raise_for_status()
-            portfolio_data = cast(dict[str, Any], response.json())
-            return portfolio_data
+            return cast(dict[str, Any], response.json())
         except httpx.HTTPStatusError as exc:
             logger.error("Portfolio request failed (%d): %s", exc.response.status_code, exc)
             raise

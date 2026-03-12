@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import math
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -240,8 +240,8 @@ class ChartEngine:
                 "closes": self._chart_data.closes,
                 "volumes": self._chart_data.volumes,
             },
-            "overlays": {k: v for k, v in self._chart_data.overlays.items()},
-            "studies": {k: v for k, v in self._chart_data.studies.items()},
+            "overlays": dict(self._chart_data.overlays.items()),
+            "studies": dict(self._chart_data.studies.items()),
         }
 
         logger.info(
@@ -321,7 +321,7 @@ class ChartEngine:
         slow_ema = ChartEngine._compute_ema(data, slow_period)
 
         macd_line: list[float | None] = []
-        for f, s in zip(fast_ema, slow_ema):
+        for f, s in zip(fast_ema, slow_ema, strict=False):
             if f is not None and s is not None:
                 macd_line.append(f - s)
             else:
@@ -334,7 +334,7 @@ class ChartEngine:
         signal_line.extend(signal_line_raw)
 
         histogram: list[float | None] = []
-        for m, s in zip(macd_line, signal_line):
+        for m, s in zip(macd_line, signal_line, strict=False):
             if m is not None and s is not None:
                 histogram.append(m - s)
             else:

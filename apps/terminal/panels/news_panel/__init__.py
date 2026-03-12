@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

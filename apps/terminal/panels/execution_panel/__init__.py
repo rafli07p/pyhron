@@ -11,13 +11,12 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from shared.schemas.order_events import (
     OrderRequest,
     OrderSide,
-    OrderStatusEnum,
     OrderType,
     TimeInForce,
 )
