@@ -125,6 +125,6 @@ class TestInvalidTransitions:
     )
     def test_invalid_transition_not_allowed(self, from_status, to_status):
         allowed = VALID_TRANSITIONS.get(from_status, set())
-        assert (
-            to_status not in allowed
-        ), f"Transition {from_status.value} -> {to_status.value} should be invalid but is allowed"
+        assert to_status not in allowed, (
+            f"Transition {from_status.value} -> {to_status.value} should be invalid but is allowed"
+        )

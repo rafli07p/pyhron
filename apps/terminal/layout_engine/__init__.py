@@ -149,8 +149,7 @@ class LayoutEngine:
         """
         if col + width > self._layout.columns or row + height > self._layout.rows:
             raise ValueError(
-                f"Panel ({row},{col}) size ({width}x{height}) exceeds grid "
-                f"({self._layout.rows}x{self._layout.columns})"
+                f"Panel ({row},{col}) size ({width}x{height}) exceeds grid ({self._layout.rows}x{self._layout.columns})"
             )
 
         slot = PanelSlot(
@@ -166,8 +165,7 @@ class LayoutEngine:
         for existing in self._layout.panels:
             if existing.visible and slot.overlaps(existing):
                 raise ValueError(
-                    f"Panel at ({row},{col}) overlaps with '{existing.panel_type}' "
-                    f"at ({existing.row},{existing.col})"
+                    f"Panel at ({row},{col}) overlaps with '{existing.panel_type}' at ({existing.row},{existing.col})"
                 )
 
         self._layout.panels.append(slot)
@@ -208,12 +206,10 @@ class LayoutEngine:
         new_height = height if height is not None else slot.height
 
         if new_width < slot.min_width or new_height < slot.min_height:
-            raise ValueError(
-                f"Size ({new_width}x{new_height}) is below minimum " f"({slot.min_width}x{slot.min_height})"
-            )
+            raise ValueError(f"Size ({new_width}x{new_height}) is below minimum ({slot.min_width}x{slot.min_height})")
 
         if slot.col + new_width > self._layout.columns or slot.row + new_height > self._layout.rows:
-            raise ValueError(f"Resized panel exceeds grid bounds " f"({self._layout.rows}x{self._layout.columns})")
+            raise ValueError(f"Resized panel exceeds grid bounds ({self._layout.rows}x{self._layout.columns})")
 
         old_width, old_height = slot.width, slot.height
         slot.width = new_width

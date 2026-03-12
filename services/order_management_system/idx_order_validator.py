@@ -84,7 +84,7 @@ class IDXOrderValidator:
             if price % tick != 0:
                 rounded = round(price / tick) * tick
                 warnings.append(
-                    f"Price {price} not conformant with IDX tick size {tick}. " f"Will be adjusted to {rounded}."
+                    f"Price {price} not conformant with IDX tick size {tick}. Will be adjusted to {rounded}."
                 )
 
         # Rule 4: Price must be positive

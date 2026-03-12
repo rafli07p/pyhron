@@ -229,7 +229,7 @@ class MomentumWidget(Static):
             lines.append(f"  EXIT ({len(exits)} stocks)")
             for s in exits:
                 lines.append(
-                    f"       {s.get('symbol', ''):<6} {s.get('sector', ''):<12} " f"{s.get('score', 0):>+7.3f}  EXIT"
+                    f"       {s.get('symbol', ''):<6} {s.get('sector', ''):<12} {s.get('score', 0):>+7.3f}  EXIT"
                 )
 
         self.update("\n".join(lines))

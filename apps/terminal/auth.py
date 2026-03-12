@@ -58,7 +58,7 @@ def load_credentials(env: str = "paper") -> dict[str, str] | None:
 
     if not _check_permissions(_CREDENTIALS_FILE):
         sys.stdout.write(
-            f"ERROR: {_CREDENTIALS_FILE} has permissions broader than 0600.\n" f"Run: chmod 600 {_CREDENTIALS_FILE}\n"
+            f"ERROR: {_CREDENTIALS_FILE} has permissions broader than 0600.\nRun: chmod 600 {_CREDENTIALS_FILE}\n"
         )
         return None
 
