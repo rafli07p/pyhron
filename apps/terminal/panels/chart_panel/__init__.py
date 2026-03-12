@@ -120,7 +120,9 @@ class ChartPanel:
             "last_update": self._state.last_update.isoformat(),
         }
 
-    def add_indicator(self, name: str, params: dict[str, Any] | None = None, color: str | None = None) -> IndicatorConfig:
+    def add_indicator(
+        self, name: str, params: dict[str, Any] | None = None, color: str | None = None
+    ) -> IndicatorConfig:
         """Add a technical indicator overlay to the chart.
 
         Parameters

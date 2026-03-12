@@ -59,6 +59,10 @@ grpcio-tools = "~=1.62.0"
 # Task queue
 celery = { version = "~=5.4.0", extras = ["redis"] }
 
+# Terminal UI
+textual = ">=0.47.0"
+rich = ">=13.7.0"
+
 # Utilities
 python-dotenv = "~=1.0.0"
 
@@ -102,7 +106,6 @@ exclude = [
     "shared/proto_generated",
     # Old scaffold directories — not part of active implementation
     "apps/research-platform",
-    "apps/terminal",
     "apps/admin-console",
     "services/execution",
     "services/portfolio",
@@ -175,6 +178,7 @@ known-first-party = ["apps", "services", "shared", "data_platform", "strategy_en
 "scripts/**/*.py" = ["T201"]
 "data_platform/alembic_migrations/**/*.py" = ["T201", "S608"]
 "apps/api/http_routers/**/*.py" = ["TC001", "S105"]
+"apps/terminal/**/*.py" = ["TC001", "TC003", "S105"]
 
 [tool.mypy]
 python_version = "3.12"

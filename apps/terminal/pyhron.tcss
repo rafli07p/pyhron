@@ -1,0 +1,244 @@
+/* Pyhron Terminal Design System — Bloomberg-style dark theme */
+
+Screen {
+    background: #0a0a0a;
+}
+
+/* ── Panel base ─────────────────────────────────────────── */
+
+.panel {
+    background: #141414;
+    border: solid #2a2a2a;
+    color: #e8e8e8;
+}
+
+.panel:focus-within {
+    border: solid #f59e0b;
+}
+
+.panel-header {
+    background: #1e1e1e;
+    color: #f59e0b;
+    text-style: bold;
+    padding: 0 1;
+    height: 1;
+}
+
+/* ── Price colors ───────────────────────────────────────── */
+
+.price-up { color: #00c853; }
+.price-down { color: #ff1744; }
+.price-neutral { color: #e8e8e8; }
+.price-stale { color: #f59e0b; }
+
+/* ── P&L colors ─────────────────────────────────────────── */
+
+.pnl-positive { color: #00c853; text-style: bold; }
+.pnl-negative { color: #ff1744; text-style: bold; }
+.pnl-zero { color: #888888; }
+
+/* ── Order status ───────────────────────────────────────── */
+
+.order-filled { color: #00c853; }
+.order-pending { color: #f59e0b; }
+.order-cancelled { color: #555555; }
+.order-rejected { color: #ff1744; }
+.order-partial { color: #00bcd4; }
+
+/* ── Market status ──────────────────────────────────────── */
+
+.market-open { color: #00c853; text-style: bold; }
+.market-closed { color: #ff1744; }
+.market-preopen { color: #f59e0b; }
+
+/* ── Connection status ──────────────────────────────────── */
+
+.connected { color: #00c853; }
+.reconnecting { color: #f59e0b; }
+.offline { color: #ff1744; }
+
+/* ── Status bar ─────────────────────────────────────────── */
+
+#status-bar {
+    background: #1e1e1e;
+    color: #888888;
+    height: 1;
+    dock: top;
+}
+
+#status-bar Label {
+    padding: 0 1;
+}
+
+/* ── Command bar ────────────────────────────────────────── */
+
+#command-bar {
+    background: #1e1e1e;
+    border-top: solid #f59e0b;
+    height: 3;
+    dock: bottom;
+}
+
+#command-input {
+    background: #141414;
+    color: #e8e8e8;
+    border: none;
+    width: 1fr;
+}
+
+#command-prompt {
+    color: #f59e0b;
+    width: 2;
+    padding: 0;
+}
+
+/* ── Layout containers ──────────────────────────────────── */
+
+#main-content {
+    height: 1fr;
+}
+
+#top-row {
+    height: 2fr;
+}
+
+#bottom-row {
+    height: 1fr;
+}
+
+.column-left {
+    width: 1fr;
+}
+
+.column-center {
+    width: 2fr;
+}
+
+.column-right {
+    width: 2fr;
+}
+
+/* ── Watchlist ──────────────────────────────────────────── */
+
+#watchlist-panel {
+    min-width: 25;
+}
+
+#watchlist-panel .row-highlight {
+    background: #1e1e1e;
+}
+
+/* ── Chart ──────────────────────────────────────────────── */
+
+#chart-panel {
+    min-width: 40;
+}
+
+#chart-content {
+    color: #e8e8e8;
+}
+
+/* ── Orderbook ──────────────────────────────────────────── */
+
+#orderbook-panel {
+    min-width: 30;
+}
+
+.ask-row { color: #ff1744; }
+.bid-row { color: #00c853; }
+
+/* ── Positions ──────────────────────────────────────────── */
+
+#positions-panel {
+    min-width: 30;
+}
+
+/* ── Orders ─────────────────────────────────────────────── */
+
+#orders-panel {
+    min-width: 40;
+}
+
+/* ── Momentum signals ───────────────────────────────────── */
+
+#momentum-panel {
+    min-width: 40;
+}
+
+/* ── Dialog overlay ─────────────────────────────────────── */
+
+.dialog-overlay {
+    background: #1e1e1e;
+    border: double #f59e0b;
+    padding: 1 2;
+    width: 60;
+    height: auto;
+    max-height: 20;
+}
+
+.dialog-overlay .dialog-title {
+    color: #f59e0b;
+    text-style: bold;
+    text-align: center;
+}
+
+/* ── Error screen ───────────────────────────────────────── */
+
+#error-screen {
+    align: center middle;
+    background: #0a0a0a;
+}
+
+#error-screen Static {
+    color: #ff1744;
+    text-align: center;
+}
+
+/* ── Offline banner ─────────────────────────────────────── */
+
+#offline-banner {
+    background: #ff1744;
+    color: #e8e8e8;
+    text-style: bold;
+    height: 1;
+    text-align: center;
+    dock: top;
+    display: none;
+}
+
+#offline-banner.visible {
+    display: block;
+}
+
+/* ── Help overlay ───────────────────────────────────────── */
+
+#help-overlay {
+    background: #141414;
+    border: solid #f59e0b;
+    padding: 1 2;
+    width: 70;
+    height: 30;
+    layer: overlay;
+    align: center middle;
+    display: none;
+}
+
+#help-overlay.visible {
+    display: block;
+}
+
+/* ── Confirmation dialog ────────────────────────────────── */
+
+OrderConfirmDialog {
+    align: center middle;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+OrderConfirmDialog .dialog-content {
+    background: #1e1e1e;
+    border: double #f59e0b;
+    padding: 1 2;
+    width: 56;
+    height: auto;
+    max-height: 16;
+}

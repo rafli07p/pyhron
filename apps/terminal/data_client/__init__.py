@@ -150,7 +150,9 @@ class DataClient:
             response = await client.get("/market-data", params=params)
             response.raise_for_status()
             data = cast(list[dict[str, Any]] | dict[str, Any], response.json())
-            logger.debug("Fetched %s data for %s: %d records", data_type, symbol, len(data) if isinstance(data, list) else 1)
+            logger.debug(
+                "Fetched %s data for %s: %d records", data_type, symbol, len(data) if isinstance(data, list) else 1
+            )
             return data
         except httpx.HTTPStatusError as exc:
             logger.error("Market data request failed (%d): %s", exc.response.status_code, exc)

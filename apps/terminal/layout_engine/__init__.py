@@ -209,15 +209,11 @@ class LayoutEngine:
 
         if new_width < slot.min_width or new_height < slot.min_height:
             raise ValueError(
-                f"Size ({new_width}x{new_height}) is below minimum "
-                f"({slot.min_width}x{slot.min_height})"
+                f"Size ({new_width}x{new_height}) is below minimum " f"({slot.min_width}x{slot.min_height})"
             )
 
         if slot.col + new_width > self._layout.columns or slot.row + new_height > self._layout.rows:
-            raise ValueError(
-                f"Resized panel exceeds grid bounds "
-                f"({self._layout.rows}x{self._layout.columns})"
-            )
+            raise ValueError(f"Resized panel exceeds grid bounds " f"({self._layout.rows}x{self._layout.columns})")
 
         old_width, old_height = slot.width, slot.height
         slot.width = new_width
