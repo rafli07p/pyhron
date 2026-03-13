@@ -11,9 +11,9 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 import jwt
@@ -39,6 +39,8 @@ def _get_jwt_secret() -> str:
 
 def _get_jwt_algorithm() -> str:
     return _get_config().jwt_algorithm
+
+
 HEARTBEAT_INTERVAL_SECONDS = 15
 HEARTBEAT_TIMEOUT_SECONDS = 30
 
@@ -46,6 +48,7 @@ HEARTBEAT_TIMEOUT_SECONDS = 30
 # ---------------------------------------------------------------------------
 # Message types
 # ---------------------------------------------------------------------------
+
 
 class WSMessageType(StrEnum):
     SUBSCRIBE = "subscribe"
@@ -70,6 +73,7 @@ class WSMessage(BaseModel):
 # ---------------------------------------------------------------------------
 # Connection manager
 # ---------------------------------------------------------------------------
+
 
 class ConnectionManager:
     """Manages WebSocket connections and per-symbol subscriptions.
@@ -229,6 +233,7 @@ manager = ConnectionManager()
 # JWT authentication for WebSocket
 # ---------------------------------------------------------------------------
 
+
 def authenticate_ws_token(token: str) -> dict[str, str]:
     """Validate JWT and return claims.  Raises ValueError on failure."""
     try:
@@ -242,7 +247,7 @@ def authenticate_ws_token(token: str) -> dict[str, str]:
             "role": payload.get("role", "viewer"),
         }
     except jwt.ExpiredSignatureError:
-        raise ValueError("Token expired")  # noqa: B904
+        raise ValueError("Token expired")
     except jwt.InvalidTokenError as exc:
         raise ValueError(f"Invalid token: {exc}") from exc
 
@@ -250,6 +255,7 @@ def authenticate_ws_token(token: str) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # Heartbeat background task
 # ---------------------------------------------------------------------------
+
 
 async def _heartbeat_loop() -> None:
     """Periodically send pings and disconnect stale clients."""
@@ -273,6 +279,7 @@ async def _heartbeat_loop() -> None:
 # ---------------------------------------------------------------------------
 # Market data feed background task (Polygon WebSocket)
 # ---------------------------------------------------------------------------
+
 
 async def _polygon_market_feed() -> None:
     """Connect to Polygon.io WebSocket and relay quotes to subscribers.
@@ -322,19 +329,25 @@ async def _polygon_market_feed() -> None:
                                 ev = msg.get("ev")
                                 sym = msg.get("sym") or msg.get("T", "")
                                 if ev == "Q" and sym:
-                                    await manager.broadcast_market_data(sym, {
-                                        "bid": msg.get("bp", 0),
-                                        "ask": msg.get("ap", 0),
-                                        "bid_size": msg.get("bs", 0),
-                                        "ask_size": msg.get("as", 0),
-                                        "timestamp": msg.get("t"),
-                                    })
+                                    await manager.broadcast_market_data(
+                                        sym,
+                                        {
+                                            "bid": msg.get("bp", 0),
+                                            "ask": msg.get("ap", 0),
+                                            "bid_size": msg.get("bs", 0),
+                                            "ask_size": msg.get("as", 0),
+                                            "timestamp": msg.get("t"),
+                                        },
+                                    )
                                 elif ev == "T" and sym:
-                                    await manager.broadcast_market_data(sym, {
-                                        "price": msg.get("p", 0),
-                                        "size": msg.get("s", 0),
-                                        "timestamp": msg.get("t"),
-                                    })
+                                    await manager.broadcast_market_data(
+                                        sym,
+                                        {
+                                            "price": msg.get("p", 0),
+                                            "size": msg.get("s", 0),
+                                            "timestamp": msg.get("t"),
+                                        },
+                                    )
                     except TimeoutError:
                         continue
 
@@ -347,6 +360,7 @@ async def _polygon_market_feed() -> None:
 # Application factory
 # ---------------------------------------------------------------------------
 
+
 def create_ws_app() -> FastAPI:
     """Build and return the WebSocket gateway FastAPI app."""
     app = FastAPI(
@@ -355,10 +369,12 @@ def create_ws_app() -> FastAPI:
         version="0.1.0",
     )
 
+    _background_tasks: list[asyncio.Task[None]] = []
+
     @app.on_event("startup")
     async def startup() -> None:
-        asyncio.create_task(_heartbeat_loop())
-        asyncio.create_task(_polygon_market_feed())
+        _background_tasks.append(asyncio.create_task(_heartbeat_loop()))
+        _background_tasks.append(asyncio.create_task(_polygon_market_feed()))
         logger.info("ws_gateway_started")
 
     @app.get("/health")
@@ -389,7 +405,7 @@ def create_ws_app() -> FastAPI:
         # Wait for auth message as the first message
         try:
             raw = await asyncio.wait_for(websocket.receive_text(), timeout=10.0)
-        except (asyncio.TimeoutError, WebSocketDisconnect):
+        except (TimeoutError, WebSocketDisconnect):
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Auth timeout")
             return
 
@@ -402,7 +418,7 @@ def create_ws_app() -> FastAPI:
         if auth_msg.get("type") != "auth" or not auth_msg.get("token"):
             await websocket.close(
                 code=status.WS_1008_POLICY_VIOLATION,
-                reason="First message must be {\"type\": \"auth\", \"token\": \"...\"}",
+                reason='First message must be {"type": "auth", "token": "..."}',
             )
             return
 
@@ -422,13 +438,18 @@ def create_ws_app() -> FastAPI:
                 "role": claims["role"],
             }
             manager._last_pong[connection_id] = time.monotonic()
-        logger.info("ws_connected", connection_id=connection_id, tenant_id=claims["tenant_id"], user_id=claims["user_id"])
+        logger.info(
+            "ws_connected", connection_id=connection_id, tenant_id=claims["tenant_id"], user_id=claims["user_id"]
+        )
 
         # Send welcome message
-        await manager.send_personal(connection_id, WSMessage(
-            type=WSMessageType.ACK,
-            data={"connection_id": connection_id, "message": "Connected to Pyhron WebSocket Gateway"},
-        ))
+        await manager.send_personal(
+            connection_id,
+            WSMessage(
+                type=WSMessageType.ACK,
+                data={"connection_id": connection_id, "message": "Connected to Pyhron WebSocket Gateway"},
+            ),
+        )
 
         try:
             while True:
@@ -436,10 +457,13 @@ def create_ws_app() -> FastAPI:
                 try:
                     msg = json.loads(raw)
                 except json.JSONDecodeError:
-                    await manager.send_personal(connection_id, WSMessage(
-                        type=WSMessageType.ERROR,
-                        data={"error": "Invalid JSON"},
-                    ))
+                    await manager.send_personal(
+                        connection_id,
+                        WSMessage(
+                            type=WSMessageType.ERROR,
+                            data={"error": "Invalid JSON"},
+                        ),
+                    )
                     continue
 
                 msg_type = msg.get("type", "")
@@ -452,33 +476,42 @@ def create_ws_app() -> FastAPI:
                         await manager.subscribe(connection_id, symbol)
                     if channel:
                         await manager.subscribe_channel(connection_id, channel)
-                    await manager.send_personal(connection_id, WSMessage(
-                        type=WSMessageType.ACK,
-                        data={"action": "subscribed", "symbol": symbol, "channel": channel},
-                        request_id=request_id,
-                    ))
+                    await manager.send_personal(
+                        connection_id,
+                        WSMessage(
+                            type=WSMessageType.ACK,
+                            data={"action": "subscribed", "symbol": symbol, "channel": channel},
+                            request_id=request_id,
+                        ),
+                    )
 
                 elif msg_type == WSMessageType.UNSUBSCRIBE:
                     if symbol:
                         await manager.unsubscribe(connection_id, symbol)
                     if channel:
                         await manager.unsubscribe_channel(connection_id, channel)
-                    await manager.send_personal(connection_id, WSMessage(
-                        type=WSMessageType.ACK,
-                        data={"action": "unsubscribed", "symbol": symbol, "channel": channel},
-                        request_id=request_id,
-                    ))
+                    await manager.send_personal(
+                        connection_id,
+                        WSMessage(
+                            type=WSMessageType.ACK,
+                            data={"action": "unsubscribed", "symbol": symbol, "channel": channel},
+                            request_id=request_id,
+                        ),
+                    )
 
                 elif msg_type == WSMessageType.HEARTBEAT:
                     # Client pong
                     manager.record_pong(connection_id)
 
                 else:
-                    await manager.send_personal(connection_id, WSMessage(
-                        type=WSMessageType.ERROR,
-                        data={"error": f"Unknown message type: {msg_type}"},
-                        request_id=request_id,
-                    ))
+                    await manager.send_personal(
+                        connection_id,
+                        WSMessage(
+                            type=WSMessageType.ERROR,
+                            data={"error": f"Unknown message type: {msg_type}"},
+                            request_id=request_id,
+                        ),
+                    )
 
         except WebSocketDisconnect:
             await manager.disconnect(connection_id)
@@ -521,14 +554,20 @@ def create_ws_app() -> FastAPI:
 
                 if action == "subscribe" and symbol:
                     await manager.subscribe(connection_id, symbol)
-                    await websocket.send_text(WSMessage(
-                        type=WSMessageType.ACK, data={"subscribed": symbol},
-                    ).model_dump_json())
+                    await websocket.send_text(
+                        WSMessage(
+                            type=WSMessageType.ACK,
+                            data={"subscribed": symbol},
+                        ).model_dump_json()
+                    )
                 elif action == "unsubscribe" and symbol:
                     await manager.unsubscribe(connection_id, symbol)
-                    await websocket.send_text(WSMessage(
-                        type=WSMessageType.ACK, data={"unsubscribed": symbol},
-                    ).model_dump_json())
+                    await websocket.send_text(
+                        WSMessage(
+                            type=WSMessageType.ACK,
+                            data={"unsubscribed": symbol},
+                        ).model_dump_json()
+                    )
                 elif action == "heartbeat":
                     manager.record_pong(connection_id)
 
