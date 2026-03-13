@@ -114,7 +114,6 @@ exclude = [
     "services/research",
     "services/risk",
     "services/api/logging",
-    "services/api/websocket_gateway",
     "data_platform/backup",
     "data_platform/encryption",
     "data_platform/quality",

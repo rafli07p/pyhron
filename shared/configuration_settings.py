@@ -100,6 +100,33 @@ class Config(BaseSettings):
     slack_webhook_url: str = Field(default="")
     alert_email: str = Field(default="")
 
+    # -- Data Ingestion --
+    eodhd_api_token: str = Field(default="")
+    eodhd_max_rps: int = Field(default=5)
+    eodhd_timeout_seconds: int = Field(default=30)
+    eodhd_max_retries: int = Field(default=3)
+
+    yfinance_fallback_enabled: bool = Field(default=True)
+    yfinance_request_delay_seconds: float = Field(default=0.5)
+
+    ccxt_exchange: str = Field(default="binance")
+    ccxt_api_key: str | None = Field(default=None)
+    ccxt_secret: str | None = Field(default=None)
+
+    kafka_raw_topic_partitions: int = Field(default=3)
+    kafka_validated_topic_partitions: int = Field(default=3)
+    kafka_dlq_topic_partitions: int = Field(default=1)
+    kafka_consumer_max_poll_records: int = Field(default=500)
+
+    timescaledb_writer_batch_size: int = Field(default=1000)
+    timescaledb_writer_batch_timeout_ms: int = Field(default=500)
+
+    data_quality_coverage_threshold: float = Field(default=0.95)
+    data_quality_spike_z_threshold: float = Field(default=5.0)
+
+    backfill_max_workers: int = Field(default=5)
+    backfill_chunk_days: int = Field(default=365)
+
     @field_validator("app_secret_key")
     @classmethod
     def _validate_app_secret(cls, v: str, info: Any) -> str:
