@@ -35,6 +35,12 @@ class KafkaTopic:
     PAPER_NAV_SNAPSHOT = "pyhron.paper.nav_snapshot"
     PAPER_REBALANCE_RESULT = "pyhron.paper.rebalance_result"
 
+    # Risk & live trading
+    RISK_SNAPSHOT = "pyhron.risk.snapshot"
+    KILL_SWITCH_TRIGGERED = "pyhron.risk.kill_switch_triggered"
+    KILL_SWITCH_RESET = "pyhron.risk.kill_switch_reset"
+    LIVE_TRADING_ACTIVATED = "pyhron.live.activated"
+
     # Dead-letter queues
     DLQ_EOD_OHLCV = "pyhron.dlq.eod_ohlcv"
     DLQ_FUNDAMENTALS = "pyhron.dlq.fundamentals"

@@ -470,6 +470,7 @@ def create_rest_app() -> FastAPI:
     from apps.api.http_routers.indonesia_macro_dashboard_router import router as macro_router
     from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
     from apps.api.http_routers.live_trading_position_router import router as live_trading_router
+    from apps.api.http_routers.live_trading_risk_router import router as live_trading_risk_router
     from apps.api.http_routers.paper_trading_router import router as paper_trading_router
     from apps.api.http_routers.strategy_management_router import router as strategy_router
     from apps.api.http_routers.user_authentication_router import router as auth_router
@@ -486,6 +487,7 @@ def create_rest_app() -> FastAPI:
     app.include_router(strategy_router)
     app.include_router(backtest_router)
     app.include_router(live_trading_router)
+    app.include_router(live_trading_risk_router)
     app.include_router(auth_router)
     app.include_router(paper_trading_router)
 
@@ -493,9 +495,58 @@ def create_rest_app() -> FastAPI:
     # Health / Readiness
     # ------------------------------------------------------------------
 
-    @app.get("/health", response_model=HealthResponse, tags=["ops"])
-    async def health() -> HealthResponse:
-        return HealthResponse()
+    @app.get("/health", response_model=None, tags=["ops"])
+    async def health() -> JSONResponse:
+        """Enhanced health check – verifies Postgres and Redis connectivity."""
+        import redis.asyncio as aioredis
+        from sqlalchemy import text
+        from sqlalchemy.ext.asyncio import create_async_engine
+
+        from shared.configuration_settings import get_config
+
+        cfg = get_config()
+        checks: dict[str, str] = {}
+
+        # -- Postgres --
+        try:
+            engine = create_async_engine(cfg.database_url, pool_pre_ping=True)
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            await engine.dispose()
+            checks["postgres"] = "ok"
+        except Exception as exc:
+            checks["postgres"] = f"error: {exc}"
+
+        # -- Redis --
+        try:
+            r = aioredis.from_url(cfg.redis_url, decode_responses=True)
+            await r.ping()
+            await r.aclose()
+            checks["redis"] = "ok"
+        except Exception as exc:
+            checks["redis"] = f"error: {exc}"
+
+        all_ok = all(v == "ok" for v in checks.values())
+        return JSONResponse(
+            status_code=200 if all_ok else 503,
+            content={
+                "status": "ok" if all_ok else "degraded",
+                "version": "0.1.0",
+                "checks": checks,
+            },
+        )
+
+    # Prometheus metrics endpoint
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+    from shared.metrics import REGISTRY
+
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics() -> Response:
+        return Response(
+            content=generate_latest(REGISTRY),
+            media_type=CONTENT_TYPE_LATEST,
+        )
 
     @app.get("/ready", tags=["ops"])
     async def readiness() -> dict[str, str]:

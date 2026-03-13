@@ -1,0 +1,247 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Data Ingestion - Records/min",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "rate(pyhron_records_ingested_total[5m]) * 60",
+          "legendFormat": "{{source}} - {{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "short"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "DLQ Depth",
+      "type": "gauge",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+      "targets": [
+        {
+          "expr": "pyhron_dlq_depth",
+          "legendFormat": "{{topic}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 100},
+              {"color": "red", "value": 1000}
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "title": "Ingestion Duration (p50/p95)",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(pyhron_ingestion_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50 - {{task_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(pyhron_ingestion_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95 - {{task_name}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "s"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "Orders Submitted/min by Side",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+      "targets": [
+        {
+          "expr": "rate(pyhron_orders_submitted_total[5m]) * 60",
+          "legendFormat": "{{side}} - {{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "short"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "Order Fill Latency",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(pyhron_order_fill_latency_seconds_bucket[5m]))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(pyhron_order_fill_latency_seconds_bucket[5m]))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(pyhron_order_fill_latency_seconds_bucket[5m]))",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "s"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "Order Rejection Rate",
+      "type": "stat",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+      "targets": [
+        {
+          "expr": "rate(pyhron_orders_submitted_total{status=\"rejected\"}[5m]) / rate(pyhron_orders_submitted_total[5m])",
+          "legendFormat": "Rejection Rate",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "percentunit"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "Paper Trading NAV",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {
+          "expr": "pyhron_paper_session_nav_idr",
+          "legendFormat": "{{session_name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "currencyIDR"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "Paper Trading Drawdown",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {
+          "expr": "pyhron_paper_session_drawdown_pct",
+          "legendFormat": "{{session_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "percent", "max": 0, "min": -100},
+        "overrides": []
+      }
+    },
+    {
+      "title": "WebSocket Active Connections",
+      "type": "gauge",
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 24},
+      "targets": [
+        {
+          "expr": "pyhron_ws_active_connections",
+          "legendFormat": "Connections",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 50},
+              {"color": "red", "value": 100}
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "title": "WebSocket Message Latency",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 9, "x": 6, "y": 24},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(pyhron_ws_message_latency_seconds_bucket[5m]))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(pyhron_ws_message_latency_seconds_bucket[5m]))",
+          "legendFormat": "p95",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "s"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "API Request Duration p95",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 9, "x": 15, "y": 24},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(pyhron_http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "{{method}} {{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "s"},
+        "overrides": []
+      }
+    },
+    {
+      "title": "API Error Rate by Endpoint",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [
+        {
+          "expr": "rate(pyhron_http_request_duration_seconds_count{status_code=~\"5..\"}[5m])",
+          "legendFormat": "{{method}} {{endpoint}} {{status_code}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "reqps"},
+        "overrides": []
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["pyhron", "trading"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "Asia/Jakarta",
+  "title": "Pyhron Overview",
+  "uid": "pyhron-overview",
+  "version": 1
+}

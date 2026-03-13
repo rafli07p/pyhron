@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "json": {
+      "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+      "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
+      "datefmt": "%Y-%m-%dT%H:%M:%S"
+    }
+  },
+  "handlers": {
+    "default": {
+      "class": "logging.StreamHandler",
+      "formatter": "json",
+      "stream": "ext://sys.stdout"
+    }
+  },
+  "root": {
+    "level": "INFO",
+    "handlers": ["default"]
+  },
+  "loggers": {
+    "uvicorn.error": {"level": "INFO"},
+    "uvicorn.access": {"level": "WARNING"},
+    "sqlalchemy.engine": {"level": "WARNING"}
+  }
+}
