@@ -204,5 +204,5 @@ class KafkaRedisBridge:
         if transformer is None:
             return None, {}
 
-        ws_msg: dict = transformer(payload)  # type: ignore[operator]
+        ws_msg: dict[str, object] = transformer(payload)  # type: ignore[operator]
         return channel, ws_msg

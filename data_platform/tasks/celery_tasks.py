@@ -107,7 +107,7 @@ def _run_async(coro: Any) -> Any:
     acks_late=True,
     reject_on_worker_lost=True,
 )
-def ingest_daily_eod(self: Any, trade_date: str | None = None) -> dict:
+def ingest_daily_eod(self: Any, trade_date: str | None = None) -> dict[str, Any]:
     """Ingest end-of-day OHLCV for all active IDX instruments.
 
     Schedule: Monday-Friday at 17:30 WIB (10:30 UTC)
@@ -117,7 +117,7 @@ def ingest_daily_eod(self: Any, trade_date: str | None = None) -> dict:
     logger = get_logger(__name__)
     try:
 
-        async def _ingest() -> dict:
+        async def _ingest() -> dict[str, Any]:
             import json
 
             import httpx
@@ -170,7 +170,7 @@ def ingest_daily_eod(self: Any, trade_date: str | None = None) -> dict:
             logger.info("eod_ingestion_complete", trade_date=str(target_date), fetched=fetched, published=published)
             return {"trade_date": str(target_date), "fetched": fetched, "published": published}
 
-        return _run_async(_ingest())
+        return _run_async(_ingest())  # type: ignore[no-any-return]
     except Exception as exc:
         logger.exception("ingest_daily_eod_failed")
         raise self.retry(exc=exc)
@@ -183,7 +183,7 @@ def ingest_daily_eod(self: Any, trade_date: str | None = None) -> dict:
     default_retry_delay=3600,
     acks_late=True,
 )
-def ingest_fundamentals(self: Any, symbols: list[str] | None = None) -> dict:
+def ingest_fundamentals(self: Any, symbols: list[str] | None = None) -> dict[str, Any]:
     """Ingest fundamental data for all active instruments or a subset.
 
     Schedule: every Saturday at 02:00 WIB (19:00 UTC Friday)
@@ -193,7 +193,7 @@ def ingest_fundamentals(self: Any, symbols: list[str] | None = None) -> dict:
     logger = get_logger(__name__)
     try:
 
-        async def _ingest() -> dict:
+        async def _ingest() -> dict[str, Any]:
             import httpx
 
             from data_platform.adapters.eodhd_adapter import EODHDAdapter
@@ -227,7 +227,7 @@ def ingest_fundamentals(self: Any, symbols: list[str] | None = None) -> dict:
 
             return {"processed": processed, "errors": errors, "total": len(target_symbols)}
 
-        return _run_async(_ingest())
+        return _run_async(_ingest())  # type: ignore[no-any-return]
     except Exception as exc:
         logger.exception("ingest_fundamentals_failed")
         raise self.retry(exc=exc)
@@ -244,7 +244,7 @@ def ingest_corporate_actions(
     self: Any,
     symbols: list[str] | None = None,
     lookback_days: int = 30,
-) -> dict:
+) -> dict[str, Any]:
     """Ingest and apply corporate actions for all active instruments.
 
     Schedule: daily at 18:00 WIB (11:00 UTC)
@@ -254,7 +254,7 @@ def ingest_corporate_actions(
     logger = get_logger(__name__)
     try:
 
-        async def _ingest() -> dict:
+        async def _ingest() -> dict[str, Any]:
             import httpx
 
             from data_platform.adapters.eodhd_adapter import EODHDAdapter
@@ -287,7 +287,7 @@ def ingest_corporate_actions(
 
             return {"dividends": dividends_found, "splits": splits_found, "symbols": len(target_symbols)}
 
-        return _run_async(_ingest())
+        return _run_async(_ingest())  # type: ignore[no-any-return]
     except Exception as exc:
         logger.exception("ingest_corporate_actions_failed")
         raise self.retry(exc=exc)
@@ -300,7 +300,7 @@ def ingest_corporate_actions(
     default_retry_delay=3600,
     acks_late=True,
 )
-def ingest_instrument_universe(self: Any) -> dict:
+def ingest_instrument_universe(self: Any) -> dict[str, Any]:
     """Refresh the instrument universe from EODHD exchange symbols endpoint.
 
     Schedule: every Sunday at 01:00 WIB (18:00 UTC Saturday)
@@ -310,7 +310,7 @@ def ingest_instrument_universe(self: Any) -> dict:
     logger = get_logger(__name__)
     try:
 
-        async def _ingest() -> dict:
+        async def _ingest() -> dict[str, Any]:
             import httpx
 
             from data_platform.adapters.eodhd_adapter import EODHDAdapter
@@ -324,7 +324,7 @@ def ingest_instrument_universe(self: Any) -> dict:
             logger.info("instrument_universe_fetched", count=len(instruments))
             return {"fetched": len(instruments)}
 
-        return _run_async(_ingest())
+        return _run_async(_ingest())  # type: ignore[no-any-return]
     except Exception as exc:
         logger.exception("ingest_instrument_universe_failed")
         raise self.retry(exc=exc)
@@ -335,7 +335,7 @@ def ingest_instrument_universe(self: Any) -> dict:
     name="tasks.data_quality_report",
     max_retries=1,
 )
-def run_daily_quality_report(self: Any, trade_date: str | None = None) -> dict:
+def run_daily_quality_report(self: Any, trade_date: str | None = None) -> dict[str, Any]:
     """Run data quality checks after daily ingestion completes.
 
     Schedule: daily at 19:00 WIB (12:00 UTC)
@@ -345,7 +345,7 @@ def run_daily_quality_report(self: Any, trade_date: str | None = None) -> dict:
     logger = get_logger(__name__)
     try:
 
-        async def _report() -> dict:
+        async def _report() -> dict[str, Any]:
             from data_platform.quality.idx_data_quality_monitor import IDXDataQualityMonitor
             from shared.async_database_session import get_session
             from strategy_engine.idx_trading_calendar import prev_trading_day
@@ -371,7 +371,7 @@ def run_daily_quality_report(self: Any, trade_date: str | None = None) -> dict:
                 "missing_count": len(report.missing_symbols),
             }
 
-        return _run_async(_report())
+        return _run_async(_report())  # type: ignore[no-any-return]
     except Exception as exc:
         logger.exception("quality_report_failed")
         raise self.retry(exc=exc)
@@ -389,14 +389,14 @@ def backfill_symbol(
     date_from: str = "",
     date_to: str = "",
     source: str = "eodhd",
-) -> dict:
+) -> dict[str, Any]:
     """Backfill historical OHLCV for a single symbol."""
     from shared.structured_json_logger import get_logger
 
     logger = get_logger(__name__)
     try:
 
-        async def _backfill() -> dict:
+        async def _backfill() -> dict[str, Any]:
             import httpx
 
             from data_platform.adapters.eodhd_adapter import EODHDAdapter
@@ -419,7 +419,7 @@ def backfill_symbol(
             logger.info("backfill_complete", symbol=symbol, records=len(records))
             return {"symbol": symbol, "records_fetched": len(records), "source": source}
 
-        return _run_async(_backfill())
+        return _run_async(_backfill())  # type: ignore[no-any-return]
     except Exception as exc:
         logger.exception("backfill_failed", symbol=symbol)
         raise self.retry(exc=exc)
@@ -440,7 +440,7 @@ def ingest_idx_eod_daily(self: Any) -> dict[str, int]:
 
     logger = get_logger(__name__)
     try:
-        result = ingest_daily_eod()
+        result = ingest_daily_eod()  # type: ignore[call-arg]
         return {"symbols": result.get("fetched", 0), "rows_inserted": result.get("published", 0), "errors": 0}
     except Exception as exc:
         logger.exception("celery_eod_failed")
@@ -468,7 +468,7 @@ def compute_daily_ratios(self: Any) -> dict[str, str]:
     max_retries=2,
     default_retry_delay=120,
 )
-def aggregate_news(self: Any) -> dict:
+def aggregate_news(self: Any) -> dict[str, Any]:
     """Aggregate news from all RSS sources."""
     from shared.structured_json_logger import get_logger
 
@@ -489,7 +489,7 @@ def ingest_idx_fundamentals(self: Any) -> dict[str, int]:
 
     logger = get_logger(__name__)
     try:
-        result = ingest_fundamentals()
+        result = ingest_fundamentals()  # type: ignore[call-arg]
         return {"symbols": result.get("processed", 0)}
     except Exception as exc:
         logger.exception("celery_fundamentals_failed")

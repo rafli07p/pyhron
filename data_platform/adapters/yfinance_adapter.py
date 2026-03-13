@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 import yfinance as yf
 
@@ -67,11 +68,11 @@ class YFinanceAdapter:
 
         return await asyncio.to_thread(_fetch)
 
-    async def get_info(self, symbol: str) -> dict:
+    async def get_info(self, symbol: str) -> dict[str, Any]:
         """Fetch instrument metadata (sector, industry, market cap)."""
         yf_symbol = f"{symbol}{self.IDX_SUFFIX}" if not symbol.endswith(self.IDX_SUFFIX) else symbol
 
-        def _fetch() -> dict:
+        def _fetch() -> dict[str, Any]:
             ticker = yf.Ticker(yf_symbol)
             return dict(ticker.info) if ticker.info else {}
 

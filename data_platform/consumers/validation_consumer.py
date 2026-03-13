@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 import aiokafka
 
@@ -138,7 +139,7 @@ class ValidationConsumer:
                 symbol=record_data.get("symbol"),
             )
 
-    def _validate_ohlcv(self, data: dict) -> ValidationResult:
+    def _validate_ohlcv(self, data: dict[str, Any]) -> ValidationResult:
         from data_platform.quality.idx_data_validator import ValidationResult
 
         try:
@@ -176,5 +177,5 @@ class ValidationConsumer:
                 failed_rules=[f"PARSE_ERROR: {e}"],
             )
 
-    def _validate_fundamentals(self, data: dict) -> ValidationResult:
+    def _validate_fundamentals(self, data: dict[str, Any]) -> ValidationResult:
         return self._fundamentals_validator.validate(data, data.get("symbol", "UNKNOWN"))

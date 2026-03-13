@@ -14,7 +14,7 @@ Adjustment factor accumulates multiplicatively for split events.
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
 
@@ -113,7 +113,7 @@ class IDXCorporateActionProcessor:
                     "action_date": action_date.isoformat(),
                 },
             )
-            total_updated += result.rowcount
+            total_updated += result.rowcount  # type: ignore[attr-defined]
 
         await db_session.flush()
         logger.info(
@@ -128,7 +128,7 @@ class IDXCorporateActionProcessor:
         self,
         symbol: str,
         db_session: AsyncSession,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """Compare corporate actions in DB against price discontinuities.
 
         Returns list of actions not yet applied.
@@ -144,7 +144,7 @@ class IDXCorporateActionProcessor:
         )
         actions_in_db = result.fetchall()
 
-        unprocessed: list[dict] = []
+        unprocessed: list[dict[str, Any]] = []
         for row in actions_in_db:
             action_type, ex_date, value, description = row
             # Check if there's a price discontinuity at the ex_date

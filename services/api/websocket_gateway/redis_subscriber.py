@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import redis.asyncio as aioredis
@@ -34,7 +34,7 @@ class RedisSubscriber:
     ) -> None:
         self._redis = redis_client
         self._manager = manager
-        self._pubsub: aioredis.client.PubSub | None = None  # type: ignore[name-defined]
+        self._pubsub: Any = None
         self._subscribed_channels: set[str] = set()
         self._lock = asyncio.Lock()
 

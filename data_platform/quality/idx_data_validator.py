@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 from data_platform.adapters.eodhd_adapter import EODHDOHLCVRecord
 from shared.structured_json_logger import get_logger
@@ -135,7 +136,7 @@ class IDXFundamentalsValidator:
 
     def validate(
         self,
-        record: dict,
+        record: dict[str, Any],
         symbol: str,
     ) -> ValidationResult:
         """Validate fundamental data record."""

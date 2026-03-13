@@ -17,7 +17,7 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import aiokafka
 from sqlalchemy import text
@@ -108,7 +108,7 @@ class DLQProcessor:
 
     async def process_record(
         self,
-        record: dict,
+        record: dict[str, Any],
         topic: str,
         retry_count: int,
     ) -> DLQProcessingResult:
@@ -162,7 +162,7 @@ class DLQProcessor:
             reason="Re-queued for retry",
         )
 
-    async def _write_permanent(self, record: dict, topic: str, retry_count: int) -> None:
+    async def _write_permanent(self, record: dict[str, Any], topic: str, retry_count: int) -> None:
         """Write permanently failed record to dlq_permanent table."""
         if not self._db_session:
             logger.error("dlq_permanent_write_skipped_no_session", topic=topic)

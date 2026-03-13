@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import aiokafka
 from sqlalchemy import text
@@ -83,7 +83,7 @@ class TimescaleDBWriterConsumer:
         if not self._consumer:
             raise RuntimeError("Consumer not started")
 
-        batch: list[tuple[str, dict]] = []
+        batch: list[tuple[str, dict[str, Any]]] = []
         batch_start = time.monotonic()
 
         async for msg in self._consumer:
@@ -95,7 +95,7 @@ class TimescaleDBWriterConsumer:
                 batch = []
                 batch_start = time.monotonic()
 
-    async def _process_batch(self, batch: list[tuple[str, dict]]) -> None:
+    async def _process_batch(self, batch: list[tuple[str, dict[str, Any]]]) -> None:
         """Process a batch of messages."""
         if not batch or not self._consumer:
             return
@@ -104,7 +104,7 @@ class TimescaleDBWriterConsumer:
         fundamental_records = [r for t, r in batch if t == KafkaTopic.VALIDATED_FUNDAMENTALS]
 
         try:
-            async with self._db_session_factory() as db_session:
+            async with self._db_session_factory() as db_session:  # type: ignore[operator]
                 written = 0
                 if ohlcv_records:
                     written += await self._write_ohlcv_batch(ohlcv_records, db_session)
@@ -125,7 +125,7 @@ class TimescaleDBWriterConsumer:
 
     async def _write_ohlcv_batch(
         self,
-        records: list[dict],
+        records: list[dict[str, Any]],
         db_session: AsyncSession,
     ) -> int:
         """Bulk upsert OHLCV records using INSERT ... ON CONFLICT DO NOTHING."""
@@ -155,11 +155,11 @@ class TimescaleDBWriterConsumer:
             "ON CONFLICT (time, symbol, exchange) DO NOTHING"
         )
         result = await db_session.execute(text(sql), params)
-        return result.rowcount
+        return result.rowcount  # type: ignore[no-any-return, attr-defined]
 
     async def _write_fundamentals_batch(
         self,
-        records: list[dict],
+        records: list[dict[str, Any]],
         db_session: AsyncSession,
     ) -> int:
         """Bulk upsert fundamental records."""
@@ -188,12 +188,12 @@ class TimescaleDBWriterConsumer:
                     "total_equity": rec.get("total_equity"),
                 },
             )
-            written += result.rowcount
+            written += result.rowcount  # type: ignore[attr-defined]
         return written
 
     async def _send_to_dlq(
         self,
-        record: dict,
+        record: dict[str, Any],
         reason: str,
         original_topic: str,
     ) -> None:

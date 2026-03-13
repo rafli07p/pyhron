@@ -15,6 +15,7 @@ import asyncio
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 import httpx
 
@@ -151,7 +152,7 @@ class EODHDAdapter:
         symbol: str,
         exchange: str = "IDX",
         filter_field: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Fetch fundamental data (financials, ratios, general info)."""
         params: dict[str, str] = {"fmt": "json"}
         if filter_field:
@@ -293,7 +294,7 @@ class EODHDAdapter:
         self,
         endpoint: str,
         params: dict[str, str],
-    ) -> dict | list:
+    ) -> dict[str, Any] | list[Any]:
         """Execute HTTP GET with retry, rate limiting, and error handling."""
         params["api_token"] = self._api_token
         url = f"{self.BASE_URL}{endpoint}"
@@ -331,7 +332,7 @@ class EODHDAdapter:
                     raise EODHDAPIError(0, f"HTTP error after {self.MAX_RETRIES} attempts: {e}")
 
                 if response.status_code == 200:
-                    return response.json()
+                    return response.json()  # type: ignore[no-any-return]
                 if response.status_code == 429:
                     if attempt < self.MAX_RETRIES - 1:
                         wait = self.RETRY_BACKOFF_BASE ** (attempt + 1)

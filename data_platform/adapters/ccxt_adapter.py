@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 import ccxt.async_support as ccxt_async
 
@@ -89,11 +90,11 @@ class CCXTAdapter:
         self,
         exchange_id: str,
         symbol: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Fetch latest ticker data from a crypto exchange."""
         exchange = await self._get_exchange(exchange_id)
         try:
-            return await exchange.fetch_ticker(symbol)
+            return await exchange.fetch_ticker(symbol)  # type: ignore[no-any-return]
         except Exception as e:
             logger.warning("ccxt_ticker_failed", exchange=exchange_id, symbol=symbol, error=str(e))
             return {}

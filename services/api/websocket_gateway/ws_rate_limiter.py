@@ -55,7 +55,7 @@ class WebSocketRateLimiter:
         script = await self._ensure_script()
         now_ms = int(time.time() * 1000)
         window_ms = self.WINDOW_SECONDS * 1000
-        count: int = await script(keys=[key], args=[now_ms, window_ms])  # type: ignore[misc]
+        count: int = await script(keys=[key], args=[now_ms, window_ms])  # type: ignore[operator]
         return int(count) <= limit
 
     async def check_inbound(self, connection_id: str) -> bool:
