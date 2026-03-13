@@ -519,7 +519,7 @@ def create_rest_app() -> FastAPI:
 
         # -- Redis --
         try:
-            r = aioredis.from_url(cfg.redis_url, decode_responses=True)
+            r = aioredis.from_url(cfg.redis_url, decode_responses=True)  # type: ignore[no-untyped-call]
             await r.ping()
             await r.aclose()
             checks["redis"] = "ok"
