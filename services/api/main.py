@@ -49,6 +49,8 @@ _TOPICS_TO_BRIDGE = [
     KafkaTopic.POSITION_UPDATED,
     KafkaTopic.MOMENTUM_SIGNALS,
     KafkaTopic.ML_SIGNALS,
+    KafkaTopic.PAPER_NAV_SNAPSHOT,
+    KafkaTopic.PAPER_REBALANCE_RESULT,
 ]
 
 

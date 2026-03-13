@@ -33,6 +33,8 @@ class MessageRouter:
         KafkaTopic.POSITION_UPDATED: "positions",
         KafkaTopic.MOMENTUM_SIGNALS: "signals",
         KafkaTopic.ML_SIGNALS: "signals",
+        KafkaTopic.PAPER_NAV_SNAPSHOT: "paper_nav",
+        KafkaTopic.PAPER_REBALANCE_RESULT: "paper_rebalance",
     }
 
     def route(self, topic: str, payload: dict) -> str | None:  # type: ignore[type-arg]
@@ -56,6 +58,14 @@ class MessageRouter:
         if channel_type == "signals":
             strategy_id = payload.get("strategy_id")
             return f"pyhron:signals:{strategy_id}" if strategy_id else None
+
+        if channel_type == "paper_nav":
+            session_id = payload.get("session_id")
+            return f"pyhron:paper:nav:{session_id}" if session_id else None
+
+        if channel_type == "paper_rebalance":
+            session_id = payload.get("session_id")
+            return f"pyhron:paper:rebalance:{session_id}" if session_id else None
 
         return None
 
@@ -135,6 +145,33 @@ def _transform_signal(payload: dict) -> dict:  # type: ignore[type-arg]
     }
 
 
+def _transform_paper_nav(payload: dict) -> dict:  # type: ignore[type-arg]
+    """Pass through paper NAV snapshot as PAPER_NAV_UPDATE."""
+    return {
+        "type": "PAPER_NAV_UPDATE",
+        "session_id": str(payload.get("session_id", "")),
+        "timestamp": str(payload.get("timestamp", "")),
+        "nav_idr": str(payload.get("nav_idr", "")),
+        "cash_idr": str(payload.get("cash_idr", "")),
+        "gross_exposure_idr": str(payload.get("gross_exposure_idr", "")),
+        "drawdown_pct": str(payload.get("drawdown_pct", "")),
+        "daily_pnl_idr": str(payload.get("daily_pnl_idr", "")),
+    }
+
+
+def _transform_paper_rebalance(payload: dict) -> dict:  # type: ignore[type-arg]
+    """Pass through paper rebalance result."""
+    return {
+        "type": "PAPER_REBALANCE_UPDATE",
+        "session_id": str(payload.get("session_id", "")),
+        "rebalance_at": str(payload.get("rebalance_at", "")),
+        "signals_consumed": payload.get("signals_consumed", 0),
+        "orders_submitted": payload.get("orders_submitted", 0),
+        "orders_rejected": payload.get("orders_rejected", 0),
+        "estimated_turnover_idr": str(payload.get("estimated_turnover_idr", "")),
+    }
+
+
 _TRANSFORMERS: dict[str, object] = {
     KafkaTopic.VALIDATED_EOD_OHLCV: _transform_eod_to_quote,
     KafkaTopic.ORDER_SUBMITTED: _transform_order,
@@ -142,6 +179,8 @@ _TRANSFORMERS: dict[str, object] = {
     KafkaTopic.POSITION_UPDATED: _transform_position,
     KafkaTopic.MOMENTUM_SIGNALS: _transform_signal,
     KafkaTopic.ML_SIGNALS: _transform_signal,
+    KafkaTopic.PAPER_NAV_SNAPSHOT: _transform_paper_nav,
+    KafkaTopic.PAPER_REBALANCE_RESULT: _transform_paper_rebalance,
 }
 
 
