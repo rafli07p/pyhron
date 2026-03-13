@@ -38,6 +38,14 @@ _PANEL_COMMANDS: dict[str, str] = {
     "QUIT": "QUIT",
 }
 
+_PAPER_COMMANDS: dict[str, str] = {
+    "START": "PAPER_START",
+    "STOP": "PAPER_STOP",
+    "PAUSE": "PAPER_PAUSE",
+    "RESUME": "PAPER_RESUME",
+    "STATUS": "PAPER_STATUS",
+}
+
 
 class CommandParser:
     """Stateless Bloomberg-style command parser.
@@ -80,6 +88,14 @@ class CommandParser:
                 params={},
                 raw=text,
             )
+
+        # ── Paper trading: PAPER <action> [args] ─────────
+        if tokens[0] == "PAPER" and len(tokens) >= 2:
+            return self._parse_paper_command(tokens, text)
+
+        # ── Simulation: SIM <strategy_id> [start] [end] ──
+        if tokens[0] == "SIM" and len(tokens) >= 2:
+            return self._parse_sim_command(tokens, text)
 
         return None
 
@@ -137,6 +153,45 @@ class CommandParser:
             command_type=cmd_type,
             symbol=symbol,
             params={},
+            raw=raw,
+        )
+
+    def _parse_paper_command(self, tokens: list[str], raw: str) -> TerminalCommand | None:
+        """Parse PAPER <action> commands.
+
+        Format: ``PAPER START|STOP|PAUSE|RESUME|STATUS [session_id]``
+        """
+        action = tokens[1]
+        cmd_type = _PAPER_COMMANDS.get(action)
+        if cmd_type is None:
+            return None
+
+        params: dict[str, object] = {}
+        if len(tokens) >= 3:
+            params["session_id"] = tokens[2]
+
+        return TerminalCommand(
+            command_type=cmd_type,
+            symbol=None,
+            params=params,
+            raw=raw,
+        )
+
+    def _parse_sim_command(self, tokens: list[str], raw: str) -> TerminalCommand | None:
+        """Parse SIM commands.
+
+        Format: ``SIM <strategy_id> [start_date] [end_date]``
+        """
+        params: dict[str, object] = {"strategy_id": tokens[1]}
+        if len(tokens) >= 3:
+            params["start_date"] = tokens[2]
+        if len(tokens) >= 4:
+            params["end_date"] = tokens[3]
+
+        return TerminalCommand(
+            command_type="RUN_SIMULATION",
+            symbol=None,
+            params=params,
             raw=raw,
         )
 

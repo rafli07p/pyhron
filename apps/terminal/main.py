@@ -296,6 +296,18 @@ class PyhronTerminal(App[None]):
             self._toggle_help()
         elif cmd.command_type == "QUIT":
             self.action_quit_confirm()
+        elif cmd.command_type == "PAPER_START":
+            self._handle_paper_start(cmd)
+        elif cmd.command_type == "PAPER_STOP":
+            self._handle_paper_stop(cmd)
+        elif cmd.command_type == "PAPER_PAUSE":
+            self._handle_paper_pause(cmd)
+        elif cmd.command_type == "PAPER_RESUME":
+            self._handle_paper_resume(cmd)
+        elif cmd.command_type == "PAPER_STATUS":
+            self._handle_paper_status(cmd)
+        elif cmd.command_type == "RUN_SIMULATION":
+            self._handle_sim(cmd)
 
     def _handle_order(self, cmd: TerminalCommand) -> None:
         """Show order confirmation dialog."""
@@ -346,6 +358,141 @@ class PyhronTerminal(App[None]):
             self.call_later(self._refresh_all_panels)
         else:
             self._show_status_message("Order submission requires API connection")
+
+    # ── Paper trading command handlers ─────────────────────
+
+    def _handle_paper_start(self, cmd: TerminalCommand) -> None:
+        """Handle PAPER START command — start a paper trading session."""
+        session_id = str(cmd.params.get("session_id", ""))
+        if not session_id:
+            self._show_status_message("Usage: PAPER START <session_id>")
+            return
+        self._show_status_message(f"Starting paper session {session_id}...")
+        self.call_later(self._api_paper_action, "start", session_id)
+
+    def _handle_paper_stop(self, cmd: TerminalCommand) -> None:
+        """Handle PAPER STOP command — stop a paper trading session."""
+        session_id = str(cmd.params.get("session_id", ""))
+        if not session_id:
+            self._show_status_message("Usage: PAPER STOP <session_id>")
+            return
+        self._show_status_message(f"Stopping paper session {session_id}...")
+        self.call_later(self._api_paper_action, "stop", session_id)
+
+    def _handle_paper_pause(self, cmd: TerminalCommand) -> None:
+        """Handle PAPER PAUSE command — pause a paper trading session."""
+        session_id = str(cmd.params.get("session_id", ""))
+        if not session_id:
+            self._show_status_message("Usage: PAPER PAUSE <session_id>")
+            return
+        self._show_status_message(f"Pausing paper session {session_id}...")
+        self.call_later(self._api_paper_action, "pause", session_id)
+
+    def _handle_paper_resume(self, cmd: TerminalCommand) -> None:
+        """Handle PAPER RESUME command — resume a paused session."""
+        session_id = str(cmd.params.get("session_id", ""))
+        if not session_id:
+            self._show_status_message("Usage: PAPER RESUME <session_id>")
+            return
+        self._show_status_message(f"Resuming paper session {session_id}...")
+        self.call_later(self._api_paper_action, "resume", session_id)
+
+    def _handle_paper_status(self, cmd: TerminalCommand) -> None:
+        """Handle PAPER STATUS command — show session status."""
+        session_id = str(cmd.params.get("session_id", ""))
+        if session_id:
+            self._show_status_message(f"Fetching status for session {session_id}...")
+            self.call_later(self._api_paper_status, session_id)
+        else:
+            self._show_status_message("Fetching paper trading sessions...")
+            self.call_later(self._api_paper_status, None)
+
+    def _handle_sim(self, cmd: TerminalCommand) -> None:
+        """Handle SIM command — run a backtest simulation."""
+        strategy_id = str(cmd.params.get("strategy_id", ""))
+        if not strategy_id:
+            self._show_status_message("Usage: SIM <strategy_id> [start_date] [end_date]")
+            return
+        start = str(cmd.params.get("start_date", ""))
+        end = str(cmd.params.get("end_date", ""))
+        date_range = f" {start}→{end}" if start and end else ""
+        self._show_status_message(f"Running simulation for {strategy_id}{date_range}...")
+        self.call_later(self._api_run_simulation, strategy_id, start, end)
+
+    async def _api_paper_action(self, action: str, session_id: str) -> None:
+        """Call paper trading API for start/stop/pause/resume."""
+        import httpx
+
+        url = f"{self._api_url}/v1/paper-trading/sessions/{session_id}/{action}"
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    url,
+                    headers={"Authorization": f"Bearer {self._jwt_token}"},
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    self._show_status_message(f"Paper session {session_id}: {action} OK")
+                else:
+                    self._show_status_message(f"Paper {action} failed: {resp.status_code}")
+        except Exception as exc:
+            self._show_status_message(f"Paper {action} error: {exc}")
+
+    async def _api_paper_status(self, session_id: str | None) -> None:
+        """Fetch paper trading session status from API."""
+        import httpx
+
+        if session_id:
+            url = f"{self._api_url}/v1/paper-trading/sessions/{session_id}"
+        else:
+            url = f"{self._api_url}/v1/paper-trading/sessions"
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    url,
+                    headers={"Authorization": f"Bearer {self._jwt_token}"},
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if session_id:
+                        status = data.get("status", "UNKNOWN")
+                        nav = data.get("current_nav_idr", "?")
+                        self._show_status_message(f"Session {session_id}: {status} | NAV: IDR {nav}")
+                    else:
+                        count = len(data) if isinstance(data, list) else 0
+                        self._show_status_message(f"Paper sessions: {count} found")
+                else:
+                    self._show_status_message(f"Status fetch failed: {resp.status_code}")
+        except Exception as exc:
+            self._show_status_message(f"Status error: {exc}")
+
+    async def _api_run_simulation(self, strategy_id: str, start_date: str, end_date: str) -> None:
+        """Call simulation API endpoint."""
+        import httpx
+
+        url = f"{self._api_url}/v1/paper-trading/simulate"
+        body: dict[str, str] = {"strategy_id": strategy_id}
+        if start_date:
+            body["start_date"] = start_date
+        if end_date:
+            body["end_date"] = end_date
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    url,
+                    json=body,
+                    headers={"Authorization": f"Bearer {self._jwt_token}"},
+                    timeout=120.0,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    total_return = data.get("total_return_pct", "?")
+                    self._show_status_message(f"Simulation complete: return={total_return}%")
+                else:
+                    self._show_status_message(f"Simulation failed: {resp.status_code}")
+        except Exception as exc:
+            self._show_status_message(f"Simulation error: {exc}")
 
     def _show_status_message(self, msg: str) -> None:
         """Display a message in the status bar temporarily."""
@@ -471,6 +618,16 @@ class PyhronTerminal(App[None]):
                 "  ORD                Orders panel",
                 "  MOM                Momentum signals",
                 "  RISK               Risk view",
+                "",
+                "  PAPER TRADING:",
+                "  PAPER START <id>   Start paper session",
+                "  PAPER STOP <id>    Stop paper session",
+                "  PAPER PAUSE <id>   Pause paper session",
+                "  PAPER RESUME <id>  Resume paper session",
+                "  PAPER STATUS [id]  Session status",
+                "  SIM <strat> [s] [e] Run simulation",
+                "",
+                "  GENERAL:",
                 "  HELP               This screen",
                 "  QUIT               Exit terminal",
                 "",
