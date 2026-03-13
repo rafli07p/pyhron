@@ -1,15 +1,15 @@
 """Create DLQ permanent storage table.
 
-Revision ID: 014_dlq_permanent
-Revises: 013_consolidate_public_schema
+Revision ID: 014
+Revises: 013
 Create Date: 2026-03-12 00:00:00.000000
 """
 
 import sqlalchemy as sa
 from alembic import op
 
-revision = "014_dlq_permanent"
-down_revision = "013_consolidate_public_schema"
+revision = "014"
+down_revision = "013"
 branch_labels = None
 depends_on = None
 
