@@ -1,7 +1,8 @@
-"""Risk management service for the Enthropy trading platform.
+"""Risk management service for the Pyhron trading platform.
 
 Provides pre-trade risk checks, position and loss limits with circuit
-breakers, post-trade analytics, and regulatory compliance reporting.
+breakers, post-trade analytics, regulatory compliance reporting,
+kill switch, promotion gate, portfolio risk engine, and capital allocator.
 """
 
 from services.risk.compliance import ComplianceEngine

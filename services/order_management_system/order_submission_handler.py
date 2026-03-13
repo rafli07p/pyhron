@@ -482,8 +482,26 @@ class OrderSubmissionHandler:
         assert self._idx_validator is not None, "idx_validator required for submit_order"
         assert self._broker_adapter is not None, "broker_adapter required for submit_order"
 
-        # Step 0: Circuit breaker check — FIRST gate, before any work
+        # Step 0a: Kill switch check — ABSOLUTE FIRST operation, no other logic precedes
         redis = await get_redis()
+        from services.risk.kill_switch import (
+            REDIS_KEY_GLOBAL,
+            REDIS_KEY_STRATEGY,
+            REDIS_KEY_SYMBOL,
+            KillSwitchActiveError,
+        )
+
+        if await redis.get(REDIS_KEY_GLOBAL):
+            raise KillSwitchActiveError("Trading halted globally", strategy_id=strategy_id)
+        if strategy_id:
+            ks_strat_key = REDIS_KEY_STRATEGY.format(strategy_id=strategy_id)
+            if await redis.get(ks_strat_key):
+                raise KillSwitchActiveError(f"Trading halted for strategy={strategy_id}", strategy_id=strategy_id)
+        ks_sym_key = REDIS_KEY_SYMBOL.format(symbol=symbol)
+        if await redis.get(ks_sym_key):
+            raise KillSwitchActiveError(f"Trading halted for symbol={symbol}", symbol=symbol)
+
+        # Step 0b: Circuit breaker check — second gate
         for entity_id in (strategy_id or "global", "IDX"):
             cb_key = CIRCUIT_BREAKER_KEY.format(entity_id=entity_id)
             if await redis.get(cb_key):

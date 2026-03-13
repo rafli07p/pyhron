@@ -1,0 +1,291 @@
+# Production Docker Compose stack for Pyhron Trading Platform
+# Usage: docker compose -f docker-compose.prod.yml up -d
+
+services:
+  postgres:
+    image: timescale/timescaledb:2.14.2-pg15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pyhron
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/db_user) -d pyhron"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    secrets:
+      - db_user
+      - db_password
+
+  redis:
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    command: >-
+      redis-server
+      --requirepass $$(cat /run/secrets/redis_password)
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "$$(cat /run/secrets/redis_password)", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    secrets:
+      - redis_password
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    restart: unless-stopped
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "/scripts/create_topics.sh"]
+    volumes:
+      - ./scripts/kafka/create_topics.sh:/scripts/create_topics.sh:ro
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+      target: production
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      ENV: production
+    secrets:
+      - db_user
+      - db_password
+      - redis_password
+      - jwt_secret
+      - eodhd_api_token
+      - alpaca_api_key
+      - alpaca_api_secret
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: data_platform/Dockerfile
+      target: production
+    command: >-
+      celery -A data_platform.tasks.celery_tasks worker
+      --loglevel=info --concurrency=4
+      --queues=ingestion,quality,backfill
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      ENV: production
+    secrets:
+      - db_user
+      - db_password
+      - redis_password
+      - eodhd_api_token
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: data_platform/Dockerfile
+      target: production
+    command: >-
+      celery -A data_platform.tasks.celery_tasks beat
+      --loglevel=info
+    restart: unless-stopped
+    depends_on:
+      - celery-worker
+    environment:
+      ENV: production
+    secrets:
+      - db_user
+      - db_password
+      - redis_password
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  validation-consumer:
+    build:
+      context: .
+      dockerfile: data_platform/Dockerfile
+      target: production
+    command: python -m data_platform.consumers.validation_consumer
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      ENV: production
+    secrets:
+      - db_user
+      - db_password
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  timescaledb-writer:
+    build:
+      context: .
+      dockerfile: data_platform/Dockerfile
+      target: production
+    command: python -m data_platform.consumers.timescaledb_writer
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      ENV: production
+    secrets:
+      - db_user
+      - db_password
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  dlq-processor:
+    build:
+      context: .
+      dockerfile: data_platform/Dockerfile
+      target: production
+    command: python -m data_platform.consumers.dlq_processor
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      ENV: production
+    secrets:
+      - db_user
+      - db_password
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    restart: unless-stopped
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deploy/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./deploy/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
+    secrets:
+      - grafana_password
+
+secrets:
+  db_user:
+    file: ./secrets/db_user.txt
+  db_password:
+    file: ./secrets/db_password.txt
+  redis_password:
+    file: ./secrets/redis_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  eodhd_api_token:
+    file: ./secrets/eodhd_api_token.txt
+  alpaca_api_key:
+    file: ./secrets/alpaca_api_key.txt
+  alpaca_api_secret:
+    file: ./secrets/alpaca_api_secret.txt
+  grafana_password:
+    file: ./secrets/grafana_password.txt
+
+volumes:
+  postgres_data:
+  redis_data:
+  zookeeper_data:
+  kafka_data:
+  prometheus_data:
+  grafana_data:
