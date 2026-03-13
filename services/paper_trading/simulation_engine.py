@@ -197,16 +197,16 @@ class PaperSimulationEngine:
         buys = [t for t in trades if t.side == "BUY"]
 
         for trade in sells:
-            tick: Any | None = ohlcv_by_symbol.get(trade.symbol)
-            if tick is None:
+            sell_tick = ohlcv_by_symbol.get(trade.symbol)
+            if sell_tick is None:
                 orders_unfilled += 1
                 continue
 
             fill_price = self.compute_simulated_fill_price(
                 side="SELL",
-                next_day_open=tick.open,
-                next_day_high=tick.high,
-                next_day_low=tick.low,
+                next_day_open=sell_tick.open,
+                next_day_high=sell_tick.high,
+                next_day_low=sell_tick.low,
                 limit_price=trade.limit_price,
                 slippage_bps=slippage_bps,
             )
@@ -244,16 +244,16 @@ class PaperSimulationEngine:
             turnover += trade_value
 
         for trade in buys:
-            tick: Any | None = ohlcv_by_symbol.get(trade.symbol)
-            if tick is None:
+            buy_tick = ohlcv_by_symbol.get(trade.symbol)
+            if buy_tick is None:
                 orders_unfilled += 1
                 continue
 
             fill_price = self.compute_simulated_fill_price(
                 side="BUY",
-                next_day_open=tick.open,
-                next_day_high=tick.high,
-                next_day_low=tick.low,
+                next_day_open=buy_tick.open,
+                next_day_high=buy_tick.high,
+                next_day_low=buy_tick.low,
                 limit_price=trade.limit_price,
                 slippage_bps=slippage_bps,
             )
