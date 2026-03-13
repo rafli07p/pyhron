@@ -470,6 +470,7 @@ def create_rest_app() -> FastAPI:
     from apps.api.http_routers.indonesia_macro_dashboard_router import router as macro_router
     from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
     from apps.api.http_routers.live_trading_position_router import router as live_trading_router
+    from apps.api.http_routers.paper_trading_router import router as paper_trading_router
     from apps.api.http_routers.strategy_management_router import router as strategy_router
     from apps.api.http_routers.user_authentication_router import router as auth_router
 
@@ -486,6 +487,7 @@ def create_rest_app() -> FastAPI:
     app.include_router(backtest_router)
     app.include_router(live_trading_router)
     app.include_router(auth_router)
+    app.include_router(paper_trading_router)
 
     # ------------------------------------------------------------------
     # Health / Readiness

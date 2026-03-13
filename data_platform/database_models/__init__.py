@@ -36,6 +36,11 @@ from .order_lifecycle_record import (
     OrderTypeEnum,
     TimeInForceEnum,
 )
+from .paper_trading_session import (
+    PaperNavSnapshot,
+    PaperPnlAttribution,
+    PaperTradingSession,
+)
 from .signal import Signal, SignalType
 from .strategy import Strategy
 from .strategy_position_snapshot import StrategyPositionSnapshot
@@ -47,7 +52,6 @@ from .user import User, UserRole
 
 __all__ = [
     "ActionType",
-    # Backtest
     "BacktestRun",
     "BacktestStatus",
     "IdxEquityComputedRatio",
@@ -55,7 +59,6 @@ __all__ = [
     "IdxEquityFinancialStatement",
     "IdxEquityGovernanceFlag",
     "IdxEquityIndexConstituent",
-    # Market data - Equities
     "IdxEquityInstrument",
     "IdxEquityNewsArticle",
     "IdxEquityOhlcvTick",
@@ -63,28 +66,24 @@ __all__ = [
     "IndonesiaCorporateBond",
     "IndonesiaFireHotspotEvent",
     "IndonesiaGovernmentBond",
-    # Indonesia macro & alternative data
     "IndonesiaMacroIndicator",
     "IndonesiaWeatherRainfall",
-    # Trading
     "OrderLifecycleRecord",
-    # Trading enums
     "OrderSideEnum",
     "OrderStatusEnum",
     "OrderTypeEnum",
+    "PaperNavSnapshot",
+    "PaperPnlAttribution",
+    "PaperTradingSession",
     "SentimentLabel",
-    # Signals
     "Signal",
     "SignalType",
-    # Market data - Enums
     "StatementType",
-    # Strategy
     "Strategy",
     "StrategyPositionSnapshot",
     "StrategyTradeExecutionLog",
     "TimeInForceEnum",
     "TradeSideEnum",
-    # User
     "User",
     "UserRole",
 ]

@@ -29,6 +29,12 @@ class KafkaTopic:
     MOMENTUM_SIGNALS = "pyhron.strategy.signals.momentum"
     ML_SIGNALS = "pyhron.strategy.signals.ml"
 
+    # Paper trading
+    PAPER_SESSION_STARTED = "pyhron.paper.session_started"
+    PAPER_SESSION_STOPPED = "pyhron.paper.session_stopped"
+    PAPER_NAV_SNAPSHOT = "pyhron.paper.nav_snapshot"
+    PAPER_REBALANCE_RESULT = "pyhron.paper.rebalance_result"
+
     # Dead-letter queues
     DLQ_EOD_OHLCV = "pyhron.dlq.eod_ohlcv"
     DLQ_FUNDAMENTALS = "pyhron.dlq.fundamentals"
