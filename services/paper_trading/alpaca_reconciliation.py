@@ -226,8 +226,8 @@ class AlpacaPaperReconciliation:
                         await self.apply_synthetic_fill(alpaca_order, session, db_session)
                     elif alpaca_status in ("canceled", "expired"):
                         # Mark as cancelled
-                        order.status = OrderStatusEnum.CANCELLED  # type: ignore[assignment]
-                        order.updated_at = now  # type: ignore[assignment]
+                        order.status = OrderStatusEnum.CANCELLED
+                        order.updated_at = now
                         discrepancy = ReconciliationDiscrepancy(
                             discrepancy_type="ORDER_MISSING",
                             symbol=order.symbol,

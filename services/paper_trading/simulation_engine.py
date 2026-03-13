@@ -197,7 +197,7 @@ class PaperSimulationEngine:
         buys = [t for t in trades if t.side == "BUY"]
 
         for trade in sells:
-            tick = ohlcv_by_symbol.get(trade.symbol)
+            tick: Any | None = ohlcv_by_symbol.get(trade.symbol)
             if tick is None:
                 orders_unfilled += 1
                 continue
@@ -244,7 +244,7 @@ class PaperSimulationEngine:
             turnover += trade_value
 
         for trade in buys:
-            tick = ohlcv_by_symbol.get(trade.symbol)
+            tick: Any | None = ohlcv_by_symbol.get(trade.symbol)
             if tick is None:
                 orders_unfilled += 1
                 continue
