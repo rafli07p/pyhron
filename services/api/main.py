@@ -71,7 +71,7 @@ def _create_kafka_consumer(topic: str):  # type: ignore[no-untyped-def]
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Manage WebSocket infrastructure lifecycle."""
     config = get_config()
-    redis_client: aioredis.Redis = aioredis.from_url(  # type: ignore[assignment,no-untyped-call]
+    redis_client: aioredis.Redis = aioredis.from_url(  # type: ignore[no-untyped-call]
         config.redis_url,
         decode_responses=True,
         max_connections=50,
