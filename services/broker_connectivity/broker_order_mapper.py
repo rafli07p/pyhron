@@ -16,7 +16,7 @@ from shared.proto_generated.equity_orders_pb2 import (
     OrderType,
     TimeInForce,
 )
-from shared.proto_generated.equity_positions_pb2 import PositionRecord
+from shared.proto_generated.equity_positions_pb2 import Position
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
@@ -179,20 +179,20 @@ class BrokerOrderMapper:
 
         return order
 
-    def from_alpaca_position(self, data: dict[str, Any]) -> PositionRecord:
-        """Convert an Alpaca position response to a PositionRecord protobuf.
+    def from_alpaca_position(self, data: dict[str, Any]) -> Position:
+        """Convert an Alpaca position response to a Position protobuf.
 
         Args:
             data: Dict from Alpaca GET /v2/positions response.
 
         Returns:
-            Populated PositionRecord protobuf.
+            Populated Position protobuf.
         """
-        position = PositionRecord()
+        position = Position()
         position.symbol = data.get("symbol", "")
         position.exchange = "ALPACA"
-        position.quantity = float(data.get("qty", 0))
-        position.average_entry_price = float(data.get("avg_entry_price", 0))
+        position.quantity = int(float(data.get("qty", 0)))
+        position.avg_entry_price = float(data.get("avg_entry_price", 0))
         position.market_value = float(data.get("market_value", 0))
         position.unrealized_pnl = float(data.get("unrealized_pl", 0))
         position.current_price = float(data.get("current_price", 0))

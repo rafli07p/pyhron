@@ -113,7 +113,7 @@ async def update_strategy(
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Strategy not found")
 
 
-@router.delete("/{strategy_id}", status_code=204)
+@router.delete("/{strategy_id}", status_code=204, response_model=None)
 async def delete_strategy(
     strategy_id: UUID,
     _user: TokenPayload = Depends(require_role(Role.TRADER)),

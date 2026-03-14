@@ -21,7 +21,7 @@ from shared.kafka_producer_consumer import PyhronProducer, Topics
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
-    from commodity_linkage_engine.commodity_to_stock_impact_engine import (
+    from commodity_linkage_engine.types import (
         CommodityPriceChangeEvent,
         StockEarningsImpactEstimate,
     )

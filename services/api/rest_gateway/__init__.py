@@ -967,7 +967,7 @@ def create_rest_app() -> FastAPI:
         """Update user details (email, role)."""
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    @app.delete(f"/api/{API_VERSION}/admin/users/{{user_id}}", status_code=204, tags=["admin"])
+    @app.delete(f"/api/{API_VERSION}/admin/users/{{user_id}}", status_code=204, response_model=None, tags=["admin"])
     @limiter.limit("10/minute")
     @require_role(Role.ADMIN)
     async def delete_user(
