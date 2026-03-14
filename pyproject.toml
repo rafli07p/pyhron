@@ -74,6 +74,7 @@ yfinance = "~=0.2.50"
 polygon-api-client = "~=1.14.0"
 alpaca-py = "~=0.33.0"
 ccxt = "~=4.4.0"
+email-validator = "^2.3.0"
 
 [tool.poetry.group.ml]
 optional = true

@@ -4,31 +4,6 @@ from typing import Any
 
 DESCRIPTOR: Any
 
-class PositionRecord:
-    DESCRIPTOR: Any
-    symbol: str
-    exchange: str
-    strategy_id: str
-    quantity: float
-    average_entry_price: float
-    current_price: float
-    unrealized_pnl: float
-    realized_pnl: float
-    market_value: float
-    def __init__(
-        self,
-        *,
-        symbol: str = ...,
-        exchange: str = ...,
-        strategy_id: str = ...,
-        quantity: float = ...,
-        average_entry_price: float = ...,
-        current_price: float = ...,
-        unrealized_pnl: float = ...,
-        realized_pnl: float = ...,
-        market_value: float = ...,
-    ) -> None: ...
-
 class Position:
     DESCRIPTOR: Any
     symbol: str

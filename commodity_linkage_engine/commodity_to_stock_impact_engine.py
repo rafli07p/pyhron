@@ -15,8 +15,6 @@ dataclasses with revenue, net-income, and EPS impact projections.
 
 from __future__ import annotations
 
-import enum
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from commodity_linkage_engine.commodity_sensitivity_models.coal_price_miner_revenue_model import (
@@ -31,79 +29,17 @@ from commodity_linkage_engine.commodity_sensitivity_models.icp_energy_stock_sens
 from commodity_linkage_engine.commodity_sensitivity_models.nickel_price_miner_revenue_model import (
     NickelPriceMinerRevenueModel,
 )
+from commodity_linkage_engine.types import (
+    CommodityPriceChangeEvent,
+    CommodityType,
+    StockEarningsImpactEstimate,
+)
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
 logger = get_logger(__name__)
-
-
-# ── Data Contracts ──────────────────────────────────────────────────────────
-
-
-class CommodityType(enum.Enum):
-    """Supported commodity types."""
-
-    CPO = "CPO"
-    COAL = "COAL"
-    NICKEL = "NICKEL"
-    ICP_CRUDE = "ICP_CRUDE"
-
-
-class ConfidenceLevel(enum.Enum):
-    """Confidence tier for an impact estimate."""
-
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-
-
-@dataclass(frozen=True)
-class CommodityPriceChangeEvent:
-    """Describes a commodity price movement.
-
-    Attributes:
-        commodity: Which commodity moved.
-        change_pct: Percentage change (e.g. 10.0 = +10 %).
-        change_absolute: Absolute change in commodity-native units
-            (USD/ton for coal/nickel, MYR/ton for CPO, USD/bbl for ICP).
-        source: Data source identifier (e.g. ``"reuters"``, ``"bisinfocus"``).
-        timestamp_utc: ISO-8601 timestamp of the observation.
-    """
-
-    commodity: CommodityType
-    change_pct: float
-    change_absolute: float
-    source: str
-    timestamp_utc: str
-
-
-@dataclass
-class StockEarningsImpactEstimate:
-    """Per-stock earnings impact estimate from a commodity price change.
-
-    Attributes:
-        ticker: IDX ticker (e.g. ``"AALI"``).
-        commodity: The commodity driving the impact.
-        revenue_impact_idr: Estimated revenue impact in IDR.
-        net_income_impact_idr: Estimated net-income impact in IDR.
-        eps_impact: Estimated EPS impact in IDR/share.
-        impact_pct_of_revenue: Impact as a percentage of trailing revenue.
-        confidence: Confidence tier.
-        methodology: Human-readable description of the model.
-        assumptions: Key assumptions underlying the estimate.
-    """
-
-    ticker: str
-    commodity: CommodityType
-    revenue_impact_idr: float
-    net_income_impact_idr: float
-    eps_impact: float
-    impact_pct_of_revenue: float
-    confidence: ConfidenceLevel
-    methodology: str
-    assumptions: list[str] = field(default_factory=list)
 
 
 # ── Engine ──────────────────────────────────────────────────────────────────

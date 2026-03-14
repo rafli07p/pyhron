@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from commodity_linkage_engine.commodity_to_stock_impact_engine import (
+from commodity_linkage_engine.types import (
     CommodityType,
     ConfidenceLevel,
     StockEarningsImpactEstimate,
