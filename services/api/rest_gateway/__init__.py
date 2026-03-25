@@ -1,4 +1,4 @@
-"""Enthropy REST API Gateway.
+"""Pyhron REST API Gateway.
 
 FastAPI application serving market data, order management, portfolio,
 research, risk, and admin endpoints.  Includes JWT authentication,
@@ -9,7 +9,6 @@ limiting (slowapi), structured logging, and OpenAPI documentation.
 from __future__ import annotations
 
 import secrets
-import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -374,40 +373,7 @@ class RequestIDMiddleware:
         await self.app(scope, receive, send_with_request_id)
 
 
-class RequestLoggingMiddleware:
-    """ASGI middleware that logs every HTTP request with timing."""
-
-    def __init__(self, app: ASGIApp) -> None:
-        self.app = app
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        request = Request(scope, receive)
-        start = time.perf_counter()
-        response_status = 500
-
-        async def send_wrapper(message: Message) -> None:
-            nonlocal response_status
-            if message["type"] == "http.response.start":
-                response_status = message["status"]
-            await send(message)
-
-        try:
-            await self.app(scope, receive, send_wrapper)
-        finally:
-            elapsed_ms = (time.perf_counter() - start) * 1000
-            logger.info(
-                "http_request",
-                method=request.method,
-                path=request.url.path,
-                status=response_status,
-                duration_ms=round(elapsed_ms, 2),
-                client=request.client.host if request.client else None,
-            )
-
+from services.api.logging import RequestLoggingMiddleware
 
 # ---------------------------------------------------------------------------
 # Application factory
@@ -438,10 +404,10 @@ def create_rest_app() -> FastAPI:
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_get_settings().allowed_cors_origins.split(","),
+        allow_origins=[o.strip() for o in _get_settings().allowed_cors_origins.split(",") if o.strip()],
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-CSRF-Token"],
     )
 
     # Security headers

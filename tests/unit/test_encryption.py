@@ -12,17 +12,17 @@ import os
 
 import pytest
 
-# TODO: update imports when enthropy.shared.encryption is implemented
+# TODO: update imports when pyhron.shared.encryption is implemented
 # Future paths:
 #   from data_platform.encryption import EncryptionService, EncryptionError, KeyManagementError
 #   FieldEncryptor, KeyDerivationService, DecryptionError, InvalidKeyError, TamperedDataError — not yet implemented
-pytest.importorskip("enthropy.shared.encryption", reason="module not yet implemented")
-from enthropy.shared.encryption.exceptions import (
+pytest.importorskip("pyhron.shared.encryption", reason="module not yet implemented")
+from pyhron.shared.encryption.exceptions import (
     DecryptionError,
     InvalidKeyError,
     TamperedDataError,
 )
-from enthropy.shared.encryption.service import (
+from pyhron.shared.encryption.service import (
     EncryptionService,
     FieldEncryptor,
     KeyDerivationService,

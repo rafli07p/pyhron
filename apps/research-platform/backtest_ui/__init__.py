@@ -1,4 +1,4 @@
-"""Backtest UI for the Enthropy Research Platform.
+"""Backtest UI for the Pyhron Research Platform.
 
 Visual backtest configuration, execution, and results comparison.
 Provides a high-level interface for defining backtest parameters,
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
@@ -273,7 +273,7 @@ class BacktestUI:
             equity_curve=equity_list,
             drawdown_series=drawdown_series.tolist(),
             status="completed",
-            completed_at=datetime.utcnow(),
+            completed_at=datetime.now(tz=UTC),
         )
 
         self._results[strategy_name] = results

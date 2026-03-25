@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import structlog
@@ -23,7 +23,7 @@ class User:
     role: Role
     tenant_id: str
     is_active: bool = True
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     last_login: datetime | None = None
 
 
@@ -92,7 +92,7 @@ class UserManager:
                 and user.is_active
                 and verify_password(password, user.hashed_password)
             ):
-                user.last_login = datetime.utcnow()
+                user.last_login = datetime.now(tz=UTC)
                 return user
         return None
 

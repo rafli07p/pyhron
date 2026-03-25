@@ -1,4 +1,4 @@
-"""Enthropy shared utilities.
+"""Pyhron shared utilities.
 
 Provides reusable helpers used throughout the platform:
 
@@ -162,7 +162,7 @@ def rate_limiter(rate: float, burst: int | None = None) -> RateLimiter:
 # JSON serializer
 # ---------------------------------------------------------------------------
 
-class EnthopyJSONEncoder(json.JSONEncoder):
+class PyhronJSONEncoder(json.JSONEncoder):
     """JSON encoder that handles financial-domain types.
 
     Supported types beyond the standard library:
@@ -197,7 +197,7 @@ class EnthopyJSONEncoder(json.JSONEncoder):
 
 
 def json_serializer(obj: Any, *, indent: int | None = None, sort_keys: bool = False) -> str:
-    """Serialize *obj* to a JSON string using :class:`EnthopyJSONEncoder`.
+    """Serialize *obj* to a JSON string using :class:`PyhronJSONEncoder`.
 
     Handles ``datetime``, ``Decimal``, ``UUID``, Pydantic models, and
     other types commonly used in trading applications.
@@ -210,7 +210,7 @@ def json_serializer(obj: Any, *, indent: int | None = None, sort_keys: bool = Fa
     Returns:
         JSON string.
     """
-    return json.dumps(obj, cls=EnthopyJSONEncoder, indent=indent, sort_keys=sort_keys)
+    return json.dumps(obj, cls=PyhronJSONEncoder, indent=indent, sort_keys=sort_keys)
 
 
 def json_deserialize(raw: str | bytes) -> Any:
@@ -258,7 +258,7 @@ def timestamp_now_iso() -> str:
 
 
 __all__ = [
-    "EnthopyJSONEncoder",
+    "PyhronJSONEncoder",
     "RateLimiter",
     "generate_id",
     "json_deserialize",

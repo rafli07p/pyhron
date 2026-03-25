@@ -1,4 +1,4 @@
-"""Execution service for the Enthropy trading platform.
+"""Execution service for the Pyhron trading platform.
 
 Provides smart order routing, real exchange connectivity (Alpaca, CCXT),
 low-latency execution engine, and an internal trade-matching engine for

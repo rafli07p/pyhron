@@ -1,4 +1,4 @@
-"""Audit logging for the Enthropy platform.
+"""Audit logging for the Pyhron platform.
 
 Provides an :class:`AuditLogger` that records user actions with full
 context (who, what, when, tenant) using :pypi:`structlog`.  Supports
@@ -34,7 +34,7 @@ from uuid import uuid4
 
 import structlog
 
-from shared.utils import EnthopyJSONEncoder
+from shared.utils import PyhronJSONEncoder
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -176,7 +176,7 @@ class AuditLogger:
 
     def __init__(
         self,
-        service: str = "enthropy",
+        service: str = "pyhron",
         buffer_size: int = 10_000,
         on_record: Any | None = None,
     ) -> None:
@@ -328,7 +328,7 @@ class AuditLogger:
         fmt = ExportFormat(format.lower())
 
         if fmt == ExportFormat.JSON:
-            return json.dumps(dicts, cls=EnthopyJSONEncoder, indent=2)
+            return json.dumps(dicts, cls=PyhronJSONEncoder, indent=2)
 
         if fmt == ExportFormat.CSV:
             return self._to_csv(dicts)
@@ -381,7 +381,7 @@ class AuditLogger:
             row = {**record}
             # Serialize details dict to JSON string for CSV column
             if isinstance(row.get("details"), dict):
-                row["details"] = json.dumps(row["details"], cls=EnthopyJSONEncoder)
+                row["details"] = json.dumps(row["details"], cls=PyhronJSONEncoder)
             writer.writerow(row)
 
         return output.getvalue()

@@ -2,7 +2,7 @@
 Tests for shared Pydantic schemas.
 
 Validates serialization, deserialization, and constraint enforcement
-for all domain schemas used across the Enthropy platform.
+for all domain schemas used across the Pyhron platform.
 """
 
 from __future__ import annotations
@@ -13,23 +13,23 @@ from uuid import uuid4
 
 import pytest
 
-# TODO: update imports when enthropy.shared.schemas is implemented
+# TODO: update imports when pyhron.shared.schemas is implemented
 # Future paths:
 #   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType, OrderStatusEnum (as OrderStatus)
 #   from shared.schemas.market_events import TickEvent (as TickData)
-#   OrderResponse, PositionSnapshot, RiskLimits — not yet implemented under enthropy interface
-pytest.importorskip("enthropy.shared.schemas.order", reason="module not yet implemented")
-from enthropy.shared.schemas.order import (
+#   OrderResponse, PositionSnapshot, RiskLimits — not yet implemented under pyhron interface
+pytest.importorskip("pyhron.shared.schemas.order", reason="module not yet implemented")
+from pydantic import ValidationError
+from pyhron.shared.schemas.order import (
     OrderCreate,
     OrderResponse,
     OrderSide,
     OrderStatus,
     OrderType,
 )
-from enthropy.shared.schemas.position import PositionSnapshot
-from enthropy.shared.schemas.risk import RiskLimits
-from enthropy.shared.schemas.tick import TickData
-from pydantic import ValidationError
+from pyhron.shared.schemas.position import PositionSnapshot
+from pyhron.shared.schemas.risk import RiskLimits
+from pyhron.shared.schemas.tick import TickData
 
 
 # =============================================================================

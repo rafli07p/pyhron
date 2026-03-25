@@ -1,4 +1,4 @@
-"""Enthropy Structured Logging.
+"""Pyhron Structured Logging.
 
 Provides ``configure_logging`` to set up structlog with JSON output
 (ELK-compatible), plus FastAPI middleware for request logging and
@@ -30,7 +30,7 @@ class ELKJSONRenderer(structlog.dev.ConsoleRenderer):
     event dict.
     """
 
-    def __init__(self, service_name: str = "enthropy") -> None:
+    def __init__(self, service_name: str = "pyhron") -> None:
         self._service_name = service_name
 
     def __call__(self, logger_obj: WrappedLogger, name: str, event_dict: EventDict) -> str:
@@ -57,7 +57,7 @@ def configure_logging(
     *,
     level: str = "INFO",
     json_output: bool = True,
-    service_name: str = "enthropy",
+    service_name: str = "pyhron",
 ) -> None:
     """Configure structlog and stdlib logging for the application.
 
@@ -131,7 +131,7 @@ class RequestLoggingMiddleware:
     user-agent.  Outputs via structlog for consistent JSON formatting.
     """
 
-    def __init__(self, app: Any, *, service_name: str = "enthropy") -> None:
+    def __init__(self, app: Any, *, service_name: str = "pyhron") -> None:
         self.app = app
         self._service_name = service_name
         self._logger = structlog.stdlib.get_logger("http.access")

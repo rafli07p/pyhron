@@ -1,5 +1,5 @@
 """
-Encryption service for the Enthropy data platform.
+Encryption service for the Pyhron data platform.
 
 Provides AES-256 encryption via Fernet for strategy IP protection,
 compliance data, and sensitive market data at rest.
@@ -25,7 +25,7 @@ logger = structlog.get_logger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 _CHUNK_SIZE: int = 64 * 1024  # 64 KiB file-streaming chunk size
-_KEY_ROTATION_HEADER = b"ENTHROPY_ENC_V1"
+_KEY_ROTATION_HEADER = b"PYHRON_ENC_V1"
 
 
 class EncryptionError(Exception):
@@ -46,7 +46,7 @@ class EncryptionService:
     ----------
     encryption_key : str | bytes | None
         A Fernet-compatible base64 key.  When *None* the service reads
-        ``ENTHROPY_ENCRYPTION_KEY`` from the environment.
+        ``PYHRON_ENCRYPTION_KEY`` from the environment.
     tenant_id : str
         Tenant identifier used to derive per-tenant sub-keys so that one
         master key can serve multiple tenants without cross-read risk.
@@ -65,10 +65,10 @@ class EncryptionService:
         self._log = logger.bind(tenant_id=tenant_id, component="EncryptionService")
 
         # Resolve primary key ------------------------------------------------
-        raw_key = encryption_key or os.environ.get("ENTHROPY_ENCRYPTION_KEY")
+        raw_key = encryption_key or os.environ.get("PYHRON_ENCRYPTION_KEY")
         if raw_key is None:
             raise KeyManagementError(
-                "No encryption key supplied and ENTHROPY_ENCRYPTION_KEY is not set."
+                "No encryption key supplied and PYHRON_ENCRYPTION_KEY is not set."
             )
         self._primary_key = self._normalise_key(raw_key)
         self._primary_fernet = Fernet(self._primary_key)

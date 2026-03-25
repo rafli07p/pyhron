@@ -7,6 +7,7 @@ color-coded progress bars in a Bloomberg-style layout.
 
 from __future__ import annotations
 
+import contextlib
 from typing import TYPE_CHECKING, Any
 
 from textual.reactive import reactive
@@ -139,11 +140,9 @@ class RiskPanel(Static):
 
     def _try_refresh(self) -> None:
         """Attempt to update the inner content widget."""
-        try:
+        with contextlib.suppress(Exception):
             content = self.query_one("#risk-panel-content", Static)
             content.update(self._render_panel())
-        except Exception:
-            pass
 
     # ── External update hooks ────────────────────────────────────────
 

@@ -89,7 +89,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:latest-pg16
+        image: timescale/timescaledb:2.17.2-pg16
         env:
           POSTGRES_USER: pyhron
           POSTGRES_PASSWORD: pyhron
@@ -158,7 +158,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:latest-pg16
+        image: timescale/timescaledb:2.17.2-pg16
         env:
           POSTGRES_USER: pyhron
           POSTGRES_PASSWORD: pyhron
@@ -172,7 +172,7 @@ jobs:
           --health-retries 5
 
       redis:
-        image: redis:7-alpine
+        image: redis:7.2-alpine
         ports:
           - 6379:6379
         options: >-
@@ -244,7 +244,9 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Check for known vulnerabilities
-        run: pip install pip-audit && pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit --ignore-vuln CVE-2026-4539  # pygments: no fix available, transitive dev-only dep
 
       - name: Check for secrets
         uses: trufflesecurity/trufflehog@main

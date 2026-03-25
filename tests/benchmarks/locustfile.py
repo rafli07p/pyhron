@@ -1,5 +1,5 @@
 """
-Locust load test for the Enthropy Trading Platform.
+Locust load test for the Pyhron Trading Platform.
 
 Tests concurrent trade submissions, market data requests, and mixed workloads
 to validate system performance under heavy load.

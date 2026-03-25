@@ -1,4 +1,4 @@
-"""Order event schemas for the Enthropy trading platform.
+"""Order event schemas for the Pyhron trading platform.
 
 Defines Pydantic v2 models for the full order lifecycle: request
 submission, fills, cancellations, and status updates.  All models
@@ -7,7 +7,7 @@ enforce multi-tenancy via mandatory ``tenant_id`` fields.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from enum import IntEnum, StrEnum
 from typing import Optional
@@ -90,7 +90,7 @@ class OrderEventBase(BaseModel):
     price: Decimal | None = Field(default=None, ge=0, description="Limit / stop price (None for market orders)")
     order_type: OrderType = Field(default=OrderType.LIMIT, description="Order type")
     tenant_id: str = Field(..., min_length=1, max_length=64, description="Tenant identifier")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Event timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Event timestamp (UTC)")
 
 
 class OrderRequest(OrderEventBase):
@@ -174,7 +174,7 @@ class OrderStatus(OrderEventBase):
     remaining_qty: Decimal = Field(..., ge=0, description="Remaining open quantity")
     avg_fill_price: Decimal | None = Field(default=None, ge=0, description="Volume-weighted average fill price")
     commission_total: Decimal = Field(default=Decimal("0"), ge=0, description="Total commissions paid")
-    last_updated: datetime = Field(default_factory=datetime.utcnow, description="Last status change time")
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Last status change time")
 
 
 # ---------------------------------------------------------------------------

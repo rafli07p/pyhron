@@ -13,7 +13,7 @@ from decimal import Decimal
 
 import pytest
 
-# TODO: update imports when enthropy backtest/strategy interfaces are implemented
+# TODO: update imports when pyhron backtest/strategy interfaces are implemented
 # Future paths:
 #   from strategy_engine.backtesting.idx_vectorbt_backtest_engine import IDXVectorbtBacktestEngine (as BacktestEngine), BacktestResult
 #   from strategy_engine.idx_momentum_cross_section_strategy import IDXMomentumCrossSectionStrategy (as MomentumStrategy)
@@ -21,16 +21,16 @@ import pytest
 #   from services.portfolio.pnl_engine import PnLEngine
 #   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
 #   BacktestConfig, HistoricalDataLoader — not yet implemented
-pytest.importorskip("enthropy.backtest.config", reason="module not yet implemented")
-from enthropy.backtest.config import BacktestConfig
-from enthropy.backtest.engine import BacktestEngine
-from enthropy.backtest.result import BacktestResult
-from enthropy.market_data.historical import HistoricalDataLoader
-from enthropy.pnl.engine import PnLEngine
-from enthropy.risk.engine import RiskEngine
-from enthropy.shared.schemas.risk import RiskLimits
-from enthropy.strategy.mean_reversion import MeanReversionStrategy
-from enthropy.strategy.momentum import MomentumStrategy
+pytest.importorskip("pyhron.backtest.config", reason="module not yet implemented")
+from pyhron.backtest.config import BacktestConfig
+from pyhron.backtest.engine import BacktestEngine
+from pyhron.backtest.result import BacktestResult
+from pyhron.market_data.historical import HistoricalDataLoader
+from pyhron.pnl.engine import PnLEngine
+from pyhron.risk.engine import RiskEngine
+from pyhron.shared.schemas.risk import RiskLimits
+from pyhron.strategy.mean_reversion import MeanReversionStrategy
+from pyhron.strategy.momentum import MomentumStrategy
 
 # =============================================================================
 # Skip Conditions
@@ -77,7 +77,7 @@ def risk_limits() -> RiskLimits:
 def historical_loader() -> HistoricalDataLoader:
     """Historical data loader (uses local cache or yfinance)."""
     return HistoricalDataLoader(
-        cache_dir=os.environ.get("DATA_CACHE_DIR", "/tmp/enthropy_test_data"),
+        cache_dir=os.environ.get("DATA_CACHE_DIR", "/tmp/pyhron_test_data"),
         source=os.environ.get("DATA_SOURCE", "yfinance"),
     )
 

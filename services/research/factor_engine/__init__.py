@@ -1,4 +1,4 @@
-"""Factor engine for the Enthropy trading platform.
+"""Factor engine for the Pyhron trading platform.
 
 Computes cross-sectional alpha factors (momentum, mean-reversion,
 volatility, value) with vectorised numpy/pandas calculations and

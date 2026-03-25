@@ -1,4 +1,4 @@
-"""Factor Lab for the Enthropy Research Platform.
+"""Factor Lab for the Pyhron Research Platform.
 
 Interactive factor research environment for creating, testing,
 comparing, and backtesting quantitative factors. Supports cross-sectional
@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
@@ -31,7 +31,7 @@ class FactorDefinition:
     universe: str = "all"  # Symbol universe (e.g., "SP500", "IDX30")
     frequency: str = "daily"  # Rebalance frequency
     lookback_days: int = 252
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     tags: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:

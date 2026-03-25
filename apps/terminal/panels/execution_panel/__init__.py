@@ -1,4 +1,4 @@
-"""Execution Panel for the Enthropy Terminal.
+"""Execution Panel for the Pyhron Terminal.
 
 Provides order entry, management, and fill monitoring capabilities.
 Integrates with the DataClient to submit orders and track execution
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID, uuid4
@@ -126,7 +126,7 @@ class ExecutionPanel:
             qty=qty,
             price=price,
             status="SUBMITTED",
-            submitted_at=datetime.utcnow(),
+            submitted_at=datetime.now(tz=UTC),
         )
 
         result: dict[str, Any] = {"order_id": str(entry.order_id), "status": "SUBMITTED"}
@@ -218,7 +218,7 @@ class ExecutionPanel:
                 result["error"] = str(exc)
 
         entry.status = "CANCELLED"
-        entry.last_updated = datetime.utcnow()
+        entry.last_updated = datetime.now(tz=UTC)
         logger.info("Cancelled order %s (%s %s)", order_id, entry.symbol, entry.side)
         return result
 
@@ -232,7 +232,7 @@ class ExecutionPanel:
             entry.filled_qty = Decimal(str(fill_data.get("cumulative_qty", entry.filled_qty)))
             entry.avg_fill_price = Decimal(str(fill_data["fill_price"])) if "fill_price" in fill_data else None
             entry.status = fill_data.get("status", entry.status)
-            entry.last_updated = datetime.utcnow()
+            entry.last_updated = datetime.now(tz=UTC)
 
 
 __all__ = [

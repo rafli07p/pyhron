@@ -1,4 +1,4 @@
-"""Low-latency execution engine for the Enthropy trading platform.
+"""Low-latency execution engine for the Pyhron trading platform.
 
 Provides an async priority queue, concurrent order dispatch via
 :func:`asyncio.gather`, circuit-breaker protection (``pybreaker``), and

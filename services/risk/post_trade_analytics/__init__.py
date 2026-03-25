@@ -1,4 +1,4 @@
-"""Post-trade analytics for the Enthropy trading platform.
+"""Post-trade analytics for the Pyhron trading platform.
 
 Calculates slippage, market impact, and generates execution quality
 reports using pandas for efficient batch analytics.
@@ -7,7 +7,7 @@ reports using pandas for efficient batch analytics.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -238,7 +238,7 @@ class PostTradeAnalytics:
             Date label for the report.
         """
         self._log.info("execution_quality_report", tenant_id=tenant_id, num_fills=len(fills))
-        rpt_date = report_date or datetime.utcnow().strftime("%Y-%m-%d")
+        rpt_date = report_date or datetime.now(UTC).strftime("%Y-%m-%d")
 
         if not fills:
             return ExecutionQualityReport(

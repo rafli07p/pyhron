@@ -157,7 +157,7 @@ ignore = [
     "E501",   # line length handled by formatter
     "E402",   # module level import not at top (conditional/ordered imports)
     "DTZ011", # allow datetime.date.today()
-    "DTZ003", # allow datetime.utcnow() in non-critical paths
+    "DTZ003", # TODO: remove after full datetime.utcnow migration
     "SIM102", # allow nested if for readability
     "SIM108", # allow if-else over ternary for readability
     "N806",   # allow uppercase variable names (DataFrame, etc.)
@@ -165,7 +165,7 @@ ignore = [
     "S108",   # allow /tmp usage
     "S104",   # allow binding to all interfaces
     "S314",   # allow xml.etree usage
-    "S110",   # allow bare except pass
+
     "B904",   # allow raise without from in except (FastAPI/Celery patterns)
     "PTH123", # allow open() instead of Path.open()
     "RUF043", # allow regex metacharacters in match=
@@ -223,9 +223,8 @@ addopts = [
     "--cov=macro_intelligence",
     "--cov=governance_intelligence",
     "--cov-report=term-missing",
-    # TODO: raise threshold as test suite matures — currently limited by
-    # unimplemented modules (enthropy.* stubs)
-    "--cov-fail-under=5",
+    # TODO: raise threshold as test suite matures
+    "--cov-fail-under=15",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

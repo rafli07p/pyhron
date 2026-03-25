@@ -1,4 +1,4 @@
-"""Dataset builder for the Enthropy trading platform.
+"""Dataset builder for the Pyhron trading platform.
 
 Fetches market data from real APIs (Polygon, yfinance), engineers
 features (returns, volatility, volume profile, technical indicators),

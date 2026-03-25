@@ -12,20 +12,20 @@ from decimal import Decimal
 
 import pytest
 
-# TODO: update imports when enthropy.risk / enthropy.shared.schemas are implemented
+# TODO: update imports when pyhron.risk / pyhron.shared.schemas are implemented
 # Future paths:
 #   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
 #   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType
 #   RiskCheckResult, RiskViolationType, PositionSnapshot — not yet implemented
-pytest.importorskip("enthropy.risk.engine", reason="module not yet implemented")
-from enthropy.risk.engine import RiskEngine
-from enthropy.risk.models import (
+pytest.importorskip("pyhron.risk.engine", reason="module not yet implemented")
+from pyhron.risk.engine import RiskEngine
+from pyhron.risk.models import (
     RiskCheckResult,
     RiskViolationType,
 )
-from enthropy.shared.schemas.order import OrderCreate, OrderSide, OrderType
-from enthropy.shared.schemas.position import PositionSnapshot
-from enthropy.shared.schemas.risk import RiskLimits
+from pyhron.shared.schemas.order import OrderCreate, OrderSide, OrderType
+from pyhron.shared.schemas.position import PositionSnapshot
+from pyhron.shared.schemas.risk import RiskLimits
 
 
 # =============================================================================

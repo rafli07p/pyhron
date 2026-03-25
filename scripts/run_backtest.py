@@ -2,7 +2,7 @@
 """
 CLI script to run a sample backtest.
 
-Executes a configurable backtest using the Enthropy backtesting engine
+Executes a configurable backtest using the Pyhron backtesting engine
 with support for multiple strategies, custom date ranges, and detailed
 output including performance metrics and trade logs.
 
@@ -32,27 +32,27 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
-logger = logging.getLogger("enthropy.run_backtest")
+logger = logging.getLogger("pyhron.run_backtest")
 
 import contextlib
 
-# TODO: update imports when enthropy interfaces are implemented
+# TODO: update imports when pyhron interfaces are implemented
 # Future paths:
 #   from strategy_engine.backtesting.idx_vectorbt_backtest_engine import IDXVectorbtBacktestEngine (as BacktestEngine)
 #   from services.portfolio.pnl_engine import PnLEngine
 #   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
 #   BacktestConfig, HistoricalDataLoader — not yet implemented
 try:
-    from enthropy.backtest.config import BacktestConfig
-    from enthropy.backtest.engine import BacktestEngine
-    from enthropy.market_data.historical import HistoricalDataLoader
-    from enthropy.pnl.engine import PnLEngine
-    from enthropy.risk.engine import RiskEngine
-    from enthropy.shared.schemas.risk import RiskLimits
+    from pyhron.backtest.config import BacktestConfig
+    from pyhron.backtest.engine import BacktestEngine
+    from pyhron.market_data.historical import HistoricalDataLoader
+    from pyhron.pnl.engine import PnLEngine
+    from pyhron.risk.engine import RiskEngine
+    from pyhron.shared.schemas.risk import RiskLimits
 except ImportError:
     logger.error(
-        "enthropy.* modules not yet implemented. "
-        "This script will be available once the enthropy interface layer is complete."
+        "pyhron.* modules not yet implemented. "
+        "This script will be available once the pyhron interface layer is complete."
     )
     sys.exit(1)
 
@@ -61,7 +61,7 @@ except ImportError:
 # =============================================================================
 AVAILABLE_STRATEGIES = {
     "momentum": {
-        "module": "enthropy.strategy.momentum",
+        "module": "pyhron.strategy.momentum",
         "class": "MomentumStrategy",
         "default_params": {
             "lookback_period": 20,
@@ -71,7 +71,7 @@ AVAILABLE_STRATEGIES = {
         },
     },
     "mean_reversion": {
-        "module": "enthropy.strategy.mean_reversion",
+        "module": "pyhron.strategy.mean_reversion",
         "class": "MeanReversionStrategy",
         "default_params": {
             "lookback_period": 20,
@@ -81,7 +81,7 @@ AVAILABLE_STRATEGIES = {
         },
     },
     "pairs_trading": {
-        "module": "enthropy.strategy.pairs",
+        "module": "pyhron.strategy.pairs",
         "class": "PairsTradingStrategy",
         "default_params": {
             "lookback_period": 60,
@@ -272,7 +272,7 @@ async def run_backtest(args: argparse.Namespace) -> None:
 def main() -> None:
     """Entry point."""
     parser = argparse.ArgumentParser(
-        description="Run a backtest using the Enthropy backtesting engine",
+        description="Run a backtest using the Pyhron backtesting engine",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Available strategies:

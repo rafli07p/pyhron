@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from typing import TYPE_CHECKING, Any
 
 from textual.reactive import reactive
@@ -53,11 +54,9 @@ class WatchlistPanel(Static):
         self.quotes = list(data)
 
     def watch_quotes(self) -> None:
-        try:
+        with contextlib.suppress(Exception):
             content = self.query_one("#watchlist-content", Static)
             content.update(self._render_table())
-        except Exception:
-            pass
 
     def _render_table(self) -> str:
         header = f"{'SYMBOL':<6} {'LAST':>8} {'CHG':>7} {'CHG%':>7} {'VOL(L)':>8} {'VAL(B)':>7}"

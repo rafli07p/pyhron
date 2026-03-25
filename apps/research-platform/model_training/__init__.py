@@ -1,4 +1,4 @@
-"""Model Training Manager for the Enthropy Research Platform.
+"""Model Training Manager for the Pyhron Research Platform.
 
 Manages the training, evaluation, and registration of machine learning
 models with MLflow experiment tracking. Supports scikit-learn and
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
@@ -82,7 +82,7 @@ class TrainedModel:
     artifact_path: str | None = None
     mlflow_run_id: str | None = None
     status: str = "created"  # created, training, trained, registered, failed
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     trained_at: datetime | None = None
     version: int = 1
 
@@ -105,7 +105,7 @@ class ModelTrainingManager:
     def __init__(
         self,
         mlflow_tracking_uri: str = "http://localhost:5000",
-        experiment_name: str = "enthropy-models",
+        experiment_name: str = "pyhron-models",
     ) -> None:
         self._tracking_uri = mlflow_tracking_uri
         self._experiment_name = experiment_name
@@ -217,7 +217,7 @@ class ModelTrainingManager:
 
                 record.metrics = metrics
                 record.status = "trained"
-                record.trained_at = datetime.utcnow()
+                record.trained_at = datetime.now(tz=UTC)
                 record.artifact_path = f"runs:/{run.info.run_id}/model"
 
         except Exception as exc:

@@ -19,16 +19,16 @@ from decimal import Decimal
 import pytest
 import pytest_asyncio
 
-# TODO: update imports when enthropy.market_data is implemented
+# TODO: update imports when pyhron.market_data is implemented
 # Future paths:
 #   MarketDataCache, MarketDataClient, MarketDataIngestionService, MarketDataPublisher — not yet implemented
 #   from shared.schemas.market_events import TickEvent (as TickData)
-pytest.importorskip("enthropy.market_data.cache", reason="module not yet implemented")
-from enthropy.market_data.cache import MarketDataCache
-from enthropy.market_data.client import MarketDataClient
-from enthropy.market_data.ingestion import MarketDataIngestionService
-from enthropy.market_data.publisher import MarketDataPublisher
-from enthropy.shared.schemas.tick import TickData
+pytest.importorskip("pyhron.market_data.cache", reason="module not yet implemented")
+from pyhron.market_data.cache import MarketDataCache
+from pyhron.market_data.client import MarketDataClient
+from pyhron.market_data.ingestion import MarketDataIngestionService
+from pyhron.market_data.publisher import MarketDataPublisher
+from pyhron.shared.schemas.tick import TickData
 
 # =============================================================================
 # Skip Conditions
@@ -78,7 +78,7 @@ async def kafka_publisher():
     """Kafka market data publisher."""
     publisher = MarketDataPublisher(
         bootstrap_servers=KAFKA_BOOTSTRAP,
-        topic="enthropy.market_data.test",
+        topic="pyhron.market_data.test",
     )
     await publisher.connect()
     yield publisher

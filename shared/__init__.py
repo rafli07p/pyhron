@@ -1,7 +1,7 @@
-"""Enthropy shared library.
+"""Pyhron shared library.
 
 Core package providing schemas, contracts, utilities, configuration,
-and security primitives shared across all Enthropy platform services.
+and security primitives shared across all Pyhron platform services.
 
 Subpackages:
 

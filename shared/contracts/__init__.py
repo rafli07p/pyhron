@@ -1,4 +1,4 @@
-"""Enthropy shared contracts.
+"""Pyhron shared contracts.
 
 Re-exports API models, message types, and event priorities for
 convenient access::

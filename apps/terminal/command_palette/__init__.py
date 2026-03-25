@@ -1,4 +1,4 @@
-"""Command Palette for the Enthropy Terminal.
+"""Command Palette for the Pyhron Terminal.
 
 Bloomberg-style command interface that parses and executes terminal
 commands. Supports security lookups (e.g., ``AAPL EQUITY``,
@@ -83,7 +83,7 @@ _BUILTIN_COMMANDS: dict[str, str] = {
 
 
 class CommandPalette:
-    """Bloomberg-style command interface for the Enthropy Terminal.
+    """Bloomberg-style command interface for the Pyhron Terminal.
 
     Parses user input into structured commands for execution. Supports:
     - Security lookups: ``AAPL EQUITY``, ``BBCA JK EQUITY``, ``ESH5 INDEX``

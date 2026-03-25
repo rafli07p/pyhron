@@ -1,4 +1,4 @@
-"""Position management for the Enthropy trading platform.
+"""Position management for the Pyhron trading platform.
 
 Tracks open positions per tenant with SQLAlchemy persistence and
 real-time updates driven by OrderFill events.
@@ -6,7 +6,7 @@ real-time updates driven by OrderFill events.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 
@@ -57,8 +57,8 @@ class Position(Base):
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="USD")
     sector: Mapped[str | None] = mapped_column(String(64), nullable=True)
     last_fill_id: Mapped[str | None] = mapped_column(Text, nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ class PositionManager:
             pos.asset_class = asset_class.value
             pos.currency = currency
             pos.sector = sector
-            pos.updated_at = datetime.utcnow()
+            pos.updated_at = datetime.now(UTC)
             session.add(pos)
             await session.commit()
             await session.refresh(pos)
@@ -195,7 +195,7 @@ class PositionManager:
             pos.quantity = new_qty
             pos.market_price = fill.fill_price
             pos.last_fill_id = str(fill.fill_id)
-            pos.updated_at = datetime.utcnow()
+            pos.updated_at = datetime.now(UTC)
 
             session.add(pos)
             await session.commit()
@@ -248,8 +248,8 @@ class PositionManager:
                 avg_cost=Decimal("0"),
                 realized_pnl=Decimal("0"),
                 market_price=Decimal("0"),
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
             )
         return pos
 

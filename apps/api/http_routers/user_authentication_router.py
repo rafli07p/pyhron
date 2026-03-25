@@ -10,8 +10,10 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from shared.security.auth import (
     TokenError,
@@ -27,6 +29,7 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/auth", tags=["authentication"])
+_limiter = Limiter(key_func=get_remote_address)
 
 
 # ── In-memory user store (swap for database in production) ───────────────────
@@ -74,7 +77,8 @@ class UserProfileResponse(BaseModel):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(body: LoginRequest) -> TokenResponse:
+@_limiter.limit("5/minute")
+async def login(request: Request, body: LoginRequest) -> TokenResponse:
     """Authenticate user and return JWT access + refresh tokens."""
     logger.info("login_attempt", email=body.email)
 
@@ -104,7 +108,8 @@ async def login(body: LoginRequest) -> TokenResponse:
 
 
 @router.post("/register", response_model=UserProfileResponse, status_code=201)
-async def register(body: RegisterRequest) -> UserProfileResponse:
+@_limiter.limit("3/minute")
+async def register(request: Request, body: RegisterRequest) -> UserProfileResponse:
     """Register a new user account."""
     if body.email in _users_db:
         raise HTTPException(
@@ -134,7 +139,8 @@ async def register(body: RegisterRequest) -> UserProfileResponse:
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(body: RefreshRequest) -> TokenResponse:
+@_limiter.limit("10/minute")
+async def refresh_token(request: Request, body: RefreshRequest) -> TokenResponse:
     """Refresh an expired access token using a valid refresh token."""
     try:
         payload = verify_token(body.refresh_token)

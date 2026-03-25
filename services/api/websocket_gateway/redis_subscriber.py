@@ -102,4 +102,4 @@ class RedisSubscriber:
                     await self._pubsub.unsubscribe()
                     await self._pubsub.aclose()
                 except Exception:
-                    pass
+                    logger.debug("redis_subscriber.cleanup_error", exc_info=True)

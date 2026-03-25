@@ -1,4 +1,4 @@
-"""Market event schemas for the Enthropy trading platform.
+"""Market event schemas for the Pyhron trading platform.
 
 Defines Pydantic v2 models for all market data events including ticks,
 OHLCV bars, trades, and quotes. All models enforce multi-tenancy via

@@ -1,4 +1,4 @@
-"""Notebook Management for the Enthropy Research Platform.
+"""Notebook Management for the Pyhron Research Platform.
 
 Manages Jupyter-style research notebooks for interactive quantitative
 analysis. Supports creating, listing, and executing notebooks
@@ -11,7 +11,7 @@ import json
 import logging
 import subprocess
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -30,8 +30,8 @@ class NotebookMetadata:
     tags: list[str] = field(default_factory=list)
     kernel: str = "python3"
     cell_count: int = 0
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     last_executed: datetime | None = None
     execution_status: str = "idle"  # idle, running, completed, failed
     file_path: str | None = None
@@ -68,7 +68,7 @@ class NotebookManager:
         Root directory for notebook storage.
     """
 
-    def __init__(self, notebooks_dir: str | Path = "~/.enthropy/notebooks") -> None:
+    def __init__(self, notebooks_dir: str | Path = "~/.pyhron/notebooks") -> None:
         self._notebooks_dir = Path(notebooks_dir).expanduser()
         self._registry: dict[str, NotebookMetadata] = {}
         logger.info("NotebookManager initialized (dir=%s)", self._notebooks_dir)
@@ -135,7 +135,7 @@ class NotebookManager:
                     "name": "python3",
                 },
                 "language_info": {"name": "python", "version": "3.11.0"},
-                "enthropy": {
+                "pyhron": {
                     "description": description,
                     "author": author,
                     "tags": tags or [],
@@ -191,12 +191,12 @@ class NotebookManager:
                     try:
                         with open(nb_path) as f:
                             nb_data = json.load(f)
-                        enthropy_meta = nb_data.get("metadata", {}).get("enthropy", {})
+                        pyhron_meta = nb_data.get("metadata", {}).get("pyhron", {})
                         meta = NotebookMetadata(
                             name=name,
-                            description=enthropy_meta.get("description", ""),
-                            author=enthropy_meta.get("author", ""),
-                            tags=enthropy_meta.get("tags", []),
+                            description=pyhron_meta.get("description", ""),
+                            author=pyhron_meta.get("author", ""),
+                            tags=pyhron_meta.get("tags", []),
                             cell_count=len(nb_data.get("cells", [])),
                             file_path=str(nb_path),
                         )
@@ -263,9 +263,9 @@ class NotebookManager:
         meta = self._registry.get(name)
         if meta:
             meta.execution_status = "running"
-            meta.last_executed = datetime.utcnow()
+            meta.last_executed = datetime.now(tz=UTC)
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(tz=UTC)
         result: dict[str, Any] = {"name": name, "status": "completed"}
 
         try:
@@ -302,13 +302,13 @@ class NotebookManager:
             result["error"] = str(exc)
             logger.error("Notebook execution failed for '%s': %s", name, exc)
 
-        duration = (datetime.utcnow() - start_time).total_seconds()
+        duration = (datetime.now(tz=UTC) - start_time).total_seconds()
         result["duration_seconds"] = duration
         result["output_path"] = str(output_path)
 
         if meta:
             meta.execution_status = result["status"]
-            meta.updated_at = datetime.utcnow()
+            meta.updated_at = datetime.now(tz=UTC)
 
         logger.info("Executed notebook '%s': %s (%.1fs)", name, result["status"], duration)
         return result

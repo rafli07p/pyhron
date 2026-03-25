@@ -1,4 +1,4 @@
-"""Portfolio service for the Enthropy trading platform.
+"""Portfolio service for the Pyhron trading platform.
 
 Provides position management, P&L calculation, and exposure tracking
 with full multi-tenancy support.

@@ -1,4 +1,4 @@
-"""Smart order router for the Enthropy execution service.
+"""Smart order router for the Pyhron execution service.
 
 Routes orders to the optimal exchange connector based on symbol,
 asset class, order type, and available liquidity.  Integrates pre-trade

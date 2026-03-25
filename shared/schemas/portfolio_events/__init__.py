@@ -1,4 +1,4 @@
-"""Portfolio event schemas for the Enthropy trading platform.
+"""Portfolio event schemas for the Pyhron trading platform.
 
 Defines Pydantic v2 models for position tracking, P&L reporting, and
 risk exposure updates.  All models enforce multi-tenancy via mandatory
@@ -7,7 +7,7 @@ risk exposure updates.  All models enforce multi-tenancy via mandatory
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Optional
@@ -58,7 +58,7 @@ class PortfolioEventBase(BaseModel):
     event_id: UUID = Field(default_factory=uuid4, description="Unique event identifier")
     portfolio_id: str = Field(..., min_length=1, max_length=64, description="Portfolio / book identifier")
     tenant_id: str = Field(..., min_length=1, max_length=64, description="Tenant identifier for multi-tenancy")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Event timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Event timestamp (UTC)")
 
 
 class PositionUpdate(PortfolioEventBase):

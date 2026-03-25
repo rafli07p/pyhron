@@ -21,9 +21,9 @@ import pytest
 API_BASE = os.environ.get("API_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql+asyncpg://enthropy:enthropy_dev@localhost:5432/enthropy",
+    "postgresql+asyncpg://pyhron:pyhron_dev@localhost:5432/pyhron",
 )
-REDIS_URL = os.environ.get("REDIS_URL", "redis://:enthropy_dev@localhost:6379/0")
+REDIS_URL = os.environ.get("REDIS_URL", "redis://:pyhron_dev@localhost:6379/0")
 KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
 pytestmark = pytest.mark.integration
@@ -57,7 +57,7 @@ async def test_api_openapi_docs() -> None:
         resp = await client.get("/openapi.json")
     assert resp.status_code == 200
     spec = resp.json()
-    assert spec["info"]["title"] == "Enthropy Trading Platform API"
+    assert spec["info"]["title"] == "Pyhron Trading Platform API"
 
 
 # ---------------------------------------------------------------------------
@@ -125,10 +125,10 @@ async def test_redis_set_get() -> None:
 
     client = redis_from_url(REDIS_URL, decode_responses=True)
     try:
-        await client.set("enthropy:test:connectivity", "ok", ex=30)
-        value = await client.get("enthropy:test:connectivity")
+        await client.set("pyhron:test:connectivity", "ok", ex=30)
+        value = await client.get("pyhron:test:connectivity")
         assert value == "ok"
-        await client.delete("enthropy:test:connectivity")
+        await client.delete("pyhron:test:connectivity")
     finally:
         await client.aclose()
 
@@ -162,7 +162,7 @@ async def test_kafka_produce_consume() -> None:
 
     from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 
-    topic = "enthropy-test-connectivity"
+    topic = "pyhron-test-connectivity"
     test_msg = {"test": "connectivity", "status": "ok"}
 
     # Produce
@@ -184,7 +184,7 @@ async def test_kafka_produce_consume() -> None:
         topic,
         bootstrap_servers=KAFKA_BOOTSTRAP,
         auto_offset_reset="earliest",
-        group_id="enthropy-test-connectivity-group",
+        group_id="pyhron-test-connectivity-group",
         consumer_timeout_ms=10000,
     )
     await consumer.start()

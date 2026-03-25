@@ -6,6 +6,7 @@ and performance metrics in a Bloomberg-style layout.
 
 from __future__ import annotations
 
+import contextlib
 from typing import TYPE_CHECKING, Any
 
 from textual.reactive import reactive
@@ -62,25 +63,19 @@ class PaperTradingPanel(Static):
 
     def watch_session_data(self) -> None:
         """Refresh when session data changes."""
-        try:
+        with contextlib.suppress(Exception):
             content = self.query_one("#paper-trading-content", Static)
             content.update(self._render_panel())
-        except Exception:
-            pass
 
     def watch_positions_data(self) -> None:
-        try:
+        with contextlib.suppress(Exception):
             content = self.query_one("#paper-trading-content", Static)
             content.update(self._render_panel())
-        except Exception:
-            pass
 
     def watch_fills_data(self) -> None:
-        try:
+        with contextlib.suppress(Exception):
             content = self.query_one("#paper-trading-content", Static)
             content.update(self._render_panel())
-        except Exception:
-            pass
 
     def on_nav_snapshot(self, snapshot: dict[str, Any]) -> None:
         """Update NAV and drawdown display."""
