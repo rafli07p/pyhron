@@ -37,7 +37,7 @@ class CommodityCompanyProfile(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ticker: Mapped[str] = mapped_column(String(10), nullable=False)
     commodity_type: Mapped[str] = mapped_column(String(20), nullable=False)
-    profile_data: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    profile_data: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
     shares_outstanding: Mapped[int] = mapped_column(Integer, nullable=False)
     trailing_revenue_idr: Mapped[float] = mapped_column(Float, nullable=False)
     net_margin: Mapped[float] = mapped_column(Float, nullable=False)
