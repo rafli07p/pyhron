@@ -28,6 +28,8 @@ class MessageRouter:
 
     _TOPIC_MAP: dict[str, str] = {
         KafkaTopic.VALIDATED_EOD_OHLCV: "quotes",
+        KafkaTopic.RAW_INTRADAY_TRADES: "intraday_trades",
+        KafkaTopic.RAW_INTRADAY_BARS: "intraday_bars",
         KafkaTopic.ORDER_SUBMITTED: "orders",
         KafkaTopic.ORDER_FILLED: "orders",
         KafkaTopic.POSITION_UPDATED: "positions",
@@ -66,6 +68,10 @@ class MessageRouter:
         if channel_type == "paper_rebalance":
             session_id = payload.get("session_id")
             return f"pyhron:paper:rebalance:{session_id}" if session_id else None
+
+        if channel_type in ("intraday_trades", "intraday_bars"):
+            symbol = payload.get("symbol")
+            return f"pyhron:intraday:{symbol}" if symbol else None
 
         return None
 
@@ -172,8 +178,38 @@ def _transform_paper_rebalance(payload: dict) -> dict:  # type: ignore[type-arg]
     }
 
 
+def _transform_intraday_trade(payload: dict) -> dict:  # type: ignore[type-arg]
+    """Transform intraday trade to ``TRADE_UPDATE``."""
+    return {
+        "type": "TRADE_UPDATE",
+        "symbol": str(payload.get("symbol", "")),
+        "price": str(payload.get("price", "")),
+        "size": payload.get("size", 0),
+        "timestamp": str(payload.get("timestamp", "")),
+        "exchange": str(payload.get("exchange", "")),
+    }
+
+
+def _transform_intraday_bar(payload: dict) -> dict:  # type: ignore[type-arg]
+    """Transform intraday bar to ``BAR_UPDATE``."""
+    return {
+        "type": "BAR_UPDATE",
+        "symbol": str(payload.get("symbol", "")),
+        "open": str(payload.get("open", "")),
+        "high": str(payload.get("high", "")),
+        "low": str(payload.get("low", "")),
+        "close": str(payload.get("close", "")),
+        "volume": payload.get("volume", 0),
+        "vwap": str(payload.get("vwap", "")),
+        "timestamp": str(payload.get("timestamp", "")),
+        "trade_count": payload.get("trade_count", 0),
+    }
+
+
 _TRANSFORMERS: dict[str, object] = {
     KafkaTopic.VALIDATED_EOD_OHLCV: _transform_eod_to_quote,
+    KafkaTopic.RAW_INTRADAY_TRADES: _transform_intraday_trade,
+    KafkaTopic.RAW_INTRADAY_BARS: _transform_intraday_bar,
     KafkaTopic.ORDER_SUBMITTED: _transform_order,
     KafkaTopic.ORDER_FILLED: _transform_order,
     KafkaTopic.POSITION_UPDATED: _transform_position,

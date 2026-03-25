@@ -35,6 +35,7 @@ logger = get_logger(__name__)
 _TOPIC_ROUTING: dict[str, tuple[str, str]] = {
     KafkaTopic.RAW_EOD_OHLCV: (KafkaTopic.VALIDATED_EOD_OHLCV, KafkaTopic.DLQ_EOD_OHLCV),
     KafkaTopic.RAW_FUNDAMENTALS: (KafkaTopic.VALIDATED_FUNDAMENTALS, KafkaTopic.DLQ_FUNDAMENTALS),
+    KafkaTopic.RAW_INTRADAY_BARS: (KafkaTopic.VALIDATED_INTRADAY_BARS, KafkaTopic.DLQ_INTRADAY),
 }
 
 
@@ -60,6 +61,7 @@ class ValidationConsumer:
         self._consumer = aiokafka.AIOKafkaConsumer(
             KafkaTopic.RAW_EOD_OHLCV,
             KafkaTopic.RAW_FUNDAMENTALS,
+            KafkaTopic.RAW_INTRADAY_BARS,
             bootstrap_servers=self._bootstrap_servers,
             group_id=self.CONSUMER_GROUP,
             enable_auto_commit=False,
@@ -113,6 +115,8 @@ class ValidationConsumer:
             result = self._validate_ohlcv(record_data)
         elif msg.topic == KafkaTopic.RAW_FUNDAMENTALS:
             result = self._validate_fundamentals(record_data)
+        elif msg.topic == KafkaTopic.RAW_INTRADAY_BARS:
+            result = self._validate_intraday_bar(record_data)
         else:
             await self._producer.send(validated_topic, record_data)
             return
@@ -179,3 +183,44 @@ class ValidationConsumer:
 
     def _validate_fundamentals(self, data: dict[str, Any]) -> ValidationResult:
         return self._fundamentals_validator.validate(data, data.get("symbol", "UNKNOWN"))
+
+    def _validate_intraday_bar(self, data: dict[str, Any]) -> ValidationResult:
+        """Basic validation for intraday bar data from Alpaca."""
+        failed_rules: list[str] = []
+        warnings: list[str] = []
+
+        if not data.get("symbol"):
+            failed_rules.append("MISSING_SYMBOL")
+        if not data.get("timestamp"):
+            failed_rules.append("MISSING_TIMESTAMP")
+
+        high = float(data.get("high", 0))
+        low = float(data.get("low", 0))
+        open_price = float(data.get("open", 0))
+        close = float(data.get("close", 0))
+
+        if high < low and high > 0:
+            failed_rules.append("HIGH_LESS_THAN_LOW")
+        if any(v < 0 for v in (open_price, high, low, close)):
+            failed_rules.append("NEGATIVE_PRICE")
+        if int(data.get("volume", 0)) < 0:
+            failed_rules.append("NEGATIVE_VOLUME")
+
+        # Create a dummy record for ValidationResult compatibility
+        dummy = EODHDOHLCVRecord(
+            symbol=data.get("symbol", "UNKNOWN"),
+            date=date.today(),
+            open=Decimal(str(open_price)),
+            high=Decimal(str(high)),
+            low=Decimal(str(low)),
+            close=Decimal(str(close)),
+            adjusted_close=Decimal(str(close)),
+            volume=int(data.get("volume", 0)),
+        )
+
+        return ValidationResult(
+            is_valid=len(failed_rules) == 0,
+            record=dummy,
+            failed_rules=failed_rules,
+            warnings=warnings,
+        )
