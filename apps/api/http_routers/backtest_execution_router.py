@@ -123,9 +123,7 @@ async def _run_backtest_task(
                 "profit_factor": result.profit_factor,
                 "cost_drag_annualized_pct": result.cost_drag_annualized_pct,
                 "initial_capital": str(result.initial_capital_idr),
-                "final_capital": str(
-                    result.initial_capital_idr * Decimal(str(1 + result.total_return_pct / 100))
-                ),
+                "final_capital": str(result.initial_capital_idr * Decimal(str(1 + result.total_return_pct / 100))),
             },
             "symbols": body.symbols,
             "start_date": body.start_date,

@@ -33,10 +33,26 @@ logging.basicConfig(
 logger = logging.getLogger("pyhron.run_backtest")
 
 DEFAULT_SYMBOLS = [
-    "BBCA", "BBRI", "BMRI", "BBNI", "TLKM",
-    "ASII", "UNVR", "HMSP", "GGRM", "KLBF",
-    "ICBP", "INDF", "SMGR", "PTBA", "ADRO",
-    "ITMG", "UNTR", "PGAS", "JSMR", "CPIN",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "BBNI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "HMSP",
+    "GGRM",
+    "KLBF",
+    "ICBP",
+    "INDF",
+    "SMGR",
+    "PTBA",
+    "ADRO",
+    "ITMG",
+    "UNTR",
+    "PGAS",
+    "JSMR",
+    "CPIN",
 ]
 
 
@@ -126,40 +142,54 @@ Examples:
         """,
     )
     parser.add_argument(
-        "--symbols", nargs="+", default=DEFAULT_SYMBOLS,
+        "--symbols",
+        nargs="+",
+        default=DEFAULT_SYMBOLS,
         help="Symbols to backtest (default: LQ45 top 20)",
     )
     parser.add_argument(
-        "--strategy", default="momentum",
+        "--strategy",
+        default="momentum",
         choices=["momentum"],
         help="Strategy to use (default: momentum)",
     )
     parser.add_argument(
-        "--strategy-params", type=str, default=None,
-        help='Strategy parameters as JSON (e.g. \'{"formation_months": 6}\')',
+        "--strategy-params",
+        type=str,
+        default=None,
+        help="Strategy parameters as JSON (e.g. '{\"formation_months\": 6}')",
     )
     parser.add_argument(
-        "--start", default="2023-01-01",
+        "--start",
+        default="2023-01-01",
         help="Backtest start date YYYY-MM-DD (default: 2023-01-01)",
     )
     parser.add_argument(
-        "--end", default="2024-12-31",
+        "--end",
+        default="2024-12-31",
         help="Backtest end date YYYY-MM-DD (default: 2024-12-31)",
     )
     parser.add_argument(
-        "--capital", type=float, default=1_000_000_000,
+        "--capital",
+        type=float,
+        default=1_000_000_000,
         help="Initial capital in IDR (default: 1,000,000,000)",
     )
     parser.add_argument(
-        "--slippage", type=float, default=5.0,
+        "--slippage",
+        type=float,
+        default=5.0,
         help="Slippage in basis points (default: 5)",
     )
     parser.add_argument(
-        "--output", type=str, default=None,
+        "--output",
+        type=str,
+        default=None,
         help="Output file path for JSON results",
     )
     parser.add_argument(
-        "--use-db", action="store_true",
+        "--use-db",
+        action="store_true",
         help="Load historical data from TimescaleDB instead of synthetic data",
     )
 
