@@ -172,7 +172,7 @@ jobs:
           --health-retries 5
 
       redis:
-        image: redis:7-alpine
+        image: redis:7.2-alpine
         ports:
           - 6379:6379
         options: >-
@@ -244,7 +244,10 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Check for known vulnerabilities
-        run: pip install pip-audit && pip-audit
+        run: |
+          pip install pip-audit
+          poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt
+          pip-audit -r /tmp/requirements.txt
 
       - name: Check for secrets
         uses: trufflesecurity/trufflehog@main
