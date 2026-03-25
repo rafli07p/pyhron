@@ -76,10 +76,12 @@ class TestKafkaValidator:
 
 class TestProperties:
     def test_is_production(self) -> None:
-        cfg = Config(app_env="production",
-                     app_secret_key="prod-secret-key-that-is-long-enough-32",
-                     jwt_secret_key="prod-jwt-secret-key-that-is-definitely-long-enough-64-chars-here",
-                     allowed_cors_origins="https://app.pyhron.io")
+        cfg = Config(
+            app_env="production",
+            app_secret_key="prod-secret-key-that-is-long-enough-32",
+            jwt_secret_key="prod-jwt-secret-key-that-is-definitely-long-enough-64-chars-here",
+            allowed_cors_origins="https://app.pyhron.io",
+        )
         assert cfg.is_production is True
         assert cfg.is_development is False
 

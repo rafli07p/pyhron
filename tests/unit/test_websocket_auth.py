@@ -81,7 +81,10 @@ class TestAuthenticateWSToken:
             authenticate_ws_token(token)
 
     @patch("services.api.websocket_gateway._get_jwt_algorithm", return_value=_TEST_ALGORITHM)
-    @patch("services.api.websocket_gateway._get_jwt_secret", return_value="wrong-secret-that-is-long-enough-for-testing-64-chars-minimum")
+    @patch(
+        "services.api.websocket_gateway._get_jwt_secret",
+        return_value="wrong-secret-that-is-long-enough-for-testing-64-chars-minimum",
+    )
     def test_wrong_secret_raises(self, mock_secret, mock_algo) -> None:
         token = _make_token()
         with pytest.raises(ValueError, match="Invalid token"):

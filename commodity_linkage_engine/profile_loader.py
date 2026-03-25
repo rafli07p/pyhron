@@ -35,9 +35,7 @@ async def load_profiles_by_type(
         shares_outstanding, trailing_revenue_idr, net_margin, plus
         all commodity-specific fields from profile_data.
     """
-    stmt = select(CommodityCompanyProfile).where(
-        CommodityCompanyProfile.commodity_type == commodity_type
-    )
+    stmt = select(CommodityCompanyProfile).where(CommodityCompanyProfile.commodity_type == commodity_type)
     result = await session.execute(stmt)
     rows = result.scalars().all()
 

@@ -155,6 +155,7 @@ async def test_audit_log_middleware_skips_get() -> None:
 @pytest.mark.asyncio
 async def test_audit_log_middleware_logs_post() -> None:
     """Audit middleware logs POST requests."""
+
     async def mock_app(scope, receive, send):
         await send({"type": "http.response.start", "status": 201, "headers": []})
 

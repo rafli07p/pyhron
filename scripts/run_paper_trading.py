@@ -147,8 +147,7 @@ async def run_simulation(args: argparse.Namespace) -> None:
         from shared.async_database_session import get_async_session_factory
     except ImportError:
         logger.error(
-            "Simulation requires database connectivity. "
-            "Ensure DATABASE_URL is set and the DB is accessible."
+            "Simulation requires database connectivity. " "Ensure DATABASE_URL is set and the DB is accessible."
         )
         sys.exit(1)
 
