@@ -11,10 +11,12 @@ import asyncio
 import contextlib
 import json
 import logging
+import time
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from shared.kafka_topics import KafkaTopic
+from shared.metrics import ws_message_latency_seconds
 
 if TYPE_CHECKING:
     import redis.asyncio as aioredis
@@ -252,11 +254,13 @@ class KafkaRedisBridge:
             logger.info("bridge.started topic=%s", self._topic)
             async for msg in self._consumer:
                 try:
+                    t0 = time.monotonic()
                     payload = json.loads(msg.value) if isinstance(msg.value, bytes | str) else msg.value
                     channel, ws_msg = await self._transform_message(self._topic, payload)
                     if channel is None:
                         continue
                     await self._redis.publish(channel, json.dumps(ws_msg))
+                    ws_message_latency_seconds.observe(time.monotonic() - t0)
                 except Exception:
                     logger.exception("bridge.transform_error topic=%s", self._topic)
         except asyncio.CancelledError:

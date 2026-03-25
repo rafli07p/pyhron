@@ -1,16 +1,16 @@
 # =============================================================================
-# Enthropy Trading Platform - Prometheus Alerting Rules
+# Pyhron Trading Platform - Prometheus Alerting Rules
 # =============================================================================
 
 groups:
   # ---------------------------------------------------------------------------
   # Latency Alerts
   # ---------------------------------------------------------------------------
-  - name: enthropy.latency
+  - name: pyhron.latency
     rules:
       - alert: HighOrderLatency
         expr: |
-          histogram_quantile(0.95, sum(rate(order_latency_seconds_bucket{job="enthropy-quant-metrics"}[5m])) by (le))
+          histogram_quantile(0.95, sum(rate(pyhron_order_fill_latency_seconds_bucket[5m])) by (le))
           > 0.5
         for: 2m
         labels:
@@ -22,11 +22,10 @@ groups:
           description: >
             p95 order latency is {{ $value | humanizeDuration }} which exceeds
             the 500ms threshold. This may impact execution quality and slippage.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/high-latency"
 
       - alert: CriticalOrderLatency
         expr: |
-          histogram_quantile(0.99, sum(rate(order_latency_seconds_bucket{job="enthropy-quant-metrics"}[5m])) by (le))
+          histogram_quantile(0.99, sum(rate(pyhron_order_fill_latency_seconds_bucket[5m])) by (le))
           > 2.0
         for: 1m
         labels:
@@ -38,11 +37,10 @@ groups:
           description: >
             p99 order latency is {{ $value | humanizeDuration }}. Orders are
             severely delayed. Immediate investigation required.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/critical-latency"
 
       - alert: HighAPIResponseTime
         expr: |
-          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="enthropy-api"}[5m])) by (le))
+          histogram_quantile(0.95, sum(rate(pyhron_http_request_duration_seconds_bucket{job="pyhron-api"}[5m])) by (le))
           > 1.0
         for: 5m
         labels:
@@ -55,99 +53,266 @@ groups:
             p95 API response time is {{ $value | humanizeDuration }}.
             Check for database bottlenecks or resource contention.
 
+      - alert: HighWebSocketLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(pyhron_ws_message_latency_seconds_bucket[5m])) by (le))
+          > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: websocket
+        annotations:
+          summary: "WebSocket message delivery latency is high"
+          description: >
+            p95 Kafka-to-WebSocket delivery latency is {{ $value | humanizeDuration }}.
+            Check Redis pub/sub and bridge consumers.
+
   # ---------------------------------------------------------------------------
-  # Risk Alerts
+  # DLQ & Data Pipeline Alerts
   # ---------------------------------------------------------------------------
-  - name: enthropy.risk
+  - name: pyhron.data_pipeline
     rules:
-      - alert: RiskVaRBreach
+      - alert: DLQDepthWarning
         expr: |
-          risk_var_current{job="enthropy-quant-metrics"}
-          > risk_var_limit{job="enthropy-quant-metrics"} * 0.9
-        for: 1m
+          pyhron_dlq_depth > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: data-pipeline
+        annotations:
+          summary: "DLQ depth exceeds 100 messages"
+          description: >
+            DLQ topic {{ $labels.topic }} has {{ $value }} messages awaiting
+            reprocessing. Investigate validation failures.
+
+      - alert: DLQDepthCritical
+        expr: |
+          pyhron_dlq_depth > 1000
+        for: 2m
         labels:
           severity: critical
-          team: risk
-          component: risk-engine
+          team: platform
+          component: data-pipeline
         annotations:
-          summary: "VaR approaching limit (>90%)"
+          summary: "DLQ depth exceeds 1000 — data loss risk"
           description: >
-            Current VaR (${{ $value | humanize }}) is approaching the risk limit.
-            Portfolio risk exposure requires immediate review. Auto-hedging may
-            trigger if limit is breached.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/var-breach"
+            DLQ topic {{ $labels.topic }} has {{ $value }} messages.
+            High failure rate suggests upstream data quality issue or schema change.
 
-      - alert: RiskVaRLimitExceeded
+      - alert: IngestionStalled
         expr: |
-          risk_var_current{job="enthropy-quant-metrics"}
-          > risk_var_limit{job="enthropy-quant-metrics"}
-        for: 0m
+          rate(pyhron_records_ingested_total{status="success"}[10m]) == 0
+          and
+          pyhron_records_ingested_total{status="success"} > 0
+        for: 15m
         labels:
           severity: critical
-          team: risk
-          component: risk-engine
-          pager: "true"
+          team: platform
+          component: data-pipeline
         annotations:
-          summary: "VaR LIMIT EXCEEDED - Trading should be halted"
+          summary: "Data ingestion has stalled"
           description: >
-            Current VaR (${{ $value | humanize }}) has EXCEEDED the risk limit.
-            All new position openings should be blocked until risk is reduced.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/var-exceeded"
+            No successful records ingested from {{ $labels.source }} in the
+            last 15 minutes. Check data source connectivity.
 
-      - alert: ExcessiveDrawdown
+      - alert: HighIngestionErrorRate
         expr: |
-          drawdown_current_pct{job="enthropy-quant-metrics"} > 0.10
+          rate(pyhron_records_ingested_total{status="error"}[5m])
+          / (rate(pyhron_records_ingested_total{status="success"}[5m]) + rate(pyhron_records_ingested_total{status="error"}[5m]))
+          > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: data-pipeline
+        annotations:
+          summary: "Ingestion error rate exceeds 10%"
+          description: >
+            Source {{ $labels.source }} has a {{ $value | humanizePercentage }}
+            error rate. Check data quality and validation rules.
+
+      - alert: KafkaConsumerLag
+        expr: |
+          kafka_consumergroup_lag_sum{consumergroup=~"pyhron-.*"} > 10000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+          component: messaging
+        annotations:
+          summary: "Kafka consumer lag is high"
+          description: >
+            Consumer group {{ $labels.consumergroup }} has a lag of
+            {{ $value }} messages on topic {{ $labels.topic }}.
+
+  # ---------------------------------------------------------------------------
+  # Intraday Market Data Alerts
+  # ---------------------------------------------------------------------------
+  - name: pyhron.intraday
+    rules:
+      - alert: IntradayIngestionStopped
+        expr: |
+          rate(pyhron_intraday_events_total[5m]) == 0
+          and
+          pyhron_intraday_events_total > 0
         for: 5m
         labels:
           severity: critical
-          team: risk
-          component: portfolio
+          team: trading
+          component: market-data
         annotations:
-          summary: "Excessive drawdown detected (>10%)"
+          summary: "Intraday market data ingestion has stopped"
           description: >
-            Strategy {{ $labels.strategy }} has a drawdown of
-            {{ $value | humanizePercentage }}. Review positions and consider
-            risk reduction.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/drawdown"
+            No intraday events received in the last 5 minutes.
+            Check Alpaca WebSocket connectivity and ingestion service health.
 
-      - alert: PositionConcentrationRisk
+      - alert: IntradayPublishErrors
         expr: |
-          max(position_exposure_total{job="enthropy-quant-metrics"})
-          / sum(position_exposure_total{job="enthropy-quant-metrics"})
-          > 0.30
-        for: 10m
+          rate(pyhron_intraday_publish_errors_total[5m]) > 0.1
+        for: 2m
         labels:
           severity: warning
-          team: risk
-          component: portfolio
+          team: platform
+          component: market-data
         annotations:
-          summary: "High position concentration detected"
+          summary: "Intraday data Kafka publish errors"
           description: >
-            A single position exceeds 30% of total portfolio exposure.
-            Diversification review recommended.
+            Kafka publish errors occurring on topic {{ $labels.topic }}
+            at {{ $value | humanize }}/sec. Check Kafka broker health.
+
+      - alert: IntradayPublishErrorsCritical
+        expr: |
+          rate(pyhron_intraday_publish_errors_total[5m]) > 1
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+          component: market-data
+        annotations:
+          summary: "High rate of intraday Kafka publish failures"
+          description: >
+            Kafka publish errors at {{ $value | humanize }}/sec on
+            topic {{ $labels.topic }}. Market data delivery compromised.
+
+  # ---------------------------------------------------------------------------
+  # Paper Trading Alerts
+  # ---------------------------------------------------------------------------
+  - name: pyhron.paper_trading
+    rules:
+      - alert: PaperTradingDrawdownWarning
+        expr: |
+          pyhron_paper_session_drawdown_pct > 10
+        for: 1m
+        labels:
+          severity: warning
+          team: trading
+          component: paper-trading
+        annotations:
+          summary: "Paper trading session drawdown exceeds 10%"
+          description: >
+            Session {{ $labels.session_id }} drawdown is {{ $value }}%.
+            Review strategy performance and risk parameters.
+
+      - alert: PaperTradingDrawdownCritical
+        expr: |
+          pyhron_paper_session_drawdown_pct > 15
+        for: 0m
+        labels:
+          severity: critical
+          team: trading
+          component: paper-trading
+        annotations:
+          summary: "Paper trading session drawdown exceeds 15%"
+          description: >
+            Session {{ $labels.session_id }} drawdown is {{ $value }}%.
+            Consider stopping the session and reviewing the strategy.
+
+      - alert: PaperTradingNegativeSharpe
+        expr: |
+          pyhron_paper_session_sharpe_ratio < -0.5
+        for: 30m
+        labels:
+          severity: warning
+          team: trading
+          component: paper-trading
+        annotations:
+          summary: "Paper trading session has deeply negative Sharpe ratio"
+          description: >
+            Session {{ $labels.session_name }} Sharpe ratio is {{ $value }}.
+            Strategy is significantly underperforming risk-free rate.
+
+      - alert: PaperTradingLargeDailyLoss
+        expr: |
+          pyhron_paper_session_daily_pnl_idr < -5000000
+        for: 0m
+        labels:
+          severity: warning
+          team: trading
+          component: paper-trading
+        annotations:
+          summary: "Paper trading daily loss exceeds IDR 5M"
+          description: >
+            Session {{ $labels.session_name }} daily P&L is
+            IDR {{ $value | humanize }}. Large single-day loss detected.
+
+  # ---------------------------------------------------------------------------
+  # Risk Alerts
+  # ---------------------------------------------------------------------------
+  - name: pyhron.risk
+    rules:
+      - alert: HighOrderSubmissionRate
+        expr: |
+          rate(pyhron_orders_submitted_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          team: trading
+          component: order-execution
+        annotations:
+          summary: "Unusually high order submission rate"
+          description: >
+            Orders being submitted at {{ $value | humanize }}/sec.
+            Verify this is intentional and not a runaway strategy.
+
+      - alert: OrderRejectionSpike
+        expr: |
+          rate(pyhron_orders_submitted_total{status="rejected"}[5m])
+          / rate(pyhron_orders_submitted_total[5m])
+          > 0.3
+        for: 5m
+        labels:
+          severity: warning
+          team: trading
+          component: order-execution
+        annotations:
+          summary: "Order rejection rate exceeds 30%"
+          description: >
+            {{ $value | humanizePercentage }} of orders are being rejected.
+            Check order parameters, risk limits, and market conditions.
 
   # ---------------------------------------------------------------------------
   # System Health Alerts
   # ---------------------------------------------------------------------------
-  - name: enthropy.system
+  - name: pyhron.system
     rules:
       - alert: ServiceDown
-        expr: up{job=~"enthropy-.*"} == 0
+        expr: up{job=~"pyhron-.*"} == 0
         for: 1m
         labels:
           severity: critical
           team: platform
           component: infrastructure
         annotations:
-          summary: "Enthropy service is down"
+          summary: "Pyhron service is down"
           description: >
             Service {{ $labels.job }} on {{ $labels.instance }} has been
             unreachable for more than 1 minute.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/service-down"
 
       - alert: HighCPUUsage
         expr: |
-          avg(rate(process_cpu_seconds_total{job="enthropy-api"}[5m])) > 0.85
+          avg(rate(process_cpu_seconds_total{job="pyhron-api"}[5m])) > 0.85
         for: 10m
         labels:
           severity: warning
@@ -161,7 +326,7 @@ groups:
 
       - alert: HighMemoryUsage
         expr: |
-          process_resident_memory_bytes{job="enthropy-api"}
+          process_resident_memory_bytes{job="pyhron-api"}
           / on() group_left() machine_memory_bytes > 0.85
         for: 10m
         labels:
@@ -176,7 +341,7 @@ groups:
 
       - alert: DatabaseConnectionPoolExhausted
         expr: |
-          pg_stat_activity_count{datname="enthropy"}
+          pg_stat_activity_count{datname="pyhron"}
           / pg_settings_max_connections > 0.85
         for: 5m
         labels:
@@ -203,70 +368,16 @@ groups:
             Redis memory at {{ $value | humanizePercentage }}. Eviction policy
             may start clearing keys.
 
-  # ---------------------------------------------------------------------------
-  # Data Gap Alerts
-  # ---------------------------------------------------------------------------
-  - name: enthropy.data
-    rules:
-      - alert: MarketDataGap
+      - alert: WebSocketConnectionsDrop
         expr: |
-          market_data_lag_seconds{job="enthropy-quant-metrics"} > 30
+          delta(pyhron_ws_active_connections[5m]) < -50
         for: 1m
-        labels:
-          severity: critical
-          team: trading
-          component: market-data
-        annotations:
-          summary: "Market data feed gap detected"
-          description: >
-            Market data for {{ $labels.exchange }}/{{ $labels.symbol }} is
-            {{ $value | humanizeDuration }} behind. Trading decisions may be
-            based on stale data. Check feed connectivity.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/market-data-gap"
-
-      - alert: MarketDataStale
-        expr: |
-          time() - market_data_last_update_timestamp{job="enthropy-quant-metrics"} > 60
-        for: 2m
-        labels:
-          severity: critical
-          team: trading
-          component: market-data
-          pager: "true"
-        annotations:
-          summary: "Market data feed is stale"
-          description: >
-            No market data updates received for {{ $labels.exchange }} in over
-            60 seconds. Feed may be disconnected.
-          runbook_url: "https://wiki.enthropy.dev/runbooks/market-data-stale"
-
-      - alert: KafkaConsumerLag
-        expr: |
-          kafka_consumergroup_lag_sum{consumergroup=~"enthropy-.*"} > 10000
-        for: 5m
         labels:
           severity: warning
           team: platform
-          component: messaging
+          component: websocket
         annotations:
-          summary: "Kafka consumer lag is high"
+          summary: "Large drop in WebSocket connections"
           description: >
-            Consumer group {{ $labels.consumergroup }} has a lag of
-            {{ $value }} messages on topic {{ $labels.topic }}.
-            Processing may be falling behind.
-
-      - alert: NoTradeExecutions
-        expr: |
-          rate(order_count_total{job="enthropy-quant-metrics", status="filled"}[15m]) == 0
-          and
-          rate(order_count_total{job="enthropy-quant-metrics", status="submitted"}[15m]) > 0
-        for: 10m
-        labels:
-          severity: warning
-          team: trading
-          component: order-execution
-        annotations:
-          summary: "Orders submitted but none filled"
-          description: >
-            Orders are being submitted but no fills have been received in the
-            last 15 minutes. Check exchange connectivity and order parameters.
+            WebSocket connections dropped by {{ $value }} in 5 minutes.
+            Check for network issues or client-side errors.

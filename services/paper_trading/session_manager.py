@@ -22,6 +22,11 @@ from data_platform.database_models.paper_trading_session import (
 from data_platform.database_models.strategy import Strategy
 from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
 from shared.kafka_topics import KafkaTopic
+from shared.metrics import (
+    paper_session_daily_pnl_idr,
+    paper_session_drawdown_pct,
+    paper_session_nav_idr,
+)
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -309,6 +314,11 @@ class PaperTradingSessionManager:
         session.current_nav_idr = nav
         session.updated_at = now
         await db_session.flush()
+
+        # Update Prometheus gauges
+        paper_session_nav_idr.labels(session_id=str(session.id), session_name=session.name).set(float(nav))
+        paper_session_drawdown_pct.labels(session_id=str(session.id)).set(float(drawdown_pct))
+        paper_session_daily_pnl_idr.labels(session_name=session.name).set(float(daily_pnl))
 
         if self._kafka_producer:
             await self._kafka_producer.send(
