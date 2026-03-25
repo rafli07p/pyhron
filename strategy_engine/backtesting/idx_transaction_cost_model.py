@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
 from shared.structured_json_logger import get_logger
@@ -178,7 +178,7 @@ class IDXTransactionCostModel:
         if isinstance(side, str):
             side = TradeSide(side)
 
-        trade_date = trade_date or datetime.utcnow()
+        trade_date = trade_date or datetime.now(tz=UTC)
         gross_value = price * shares
 
         if side == TradeSide.BUY:

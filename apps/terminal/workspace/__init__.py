@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -39,8 +39,8 @@ class WorkspaceConfig:
     grid_columns: int = 12
     grid_rows: int = 8
     theme: str = "dark"
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize workspace configuration to a dictionary."""
@@ -193,7 +193,7 @@ class WorkspaceManager:
         user_dir.mkdir(parents=True, exist_ok=True)
         filepath = user_dir / f"{config.workspace_id}.json"
 
-        config.updated_at = datetime.utcnow()
+        config.updated_at = datetime.now(tz=UTC)
         with open(filepath, "w") as f:
             json.dump(config.to_dict(), f, indent=2)
 

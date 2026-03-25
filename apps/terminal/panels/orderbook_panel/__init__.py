@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -105,7 +105,7 @@ class OrderBookPanel:
             )
             self._subscriptions.add(symbol)
 
-        self._state.last_update = datetime.utcnow()
+        self._state.last_update = datetime.now(tz=UTC)
         logger.info(
             "Rendered order book for %s (%d bids, %d asks)", symbol, len(self._state.bids), len(self._state.asks)
         )
@@ -128,7 +128,7 @@ class OrderBookPanel:
         """
         self._state.bids = [PriceLevel(price=p, size=s) for p, s in bids[: self._max_depth]]
         self._state.asks = [PriceLevel(price=p, size=s) for p, s in asks[: self._max_depth]]
-        self._state.last_update = datetime.utcnow()
+        self._state.last_update = datetime.now(tz=UTC)
         self._state.sequence += 1
 
     def get_depth(self, levels: int = 10) -> dict[str, Any]:
@@ -178,7 +178,7 @@ class OrderBookPanel:
         """Handle a streaming order book update."""
         if "bids" in update or "asks" in update:
             self._parse_snapshot(update)
-            self._state.last_update = datetime.utcnow()
+            self._state.last_update = datetime.now(tz=UTC)
             self._state.sequence += 1
 
     def _serialize_book(self) -> dict[str, Any]:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, cast
 
 import structlog
@@ -17,7 +17,7 @@ class ComponentHealth:
     name: str
     status: str  # healthy, degraded, down
     latency_ms: float | None = None
-    last_check: datetime = field(default_factory=datetime.utcnow)
+    last_check: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     details: dict[str, Any] = field(default_factory=dict)
 
 
@@ -30,7 +30,7 @@ class SystemMetrics:
     orders_per_second: float
     api_latency_p99_ms: float
     uptime_seconds: float
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class SystemHealth:
@@ -41,14 +41,14 @@ class SystemHealth:
     def __init__(self, redis_url: str | None = None, db_url: str | None = None) -> None:
         self._redis_url = redis_url
         self._db_url = db_url
-        self._start_time = datetime.utcnow()
+        self._start_time = datetime.now(tz=UTC)
 
     async def get_health_status(self) -> list[ComponentHealth]:
         checks = [self._check_component(name) for name in self.COMPONENTS]
         return await asyncio.gather(*checks)
 
     async def get_metrics(self) -> SystemMetrics:
-        uptime = (datetime.utcnow() - self._start_time).total_seconds()
+        uptime = (datetime.now(tz=UTC) - self._start_time).total_seconds()
         return SystemMetrics(
             cpu_usage_pct=0.0,
             memory_usage_pct=0.0,
@@ -88,7 +88,7 @@ class SystemHealth:
         return results
 
     async def get_uptime(self) -> float:
-        return (datetime.utcnow() - self._start_time).total_seconds()
+        return (datetime.now(tz=UTC) - self._start_time).total_seconds()
 
     async def _check_component(self, name: str) -> ComponentHealth:
         return ComponentHealth(name=name, status="healthy")

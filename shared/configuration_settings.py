@@ -145,6 +145,14 @@ class Config(BaseSettings):
             raise ValueError(msg)
         return v
 
+    @field_validator("allowed_cors_origins")
+    @classmethod
+    def _validate_cors_origins(cls, v: str, info: Any) -> str:
+        if info.data.get("app_env") == "production" and "*" in v:
+            msg = "allowed_cors_origins must not contain '*' in production"
+            raise ValueError(msg)
+        return v
+
     @field_validator("database_url")
     @classmethod
     def _validate_database_url(cls, v: str) -> str:

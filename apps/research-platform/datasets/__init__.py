@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -30,8 +30,8 @@ class DatasetMetadata:
     column_count: int = 0
     columns: list[str] = field(default_factory=list)
     size_bytes: int = 0
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     tags: list[str] = field(default_factory=list)
     source: str = ""
     tenant_id: str = "default"

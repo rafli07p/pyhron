@@ -8,7 +8,7 @@ the execution layer.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -267,7 +267,7 @@ class PreTradeCheckService:
         cfg = self._cfg(order.tenant_id)
         key = (order.tenant_id, order.symbol)
         window = timedelta(seconds=cfg.wash_trade_window_seconds)
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         recent = self._recent_orders.get(key, [])
         # Prune stale entries
@@ -299,7 +299,7 @@ class PreTradeCheckService:
         if key not in self._recent_orders:
             self._recent_orders[key] = []
         self._recent_orders[key].append(
-            (datetime.utcnow(), order.side.value, order.qty)
+            (datetime.now(UTC), order.side.value, order.qty)
         )
 
 

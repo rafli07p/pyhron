@@ -11,7 +11,7 @@ import json
 import logging
 import subprocess
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -30,8 +30,8 @@ class NotebookMetadata:
     tags: list[str] = field(default_factory=list)
     kernel: str = "python3"
     cell_count: int = 0
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     last_executed: datetime | None = None
     execution_status: str = "idle"  # idle, running, completed, failed
     file_path: str | None = None
@@ -263,9 +263,9 @@ class NotebookManager:
         meta = self._registry.get(name)
         if meta:
             meta.execution_status = "running"
-            meta.last_executed = datetime.utcnow()
+            meta.last_executed = datetime.now(tz=UTC)
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(tz=UTC)
         result: dict[str, Any] = {"name": name, "status": "completed"}
 
         try:
@@ -302,13 +302,13 @@ class NotebookManager:
             result["error"] = str(exc)
             logger.error("Notebook execution failed for '%s': %s", name, exc)
 
-        duration = (datetime.utcnow() - start_time).total_seconds()
+        duration = (datetime.now(tz=UTC) - start_time).total_seconds()
         result["duration_seconds"] = duration
         result["output_path"] = str(output_path)
 
         if meta:
             meta.execution_status = result["status"]
-            meta.updated_at = datetime.utcnow()
+            meta.updated_at = datetime.now(tz=UTC)
 
         logger.info("Executed notebook '%s': %s (%.1fs)", name, result["status"], duration)
         return result

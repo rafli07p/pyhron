@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
@@ -82,7 +82,7 @@ class TrainedModel:
     artifact_path: str | None = None
     mlflow_run_id: str | None = None
     status: str = "created"  # created, training, trained, registered, failed
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
     trained_at: datetime | None = None
     version: int = 1
 
@@ -217,7 +217,7 @@ class ModelTrainingManager:
 
                 record.metrics = metrics
                 record.status = "trained"
-                record.trained_at = datetime.utcnow()
+                record.trained_at = datetime.now(tz=UTC)
                 record.artifact_path = f"runs:/{run.info.run_id}/model"
 
         except Exception as exc:

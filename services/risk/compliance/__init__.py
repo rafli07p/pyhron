@@ -11,7 +11,7 @@ import csv
 import io
 import json
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -181,7 +181,7 @@ class ComplianceEngine:
             report_id=str(uuid4()),
             tenant_id=tenant_id,
             report_type="SEC",
-            generated_at=datetime.utcnow().isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             period_start=period_start.isoformat(),
             period_end=period_end.isoformat(),
             data=report_data,
@@ -247,7 +247,7 @@ class ComplianceEngine:
             report_id=str(uuid4()),
             tenant_id=tenant_id,
             report_type="OJK",
-            generated_at=datetime.utcnow().isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             period_start=period_start.isoformat(),
             period_end=period_end.isoformat(),
             data=report_data,

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -21,7 +21,7 @@ class RiskAlert:
     current_value: float
     threshold: float
     tenant_id: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 @dataclass
@@ -34,7 +34,7 @@ class RiskSummary:
     open_positions: int
     active_alerts: int
     tenant_id: str
-    as_of: datetime = field(default_factory=datetime.utcnow)
+    as_of: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class RiskMonitor:
@@ -78,7 +78,7 @@ class RiskMonitor:
             "sector_exposure": {},
             "currency_exposure": {},
             "country_exposure": {},
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(tz=UTC).isoformat(),
         }
 
     def _emit_alert(self, alert: RiskAlert) -> None:

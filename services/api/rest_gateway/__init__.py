@@ -438,10 +438,10 @@ def create_rest_app() -> FastAPI:
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_get_settings().allowed_cors_origins.split(","),
+        allow_origins=[o.strip() for o in _get_settings().allowed_cors_origins.split(",") if o.strip()],
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-CSRF-Token"],
     )
 
     # Security headers

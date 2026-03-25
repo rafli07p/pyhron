@@ -157,7 +157,7 @@ ignore = [
     "E501",   # line length handled by formatter
     "E402",   # module level import not at top (conditional/ordered imports)
     "DTZ011", # allow datetime.date.today()
-    "DTZ003", # allow datetime.utcnow() in non-critical paths
+    "DTZ003", # TODO: remove after full datetime.utcnow migration
     "SIM102", # allow nested if for readability
     "SIM108", # allow if-else over ternary for readability
     "N806",   # allow uppercase variable names (DataFrame, etc.)

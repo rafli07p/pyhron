@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
@@ -32,7 +32,7 @@ class StrategyRecord:
     tenant_id: str
     config: dict[str, Any] = field(default_factory=dict)
     deployed_at: datetime | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(tz=UTC))
 
 
 class StrategyManager:
@@ -57,7 +57,7 @@ class StrategyManager:
                 status=StrategyStatus.DEPLOYED,
                 tenant_id=tenant_id,
                 config=config,
-                deployed_at=datetime.utcnow(),
+                deployed_at=datetime.now(tz=UTC),
             )
             self._strategies[record.strategy_id] = record
             logger.info(

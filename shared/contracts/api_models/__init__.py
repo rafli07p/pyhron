@@ -7,7 +7,7 @@ check format.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Generic, Optional, TypeVar
 from uuid import UUID, uuid4
@@ -51,7 +51,7 @@ class APIResponse[T](BaseModel):
     data: T | None = Field(default=None, description="Response payload")
     message: str | None = Field(default=None, max_length=1024, description="Human-readable message")
     request_id: UUID = Field(default_factory=uuid4, description="Unique request trace identifier")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Response timestamp (UTC)")
     tenant_id: str | None = Field(default=None, max_length=64, description="Tenant context")
 
     @classmethod
@@ -83,7 +83,7 @@ class PaginatedResponse[T](BaseModel):
     has_previous: bool = Field(default=False, description="Whether a previous page exists")
     next_cursor: str | None = Field(default=None, max_length=256, description="Cursor for next page (cursor-based)")
     request_id: UUID = Field(default_factory=uuid4, description="Unique request trace identifier")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Response timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Response timestamp (UTC)")
     tenant_id: str | None = Field(default=None, max_length=64, description="Tenant context")
 
     @property
@@ -120,7 +120,7 @@ class ErrorResponse(BaseModel):
     message: str = Field(..., max_length=2048, description="Human-readable error summary")
     details: list[ErrorDetail] = Field(default_factory=list, description="Field-level error details")
     request_id: UUID = Field(default_factory=uuid4, description="Unique request trace identifier")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Error timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Error timestamp (UTC)")
     path: str | None = Field(default=None, max_length=512, description="Request path that caused the error")
     tenant_id: str | None = Field(default=None, max_length=64, description="Tenant context")
 
@@ -150,7 +150,7 @@ class HealthCheck(BaseModel):
     version: str = Field(..., max_length=32, description="Service version (semver)")
     status: ServiceStatus = Field(default=ServiceStatus.HEALTHY, description="Overall service status")
     uptime_seconds: float = Field(default=0.0, ge=0, description="Seconds since service started")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Check timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Check timestamp (UTC)")
     dependencies: list[DependencyHealth] = Field(
         default_factory=list,
         description="Health of downstream dependencies",

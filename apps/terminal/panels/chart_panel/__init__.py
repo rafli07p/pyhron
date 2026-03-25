@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from shared.schemas.market_events import BarEvent
@@ -105,7 +105,7 @@ class ChartPanel:
                 limit=lookback,
             )
             bars = raw_bars if isinstance(raw_bars, list) else []
-        self._state.last_update = datetime.utcnow()
+        self._state.last_update = datetime.now(tz=UTC)
 
         indicator_series = self._compute_indicators(bars)
 

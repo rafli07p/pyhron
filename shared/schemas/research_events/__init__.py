@@ -7,7 +7,7 @@ enforce multi-tenancy via mandatory ``tenant_id`` fields.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Optional
@@ -73,7 +73,7 @@ class ResearchEventBase(BaseModel):
 
     event_id: UUID = Field(default_factory=uuid4, description="Unique event identifier")
     tenant_id: str = Field(..., min_length=1, max_length=64, description="Tenant identifier for multi-tenancy")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Event timestamp (UTC)")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Event timestamp (UTC)")
 
 
 class BacktestRequest(ResearchEventBase):
