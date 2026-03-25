@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from typing import Any
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -21,7 +22,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/backtest", tags=["backtest"])
 
 # In-memory task status tracking (for submitted/running jobs)
-_task_status: dict[str, dict] = {}
+_task_status: dict[str, dict[str, Any]] = {}
 
 
 # -- Request/Response Models --------------------------------------------------
@@ -34,7 +35,7 @@ class BacktestRequest(BaseModel):
     end_date: date
     initial_capital: Decimal = Decimal("1000000000")  # 1B IDR
     slippage_bps: float = Field(default=5.0, description="Slippage in basis points")
-    strategy_params: dict | None = Field(default=None, description="Strategy-specific parameters")
+    strategy_params: dict[str, Any] | None = Field(default=None, description="Strategy-specific parameters")
 
 
 class BacktestSubmission(BaseModel):

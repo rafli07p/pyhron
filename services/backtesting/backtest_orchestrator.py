@@ -72,9 +72,10 @@ async def load_ohlcv_from_db(
     df["time"] = pd.to_datetime(df["time"], utc=True)
     df = df.set_index("time")
 
-    prices = df.pivot_table(values="close", index=df.index, columns="symbol")
-    volumes = df.pivot_table(values="volume", index=df.index, columns="symbol")
-    trading_values = df.pivot_table(values="trading_value", index=df.index, columns="symbol")
+    idx = pd.Series(df.index, index=df.index)
+    prices = df.pivot_table(values="close", index=idx, columns="symbol")
+    volumes = df.pivot_table(values="volume", index=idx, columns="symbol")
+    trading_values = df.pivot_table(values="trading_value", index=idx, columns="symbol")
 
     return prices.ffill(), volumes.fillna(0), trading_values.fillna(0)
 
