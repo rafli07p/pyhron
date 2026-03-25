@@ -7,7 +7,7 @@ database-backed reference data that can be updated quarterly.
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Float, Index, Integer, String, UniqueConstraint
+from sqlalchemy import BigInteger, Float, Index, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -38,7 +38,7 @@ class CommodityCompanyProfile(Base):
     ticker: Mapped[str] = mapped_column(String(10), nullable=False)
     commodity_type: Mapped[str] = mapped_column(String(20), nullable=False)
     profile_data: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
-    shares_outstanding: Mapped[int] = mapped_column(Integer, nullable=False)
+    shares_outstanding: Mapped[int] = mapped_column(BigInteger, nullable=False)
     trailing_revenue_idr: Mapped[float] = mapped_column(Float, nullable=False)
     net_margin: Mapped[float] = mapped_column(Float, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")

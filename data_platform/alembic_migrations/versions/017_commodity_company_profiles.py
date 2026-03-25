@@ -23,7 +23,7 @@ def upgrade() -> None:
         sa.Column("ticker", sa.String(10), nullable=False),
         sa.Column("commodity_type", sa.String(20), nullable=False),
         sa.Column("profile_data", JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
-        sa.Column("shares_outstanding", sa.Integer, nullable=False),
+        sa.Column("shares_outstanding", sa.BigInteger, nullable=False),
         sa.Column("trailing_revenue_idr", sa.Float, nullable=False),
         sa.Column("net_margin", sa.Float, nullable=False),
         sa.Column("updated_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("now()")),
@@ -38,7 +38,7 @@ def upgrade() -> None:
         sa.column("ticker", sa.String),
         sa.column("commodity_type", sa.String),
         sa.column("profile_data", JSONB),
-        sa.column("shares_outstanding", sa.Integer),
+        sa.column("shares_outstanding", sa.BigInteger),
         sa.column("trailing_revenue_idr", sa.Float),
         sa.column("net_margin", sa.Float),
     )
