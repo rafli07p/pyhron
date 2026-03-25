@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 
 _TOPICS_TO_BRIDGE = [
     KafkaTopic.VALIDATED_EOD_OHLCV,
+    KafkaTopic.RAW_INTRADAY_TRADES,
+    KafkaTopic.RAW_INTRADAY_BARS,
     KafkaTopic.ORDER_SUBMITTED,
     KafkaTopic.ORDER_FILLED,
     KafkaTopic.POSITION_UPDATED,

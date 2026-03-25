@@ -6,6 +6,7 @@ Re-exports all ORM model classes for convenient access::
 """
 
 from .backtest_run import BacktestRun, BacktestStatus
+from .commodity_company_profile import CommodityCompanyProfile
 from .idx_equity_computed_ratio import IdxEquityComputedRatio
 from .idx_equity_corporate_action import (
     ActionType,
@@ -54,6 +55,7 @@ __all__ = [
     "ActionType",
     "BacktestRun",
     "BacktestStatus",
+    "CommodityCompanyProfile",
     "IdxEquityComputedRatio",
     "IdxEquityCorporateAction",
     "IdxEquityFinancialStatement",

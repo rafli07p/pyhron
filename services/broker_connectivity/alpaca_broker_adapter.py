@@ -433,3 +433,119 @@ class AlpacaBrokerAdapter(BrokerAdapterInterface):
 
         except Exception as exc:
             raise BrokerConnectionError(f"Alpaca WebSocket connection failed: {exc}") from exc
+
+    async def stream_market_data(
+        self,
+        symbols: list[str],
+        *,
+        trades: bool = True,
+        quotes: bool = False,
+        bars: bool = True,
+    ) -> AsyncIterator[dict[str, Any]]:
+        """Stream real-time market data via Alpaca Data WebSocket (IEX).
+
+        Connects to the Alpaca data streaming API, authenticates, subscribes
+        to the requested data channels for the given symbols, and yields
+        market data events as they arrive.
+
+        Args:
+            symbols: List of ticker symbols to subscribe to (e.g. ["AAPL", "MSFT"]).
+            trades: Subscribe to trade events.
+            quotes: Subscribe to quote events.
+            bars: Subscribe to minute bar events.
+
+        Yields:
+            Market data event dicts with keys: event_type ("trade", "quote", "bar"),
+            symbol, timestamp, and type-specific fields (price, size, bid/ask, OHLCV).
+
+        Raises:
+            BrokerConnectionError: If the WebSocket connection fails.
+        """
+        try:
+            async for websocket in websockets.connect(ALPACA_DATA_WS_URL):
+                try:
+                    # Authenticate
+                    auth_msg = {"action": "auth", "key": self._api_key, "secret": self._secret_key}
+                    await websocket.send(json.dumps(auth_msg))
+                    auth_response = json.loads(await websocket.recv())
+
+                    # Alpaca data API returns list of messages
+                    if isinstance(auth_response, list):
+                        for msg in auth_response:
+                            if msg.get("T") == "error":
+                                raise BrokerConnectionError(
+                                    f"Alpaca data auth failed: {msg.get('msg', 'unknown error')}"
+                                )
+
+                    # Build subscription message
+                    sub_msg: dict[str, Any] = {"action": "subscribe"}
+                    if trades:
+                        sub_msg["trades"] = symbols
+                    if quotes:
+                        sub_msg["quotes"] = symbols
+                    if bars:
+                        sub_msg["bars"] = symbols
+
+                    await websocket.send(json.dumps(sub_msg))
+                    # Read subscription confirmation
+                    await websocket.recv()
+
+                    logger.info(
+                        "alpaca_market_data_connected",
+                        symbols=symbols,
+                        trades=trades,
+                        quotes=quotes,
+                        bars=bars,
+                    )
+
+                    # Process incoming messages
+                    async for raw_message in websocket:
+                        messages = json.loads(raw_message)
+                        if not isinstance(messages, list):
+                            messages = [messages]
+
+                        for msg in messages:
+                            msg_type = msg.get("T", "")
+
+                            if msg_type == "t":  # Trade
+                                yield {
+                                    "event_type": "trade",
+                                    "symbol": msg.get("S", ""),
+                                    "price": float(msg.get("p", 0)),
+                                    "size": int(msg.get("s", 0)),
+                                    "timestamp": msg.get("t", ""),
+                                    "conditions": msg.get("c", []),
+                                    "exchange": msg.get("x", ""),
+                                }
+                            elif msg_type == "q":  # Quote
+                                yield {
+                                    "event_type": "quote",
+                                    "symbol": msg.get("S", ""),
+                                    "bid_price": float(msg.get("bp", 0)),
+                                    "bid_size": int(msg.get("bs", 0)),
+                                    "ask_price": float(msg.get("ap", 0)),
+                                    "ask_size": int(msg.get("as", 0)),
+                                    "timestamp": msg.get("t", ""),
+                                }
+                            elif msg_type == "b":  # Bar (minute)
+                                yield {
+                                    "event_type": "bar",
+                                    "symbol": msg.get("S", ""),
+                                    "open": float(msg.get("o", 0)),
+                                    "high": float(msg.get("h", 0)),
+                                    "low": float(msg.get("l", 0)),
+                                    "close": float(msg.get("c", 0)),
+                                    "volume": int(msg.get("v", 0)),
+                                    "timestamp": msg.get("t", ""),
+                                    "vwap": float(msg.get("vw", 0)),
+                                    "trade_count": int(msg.get("n", 0)),
+                                }
+
+                except websockets.ConnectionClosed:
+                    logger.warning("alpaca_data_ws_disconnected_reconnecting")
+                    continue
+
+        except BrokerConnectionError:
+            raise
+        except Exception as exc:
+            raise BrokerConnectionError(f"Alpaca data WebSocket failed: {exc}") from exc

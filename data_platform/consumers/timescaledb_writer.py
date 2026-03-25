@@ -54,6 +54,7 @@ class TimescaleDBWriterConsumer:
         self._consumer = aiokafka.AIOKafkaConsumer(
             KafkaTopic.VALIDATED_EOD_OHLCV,
             KafkaTopic.VALIDATED_FUNDAMENTALS,
+            KafkaTopic.VALIDATED_INTRADAY_BARS,
             bootstrap_servers=self._bootstrap_servers,
             group_id=self.CONSUMER_GROUP,
             enable_auto_commit=False,
@@ -102,6 +103,7 @@ class TimescaleDBWriterConsumer:
 
         ohlcv_records = [r for t, r in batch if t == KafkaTopic.VALIDATED_EOD_OHLCV]
         fundamental_records = [r for t, r in batch if t == KafkaTopic.VALIDATED_FUNDAMENTALS]
+        intraday_records = [r for t, r in batch if t == KafkaTopic.VALIDATED_INTRADAY_BARS]
 
         try:
             async with self._db_session_factory() as db_session:  # type: ignore[operator]
@@ -110,12 +112,18 @@ class TimescaleDBWriterConsumer:
                     written += await self._write_ohlcv_batch(ohlcv_records, db_session)
                 if fundamental_records:
                     written += await self._write_fundamentals_batch(fundamental_records, db_session)
+                if intraday_records:
+                    written += await self._write_intraday_batch(intraday_records, db_session)
                 await db_session.commit()
 
             # Commit Kafka offset ONLY after successful DB commit
             await self._consumer.commit()
             logger.info(
-                "batch_written", ohlcv=len(ohlcv_records), fundamentals=len(fundamental_records), written=written
+                "batch_written",
+                ohlcv=len(ohlcv_records),
+                fundamentals=len(fundamental_records),
+                intraday=len(intraday_records),
+                written=written,
             )
         except Exception as e:
             logger.error("batch_write_failed", error=str(e), batch_size=len(batch))
@@ -190,6 +198,40 @@ class TimescaleDBWriterConsumer:
             )
             written += result.rowcount  # type: ignore[attr-defined]
         return written
+
+    async def _write_intraday_batch(
+        self,
+        records: list[dict[str, Any]],
+        db_session: AsyncSession,
+    ) -> int:
+        """Bulk upsert intraday bar records using INSERT ... ON CONFLICT DO NOTHING."""
+        if not records:
+            return 0
+
+        values_clauses = []
+        params: dict[str, object] = {}
+        for i, rec in enumerate(records):
+            values_clauses.append(
+                f"(:time_{i}, :symbol_{i}, :exchange_{i}, :open_{i}, :high_{i}, "
+                f":low_{i}, :close_{i}, :volume_{i}, :adjusted_close_{i})"
+            )
+            params[f"time_{i}"] = rec.get("timestamp", rec.get("time"))
+            params[f"symbol_{i}"] = rec["symbol"]
+            params[f"exchange_{i}"] = rec.get("exchange", "IEX")
+            params[f"open_{i}"] = rec["open"]
+            params[f"high_{i}"] = rec["high"]
+            params[f"low_{i}"] = rec["low"]
+            params[f"close_{i}"] = rec["close"]
+            params[f"volume_{i}"] = rec.get("volume", 0)
+            params[f"adjusted_close_{i}"] = rec.get("close")
+
+        sql = (
+            "INSERT INTO ohlcv (time, symbol, exchange, open, high, low, close, volume, adjusted_close) "  # noqa: S608
+            f"VALUES {', '.join(values_clauses)} "
+            "ON CONFLICT (time, symbol, exchange) DO NOTHING"
+        )
+        result = await db_session.execute(text(sql), params)
+        return result.rowcount  # type: ignore[no-any-return, attr-defined]
 
     async def _send_to_dlq(
         self,

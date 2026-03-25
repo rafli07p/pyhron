@@ -41,7 +41,14 @@ class KafkaTopic:
     KILL_SWITCH_RESET = "pyhron.risk.kill_switch_reset"
     LIVE_TRADING_ACTIVATED = "pyhron.live.activated"
 
+    # Intraday market data
+    RAW_INTRADAY_TRADES = "pyhron.raw.intraday_trades"
+    RAW_INTRADAY_QUOTES = "pyhron.raw.intraday_quotes"
+    RAW_INTRADAY_BARS = "pyhron.raw.intraday_bars"
+    VALIDATED_INTRADAY_BARS = "pyhron.validated.intraday_bars"
+
     # Dead-letter queues
     DLQ_EOD_OHLCV = "pyhron.dlq.eod_ohlcv"
     DLQ_FUNDAMENTALS = "pyhron.dlq.fundamentals"
     DLQ_CORPORATE_ACTIONS = "pyhron.dlq.corporate_actions"
+    DLQ_INTRADAY = "pyhron.dlq.intraday"
