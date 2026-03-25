@@ -1,44 +1,35 @@
-# Enthropy API Documentation
+# Pyhron API Documentation
 
 ## Overview
 
-The Enthropy REST API provides programmatic access to market data, order management, portfolio tracking, research tools, risk management, and administrative functions for the quantitative trading platform.
+The Pyhron REST API provides programmatic access to market data, order management, portfolio tracking, backtesting, paper trading, and administrative functions for the IDX quantitative trading platform.
 
-**Base URL:** `http://localhost:8000/api/v1`
+**Base URL:** `http://localhost:8000`
 
 Auto-generated OpenAPI/Swagger docs are available at `/docs` when the FastAPI server is running. ReDoc is at `/redoc`.
 
 ## Authentication
 
-All endpoints require a Bearer JWT token in the `Authorization` header:
+All endpoints (except health checks) require a Bearer JWT token:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
-Multi-tenancy is enforced via `tenant_id` extracted from the JWT claims. API keys for service-to-service communication can be configured via the `X-API-Key` header.
-
 To obtain a token:
-
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/token \
+curl -X POST http://localhost:8000/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "trader@enthropy.dev", "password": "your_password"}'
+  -d '{"email": "trader@pyhron.dev", "password": "your_password"}'
 ```
+
+Roles: `admin`, `trader`, `analyst`, `readonly`
 
 ## Request/Response Format
 
-All request and response bodies use JSON. Decimal values (prices, quantities) are sent as strings to avoid floating-point precision issues:
-
-```json
-{
-  "symbol": "BBCA.JK",
-  "quantity": "1000",
-  "price": "9200.00"
-}
-```
-
-Timestamps are in ISO 8601 format with UTC timezone: `2024-01-15T09:30:00Z`
+- All bodies use JSON
+- Decimal values (prices, quantities) are strings to avoid floating-point issues
+- Timestamps are ISO 8601 with UTC timezone: `2024-01-15T09:30:00Z`
 
 ## Endpoints
 
@@ -46,26 +37,23 @@ Timestamps are in ISO 8601 format with UTC timezone: `2024-01-15T09:30:00Z`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/market-data/quotes/{symbol}` | Get latest quote for a symbol |
-| POST | `/market-data/quotes/batch` | Get quotes for multiple symbols |
-| GET | `/market-data/bars/{symbol}` | Get historical OHLCV bars |
-| GET | `/market-data/orderbook/{symbol}` | Get order book (depth of market) |
-| GET | `/market-data/trades/{symbol}` | Get recent trades |
+| GET | `/v1/market-data/quotes/{symbol}` | Latest quote for a symbol |
+| POST | `/v1/market-data/quotes/batch` | Quotes for multiple symbols |
+| GET | `/v1/market-data/bars/{symbol}` | Historical OHLCV bars |
 
-**Example: Get Latest Quote**
+**Example:**
 ```bash
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8000/api/v1/market-data/quotes/BBCA.JK
+  http://localhost:8000/v1/market-data/quotes/BBCA
 ```
 
-**Response:**
 ```json
 {
-  "symbol": "BBCA.JK",
+  "symbol": "BBCA",
   "price": "9250.00",
   "bid": "9245.00",
   "ask": "9255.00",
-  "volume": 1500000,
+  "volume": 15000000,
   "timestamp": "2024-01-15T09:30:00Z",
   "exchange": "IDX"
 }
@@ -75,130 +63,138 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/orders` | Submit a new order |
-| POST | `/orders/batch` | Submit multiple orders |
-| GET | `/orders` | List orders (with filters) |
-| GET | `/orders/{order_id}` | Get order status |
-| DELETE | `/orders/{order_id}` | Cancel an order |
+| POST | `/v1/orders` | Submit a new order |
+| GET | `/v1/orders` | List orders (with filters) |
+| GET | `/v1/orders/{order_id}` | Get order status |
+| DELETE | `/v1/orders/{order_id}` | Cancel an order |
 
-**Example: Submit Order**
-```bash
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  http://localhost:8000/api/v1/orders \
-  -d '{
-    "symbol": "BBCA.JK",
-    "side": "buy",
-    "order_type": "limit",
-    "quantity": "1000",
-    "price": "9200.00",
-    "strategy_id": "momentum_v1"
-  }'
-```
-
-**Response:**
-```json
-{
-  "order_id": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "accepted",
-  "symbol": "BBCA.JK",
-  "side": "buy",
-  "order_type": "limit",
-  "quantity": "1000",
-  "price": "9200.00",
-  "created_at": "2024-01-15T09:30:00Z"
-}
-```
-
-**Order Status Values:** `pending`, `accepted`, `partially_filled`, `filled`, `cancelled`, `rejected`, `risk_rejected`, `expired`
-
-### Portfolio
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/portfolio/positions` | Get open positions |
-| GET | `/portfolio/pnl` | Get PnL breakdown (query: `period=today\|week\|month\|ytd`) |
-| GET | `/portfolio/summary` | Get portfolio summary with NAV |
-| GET | `/portfolio/history` | Get portfolio value history |
-
-### Risk
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/risk/check` | Run pre-trade risk check |
-| GET | `/risk/metrics` | Get current risk metrics (VaR, exposure, drawdown) |
-| GET | `/risk/limits` | Get configured risk limits |
-| GET | `/risk/violations` | Get recent risk violations |
+**Order status values:** `pending_risk`, `risk_approved`, `submitted`, `acknowledged`, `partial_fill`, `filled`, `cancelled`, `rejected`
 
 ### Backtest
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/backtest/run` | Run a backtest (async, returns job ID) |
-| GET | `/backtest/{job_id}` | Get backtest status and results |
-| GET | `/backtest/history` | List past backtest runs |
+| POST | `/v1/backtest/run` | Submit async backtest job (202) |
+| GET | `/v1/backtest/{task_id}` | Get backtest status/result |
+| GET | `/v1/backtest/{task_id}/metrics` | Detailed performance metrics |
+| GET | `/v1/backtest/history` | Browse past backtests |
 
-### Research
+**Submit backtest:**
+```bash
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  http://localhost:8000/v1/backtest/run \
+  -d '{
+    "strategy_type": "momentum",
+    "symbols": ["BBCA", "BBRI", "TLKM", "ASII"],
+    "start_date": "2023-01-01",
+    "end_date": "2024-12-31",
+    "initial_capital": "1000000000",
+    "slippage_bps": 5.0
+  }'
+```
+
+**Response (202):**
+```json
+{
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "submitted",
+  "submitted_at": "2024-01-15T09:30:00Z"
+}
+```
+
+**Get metrics:**
+```json
+{
+  "task_id": "550e8400-...",
+  "total_return_pct": 15.42,
+  "cagr_pct": 7.8,
+  "sharpe_ratio": 1.23,
+  "sortino_ratio": 1.67,
+  "calmar_ratio": 0.89,
+  "max_drawdown_pct": -8.75,
+  "win_rate_pct": 55.3,
+  "profit_factor": 1.45,
+  "total_trades": 142
+}
+```
+
+### Paper Trading
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/research/factors` | List available factors |
-| GET | `/research/datasets` | List datasets |
-| POST | `/research/analyze` | Run factor analysis |
+| POST | `/v1/paper-trading/sessions` | Create paper trading session |
+| POST | `/v1/paper-trading/sessions/{id}/start` | Start session |
+| POST | `/v1/paper-trading/sessions/{id}/pause` | Pause session |
+| POST | `/v1/paper-trading/sessions/{id}/resume` | Resume session |
+| POST | `/v1/paper-trading/sessions/{id}/stop` | Stop and get summary |
+| GET | `/v1/paper-trading/sessions/{id}/nav` | Get NAV snapshot |
 
-### Admin (RBAC: ADMIN role required)
+### Portfolio
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/admin/users` | List users |
-| POST | `/admin/users` | Create user |
-| PUT | `/admin/users/{id}` | Update user |
-| DELETE | `/admin/users/{id}` | Deactivate user |
-| GET | `/admin/audit-log` | Query audit log |
-| POST | `/admin/compliance/export` | Export compliance report |
+| GET | `/v1/portfolio/positions` | Get open positions |
+| GET | `/v1/portfolio/pnl` | P&L breakdown |
+| GET | `/v1/portfolio/summary` | Portfolio summary with NAV |
+
+### Risk
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/v1/risk/check` | Pre-trade risk check |
+| GET | `/v1/risk/metrics` | Current risk metrics |
+
+### Admin (requires ADMIN role)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/v1/admin/users` | List users |
+| POST | `/v1/admin/users` | Create user |
+| GET | `/v1/admin/audit-log` | Query audit log |
 
 ### Health & Monitoring
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Basic health check |
-| GET | `/health/ready` | Readiness probe (K8s) |
-| GET | `/health/live` | Liveness probe (K8s) |
-| GET | `/metrics` | Prometheus metrics endpoint |
+| GET | `/health/ready` | Readiness probe |
+| GET | `/health/live` | Liveness probe |
+| GET | `/metrics` | Prometheus metrics |
 
 ## WebSocket
 
-Connect to `ws://localhost:8000/ws/market-data` for real-time market data streaming.
+Connect to `ws://localhost:8000/ws` for real-time data streaming.
 
-**Subscription message:**
+**Subscribe to market data:**
 ```json
 {
   "action": "subscribe",
-  "symbols": ["BBCA.JK", "TLKM.JK"],
-  "channels": ["quotes", "trades"]
+  "channels": ["quotes"],
+  "symbols": ["BBCA", "TLKM"]
 }
 ```
+
+**Message types received:**
+- `QUOTE_UPDATE` — EOD price updates
+- `TRADE_UPDATE` — Intraday trades
+- `BAR_UPDATE` — Intraday minute bars
+- `ORDER_UPDATE` — Order status changes
+- `POSITION_UPDATE` — Position changes
+- `SIGNAL_UPDATE` — Strategy signals
+- `PAPER_NAV_UPDATE` — Paper trading NAV
+- `PAPER_REBALANCE_UPDATE` — Paper rebalance results
 
 ## Rate Limits
 
 | Endpoint Group | Limit |
 |---------------|-------|
-| Market Data | 100 requests/minute |
-| Order Submission | 50 requests/minute |
-| Backtest Execution | 10 requests/minute |
-| Admin Operations | 30 requests/minute |
+| Market Data | 100 req/min |
+| Order Submission | 50 req/min |
+| Backtest Execution | 10 req/min |
 | Health/Metrics | Unlimited |
 
-Rate limit headers are included in responses:
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1705312800
-```
-
 ## Error Responses
-
-All errors follow a consistent format:
 
 ```json
 {
@@ -207,7 +203,6 @@ All errors follow a consistent format:
     "message": "Order exceeds maximum position size limit",
     "details": {
       "current_position": "8500000.00",
-      "order_notional": "4600000.00",
       "limit": "10000000.00"
     }
   },
@@ -215,22 +210,4 @@ All errors follow a consistent format:
 }
 ```
 
-**Common Error Codes:**
-- `VALIDATION_ERROR` (422) - Invalid request parameters
-- `AUTHENTICATION_REQUIRED` (401) - Missing or invalid token
-- `FORBIDDEN` (403) - Insufficient permissions
-- `NOT_FOUND` (404) - Resource not found
-- `RISK_LIMIT_EXCEEDED` (400) - Order blocked by risk checks
-- `RATE_LIMITED` (429) - Too many requests
-- `INTERNAL_ERROR` (500) - Server error
-
-## Generating API Docs
-
-API documentation is auto-generated from code using Sphinx:
-
-```bash
-cd docs/api
-sphinx-build -b html . _build/html
-```
-
-See [`sphinx_conf.py`](sphinx_conf.py) for Sphinx configuration.
+Common codes: `VALIDATION_ERROR` (422), `AUTHENTICATION_REQUIRED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `RISK_LIMIT_EXCEEDED` (400), `RATE_LIMITED` (429), `INTERNAL_ERROR` (500).

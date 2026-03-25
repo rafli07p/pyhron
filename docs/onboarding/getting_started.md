@@ -1,308 +1,231 @@
-# Getting Started with Enthropy
+# Getting Started with Pyhron
 
 ## Prerequisites
 
-- **Python 3.11+** (3.11 recommended for performance)
+- **Python 3.12+** (3.12 recommended)
 - **Poetry 1.7+** (dependency management)
 - **Docker & Docker Compose** (local infrastructure)
-- **Git** (version control)
+- **Git**
 
-Optional but recommended:
-- **kubectl** (Kubernetes CLI, for staging/production)
-- **Terraform 1.6+** (infrastructure provisioning)
-- **Trivy** (container security scanning)
+Optional:
+- **Alpaca API keys** (for live/paper market data)
+- **Terraform 1.6+** (GCP infrastructure provisioning)
 
 ## Quick Start
 
 ### 1. Clone and Install
 
 ```bash
-git clone <repository-url>
-cd enthropy
+git clone https://github.com/rafli07p/pyhron.git
+cd pyhron
 poetry install
 ```
-
-This installs all dependencies including development tools (pytest, ruff, mypy, locust).
 
 ### 2. Configure Environment
 
 ```bash
-cp .env.example .env
+cp .env.staging.example .env
 ```
 
 Edit `.env` with your configuration:
 
 ```bash
 # Required
-DATABASE_URL=postgresql+asyncpg://enthropy:enthropy_secret@localhost:5432/enthropy
+DATABASE_URL=postgresql+asyncpg://pyhron:pyhron_secret@localhost:5432/pyhron
 REDIS_URL=redis://localhost:6379/0
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 
-# API Keys (get from providers)
-MARKET_DATA_API_KEY=your_key_here    # Massive/Polygon for US market data
-ALPACA_API_KEY=your_key_here         # Alpaca for US order execution
-ALPACA_SECRET_KEY=your_secret_here
+# API Keys
+ALPACA_API_KEY=your_key_here       # alpaca.markets paper trading
+ALPACA_API_SECRET=your_secret_here
+EODHD_API_TOKEN=your_token_here    # eodhd.com for EOD data
 
-# Encryption (generate a 256-bit key)
-ENCRYPTION_KEY=$(python -c "import base64,os; print(base64.b64encode(os.urandom(32)).decode())")
-
-# Optional
-MLFLOW_TRACKING_URI=http://localhost:5000
-ENVIRONMENT=development
-LOG_LEVEL=DEBUG
+# Auth
+JWT_SECRET_KEY=your_jwt_secret_here
+APP_SECRET_KEY=your_app_secret_here
 ```
-
-**API Key Sources:**
-- **Massive/Polygon**: [polygon.io](https://polygon.io) - US equity market data
-- **Alpaca**: [alpaca.markets](https://alpaca.markets) - Paper/live trading (US)
-- **yfinance**: No API key required - Used for IDX (.JK) and fallback data
 
 ### 3. Start Infrastructure
 
 ```bash
-# Core services only
+# Core services (PostgreSQL/TimescaleDB, Redis, Kafka, Zookeeper)
 docker compose -f infra/docker/docker-compose.yaml up -d
 
-# Include monitoring stack (Prometheus + Grafana)
-docker compose -f infra/docker/docker-compose.yaml --profile monitoring up -d
+# Create Kafka topics
+bash infra/kafka/kafka-topics.sh
 ```
 
-Verify services are running:
+### 4. Run Database Migrations
+
 ```bash
-docker compose -f infra/docker/docker-compose.yaml ps
+poetry run alembic -c data_platform/alembic_migrations/alembic.ini upgrade head
 ```
 
-### 4. Setup Database
+### 5. Start the API Server
 
 ```bash
-# Create schemas, tables, indices, and triggers
-poetry run python scripts/setup_db.py
-
-# Verify setup
-poetry run python scripts/setup_db.py --verify
-```
-
-### 5. Seed Development Data
-
-```bash
-# Download 2 years of IDX blue chip data
-poetry run python scripts/seed_data.py
-
-# Or specific symbols
-poetry run python scripts/seed_data.py --symbols BBCA.JK TLKM.JK --period 5y
-```
-
-### 6. Run the API Server
-
-```bash
-poetry run uvicorn enthropy.api.main:app --reload --port 8000
+poetry run uvicorn services.api.main:app --reload --port 8000
 ```
 
 Visit:
 - **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/health
-- **Grafana** (if monitoring enabled): http://localhost:3000 (admin/enthropy_grafana)
-- **Prometheus**: http://localhost:9090
 
-### 7. Run a Sample Backtest
+### 6. Run a Sample Backtest
 
 ```bash
+# With synthetic data (no DB required)
+poetry run python scripts/run_backtest.py
+
+# With specific symbols
 poetry run python scripts/run_backtest.py \
-  --strategy momentum \
-  --symbols BBCA.JK TLKM.JK BMRI.JK \
-  --start 2023-01-01 \
-  --end 2023-12-31 \
-  --output results/my_first_backtest.json
+  --symbols BBCA BBRI TLKM ASII \
+  --start 2023-01-01 --end 2024-12-31
+
+# Save results to JSON
+poetry run python scripts/run_backtest.py --output results/momentum.json
+
+# With data from TimescaleDB
+poetry run python scripts/run_backtest.py --use-db
+```
+
+### 7. Start Paper Trading
+
+```bash
+# Live mode (streams from Alpaca WebSocket)
+poetry run python scripts/run_paper_trading.py --mode live
+
+# Simulation mode (replays historical data)
+poetry run python scripts/run_paper_trading.py --mode simulation \
+  --start 2024-01-01 --end 2024-06-30
 ```
 
 ## Development Workflow
 
-### Branching Strategy (Trunk-Based Development)
-
-We follow trunk-based development with short-lived feature branches:
-
-```
-main (trunk)
-  ├── feature/ENT-123-add-momentum-signal    # Feature branch (< 2 days)
-  ├── fix/ENT-456-fix-order-fill-price       # Bug fix branch
-  └── chore/ENT-789-upgrade-pydantic         # Maintenance branch
-```
-
-**Rules:**
-- Branch from `main`, merge back to `main`
-- Keep branches short-lived (ideally < 2 days)
-- All PRs require at least 1 review and passing CI
-- Squash merge to keep history clean
-- No long-lived feature branches
-
-### Feature Flags
-
-New features should be behind flags until stable:
-
-```python
-from enthropy.shared.configs import settings
-
-if settings.feature_flags.get("enable_new_risk_model", False):
-    result = new_risk_model.calculate(portfolio)
-else:
-    result = legacy_risk_model.calculate(portfolio)
-```
-
-Feature flags are controlled via:
-- Environment variables: `FEATURE_FLAG_ENABLE_NEW_RISK_MODEL=true`
-- Config file: `configs/feature_flags.yaml`
-- Admin API: `PUT /admin/feature-flags/{flag_name}`
-
 ### Running Tests
 
 ```bash
-# Unit tests (fast, no external deps)
+# All tests
+poetry run pytest
+
+# Unit tests only
 poetry run pytest tests/unit/ -v
 
-# Unit tests with coverage
-poetry run pytest tests/unit/ --cov=src/ --cov-report=term-missing
-
-# Integration tests (requires Docker services running)
+# Integration tests
 poetry run pytest tests/integration/ -v
 
-# E2E tests (requires API keys)
-poetry run pytest tests/e2e/ -v
-
-# Run specific test file
-poetry run pytest tests/unit/test_risk_limits.py -v
-
-# Run tests matching a pattern
-poetry run pytest -k "test_var" -v
-
-# Load testing (starts Locust web UI at http://localhost:8089)
-poetry run locust -f tests/benchmarks/locustfile.py --host http://localhost:8000
-
-# Headless load test
-poetry run locust -f tests/benchmarks/locustfile.py \
-  --host http://localhost:8000 \
-  --users 1000 --spawn-rate 50 --run-time 5m --headless
+# With coverage
+poetry run pytest --cov=. --cov-report=term-missing
 ```
 
 ### Code Quality
 
 ```bash
-# Lint (check)
-poetry run ruff check src/ tests/
+# Lint
+poetry run ruff check .
 
-# Lint (fix automatically)
-poetry run ruff check --fix src/ tests/
+# Auto-fix lint issues
+poetry run ruff check --fix .
 
-# Format (check)
-poetry run ruff format --check src/ tests/
-
-# Format (apply)
-poetry run ruff format src/ tests/
+# Format
+poetry run ruff format .
 
 # Type checking
-poetry run mypy src/ --ignore-missing-imports
+poetry run mypy apps/ shared/ services/ data_platform/ strategy_engine/ \
+  --ignore-missing-imports
 ```
 
-### Building & Deploying
+### Staging Deployment
 
 ```bash
-# Build Docker image
-docker build -t enthropy-api:latest -f infra/docker/Dockerfile .
+# Deploy with Docker Compose overlay
+bash scripts/deploy_staging.sh
 
-# Security scan
-trivy image enthropy-api:latest --severity HIGH,CRITICAL
+# View logs
+bash scripts/deploy_staging.sh --logs
 
-# Deploy (with confirmation for production)
-./infra/deployment/deploy.sh staging latest
-./infra/deployment/deploy.sh production v1.2.3
-
-# Rollback
-./infra/deployment/deploy.sh --rollback production
+# Tear down
+bash scripts/deploy_staging.sh --down
 ```
 
 ## Project Structure
 
 ```
-enthropy/
-├── src/enthropy/           # Source code
-│   ├── api/                # FastAPI application
-│   ├── market_data/        # Market data ingestion & caching
-│   ├── execution/          # Order routing & exchange connectors
-│   ├── strategy/           # Trading strategies
-│   ├── risk/               # Risk engine & limits
-│   ├── pnl/                # P&L calculation engine
-│   ├── backtest/           # Backtesting engine
-│   ├── compliance/         # Regulatory reporting
-│   └── shared/             # Shared schemas, encryption, utils
-├── tests/                  # Test suites
-│   ├── unit/               # Fast, isolated unit tests
-│   ├── integration/        # Tests requiring external services
-│   ├── e2e/                # End-to-end pipeline tests
-│   ├── benchmarks/         # Load & performance tests (Locust)
-│   └── conftest.py         # Shared fixtures
-├── scripts/                # CLI utilities
-│   ├── setup_db.py         # Database initialization
-│   ├── seed_data.py        # Historical data seeding
-│   └── run_backtest.py     # Backtest runner
-├── infra/                  # Infrastructure
-│   ├── docker/             # Docker Compose & Dockerfile
-│   ├── kubernetes/         # K8s manifests
-│   ├── terraform/          # AWS infrastructure (IaC)
-│   ├── monitoring/         # Prometheus, Grafana, alerts
-│   ├── deployment/         # Deployment scripts
-│   ├── ci-cd/              # CI/CD pipeline
-│   └── build/              # Bazel build config
-├── docs/                   # Documentation
-│   ├── api/                # API docs & Sphinx config
-│   ├── architecture/       # Architecture decisions
-│   ├── compliance/         # UU PDP & SEC/OJK guides
-│   └── onboarding/         # This guide
-├── pyproject.toml          # Poetry config & tool settings
-└── alembic.ini             # Database migration config
+pyhron/
+├── apps/api/http_routers/     # FastAPI route handlers (15+ modules)
+├── services/
+│   ├── api/                   # API gateway, WebSocket, middleware
+│   ├── broker_connectivity/   # Alpaca adapter
+│   ├── paper_trading/         # Paper trading engine
+│   ├── backtesting/           # Backtest orchestrator
+│   ├── research/ml_signal/    # ML alpha models (LightGBM, LSTM)
+│   └── oms/                   # Order management
+├── strategy_engine/
+│   ├── backtesting/           # Vectorbt engine, cost model, walk-forward
+│   ├── live_execution/        # Position sizer, signal publisher
+│   ├── idx_momentum_*.py      # 5 strategy implementations
+│   └── idx_trading_calendar.py
+├── data_platform/
+│   ├── database_models/       # 17 SQLAlchemy ORM models
+│   ├── consumers/             # Kafka consumers (ingestion, validation, writer)
+│   └── alembic_migrations/    # Database migrations
+├── shared/                    # Auth, RBAC, metrics, logging, encryption
+├── scripts/                   # CLI tools (backtest, paper trading, deploy)
+├── infra/                     # Docker, Kafka, Prometheus, Grafana
+├── deploy/                    # GCP Terraform, staging config
+├── tests/                     # Unit, integration, benchmarks
+└── docs/                      # Architecture, API, onboarding, compliance
 ```
 
-## Key Contacts
+## Key Concepts
 
-- **Platform Engineering**: Responsible for infra, CI/CD, monitoring
-- **Trading Systems**: Order execution, market data, risk engine
-- **Research**: Backtesting, strategy development, ML experiments
-- **Compliance**: Regulatory reporting, data privacy
+### Strategies Available
+
+| Strategy | Module | Description |
+|----------|--------|-------------|
+| **Momentum 12-1** | `idx_momentum_cross_section_strategy.py` | Jegadeesh-Titman adapted for IDX |
+| **Bollinger Mean Reversion** | `idx_bollinger_mean_reversion_strategy.py` | Bollinger Bands + IHSG regime filter |
+| **Pairs Cointegration** | `idx_pairs_cointegration_strategy.py` | Engle-Granger with Kalman filter |
+| **Value Factor** | `idx_value_factor_strategy.py` | PBV + ROE composite scoring |
+| **Sector Rotation** | `idx_sector_rotation_strategy.py` | Momentum-based sector selection |
+
+### Kafka Topics
+
+All events flow through Kafka (30+ topics). Key topics:
+
+| Topic | Purpose |
+|-------|---------|
+| `pyhron.raw.eod_ohlcv` | Raw EOD data from EODHD |
+| `pyhron.validated.eod_ohlcv` | Validated EOD data |
+| `pyhron.raw.intraday_trades` | Real-time trades from Alpaca |
+| `pyhron.raw.intraday_bars` | Real-time minute bars |
+| `pyhron.orders.order_submitted` | Order lifecycle events |
+| `pyhron.strategy.signals.*` | Strategy signal events |
+| `pyhron.paper.*` | Paper trading events |
+
+### Monitoring
+
+- **Prometheus**: http://localhost:9090 — all `pyhron_*` metrics
+- **Grafana**: http://localhost:3000 (admin/pyhron_grafana)
+- **Alerting**: 25 rules for latency, DLQ depth, drawdown, system health
 
 ## Troubleshooting
 
-### Common Issues
-
 **Database connection refused:**
 ```bash
-# Check if PostgreSQL is running
-docker compose -f infra/docker/docker-compose.yaml ps postgres
-# Check logs
-docker compose -f infra/docker/docker-compose.yaml logs postgres
+docker compose -f infra/docker/docker-compose.yaml ps timescaledb
+docker compose -f infra/docker/docker-compose.yaml logs timescaledb
 ```
 
-**Redis connection error:**
+**Kafka topics not created:**
 ```bash
-docker compose -f infra/docker/docker-compose.yaml ps redis
-docker compose -f infra/docker/docker-compose.yaml logs redis
+bash infra/kafka/kafka-topics.sh
 ```
 
-**Tests failing with import errors:**
-```bash
-# Ensure you're using the Poetry virtual environment
-poetry shell
-# Or prefix commands with `poetry run`
-poetry run pytest tests/unit/ -v
-```
+**Backtest exits immediately:**
+- Without `--use-db`, synthetic data is generated automatically
+- With `--use-db`, ensure TimescaleDB has OHLCV data loaded
 
-**Market data API key not working:**
-- Verify the key is set in `.env`
-- Integration tests will be skipped if `MARKET_DATA_API_KEY` is not set
-- yfinance (no key required) is used as fallback for IDX data
-
-## Next Steps
-
-1. Read the [Architecture Overview](../architecture/overview.md) to understand the system design
-2. Review the [API Documentation](../api/openapi.md) for endpoint details
-3. Check [UU PDP Guide](../compliance/uu_pdp_guide.md) for data privacy requirements
-4. Explore tests in `tests/unit/` to understand component behavior
-5. Run a backtest with `scripts/run_backtest.py` to see the full pipeline in action
+**Alpaca WebSocket not connecting:**
+- Verify `ALPACA_API_KEY` and `ALPACA_API_SECRET` are set
+- Paper trading keys from https://app.alpaca.markets/paper/dashboard/overview
