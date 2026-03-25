@@ -18,7 +18,11 @@ from typing import TYPE_CHECKING, cast
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import select
 
-from data_platform.models.trading import Order, OrderStatusEnum
+from data_platform.database_models.order_lifecycle_record import (
+    OrderLifecycleRecord,
+    OrderSideEnum,
+    OrderStatusEnum,
+)
 from shared.async_database_session import get_session
 from shared.configuration_settings import get_config
 from shared.kafka_producer_consumer import PyhronProducer, Topics
@@ -214,9 +218,9 @@ class PositionReconciliationMonitor:
         """
         async with get_session() as session:
             result = await session.execute(
-                select(Order).where(
-                    Order.exchange == exchange,
-                    Order.status.in_(
+                select(OrderLifecycleRecord).where(
+                    OrderLifecycleRecord.exchange == exchange,
+                    OrderLifecycleRecord.status.in_(
                         [
                             OrderStatusEnum.FILLED,
                             OrderStatusEnum.PARTIAL_FILL,
@@ -231,7 +235,7 @@ class PositionReconciliationMonitor:
         for order in orders:
             symbol = order.symbol
             filled_qty = order.filled_quantity or 0
-            if order.side == "BUY":
+            if order.side == OrderSideEnum.BUY:
                 positions[symbol] = positions.get(symbol, 0) + filled_qty
             else:
                 positions[symbol] = positions.get(symbol, 0) - filled_qty
