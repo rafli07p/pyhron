@@ -1,0 +1,156 @@
+# =============================================================================
+# Pyhron Trading Platform — Docker Compose (Staging)
+# =============================================================================
+# Staging environment that mirrors production with resource limits,
+# health checks, and monitoring enabled by default.
+#
+# Usage:
+#   docker compose -f infra/docker/docker-compose.yaml -f docker-compose.staging.yml up -d
+#   docker compose -f infra/docker/docker-compose.yaml -f docker-compose.staging.yml down
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # TimescaleDB — With production-like settings
+  # ---------------------------------------------------------------------------
+  postgres:
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pyhron_staging}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required for staging}
+      POSTGRES_DB: ${POSTGRES_DB:-pyhron_staging}
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # Redis — With password auth
+  # ---------------------------------------------------------------------------
+  redis:
+    command: >
+      redis-server
+        --appendonly yes
+        --appendfsync everysec
+        --maxmemory 256mb
+        --maxmemory-policy allkeys-lru
+        --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD required for staging}
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Kafka — Exposed for debugging
+  # ---------------------------------------------------------------------------
+  kafka:
+    ports:
+      - "9092:9092"
+
+  # ---------------------------------------------------------------------------
+  # API — Staging configuration
+  # ---------------------------------------------------------------------------
+  api:
+    environment:
+      APP_ENV: staging
+      LOG_LEVEL: INFO
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-pyhron_staging}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pyhron_staging}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      SECRET_KEY: ${APP_SECRET_KEY:?APP_SECRET_KEY required for staging}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY required for staging}
+      ALPACA_API_KEY: ${ALPACA_API_KEY:-}
+      ALPACA_SECRET_KEY: ${ALPACA_SECRET_KEY:-}
+      ALPACA_BASE_URL: ${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Worker — Staging with reduced concurrency
+  # ---------------------------------------------------------------------------
+  worker:
+    environment:
+      APP_ENV: staging
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-pyhron_staging}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pyhron_staging}
+      DATABASE_SYNC_URL: postgresql+psycopg://${POSTGRES_USER:-pyhron_staging}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pyhron_staging}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/2
+    command: >
+      celery -A shared.celery_app worker
+        --loglevel=info
+        --concurrency=2
+        -Q ingestion,analytics
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # Beat — Staging scheduler
+  # ---------------------------------------------------------------------------
+  beat:
+    environment:
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+
+  # ---------------------------------------------------------------------------
+  # Intraday Ingestion — Alpaca market data to Kafka
+  # ---------------------------------------------------------------------------
+  intraday-ingestion:
+    build:
+      context: .
+      dockerfile: infra/docker/api_service.Dockerfile
+    container_name: pyhron-intraday-ingestion
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      APP_ENV: staging
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      ALPACA_API_KEY: ${ALPACA_API_KEY:-}
+      ALPACA_SECRET_KEY: ${ALPACA_SECRET_KEY:-}
+      ALPACA_BASE_URL: ${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
+    command: >
+      python scripts/run_paper_trading.py
+        --mode live
+        --symbols ${PAPER_TRADING_SYMBOLS:-AAPL MSFT GOOGL}
+        --capital ${PAPER_TRADING_CAPITAL:-500000000}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Monitoring — Enabled by default in staging
+  # ---------------------------------------------------------------------------
+  prometheus:
+    profiles: []  # Override dev profile, always run in staging
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+
+  grafana:
+    profiles: []  # Override dev profile, always run in staging
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD required for staging}
