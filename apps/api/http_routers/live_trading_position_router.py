@@ -6,13 +6,27 @@ and circuit breaker administration.
 
 from __future__ import annotations
 
+import contextlib
 import time
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 
+from data_platform.database_models.order_lifecycle_record import (
+    OrderLifecycleRecord,
+    OrderStatusEnum,
+)
+from data_platform.database_models.strategy_position_snapshot import (
+    StrategyPositionSnapshot,
+)
+from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
+    CircuitBreakerStateManager,
+)
+from shared.async_database_session import get_session
 from shared.platform_exception_hierarchy import (
     CircuitBreakerOpenError,
     DuplicateOrderError,
@@ -23,8 +37,6 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
-    from decimal import Decimal
-
     from services.order_management_system.order_submission_handler import (
         OrderSubmissionHandler,
     )
@@ -176,8 +188,35 @@ async def get_positions(
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[PositionResponse]:
     """Get all open positions, optionally filtered by strategy or symbol."""
-    logger.info("positions_queried", strategy_id=strategy_id, symbol=symbol)
-    return []
+    async with get_session() as session:
+        stmt = select(StrategyPositionSnapshot).where(
+            StrategyPositionSnapshot.quantity > 0,
+        )
+        if strategy_id:
+            stmt = stmt.where(StrategyPositionSnapshot.strategy_id == strategy_id)
+        if symbol:
+            stmt = stmt.where(StrategyPositionSnapshot.symbol == symbol)
+
+        result = await session.execute(stmt)
+        positions = result.scalars().all()
+
+    # Compute total market value for weight calculation
+    total_mv = sum(p.market_value or Decimal("0") for p in positions)
+
+    return [
+        PositionResponse(
+            symbol=p.symbol,
+            exchange=p.exchange or "IDX",
+            strategy_id=p.strategy_id,
+            quantity=p.quantity,
+            avg_entry_price=p.avg_entry_price or Decimal("0"),
+            current_price=p.current_price or Decimal("0"),
+            unrealized_pnl=p.unrealized_pnl or Decimal("0"),
+            market_value=p.market_value or Decimal("0"),
+            weight_pct=float((p.market_value or Decimal("0")) / total_mv * 100) if total_mv else 0.0,
+        )
+        for p in positions
+    ]
 
 
 # ── Orders ───────────────────────────────────────────────────────────────────
@@ -192,7 +231,44 @@ async def get_orders(
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[OrderResponse]:
     """Get order history with filters."""
-    return []
+    async with get_session() as session:
+        stmt = select(OrderLifecycleRecord).order_by(
+            OrderLifecycleRecord.created_at.desc(),
+        )
+        if strategy_id:
+            stmt = stmt.where(OrderLifecycleRecord.strategy_id == strategy_id)
+        if symbol:
+            stmt = stmt.where(OrderLifecycleRecord.symbol == symbol)
+        if status_filter:
+            try:
+                status_enum = OrderStatusEnum(status_filter.lower())
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid status filter: {status_filter}. "
+                    f"Valid values: {[s.value for s in OrderStatusEnum]}",
+                )
+            stmt = stmt.where(OrderLifecycleRecord.status == status_enum)
+        stmt = stmt.limit(limit)
+
+        result = await session.execute(stmt)
+        orders = result.scalars().all()
+
+    return [
+        OrderResponse(
+            client_order_id=o.client_order_id,
+            strategy_id=o.strategy_id,
+            symbol=o.symbol,
+            side=o.side.value if hasattr(o.side, "value") else o.side,
+            order_type=o.order_type.value if hasattr(o.order_type, "value") else o.order_type,
+            quantity=o.quantity,
+            filled_quantity=o.filled_quantity or 0,
+            limit_price=o.limit_price,
+            status=o.status.value if hasattr(o.status, "value") else o.status,
+            created_at=o.created_at,
+        )
+        for o in orders
+    ]
 
 
 # ── P&L ──────────────────────────────────────────────────────────────────────
@@ -205,7 +281,71 @@ async def get_daily_pnl(
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[PnLResponse]:
     """Get daily P&L summary across all strategies or a specific one."""
-    return []
+    cutoff = datetime.now(tz=UTC) - timedelta(days=days)
+
+    async with get_session() as session:
+        # Aggregate positions for current snapshot
+        pos_stmt = select(
+            func.sum(StrategyPositionSnapshot.market_value).label("total_equity"),
+            func.sum(StrategyPositionSnapshot.realized_pnl).label("realized_pnl"),
+            func.sum(StrategyPositionSnapshot.unrealized_pnl).label("unrealized_pnl"),
+        )
+        if strategy_id:
+            pos_stmt = pos_stmt.where(StrategyPositionSnapshot.strategy_id == strategy_id)
+        pos_result = await session.execute(pos_stmt)
+        pos_row = pos_result.one_or_none()
+
+        total_equity = (pos_row.total_equity if pos_row else None) or Decimal("0")
+        realized = (pos_row.realized_pnl if pos_row else None) or Decimal("0")
+        unrealized = (pos_row.unrealized_pnl if pos_row else None) or Decimal("0")
+
+        # Get daily fill aggregates for recent history
+        fill_stmt = select(
+            func.date_trunc("day", OrderLifecycleRecord.filled_at).label("fill_date"),
+            func.count().label("fills"),
+        ).where(
+            OrderLifecycleRecord.filled_at >= cutoff,
+            OrderLifecycleRecord.status.in_([OrderStatusEnum.FILLED, OrderStatusEnum.PARTIAL_FILL]),
+        )
+        if strategy_id:
+            fill_stmt = fill_stmt.where(OrderLifecycleRecord.strategy_id == strategy_id)
+        fill_stmt = fill_stmt.group_by("fill_date").order_by("fill_date")
+
+        fill_result = await session.execute(fill_stmt)
+        fill_rows = fill_result.all()
+
+    # Build response: current snapshot as today, plus historical fill dates
+    results: list[PnLResponse] = []
+    total_pnl = realized + unrealized
+
+    # Add today's snapshot
+    results.append(
+        PnLResponse(
+            date=datetime.now(tz=UTC).strftime("%Y-%m-%d"),
+            total_equity=total_equity,
+            total_pnl=total_pnl,
+            realized_pnl=realized,
+            unrealized_pnl=unrealized,
+        )
+    )
+
+    # Add historical fill dates as placeholders (actual daily PnL
+    # requires an equity curve table; this shows trading activity)
+    for row in fill_rows:
+        if row.fill_date:
+            d = row.fill_date.strftime("%Y-%m-%d") if hasattr(row.fill_date, "strftime") else str(row.fill_date)
+            if d != results[0].date:
+                results.append(
+                    PnLResponse(
+                        date=d,
+                        total_equity=Decimal("0"),
+                        total_pnl=Decimal("0"),
+                        realized_pnl=Decimal("0"),
+                        unrealized_pnl=Decimal("0"),
+                    )
+                )
+
+    return results
 
 
 # ── Circuit Breaker ─────────────────────────────────────────────────────────
@@ -215,23 +355,51 @@ async def get_daily_pnl(
 async def get_circuit_breaker_status(
     _user: TokenPayload = Depends(require_role(Role.TRADER)),
 ) -> list[CircuitBreakerStatus]:
-    """Get circuit breaker status for all strategies."""
-    return []
+    """Get circuit breaker status for all active strategies."""
+    async with get_session() as session:
+        stmt = select(StrategyPositionSnapshot.strategy_id).distinct()
+        result = await session.execute(stmt)
+        strategy_ids = [row[0] for row in result.all()]
+
+    cb_manager = CircuitBreakerStateManager()
+    statuses: list[CircuitBreakerStatus] = []
+
+    for sid in strategy_ids:
+        state = await cb_manager.get_state(sid)
+        tripped_at = None
+        if state.activated_at:
+            with contextlib.suppress(ValueError, TypeError):
+                tripped_at = datetime.fromisoformat(state.activated_at)
+        statuses.append(
+            CircuitBreakerStatus(
+                strategy_id=sid,
+                is_tripped=state.is_active,
+                tripped_at=tripped_at,
+                reason=state.reason.value if state.reason else None,
+            )
+        )
+
+    return statuses
 
 
 @router.post("/circuit-breaker/clear")
 async def clear_circuit_breaker(
     body: CircuitBreakerClearRequest,
-    _user: TokenPayload = Depends(require_role(Role.ADMIN)),
-) -> dict[str, str]:
+    user: TokenPayload = Depends(require_role(Role.ADMIN)),
+) -> dict[str, Any]:
     """Clear a tripped circuit breaker. Requires admin role and audit reason."""
+    cb_manager = CircuitBreakerStateManager()
+    was_active = await cb_manager.resume(body.strategy_id, reason=body.reason)
+
     logger.info(
         "circuit_breaker_cleared",
         strategy_id=body.strategy_id,
         reason=body.reason,
+        user=user.sub,
+        was_active=was_active,
     )
     return {
-        "status": "cleared",
+        "status": "cleared" if was_active else "not_active",
         "strategy_id": body.strategy_id,
         "cleared_at": datetime.now(tz=UTC).isoformat(),
     }
