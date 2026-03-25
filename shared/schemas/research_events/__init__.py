@@ -1,4 +1,4 @@
-"""Research event schemas for the Enthropy trading platform.
+"""Research event schemas for the Pyhron trading platform.
 
 Defines Pydantic v2 models for backtesting workflows, strategy
 evaluation results, and quantitative factor analysis.  All models

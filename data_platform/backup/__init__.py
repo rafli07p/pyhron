@@ -1,5 +1,5 @@
 """
-Backup manager for the Enthropy data platform.
+Backup manager for the Pyhron data platform.
 
 Provides scheduled backup logic for PostgreSQL (via ``pg_dump``) and
 Redis (via ``BGSAVE`` / RDB copy).  Includes integrity verification
@@ -44,7 +44,7 @@ class BackupError(Exception):
 # ---------------------------------------------------------------------------
 
 class BackupManager:
-    """Manage PostgreSQL and Redis backups for the Enthropy platform.
+    """Manage PostgreSQL and Redis backups for the Pyhron platform.
 
     Parameters
     ----------
@@ -53,7 +53,7 @@ class BackupManager:
     pg_connection_string : str | None
         PostgreSQL connection string (libpq format) for ``pg_dump`` /
         ``pg_restore``.  Example:
-        ``postgresql://user:pass@host:5432/enthropy``.
+        ``postgresql://user:pass@host:5432/pyhron``.
     redis_rdb_path : str | Path | None
         Path to the Redis RDB dump file (e.g. ``/var/lib/redis/dump.rdb``).
     tenant_id : str
@@ -66,7 +66,7 @@ class BackupManager:
 
     def __init__(
         self,
-        backup_dir: str | Path = "/var/enthropy/backups",
+        backup_dir: str | Path = "/var/pyhron/backups",
         pg_connection_string: str | None = None,
         redis_rdb_path: str | Path | None = None,
         tenant_id: str = "default",

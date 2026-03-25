@@ -1,4 +1,4 @@
-"""Enthropy shared schemas.
+"""Pyhron shared schemas.
 
 Re-exports all domain event models for convenient access::
 

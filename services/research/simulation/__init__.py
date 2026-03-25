@@ -1,4 +1,4 @@
-"""Monte Carlo simulation engine for the Enthropy trading platform.
+"""Monte Carlo simulation engine for the Pyhron trading platform.
 
 Provides numpy-vectorised simulation of portfolio paths using GBM,
 jump-diffusion, and historical bootstrap methods.  Includes VaR,

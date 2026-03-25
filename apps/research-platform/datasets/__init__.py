@@ -1,4 +1,4 @@
-"""Dataset Management for the Enthropy Research Platform.
+"""Dataset Management for the Pyhron Research Platform.
 
 Browse, load, create, and export datasets used in quantitative research.
 Supports multiple storage backends and formats including Parquet, CSV,
@@ -73,7 +73,7 @@ class DatasetManager:
 
     def __init__(
         self,
-        storage_dir: str | Path = "~/.enthropy/datasets",
+        storage_dir: str | Path = "~/.pyhron/datasets",
         tenant_id: str = "default",
     ) -> None:
         self._storage_dir = Path(storage_dir).expanduser()

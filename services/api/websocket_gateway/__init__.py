@@ -394,7 +394,7 @@ async def _polygon_market_feed() -> None:
 def create_ws_app() -> FastAPI:
     """Build and return the WebSocket gateway FastAPI app."""
     app = FastAPI(
-        title="Enthropy WebSocket Gateway",
+        title="Pyhron WebSocket Gateway",
         description="Real-time streaming gateway for market data, orders, and portfolio events",
         version="0.1.0",
     )

@@ -1,5 +1,5 @@
 """
-Sphinx configuration for Enthropy API documentation.
+Sphinx configuration for Pyhron API documentation.
 
 Build docs:
     cd docs/api
@@ -23,9 +23,9 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # =============================================================================
 # Project Information
 # =============================================================================
-project = "Enthropy"
-copyright = f"{datetime.now().year}, Enthropy Engineering"
-author = "Enthropy Engineering"
+project = "Pyhron"
+copyright = f"{datetime.now().year}, Pyhron Engineering"
+author = "Pyhron Engineering"
 release = "1.0.0"
 version = "1.0"
 
@@ -118,14 +118,14 @@ intersphinx_mapping = {
 html_theme = "furo"
 
 html_theme_options = {
-    "light_logo": "enthropy-logo-light.svg",
-    "dark_logo": "enthropy-logo-dark.svg",
+    "light_logo": "pyhron-logo-light.svg",
+    "dark_logo": "pyhron-logo-dark.svg",
     "sidebar_hide_name": True,
     "navigation_with_keys": True,
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/enthropy/enthropy",
+            "url": "https://github.com/pyhron/pyhron",
             "html": """
                 <svg stroke="currentColor" fill="currentColor" stroke-width="0"
                      viewBox="0 0 16 16">
@@ -150,8 +150,8 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 # Title and favicon
-html_title = "Enthropy API Documentation"
-html_short_title = "Enthropy"
+html_title = "Pyhron API Documentation"
+html_short_title = "Pyhron"
 
 # =============================================================================
 # MyST Parser Configuration (Markdown support)

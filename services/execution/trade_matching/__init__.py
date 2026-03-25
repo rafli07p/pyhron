@@ -1,4 +1,4 @@
-"""Internal trade-matching engine for the Enthropy trading platform.
+"""Internal trade-matching engine for the Pyhron trading platform.
 
 Implements a price-time priority order book for paper trading and
 dark-pool simulation.  Uses :mod:`heapq` for efficient bid/ask heaps

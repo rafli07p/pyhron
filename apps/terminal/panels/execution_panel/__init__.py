@@ -1,4 +1,4 @@
-"""Execution Panel for the Enthropy Terminal.
+"""Execution Panel for the Pyhron Terminal.
 
 Provides order entry, management, and fill monitoring capabilities.
 Integrates with the DataClient to submit orders and track execution

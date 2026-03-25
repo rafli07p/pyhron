@@ -1,4 +1,4 @@
-"""Post-trade analytics for the Enthropy trading platform.
+"""Post-trade analytics for the Pyhron trading platform.
 
 Calculates slippage, market impact, and generates execution quality
 reports using pandas for efficient batch analytics.

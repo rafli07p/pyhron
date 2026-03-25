@@ -1,4 +1,4 @@
-"""Table Engine for the Enthropy Terminal.
+"""Table Engine for the Pyhron Terminal.
 
 Data table rendering with sorting, filtering, pagination, and CSV
 export capabilities. Used by panels that display tabular data such

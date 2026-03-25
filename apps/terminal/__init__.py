@@ -1,4 +1,4 @@
-"""Enthropy Terminal Application.
+"""Pyhron Terminal Application.
 
 Bloomberg-style trading terminal with multi-panel layouts, real-time
 market data, order execution, and research capabilities.

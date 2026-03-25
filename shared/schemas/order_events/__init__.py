@@ -1,4 +1,4 @@
-"""Order event schemas for the Enthropy trading platform.
+"""Order event schemas for the Pyhron trading platform.
 
 Defines Pydantic v2 models for the full order lifecycle: request
 submission, fills, cancellations, and status updates.  All models

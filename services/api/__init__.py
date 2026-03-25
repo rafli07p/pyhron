@@ -1,6 +1,6 @@
-"""Enthropy API Service.
+"""Pyhron API Service.
 
-Provides REST and WebSocket gateways for the Enthropy quant research
+Provides REST and WebSocket gateways for the Pyhron quant research
 platform.  The REST gateway exposes market data, order management,
 portfolio, research, risk, and admin endpoints.  The WebSocket gateway
 delivers real-time market data, order updates, and portfolio events.

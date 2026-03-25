@@ -1,8 +1,8 @@
-"""News Panel for the Enthropy Terminal.
+"""News Panel for the Pyhron Terminal.
 
 Displays market news with sentiment analysis, symbol filtering, and
 search capabilities. Integrates with external news feeds and the
-Enthropy data pipeline.
+Pyhron data pipeline.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Message type enumerations for the Enthropy event bus.
+"""Message type enumerations for the Pyhron event bus.
 
 Defines canonical message types and priority levels used across all
 internal messaging (Kafka topics, Redis streams, WebSocket channels).

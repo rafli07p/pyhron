@@ -1,4 +1,4 @@
-"""Factor Lab for the Enthropy Research Platform.
+"""Factor Lab for the Pyhron Research Platform.
 
 Interactive factor research environment for creating, testing,
 comparing, and backtesting quantitative factors. Supports cross-sectional

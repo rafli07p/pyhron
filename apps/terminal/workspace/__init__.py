@@ -1,4 +1,4 @@
-"""Workspace management for the Enthropy Terminal.
+"""Workspace management for the Pyhron Terminal.
 
 Manages multi-panel layouts with save/load support and per-user settings.
 Workspaces define which panels are visible, their positions, and user
@@ -99,7 +99,7 @@ class WorkspaceManager:
         Directory for persisting workspace JSON files.
     """
 
-    def __init__(self, storage_dir: str | Path = "~/.enthropy/workspaces") -> None:
+    def __init__(self, storage_dir: str | Path = "~/.pyhron/workspaces") -> None:
         self._storage_dir = Path(storage_dir).expanduser()
         self._workspaces: dict[str, WorkspaceConfig] = {}
         logger.info("WorkspaceManager initialized with storage_dir=%s", self._storage_dir)

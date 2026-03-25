@@ -1,4 +1,4 @@
-"""Research Panel for the Enthropy Terminal.
+"""Research Panel for the Pyhron Terminal.
 
 Provides access to backtesting, factor analysis, and dataset browsing
 directly from the terminal interface.

@@ -1,4 +1,4 @@
-"""Exposure tracking for the Enthropy trading platform.
+"""Exposure tracking for the Pyhron trading platform.
 
 Calculates gross, net, sector, and currency exposures with
 concentration limit checks.  All computations are vectorised

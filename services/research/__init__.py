@@ -1,4 +1,4 @@
-"""Research service for the Enthropy trading platform.
+"""Research service for the Pyhron trading platform.
 
 Provides backtesting, factor analysis, Monte Carlo simulation, and
 dataset construction for quantitative research workflows.

@@ -1,4 +1,4 @@
-"""Enthropy Terminal Panels.
+"""Pyhron Terminal Panels.
 
 Re-exports all panel classes for convenient access from the terminal package.
 """

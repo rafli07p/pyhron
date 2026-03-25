@@ -1,4 +1,4 @@
-"""Position management for the Enthropy trading platform.
+"""Position management for the Pyhron trading platform.
 
 Tracks open positions per tenant with SQLAlchemy persistence and
 real-time updates driven by OrderFill events.

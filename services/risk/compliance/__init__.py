@@ -1,4 +1,4 @@
-"""Compliance engine for the Enthropy trading platform.
+"""Compliance engine for the Pyhron trading platform.
 
 Generates SEC and OJK regulatory reports, exports encrypted audit
 trails, enforces regulatory limits, and performs UU PDP (Indonesia

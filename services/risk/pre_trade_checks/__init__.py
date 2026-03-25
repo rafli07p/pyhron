@@ -1,4 +1,4 @@
-"""Pre-trade validation for the Enthropy trading platform.
+"""Pre-trade validation for the Pyhron trading platform.
 
 Runs margin checks, position-limit validation, restricted-list
 screening, and wash-trade detection before an order is sent to

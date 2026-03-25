@@ -1,4 +1,4 @@
-"""Chart Engine for the Enthropy Terminal.
+"""Chart Engine for the Pyhron Terminal.
 
 Provides chart rendering logic with support for technical indicators
 including SMA, EMA, RSI, MACD, and Bollinger Bands. Separates chart

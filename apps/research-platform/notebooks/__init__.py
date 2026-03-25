@@ -1,4 +1,4 @@
-"""Notebook Management for the Enthropy Research Platform.
+"""Notebook Management for the Pyhron Research Platform.
 
 Manages Jupyter-style research notebooks for interactive quantitative
 analysis. Supports creating, listing, and executing notebooks
@@ -68,7 +68,7 @@ class NotebookManager:
         Root directory for notebook storage.
     """
 
-    def __init__(self, notebooks_dir: str | Path = "~/.enthropy/notebooks") -> None:
+    def __init__(self, notebooks_dir: str | Path = "~/.pyhron/notebooks") -> None:
         self._notebooks_dir = Path(notebooks_dir).expanduser()
         self._registry: dict[str, NotebookMetadata] = {}
         logger.info("NotebookManager initialized (dir=%s)", self._notebooks_dir)
@@ -135,7 +135,7 @@ class NotebookManager:
                     "name": "python3",
                 },
                 "language_info": {"name": "python", "version": "3.11.0"},
-                "enthropy": {
+                "pyhron": {
                     "description": description,
                     "author": author,
                     "tags": tags or [],
@@ -191,12 +191,12 @@ class NotebookManager:
                     try:
                         with open(nb_path) as f:
                             nb_data = json.load(f)
-                        enthropy_meta = nb_data.get("metadata", {}).get("enthropy", {})
+                        pyhron_meta = nb_data.get("metadata", {}).get("pyhron", {})
                         meta = NotebookMetadata(
                             name=name,
-                            description=enthropy_meta.get("description", ""),
-                            author=enthropy_meta.get("author", ""),
-                            tags=enthropy_meta.get("tags", []),
+                            description=pyhron_meta.get("description", ""),
+                            author=pyhron_meta.get("author", ""),
+                            tags=pyhron_meta.get("tags", []),
                             cell_count=len(nb_data.get("cells", [])),
                             file_path=str(nb_path),
                         )

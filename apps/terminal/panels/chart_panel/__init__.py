@@ -1,4 +1,4 @@
-"""Chart Panel for the Enthropy Terminal.
+"""Chart Panel for the Pyhron Terminal.
 
 Renders OHLCV candlestick charts with overlaid technical indicators.
 Fetches market data through the terminal's DataClient for live and

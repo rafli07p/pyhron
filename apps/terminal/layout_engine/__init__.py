@@ -1,4 +1,4 @@
-"""Layout Engine for the Enthropy Terminal.
+"""Layout Engine for the Pyhron Terminal.
 
 Grid-based panel layout management system. Handles panel placement,
 sizing, and serialization of layout configurations for workspace

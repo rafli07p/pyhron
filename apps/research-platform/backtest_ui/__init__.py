@@ -1,4 +1,4 @@
-"""Backtest UI for the Enthropy Research Platform.
+"""Backtest UI for the Pyhron Research Platform.
 
 Visual backtest configuration, execution, and results comparison.
 Provides a high-level interface for defining backtest parameters,

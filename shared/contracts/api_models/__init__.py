@@ -1,4 +1,4 @@
-"""API contract models for the Enthropy trading platform.
+"""API contract models for the Pyhron trading platform.
 
 Generic Pydantic v2 models used across all REST API endpoints to ensure
 a consistent response envelope, pagination, error reporting, and health

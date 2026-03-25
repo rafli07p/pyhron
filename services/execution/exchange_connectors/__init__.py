@@ -1,4 +1,4 @@
-"""Exchange connectors for the Enthropy execution service.
+"""Exchange connectors for the Pyhron execution service.
 
 Provides a base connector ABC and concrete implementations for:
 - **Alpaca** (equities) via the ``alpaca-py`` library

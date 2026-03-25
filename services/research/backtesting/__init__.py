@@ -1,4 +1,4 @@
-"""Backtesting engine for the Enthropy trading platform.
+"""Backtesting engine for the Pyhron trading platform.
 
 Provides full vectorised backtesting with QuantLib pricing, real
 market data from yfinance/Polygon, and Dask-based parallelism for

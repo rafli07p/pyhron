@@ -13,13 +13,13 @@ from uuid import uuid4
 
 import pytest
 
-# TODO: update imports when enthropy.pnl is implemented
+# TODO: update imports when pyhron.pnl is implemented
 # Future paths:
 #   from services.portfolio.pnl_engine import PnLEngine
-#   enthropy.pnl.models (FillRecord, PnLReport, PnLSummary, TradeDirection) — not yet implemented
-pytest.importorskip("enthropy.pnl.engine", reason="module not yet implemented")
-from enthropy.pnl.engine import PnLEngine
-from enthropy.pnl.models import (
+#   pyhron.pnl.models (FillRecord, PnLReport, PnLSummary, TradeDirection) — not yet implemented
+pytest.importorskip("pyhron.pnl.engine", reason="module not yet implemented")
+from pyhron.pnl.engine import PnLEngine
+from pyhron.pnl.models import (
     FillRecord,
     PnLReport,
     PnLSummary,

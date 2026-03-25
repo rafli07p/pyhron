@@ -1,4 +1,4 @@
-"""Model Training Manager for the Enthropy Research Platform.
+"""Model Training Manager for the Pyhron Research Platform.
 
 Manages the training, evaluation, and registration of machine learning
 models with MLflow experiment tracking. Supports scikit-learn and
@@ -105,7 +105,7 @@ class ModelTrainingManager:
     def __init__(
         self,
         mlflow_tracking_uri: str = "http://localhost:5000",
-        experiment_name: str = "enthropy-models",
+        experiment_name: str = "pyhron-models",
     ) -> None:
         self._tracking_uri = mlflow_tracking_uri
         self._experiment_name = experiment_name

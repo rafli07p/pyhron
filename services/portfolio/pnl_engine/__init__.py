@@ -1,4 +1,4 @@
-"""P&L calculation engine for the Enthropy trading platform.
+"""P&L calculation engine for the Pyhron trading platform.
 
 Provides vectorised realised and unrealised P&L computation using
 numpy / pandas with mark-to-market pricing from live market data.

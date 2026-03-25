@@ -1,4 +1,4 @@
-"""Portfolio event schemas for the Enthropy trading platform.
+"""Portfolio event schemas for the Pyhron trading platform.
 
 Defines Pydantic v2 models for position tracking, P&L reporting, and
 risk exposure updates.  All models enforce multi-tenancy via mandatory

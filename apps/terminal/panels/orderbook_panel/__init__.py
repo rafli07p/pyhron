@@ -1,4 +1,4 @@
-"""Order Book Panel for the Enthropy Terminal.
+"""Order Book Panel for the Pyhron Terminal.
 
 Displays a live, depth-sorted order book with real-time bid/ask updates.
 Connects to the DataClient for streaming quote and depth data.
