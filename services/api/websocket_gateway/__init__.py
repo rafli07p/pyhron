@@ -18,7 +18,7 @@ from uuid import uuid4
 
 import jwt
 import structlog
-from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 
 logger = structlog.stdlib.get_logger(__name__)
@@ -228,6 +228,40 @@ manager = ConnectionManager()
 # ---------------------------------------------------------------------------
 # JWT authentication for WebSocket
 # ---------------------------------------------------------------------------
+
+
+async def _authenticate_first_message(websocket: WebSocket) -> dict[str, str] | None:
+    """Accept the WebSocket and authenticate via the first message.
+
+    Clients must send ``{"type": "auth", "token": "<jwt>"}`` within 10 s.
+    Returns the decoded claims dict on success, or ``None`` after closing
+    the connection on failure.
+    """
+    await websocket.accept()
+    try:
+        raw = await asyncio.wait_for(websocket.receive_text(), timeout=10.0)
+    except (TimeoutError, WebSocketDisconnect):
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Auth timeout")
+        return None
+
+    try:
+        auth_msg = json.loads(raw)
+    except json.JSONDecodeError:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid JSON")
+        return None
+
+    if auth_msg.get("type") != "auth" or not auth_msg.get("token"):
+        await websocket.close(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason='First message must be {"type": "auth", "token": "..."}',
+        )
+        return None
+
+    try:
+        return authenticate_ws_token(auth_msg["token"])
+    except ValueError as exc:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=str(exc))
+        return None
 
 
 def authenticate_ws_token(token: str) -> dict[str, str]:
@@ -522,24 +556,27 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws/market-data")
     async def market_data_ws(
         websocket: WebSocket,
-        token: str | None = Query(None),
     ) -> None:
         """Dedicated WebSocket for market data streaming.
 
-        Auto-subscribes to the ``market_data`` channel.  Clients
-        send subscribe/unsubscribe messages for individual symbols.
+        Clients authenticate via the first message:
+        ``{"type": "auth", "token": "<jwt>"}``, then send
+        subscribe/unsubscribe messages for individual symbols.
         """
-        if not token:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing token")
-            return
-        try:
-            claims = authenticate_ws_token(token)
-        except ValueError as exc:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=str(exc))
+        claims = await _authenticate_first_message(websocket)
+        if claims is None:
             return
 
         connection_id = str(uuid4())
-        await manager.connect(websocket, connection_id, claims["tenant_id"], claims["user_id"], claims["role"])
+        # Connection already accepted by _authenticate_first_message
+        async with manager._lock:
+            manager._connections[connection_id] = websocket
+            manager._connection_meta[connection_id] = {
+                "tenant_id": claims["tenant_id"],
+                "user_id": claims["user_id"],
+                "role": claims["role"],
+            }
+            manager._last_pong[connection_id] = time.monotonic()
 
         try:
             while True:
@@ -580,24 +617,27 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws/orders")
     async def orders_ws(
         websocket: WebSocket,
-        token: str | None = Query(None),
     ) -> None:
         """WebSocket for real-time order status updates.
 
-        Auto-subscribes to the ``order_updates`` channel filtered
-        by the authenticated tenant.
+        Clients authenticate via the first message:
+        ``{"type": "auth", "token": "<jwt>"}``.  Auto-subscribes
+        to the ``order_updates`` channel filtered by the
+        authenticated tenant.
         """
-        if not token:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing token")
-            return
-        try:
-            claims = authenticate_ws_token(token)
-        except ValueError as exc:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=str(exc))
+        claims = await _authenticate_first_message(websocket)
+        if claims is None:
             return
 
         connection_id = str(uuid4())
-        await manager.connect(websocket, connection_id, claims["tenant_id"], claims["user_id"], claims["role"])
+        async with manager._lock:
+            manager._connections[connection_id] = websocket
+            manager._connection_meta[connection_id] = {
+                "tenant_id": claims["tenant_id"],
+                "user_id": claims["user_id"],
+                "role": claims["role"],
+            }
+            manager._last_pong[connection_id] = time.monotonic()
         await manager.subscribe_channel(connection_id, "order_updates")
 
         try:
@@ -619,20 +659,26 @@ def create_ws_app() -> FastAPI:
     @app.websocket("/ws/portfolio")
     async def portfolio_ws(
         websocket: WebSocket,
-        token: str | None = Query(None),
     ) -> None:
-        """WebSocket for real-time portfolio / P&L updates."""
-        if not token:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing token")
-            return
-        try:
-            claims = authenticate_ws_token(token)
-        except ValueError as exc:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason=str(exc))
+        """WebSocket for real-time portfolio / P&L updates.
+
+        Clients authenticate via the first message:
+        ``{"type": "auth", "token": "<jwt>"}``.  Auto-subscribes
+        to the ``portfolio_updates`` channel.
+        """
+        claims = await _authenticate_first_message(websocket)
+        if claims is None:
             return
 
         connection_id = str(uuid4())
-        await manager.connect(websocket, connection_id, claims["tenant_id"], claims["user_id"], claims["role"])
+        async with manager._lock:
+            manager._connections[connection_id] = websocket
+            manager._connection_meta[connection_id] = {
+                "tenant_id": claims["tenant_id"],
+                "user_id": claims["user_id"],
+                "role": claims["role"],
+            }
+            manager._last_pong[connection_id] = time.monotonic()
         await manager.subscribe_channel(connection_id, "portfolio_updates")
 
         try:

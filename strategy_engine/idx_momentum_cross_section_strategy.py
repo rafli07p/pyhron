@@ -393,6 +393,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
           2. Price: closing price ≥ min_price_idr
           3. Suspension: exclude stocks where ``is_active`` is False
           4. Data completeness: require ≥ min_history_days of price data
+          5. Survivorship: exclude stocks not yet listed or already delisted
         """
         available_prices = self._get_prices_as_of(prices, as_of_date)
         tv_ts = pd.Timestamp(as_of_date)
@@ -410,10 +411,17 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
             if len(sym_prices) < min_history_days:
                 continue
 
-            # 3. Suspension filter
+            # 3. Suspension filter + survivorship bias prevention
             if symbol in meta_lookup.index:
-                is_active = meta_lookup.loc[symbol, "is_active"]
-                if not is_active:
+                row = meta_lookup.loc[symbol]
+                if not row.get("is_active", True):
+                    continue
+                # Survivorship: skip if not yet listed or already delisted
+                listing = row.get("listing_date")
+                delisting = row.get("delisting_date")
+                if listing is not None and as_of_date < listing:
+                    continue
+                if delisting is not None and as_of_date > delisting:
                     continue
 
             # 2. Price filter — last available close

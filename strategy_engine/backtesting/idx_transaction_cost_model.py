@@ -78,6 +78,9 @@ class IDXTransactionCostModel:
         levy_rate: IDX exchange levy both sides (default 0.0001 = 0.01%).
         vat_on_commission_rate: VAT on commission (default 0.11 = 11%).
         sell_tax_rate: PPh Final tax on sell (default 0.001 = 0.1%).
+        slippage_bps: Bid-ask spread slippage in basis points (default 5.0).
+            Applied as a flat cost on both buy and sell sides.
+            Typical values: 5-10 bps for IDX mid/large-cap, 15-30 bps for small-cap.
         lot_size: IDX lot size (default 100 shares).
         settlement_days: Settlement cycle (default T+2).
     """
@@ -89,6 +92,7 @@ class IDXTransactionCostModel:
         levy_rate: float = 0.0001,
         vat_on_commission_rate: float = 0.11,
         sell_tax_rate: float = 0.001,
+        slippage_bps: float = 5.0,
         lot_size: int = 100,
         settlement_days: int = 2,
     ) -> None:
@@ -97,6 +101,7 @@ class IDXTransactionCostModel:
         self._levy_rate = levy_rate
         self._vat_rate = vat_on_commission_rate
         self._sell_tax = sell_tax_rate
+        self._slippage_rate = slippage_bps / 10_000.0
         self._lot_size = lot_size
         self._settlement_days = settlement_days
 
@@ -110,22 +115,22 @@ class IDXTransactionCostModel:
     def buy_total_rate(self) -> float:
         """Total cost rate for buy transactions.
 
-        commission + levy + VAT on commission.
+        commission + levy + VAT on commission + slippage.
         """
         commission = self._buy_commission
         levy = self._levy_rate
         vat = commission * self._vat_rate
-        return commission + levy + vat
+        return commission + levy + vat + self._slippage_rate
 
     def sell_total_rate(self) -> float:
         """Total cost rate for sell transactions.
 
-        commission + levy + VAT on commission + PPh Final.
+        commission + levy + VAT on commission + PPh Final + slippage.
         """
         commission = self._sell_commission
         levy = self._levy_rate
         vat = commission * self._vat_rate
-        return commission + levy + vat + self._sell_tax
+        return commission + levy + vat + self._sell_tax + self._slippage_rate
 
     def effective_round_trip_cost(self) -> float:
         """Average one-way cost for vectorbt (half of round-trip)."""
@@ -190,11 +195,14 @@ class IDXTransactionCostModel:
         vat = commission * self._vat_rate
         sales_tax = gross_value * self._sell_tax if side == TradeSide.SELL else 0.0
 
+        # Slippage (bid-ask spread)
+        slippage = gross_value * self._slippage_rate
+
         # Market impact
         impact_pct = self.estimate_market_impact(shares, avg_daily_volume, daily_spread_pct)
         market_impact = gross_value * impact_pct
 
-        total_cost = commission + levy + vat + sales_tax + market_impact
+        total_cost = commission + levy + vat + sales_tax + slippage + market_impact
         net_value = gross_value + total_cost if side == TradeSide.BUY else gross_value - total_cost
         cost_bps = (total_cost / gross_value * 10_000) if gross_value > 0 else 0.0
 
