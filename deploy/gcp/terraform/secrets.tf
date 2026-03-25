@@ -24,3 +24,11 @@ resource "google_secret_manager_secret_iam_member" "api_secret_access" {
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.pyhron_api.email}"
 }
+
+# Grant ingestion service account access to Alpaca secrets
+resource "google_secret_manager_secret_iam_member" "ingestion_secret_access" {
+  for_each  = toset(["alpaca_api_key", "alpaca_api_secret"])
+  secret_id = google_secret_manager_secret.pyhron_secrets[each.key].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.pyhron_ingestion.email}"
+}
