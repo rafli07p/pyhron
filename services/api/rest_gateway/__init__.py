@@ -9,7 +9,6 @@ limiting (slowapi), structured logging, and OpenAPI documentation.
 from __future__ import annotations
 
 import secrets
-import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -374,8 +373,7 @@ class RequestIDMiddleware:
         await self.app(scope, receive, send_with_request_id)
 
 
-from services.api.logging import RequestLoggingMiddleware  # noqa: E402
-
+from services.api.logging import RequestLoggingMiddleware
 
 # ---------------------------------------------------------------------------
 # Application factory

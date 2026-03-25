@@ -19,6 +19,7 @@ import pytest
 #   from shared.schemas.market_events import TickEvent (as TickData)
 #   OrderResponse, PositionSnapshot, RiskLimits — not yet implemented under pyhron interface
 pytest.importorskip("pyhron.shared.schemas.order", reason="module not yet implemented")
+from pydantic import ValidationError
 from pyhron.shared.schemas.order import (
     OrderCreate,
     OrderResponse,
@@ -29,7 +30,6 @@ from pyhron.shared.schemas.order import (
 from pyhron.shared.schemas.position import PositionSnapshot
 from pyhron.shared.schemas.risk import RiskLimits
 from pyhron.shared.schemas.tick import TickData
-from pydantic import ValidationError
 
 
 # =============================================================================
