@@ -21,6 +21,7 @@ import aiokafka
 
 from services.broker_connectivity.alpaca_broker_adapter import AlpacaBrokerAdapter
 from shared.kafka_topics import KafkaTopic
+from shared.metrics import intraday_events_total, intraday_publish_errors_total
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
@@ -120,7 +121,9 @@ class IntradayIngestionService:
         symbol = event.get("symbol", "")
         try:
             await self._producer.send(topic, value=event, key=symbol)
+            intraday_events_total.labels(event_type=event_type, symbol=symbol).inc()
         except Exception:
+            intraday_publish_errors_total.labels(topic=topic).inc()
             logger.exception(
                 "intraday_kafka_publish_failed",
                 topic=topic,

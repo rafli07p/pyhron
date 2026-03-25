@@ -61,6 +61,42 @@ paper_session_drawdown_pct = Gauge(
     registry=REGISTRY,
 )
 
+paper_session_sharpe_ratio = Gauge(
+    "pyhron_paper_session_sharpe_ratio",
+    "Current Sharpe ratio of paper trading session",
+    ["session_name"],
+    registry=REGISTRY,
+)
+
+paper_session_win_rate_pct = Gauge(
+    "pyhron_paper_session_win_rate_pct",
+    "Win rate percentage of paper trading session",
+    ["session_name"],
+    registry=REGISTRY,
+)
+
+paper_session_daily_pnl_idr = Gauge(
+    "pyhron_paper_session_daily_pnl_idr",
+    "Latest daily P&L of paper trading session in IDR",
+    ["session_name"],
+    registry=REGISTRY,
+)
+
+# Intraday market data
+intraday_events_total = Counter(
+    "pyhron_intraday_events_total",
+    "Total intraday market data events received",
+    ["event_type", "symbol"],
+    registry=REGISTRY,
+)
+
+intraday_publish_errors_total = Counter(
+    "pyhron_intraday_publish_errors_total",
+    "Total failed Kafka publish attempts for intraday data",
+    ["topic"],
+    registry=REGISTRY,
+)
+
 # WebSocket
 ws_active_connections = Gauge(
     "pyhron_ws_active_connections",
