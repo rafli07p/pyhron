@@ -29,10 +29,6 @@ logger = structlog.stdlib.get_logger(__name__)
 
 from shared.configuration_settings import get_config as _get_config
 
-JWT_SECRET: str = ""  # Loaded lazily from config
-JWT_ALGORITHM: str = ""  # Loaded lazily from config
-
-
 def _get_jwt_secret() -> str:
     return _get_config().jwt_secret_key
 
