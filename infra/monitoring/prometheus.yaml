@@ -32,22 +32,22 @@ scrape_configs:
       - targets: ["localhost:9090"]
 
   # -------------------------------------------------------------------------
-  # Enthropy API service
+  # Pyhron API service
   # -------------------------------------------------------------------------
-  - job_name: "enthropy-api"
+  - job_name: "pyhron-api"
     metrics_path: "/metrics"
     scrape_interval: 10s
     static_configs:
       - targets: ["api:8000"]
         labels:
-          service: "enthropy-api"
+          service: "pyhron-api"
           component: "backend"
     # Kubernetes service discovery (used when deployed to K8s)
     # kubernetes_sd_configs:
     #   - role: pod
     #     namespaces:
     #       names:
-    #         - enthropy
+    #         - pyhron
     # relabel_configs:
     #   - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
     #     action: keep
@@ -61,19 +61,31 @@ scrape_configs:
   # -------------------------------------------------------------------------
   # Custom Quantitative Trading Metrics
   # -------------------------------------------------------------------------
-  - job_name: "enthropy-quant-metrics"
+  - job_name: "pyhron-quant-metrics"
     metrics_path: "/metrics/quant"
     scrape_interval: 5s
     static_configs:
       - targets: ["api:8000"]
         labels:
-          service: "enthropy-quant"
+          service: "pyhron-quant"
           component: "trading"
     metric_relabel_configs:
       # Keep only relevant quant metrics to reduce storage
       - source_labels: [__name__]
-        regex: "(order_latency_seconds|pnl_daily_total|risk_var_current|risk_var_limit|position_exposure_total|drawdown_current_pct|sharpe_ratio_rolling|fill_rate_total|slippage_bps|order_count_total|market_data_lag_seconds)"
+        regex: "(pyhron_order_fill_latency_seconds|pyhron_orders_submitted_total|pyhron_paper_session_nav_idr|pyhron_paper_session_drawdown_pct|pyhron_paper_session_sharpe_ratio|pyhron_paper_session_daily_pnl_idr|pyhron_intraday_events_total|pyhron_intraday_publish_errors_total|pyhron_dlq_depth|pyhron_records_ingested_total)"
         action: keep
+
+  # -------------------------------------------------------------------------
+  # Intraday Ingestion service
+  # -------------------------------------------------------------------------
+  - job_name: "pyhron-ingestion"
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["intraday-ingestion:8001"]
+        labels:
+          service: "pyhron-ingestion"
+          component: "data-pipeline"
 
   # -------------------------------------------------------------------------
   # PostgreSQL Exporter
