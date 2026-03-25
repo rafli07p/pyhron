@@ -21,7 +21,7 @@
       }
     ]
   },
-  "description": "Enthropy Quantitative Trading Platform - Operations Dashboard",
+  "description": "Pyhron Quantitative Trading Platform - Operations Dashboard",
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
@@ -56,7 +56,7 @@
       },
       "targets": [
         {
-          "expr": "avg_over_time(up{job=\"enthropy-api\"}[24h])",
+          "expr": "avg_over_time(up{job=\"pyhron-api\"}[24h])",
           "legendFormat": "Uptime"
         }
       ]
@@ -81,7 +81,7 @@
       },
       "targets": [
         {
-          "expr": "sum(http_connections_active{job=\"enthropy-api\"})",
+          "expr": "sum(http_connections_active{job=\"pyhron-api\"})",
           "legendFormat": "Connections"
         }
       ]
@@ -107,7 +107,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{job=\"enthropy-api\"}[5m]))",
+          "expr": "sum(rate(http_requests_total{job=\"pyhron-api\"}[5m]))",
           "legendFormat": "req/s"
         }
       ]
@@ -133,7 +133,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{job=\"enthropy-api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"enthropy-api\"}[5m]))",
+          "expr": "sum(rate(http_requests_total{job=\"pyhron-api\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"pyhron-api\"}[5m]))",
           "legendFormat": "Error %"
         }
       ]
@@ -160,7 +160,7 @@
       },
       "targets": [
         {
-          "expr": "avg(rate(process_cpu_seconds_total{job=\"enthropy-api\"}[5m]))",
+          "expr": "avg(rate(process_cpu_seconds_total{job=\"pyhron-api\"}[5m]))",
           "legendFormat": "CPU"
         }
       ]
@@ -185,7 +185,7 @@
       },
       "targets": [
         {
-          "expr": "process_resident_memory_bytes{job=\"enthropy-api\"}",
+          "expr": "process_resident_memory_bytes{job=\"pyhron-api\"}",
           "legendFormat": "RSS"
         }
       ]
@@ -218,15 +218,15 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(order_latency_seconds_bucket{job=\"enthropy-quant-metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(order_latency_seconds_bucket{job=\"pyhron-quant-metrics\"}[5m])) by (le))",
           "legendFormat": "p50"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(order_latency_seconds_bucket{job=\"enthropy-quant-metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(order_latency_seconds_bucket{job=\"pyhron-quant-metrics\"}[5m])) by (le))",
           "legendFormat": "p95"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(order_latency_seconds_bucket{job=\"enthropy-quant-metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(order_latency_seconds_bucket{job=\"pyhron-quant-metrics\"}[5m])) by (le))",
           "legendFormat": "p99"
         }
       ]
@@ -250,15 +250,15 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(order_latency_seconds_bucket{job=\"enthropy-quant-metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(order_latency_seconds_bucket{job=\"pyhron-quant-metrics\"}[5m])) by (le))",
           "legendFormat": "p50 Latency"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(order_latency_seconds_bucket{job=\"enthropy-quant-metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(order_latency_seconds_bucket{job=\"pyhron-quant-metrics\"}[5m])) by (le))",
           "legendFormat": "p95 Latency"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(order_latency_seconds_bucket{job=\"enthropy-quant-metrics\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(order_latency_seconds_bucket{job=\"pyhron-quant-metrics\"}[5m])) by (le))",
           "legendFormat": "p99 Latency"
         }
       ]
@@ -297,7 +297,7 @@
       },
       "targets": [
         {
-          "expr": "pnl_daily_total{job=\"enthropy-quant-metrics\"}",
+          "expr": "pnl_daily_total{job=\"pyhron-quant-metrics\"}",
           "legendFormat": "{{ strategy }}"
         }
       ]
@@ -329,7 +329,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(pnl_daily_total{job=\"enthropy-quant-metrics\"}[30d])) by (strategy)",
+          "expr": "sum(increase(pnl_daily_total{job=\"pyhron-quant-metrics\"}[30d])) by (strategy)",
           "legendFormat": "{{ strategy }} Cumulative"
         }
       ]
@@ -367,11 +367,11 @@
       },
       "targets": [
         {
-          "expr": "risk_var_current{job=\"enthropy-quant-metrics\"}",
+          "expr": "risk_var_current{job=\"pyhron-quant-metrics\"}",
           "legendFormat": "Current VaR"
         },
         {
-          "expr": "risk_var_limit{job=\"enthropy-quant-metrics\"}",
+          "expr": "risk_var_limit{job=\"pyhron-quant-metrics\"}",
           "legendFormat": "VaR Limit"
         }
       ]
@@ -394,7 +394,7 @@
       },
       "targets": [
         {
-          "expr": "position_exposure_total{job=\"enthropy-quant-metrics\"}",
+          "expr": "position_exposure_total{job=\"pyhron-quant-metrics\"}",
           "legendFormat": "{{ asset_class }} Exposure"
         }
       ]
@@ -427,7 +427,7 @@
       },
       "targets": [
         {
-          "expr": "drawdown_current_pct{job=\"enthropy-quant-metrics\"}",
+          "expr": "drawdown_current_pct{job=\"pyhron-quant-metrics\"}",
           "legendFormat": "{{ strategy }} Drawdown"
         }
       ]
@@ -436,7 +436,7 @@
   "refresh": "10s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["enthropy", "trading", "quantitative"],
+  "tags": ["pyhron", "trading", "quantitative"],
   "templating": {
     "list": [
       {
@@ -468,7 +468,7 @@
     "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
   },
   "timezone": "browser",
-  "title": "Enthropy Trading Platform",
-  "uid": "enthropy-main",
+  "title": "Pyhron Trading Platform",
+  "uid": "pyhron-main",
   "version": 1
 }

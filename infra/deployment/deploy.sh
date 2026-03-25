@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Enthropy Trading Platform - Deployment Script
+# Pyhron Trading Platform - Deployment Script
 # =============================================================================
 # Usage:
 #   ./deploy.sh [environment] [version]
@@ -17,9 +17,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-DOCKER_REGISTRY="${DOCKER_REGISTRY:-ghcr.io/enthropy}"
-IMAGE_NAME="enthropy-api"
-K8S_NAMESPACE="enthropy"
+DOCKER_REGISTRY="${DOCKER_REGISTRY:-ghcr.io/pyhron}"
+IMAGE_NAME="pyhron-api"
+K8S_NAMESPACE="pyhron"
 ROLLBACK_TIMEOUT=300
 DEPLOY_TIMEOUT=600
 HEALTH_CHECK_RETRIES=30
@@ -176,7 +176,7 @@ apply_kubernetes() {
 
     # Apply deployment with image tag substitution
     cat infra/kubernetes/deployment.yaml | \
-        sed "s|image: enthropy-api:latest|image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${VERSION}|g" | \
+        sed "s|image: pyhron-api:latest|image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${VERSION}|g" | \
         kubectl apply -f -
 
     log_ok "Kubernetes manifests applied."
@@ -185,7 +185,7 @@ apply_kubernetes() {
 wait_for_rollout() {
     log_info "Waiting for deployment rollout (timeout: ${DEPLOY_TIMEOUT}s)..."
 
-    if ! kubectl rollout status deployment/enthropy-api \
+    if ! kubectl rollout status deployment/pyhron-api \
         --namespace "$K8S_NAMESPACE" \
         --timeout="${DEPLOY_TIMEOUT}s"; then
         log_error "Deployment rollout failed or timed out."
@@ -199,7 +199,7 @@ health_check() {
     log_info "Running post-deployment health checks..."
 
     local api_url
-    api_url=$(kubectl get svc enthropy-api \
+    api_url=$(kubectl get svc pyhron-api \
         --namespace "$K8S_NAMESPACE" \
         -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "localhost")
 
@@ -219,13 +219,13 @@ health_check() {
 }
 
 rollback() {
-    log_info "Initiating rollback for deployment enthropy-api..."
+    log_info "Initiating rollback for deployment pyhron-api..."
 
-    kubectl rollout undo deployment/enthropy-api \
+    kubectl rollout undo deployment/pyhron-api \
         --namespace "$K8S_NAMESPACE"
 
     log_info "Waiting for rollback to complete..."
-    if kubectl rollout status deployment/enthropy-api \
+    if kubectl rollout status deployment/pyhron-api \
         --namespace "$K8S_NAMESPACE" \
         --timeout="${ROLLBACK_TIMEOUT}s"; then
         log_ok "Rollback completed successfully."
@@ -240,7 +240,7 @@ deploy() {
     start_time=$(date +%s)
 
     log_info "=============================================="
-    log_info "Deploying Enthropy API"
+    log_info "Deploying Pyhron API"
     log_info "  Environment: ${ENVIRONMENT}"
     log_info "  Version:     ${VERSION}"
     log_info "  Registry:    ${DOCKER_REGISTRY}"
