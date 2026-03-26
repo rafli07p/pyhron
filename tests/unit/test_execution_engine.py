@@ -10,7 +10,6 @@ from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-import pybreaker
 import pytest
 
 try:

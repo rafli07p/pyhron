@@ -210,13 +210,15 @@ class TestOrderRouterExecution:
         alpaca = _make_mock_connector("alpaca")
         router = OrderRouter(alpaca_connector=alpaca)
 
-        with patch.object(
-            router._risk,
-            "pre_trade_check",
-            return_value={"approved": False, "reason": "var_limit_exceeded"},
+        with (
+            patch.object(
+                router._risk,
+                "pre_trade_check",
+                return_value={"approved": False, "reason": "var_limit_exceeded"},
+            ),
+            pytest.raises(PermissionError, match="risk"),
         ):
-            with pytest.raises(PermissionError, match="risk"):
-                await router.route_order(_make_order())
+            await router.route_order(_make_order())
 
         assert any("REJECTED" in entry["action"] for entry in router.audit_log)
 
@@ -228,9 +230,11 @@ class TestOrderRouterExecution:
 
         router = OrderRouter(alpaca_connector=alpaca)
 
-        with patch.object(router._risk, "pre_trade_check", return_value={"approved": True}):
-            with pytest.raises(ConnectionError):
-                await router.route_order(_make_order())
+        with (
+            patch.object(router._risk, "pre_trade_check", return_value={"approved": True}),
+            pytest.raises(ConnectionError),
+        ):
+            await router.route_order(_make_order())
 
         assert any("ERROR" in entry["action"] for entry in router.audit_log)
 

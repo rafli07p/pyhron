@@ -7,7 +7,7 @@ and error handling for the auth module.
 from __future__ import annotations
 
 from datetime import timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -27,7 +27,7 @@ except ImportError:
 
 def _mock_settings() -> MagicMock:
     settings = MagicMock()
-    settings.jwt_secret_key = "test-secret-key-that-is-long-enough-for-hs256"
+    settings.jwt_secret_key = "test-secret-key-that-is-long-enough-for-hs256"  # noqa: S105
     settings.jwt_algorithm = "HS256"
     settings.jwt_access_token_expire_minutes = 15
     settings.jwt_refresh_token_expire_days = 7
@@ -40,7 +40,7 @@ class TestPasswordHashing:
 
     def test_hash_and_verify(self) -> None:
         """Hashed password should verify correctly."""
-        password = "secure_password_123!"
+        password = "secure_password_123!"  # noqa: S105
         hashed = hash_password(password)
         assert verify_password(password, hashed) is True
 
@@ -51,13 +51,13 @@ class TestPasswordHashing:
 
     def test_hash_is_not_plaintext(self) -> None:
         """Hash should not contain the original password."""
-        password = "my_secret"
+        password = "my_secret"  # noqa: S105
         hashed = hash_password(password)
         assert password not in hashed
 
     def test_different_hashes_for_same_password(self) -> None:
         """Same password should produce different hashes (salt)."""
-        password = "same_password"
+        password = "same_password"  # noqa: S105
         hash1 = hash_password(password)
         hash2 = hash_password(password)
         assert hash1 != hash2

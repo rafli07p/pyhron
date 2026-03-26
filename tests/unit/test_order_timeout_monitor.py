@@ -9,13 +9,13 @@ from __future__ import annotations
 import pytest
 
 try:
+    from data_platform.models.trading import OrderStatusEnum
     from services.order_management_system.order_timeout_monitor import (
         DEFAULT_LIMIT_ORDER_TTL_SECONDS,
         DEFAULT_ORDER_TTL_SECONDS,
         DEFAULT_SCAN_INTERVAL_SECONDS,
         EXPIRABLE_STATUSES,
     )
-    from data_platform.models.trading import OrderStatusEnum
 except ImportError:
     pytest.skip("Requires OMS modules", allow_module_level=True)
 

@@ -6,17 +6,17 @@ AttributionReport dataclasses.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
 try:
-    from services.paper_trading.simulation_engine import DaySimulationResult
     from services.paper_trading.pnl_attribution import (
         AttributionReport,
         PaperSessionMetrics,
     )
+    from services.paper_trading.simulation_engine import DaySimulationResult
 except ImportError:
     pytest.skip("Requires paper trading modules", allow_module_level=True)
 

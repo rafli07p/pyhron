@@ -12,9 +12,7 @@ import pytest
 
 try:
     from services.order_management_system.idx_order_validator import (
-        IDX_LOT_SIZE,
         IDX_MIN_PRICE_IDR,
-        IDX_TICK_SIZE_MAP,
         IDXOrderValidationResult,
         IDXOrderValidator,
     )

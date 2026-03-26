@@ -98,7 +98,7 @@ class TestTerminalStates:
     def test_terminal_states_complete(self) -> None:
         """All and only empty-transition statuses should be terminal."""
         expected_terminal = {s for s, allowed in VALID_TRANSITIONS.items() if len(allowed) == 0}
-        assert TERMINAL_STATES == expected_terminal
+        assert expected_terminal == TERMINAL_STATES
 
 
 class TestTransitionGraphProperties:
