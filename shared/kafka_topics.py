@@ -52,3 +52,4 @@ class KafkaTopic:
     DLQ_FUNDAMENTALS = "pyhron.dlq.fundamentals"
     DLQ_CORPORATE_ACTIONS = "pyhron.dlq.corporate_actions"
     DLQ_INTRADAY = "pyhron.dlq.intraday"
+    DLQ_STRATEGY_SIGNALS = "pyhron.dlq.strategy_signals"

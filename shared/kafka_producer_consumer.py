@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import KafkaError
@@ -197,7 +197,7 @@ class PyhronProducer:
                 await asyncio.sleep(wait)
 
 
-class PyhronConsumer[ProtoT: Message]:
+class PyhronConsumer(Generic[ProtoT]):
     """Type-safe Kafka consumer for Protobuf messages.
 
     Usage::

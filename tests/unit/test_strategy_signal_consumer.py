@@ -10,7 +10,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from services.paper_trading.strategy_executor import RebalanceResult
-from services.paper_trading.strategy_signal_consumer import StrategySignalKafkaConsumer
+from services.paper_trading.strategy_signal_consumer import (
+    ConsumerHealthStatus,
+    StrategySignalKafkaConsumer,
+)
 
 
 class TestStrategySignalConsumer:
@@ -179,3 +182,61 @@ class TestRunNotStarted:
             consumer = StrategySignalKafkaConsumer()
             with pytest.raises(RuntimeError, match="Consumer not started"):
                 await consumer.run()
+
+
+class TestConsumerHealthStatus:
+    """Tests for ConsumerHealthStatus dataclass."""
+
+    def test_stopped_status(self):
+        status = ConsumerHealthStatus(running=False)
+        assert status.status == "stopped"
+
+    def test_healthy_status(self):
+        status = ConsumerHealthStatus(running=True, messages_processed=100, errors=5)
+        assert status.status == "healthy"
+
+    def test_degraded_status_high_error_rate(self):
+        status = ConsumerHealthStatus(running=True, messages_processed=100, errors=15)
+        assert status.status == "degraded"
+
+    def test_healthy_with_zero_messages(self):
+        status = ConsumerHealthStatus(running=True, messages_processed=0, errors=0)
+        assert status.status == "healthy"
+
+
+class TestConsumerHealth:
+    """Tests for the consumer health() method."""
+
+    def _make_consumer(self) -> StrategySignalKafkaConsumer:
+        with patch("services.paper_trading.strategy_signal_consumer.get_config") as mock_config:
+            mock_config.return_value = MagicMock(kafka_bootstrap_servers="localhost:9092")
+            return StrategySignalKafkaConsumer()
+
+    def test_health_when_stopped(self):
+        consumer = self._make_consumer()
+        health = consumer.health()
+        assert health.status == "stopped"
+        assert health.running is False
+        assert health.started_at is None
+        assert health.messages_processed == 0
+
+    def test_health_reports_topics(self):
+        consumer = self._make_consumer()
+        health = consumer.health()
+        assert len(health.topics) == 2
+        assert health.consumer_group == "paper-strategy-executor"
+
+    def test_health_tracks_counters(self):
+        consumer = self._make_consumer()
+        consumer._running = True
+        consumer._started_at = datetime(2025, 1, 15, 9, 0, tzinfo=UTC)
+        consumer._messages_processed = 42
+        consumer._batches_flushed = 3
+        consumer._errors = 1
+        consumer._last_message_at = datetime(2025, 1, 15, 9, 30, tzinfo=UTC)
+        health = consumer.health()
+        assert health.status == "healthy"
+        assert health.messages_processed == 42
+        assert health.batches_flushed == 3
+        assert health.errors == 1
+        assert health.last_message_at == datetime(2025, 1, 15, 9, 30, tzinfo=UTC)

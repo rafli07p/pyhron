@@ -10,6 +10,7 @@ Publishes rebalance results to ``pyhron.paper.rebalance_result``.
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
@@ -31,6 +32,28 @@ logger = get_logger(__name__)
 DEFAULT_BATCH_SIZE = 50
 # Max seconds to wait before flushing a partial batch
 DEFAULT_BATCH_TIMEOUT_S = 5.0
+
+
+@dataclass
+class ConsumerHealthStatus:
+    """Snapshot of consumer health for monitoring."""
+
+    running: bool = False
+    started_at: datetime | None = None
+    last_message_at: datetime | None = None
+    messages_processed: int = 0
+    batches_flushed: int = 0
+    errors: int = 0
+    topics: list[str] = field(default_factory=list)
+    consumer_group: str = ""
+
+    @property
+    def status(self) -> str:
+        if not self.running:
+            return "stopped"
+        if self.errors > self.messages_processed * 0.1 and self.messages_processed > 0:
+            return "degraded"
+        return "healthy"
 
 
 class StrategySignalKafkaConsumer:
@@ -71,6 +94,11 @@ class StrategySignalKafkaConsumer:
         self._batch_size = batch_size
         self._batch_timeout_s = batch_timeout_s
         self._running = False
+        self._started_at: datetime | None = None
+        self._last_message_at: datetime | None = None
+        self._messages_processed = 0
+        self._batches_flushed = 0
+        self._errors = 0
 
     async def start(self) -> None:
         """Start the Kafka consumer and producer."""
@@ -96,6 +124,7 @@ class StrategySignalKafkaConsumer:
         await self._producer.start()
 
         self._running = True
+        self._started_at = datetime.now(UTC)
         logger.info(
             "strategy_signal_consumer_started",
             topics=[KafkaTopic.MOMENTUM_SIGNALS, KafkaTopic.ML_SIGNALS],
@@ -111,6 +140,19 @@ class StrategySignalKafkaConsumer:
             await self._producer.stop()
             self._producer = None
         logger.info("strategy_signal_consumer_stopped")
+
+    def health(self) -> ConsumerHealthStatus:
+        """Return a snapshot of consumer health metrics."""
+        return ConsumerHealthStatus(
+            running=self._running,
+            started_at=self._started_at,
+            last_message_at=self._last_message_at,
+            messages_processed=self._messages_processed,
+            batches_flushed=self._batches_flushed,
+            errors=self._errors,
+            topics=[KafkaTopic.MOMENTUM_SIGNALS, KafkaTopic.ML_SIGNALS],
+            consumer_group="paper-strategy-executor",
+        )
 
     async def run(self) -> None:
         """Main processing loop: consume signals, batch by session, execute.
@@ -130,6 +172,8 @@ class StrategySignalKafkaConsumer:
                 break
 
             try:
+                self._messages_processed += 1
+                self._last_message_at = datetime.now(UTC)
                 signal = record.value
                 session_id = signal.get("session_id", "")
                 if not session_id:
@@ -154,6 +198,7 @@ class StrategySignalKafkaConsumer:
                 await self._consumer.commit()
 
             except Exception:
+                self._errors += 1
                 logger.exception(
                     "signal_processing_error",
                     topic=record.topic,
@@ -168,6 +213,7 @@ class StrategySignalKafkaConsumer:
 
     async def _flush_buffer(self, buffer: dict[str, list[dict[str, Any]]]) -> None:
         """Process all buffered signals grouped by session."""
+        self._batches_flushed += 1
         for session_id, signals in buffer.items():
             try:
                 result = await self._execute_rebalance(session_id, signals)

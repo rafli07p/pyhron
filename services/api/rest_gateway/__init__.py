@@ -514,10 +514,58 @@ def create_rest_app() -> FastAPI:
             media_type=CONTENT_TYPE_LATEST,
         )
 
-    @app.get("/ready", tags=["ops"])
-    async def readiness() -> dict[str, str]:
-        # TODO: verify downstream dependencies (DB, Redis, Kafka)
-        return {"status": "ready"}
+    @app.get("/ready", response_model=None, tags=["ops"])
+    async def readiness() -> JSONResponse:
+        """Readiness probe – verifies Postgres, Redis, and Kafka connectivity."""
+        import redis.asyncio as aioredis
+        from aiokafka import AIOKafkaProducer
+        from sqlalchemy import text
+        from sqlalchemy.ext.asyncio import create_async_engine
+
+        from shared.configuration_settings import get_config
+
+        cfg = get_config()
+        checks: dict[str, str] = {}
+
+        # -- Postgres --
+        try:
+            engine = create_async_engine(cfg.database_url, pool_pre_ping=True)
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            await engine.dispose()
+            checks["postgres"] = "ok"
+        except Exception as exc:
+            checks["postgres"] = f"error: {exc}"
+
+        # -- Redis --
+        try:
+            r = aioredis.from_url(cfg.redis_url, decode_responses=True)  # type: ignore[no-untyped-call]
+            await r.ping()
+            await r.aclose()
+            checks["redis"] = "ok"
+        except Exception as exc:
+            checks["redis"] = f"error: {exc}"
+
+        # -- Kafka --
+        try:
+            producer = AIOKafkaProducer(
+                bootstrap_servers=cfg.kafka_bootstrap_servers,
+                request_timeout_ms=5000,
+            )
+            await producer.start()
+            await producer.stop()
+            checks["kafka"] = "ok"
+        except Exception as exc:
+            checks["kafka"] = f"error: {exc}"
+
+        all_ok = all(v == "ok" for v in checks.values())
+        return JSONResponse(
+            status_code=200 if all_ok else 503,
+            content={
+                "status": "ready" if all_ok else "not_ready",
+                "checks": checks,
+            },
+        )
 
     # ------------------------------------------------------------------
     # Market Data
