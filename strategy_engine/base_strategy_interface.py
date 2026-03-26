@@ -23,9 +23,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
 
-# ── Supporting Types ─────────────────────────────────────────────────────────
-
-
+# Supporting Types
 class SignalDirection(StrEnum):
     """Direction of a trading signal."""
 
@@ -123,9 +121,7 @@ class TickData:
     ask: float | None = None
 
 
-# ── Abstract Base Strategy ───────────────────────────────────────────────────
-
-
+# Abstract Base Strategy
 class BaseStrategyInterface(abc.ABC):
     """Abstract base class that every Pyhron strategy must implement.
 

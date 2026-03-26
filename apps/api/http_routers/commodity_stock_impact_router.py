@@ -17,9 +17,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/commodity-impact", tags=["commodity-impact"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class StockImpact(BaseModel):
     symbol: str
     name: str
@@ -63,9 +61,7 @@ class SensitivityMatrix(BaseModel):
     computed_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/analysis/{commodity_code}", response_model=CommodityImpactAnalysis)
 async def get_impact_analysis(
     commodity_code: str,

@@ -28,9 +28,7 @@ from tenacity import (
 
 logger = structlog.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
 # Constants
-# ---------------------------------------------------------------------------
 _MANIFEST_FILE = "backup_manifest.json"
 _CHUNK_SIZE = 8 * 1024 * 1024  # 8 MiB for checksum streaming
 
@@ -39,9 +37,7 @@ class BackupError(Exception):
     """Raised when a backup or restore operation fails."""
 
 
-# ---------------------------------------------------------------------------
 # BackupManager
-# ---------------------------------------------------------------------------
 
 class BackupManager:
     """Manage PostgreSQL and Redis backups for the Pyhron platform.

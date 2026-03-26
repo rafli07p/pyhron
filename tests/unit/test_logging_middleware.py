@@ -13,9 +13,7 @@ from services.api.logging import (
     configure_logging,
 )
 
-# =============================================================================
 # ELKJSONRenderer
-# =============================================================================
 
 
 class TestELKJSONRenderer:
@@ -46,9 +44,7 @@ class TestELKJSONRenderer:
         assert parsed["duration_ms"] == 5.2
 
 
-# =============================================================================
 # configure_logging
-# =============================================================================
 
 
 def test_configure_logging_json_mode() -> None:
@@ -61,9 +57,7 @@ def test_configure_logging_console_mode() -> None:
     # Should not raise
 
 
-# =============================================================================
 # RequestLoggingMiddleware
-# =============================================================================
 
 
 @pytest.mark.asyncio
@@ -116,9 +110,7 @@ async def test_request_logging_middleware_skips_non_http() -> None:
     assert called
 
 
-# =============================================================================
 # AuditLogMiddleware
-# =============================================================================
 
 
 @pytest.mark.asyncio

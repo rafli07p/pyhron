@@ -42,9 +42,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-# ── Engine ──────────────────────────────────────────────────────────────────
-
-
+# Engine
 class CommodityToStockImpactEngine:
     """Fan-out commodity price changes to per-stock earnings impacts.
 

@@ -20,9 +20,7 @@ import structlog
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Limit configuration
-# ---------------------------------------------------------------------------
 
 @dataclass
 class TenantRiskLimits:
@@ -57,9 +55,7 @@ class TenantRiskLimits:
 _DEFAULT_LIMITS = TenantRiskLimits()
 
 
-# ---------------------------------------------------------------------------
 # Check result
-# ---------------------------------------------------------------------------
 
 @dataclass
 class LimitCheckResult:
@@ -72,9 +68,7 @@ class LimitCheckResult:
     message: str = ""
 
 
-# ---------------------------------------------------------------------------
 # Risk limit engine
-# ---------------------------------------------------------------------------
 
 class RiskLimitEngine:
     """Enforces risk limits with pybreaker circuit-breaker protection.

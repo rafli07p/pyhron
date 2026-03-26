@@ -21,9 +21,7 @@ from services.api.websocket_gateway.kafka_redis_bridge import (
 )
 from shared.kafka_topics import KafkaTopic
 
-# ---------------------------------------------------------------------------
 # Fixtures
-# ---------------------------------------------------------------------------
 
 SAMPLE_TRADE_EVENT = {
     "event_type": "trade",
@@ -59,9 +57,7 @@ SAMPLE_QUOTE_EVENT = {
 }
 
 
-# ---------------------------------------------------------------------------
 # 1. Event topic mapping
-# ---------------------------------------------------------------------------
 
 
 class TestEventTopicMapping:
@@ -88,9 +84,7 @@ class TestEventTopicMapping:
         assert _EVENT_TOPIC_MAP.get("heartbeat") is None
 
 
-# ---------------------------------------------------------------------------
 # 2. IntradayIngestionService._publish_event
-# ---------------------------------------------------------------------------
 
 
 class TestPublishEvent:
@@ -152,9 +146,7 @@ class TestPublishEvent:
             await service._publish_event(SAMPLE_TRADE_EVENT)
 
 
-# ---------------------------------------------------------------------------
 # 3. Validation consumer — intraday bar validation
-# ---------------------------------------------------------------------------
 
 
 class TestIntradayBarValidation:
@@ -211,9 +203,7 @@ class TestIntradayBarValidation:
         assert result.is_valid
 
 
-# ---------------------------------------------------------------------------
 # 4. Kafka→Redis bridge — message routing
-# ---------------------------------------------------------------------------
 
 
 class TestIntradayMessageRouting:
@@ -240,9 +230,7 @@ class TestIntradayMessageRouting:
         assert channel is None
 
 
-# ---------------------------------------------------------------------------
 # 5. Kafka→Redis bridge — message transforms
-# ---------------------------------------------------------------------------
 
 
 class TestIntradayMessageTransforms:
@@ -283,9 +271,7 @@ class TestIntradayMessageTransforms:
         assert result["trade_count"] == 0
 
 
-# ---------------------------------------------------------------------------
 # 6. Kafka topic routing table
-# ---------------------------------------------------------------------------
 
 
 class TestIntradayTopicRouting:
@@ -306,9 +292,7 @@ class TestIntradayTopicRouting:
         assert KafkaTopic.RAW_INTRADAY_BARS in _TOPICS_TO_BRIDGE
 
 
-# ---------------------------------------------------------------------------
 # 7. Full pipeline integration (requires infrastructure)
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration

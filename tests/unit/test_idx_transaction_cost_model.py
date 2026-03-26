@@ -13,9 +13,8 @@ from datetime import date, timedelta
 
 import pytest
 
-# ── IDX Cost Model (pure functions under test) ──────────────────────────────
 
-
+# IDX Cost Model (pure functions under test)
 def compute_buy_commission(quantity: int, price: float, rate: float = 0.0015) -> float:
     """Compute buy-side commission for IDX equities."""
     return quantity * price * rate
@@ -48,9 +47,7 @@ def compute_settlement_date(trade_date: date) -> date:
     return current
 
 
-# ── Buy Commission Tests ────────────────────────────────────────────────────
-
-
+# Buy Commission Tests
 class TestBuyCommission:
     def test_standard_buy(self):
         commission = compute_buy_commission(1000, 9200.0)
@@ -69,9 +66,7 @@ class TestBuyCommission:
         assert compute_buy_commission(0, 9200.0) == 0.0
 
 
-# ── Sell Commission Tests ───────────────────────────────────────────────────
-
-
+# Sell Commission Tests
 class TestSellCommission:
     def test_standard_sell(self):
         commission = compute_sell_commission(1000, 9200.0)
@@ -93,9 +88,7 @@ class TestSellCommission:
         assert compute_sell_commission(0, 9200.0) == 0.0
 
 
-# ── Lot Size Rounding Tests ─────────────────────────────────────────────────
-
-
+# Lot Size Rounding Tests
 class TestLotSizeRounding:
     def test_exact_lot(self):
         assert round_to_lot(500) == 500
@@ -113,9 +106,7 @@ class TestLotSizeRounding:
         assert round_to_lot(12_345) == 12_300
 
 
-# ── T+2 Settlement Date Tests ──────────────────────────────────────────────
-
-
+# T+2 Settlement Date Tests
 class TestSettlementDate:
     def test_monday_settles_wednesday(self):
         assert compute_settlement_date(date(2025, 1, 6)) == date(2025, 1, 8)

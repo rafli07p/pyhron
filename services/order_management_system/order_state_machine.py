@@ -29,7 +29,7 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
-# ── Transition Table ─────────────────────────────────────────────────────────
+# Transition Table
 # Maps each OrderStatusEnum value to the set of statuses it may transition to.
 # Terminal states map to an empty set -- no further transitions allowed.
 

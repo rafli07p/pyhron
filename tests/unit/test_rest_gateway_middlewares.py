@@ -10,9 +10,7 @@ from services.api.rest_gateway import (
     SecurityHeadersMiddleware,
 )
 
-# =============================================================================
 # Helpers
-# =============================================================================
 
 
 def _make_scope(
@@ -35,9 +33,7 @@ def _make_scope(
     }
 
 
-# =============================================================================
 # SecurityHeadersMiddleware
-# =============================================================================
 
 
 class TestSecurityHeadersMiddleware:
@@ -76,9 +72,7 @@ class TestSecurityHeadersMiddleware:
         assert called
 
 
-# =============================================================================
 # CSRFMiddleware
-# =============================================================================
 
 
 class TestCSRFMiddleware:
@@ -183,9 +177,7 @@ class TestCSRFMiddleware:
         assert app_called
 
 
-# =============================================================================
 # RequestIDMiddleware
-# =============================================================================
 
 
 class TestRequestIDMiddleware:

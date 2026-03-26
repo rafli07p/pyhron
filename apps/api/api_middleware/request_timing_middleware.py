@@ -18,8 +18,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-# ── Prometheus Histogram (lazy init) ────────────────────────────────────────
-
+# Prometheus Histogram (lazy init)
 _histogram: Any = None
 
 
@@ -41,9 +40,7 @@ def _get_histogram() -> Any:
     return _histogram if _histogram is not False else None
 
 
-# ── Path Normalization ───────────────────────────────────────────────────────
-
-
+# Path Normalization
 def _normalize_path(path: str) -> str:
     """Normalize path for Prometheus labels to avoid cardinality explosion.
 
@@ -60,9 +57,7 @@ def _normalize_path(path: str) -> str:
     return "/" + "/".join(normalized)
 
 
-# ── Middleware ───────────────────────────────────────────────────────────────
-
-
+# Middleware
 class RequestTimingMiddleware(BaseHTTPMiddleware):
     """Measure and log HTTP request duration. Optionally export to Prometheus."""
 

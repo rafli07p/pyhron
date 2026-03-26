@@ -25,9 +25,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-
+# Helpers
 def _make_order(
     quantity: int = 100,
     side: int = 1,
@@ -65,9 +63,7 @@ def _make_position(symbol: str, quantity: int, current_price: float, market_valu
     return pos
 
 
-# ── Position Limit Tests ────────────────────────────────────────────────────
-
-
+# Position Limit Tests
 class TestPositionLimits:
     """Test that position size checks enforce percentage limits."""
 
@@ -99,9 +95,7 @@ class TestPositionLimits:
         assert result.passed is True
 
 
-# ── Concentration Limit Tests ───────────────────────────────────────────────
-
-
+# Concentration Limit Tests
 class TestConcentrationLimits:
     """Test sector concentration checks."""
 
@@ -131,9 +125,7 @@ class TestConcentrationLimits:
         assert result.passed is True
 
 
-# ── Max Order Value Tests ───────────────────────────────────────────────────
-
-
+# Max Order Value Tests
 class TestMaxOrderValue:
     """Test buying power checks enforce maximum order value."""
 

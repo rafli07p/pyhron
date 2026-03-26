@@ -19,6 +19,8 @@ from decimal import Decimal
 import pytest
 import pytest_asyncio
 
+pytestmark = pytest.mark.integration
+
 # TODO: update imports when pyhron.market_data is implemented
 # Future paths:
 #   MarketDataCache, MarketDataClient, MarketDataIngestionService, MarketDataPublisher — not yet implemented
@@ -30,9 +32,7 @@ from pyhron.market_data.ingestion import MarketDataIngestionService
 from pyhron.market_data.publisher import MarketDataPublisher
 from pyhron.shared.schemas.tick import TickData
 
-# =============================================================================
 # Skip Conditions
-# =============================================================================
 MARKET_DATA_API_KEY = os.environ.get("MARKET_DATA_API_KEY")
 SKIP_NO_API_KEY = pytest.mark.skipif(
     not MARKET_DATA_API_KEY,
@@ -48,9 +48,7 @@ SKIP_NO_REDIS = pytest.mark.skipif(
 )
 
 
-# =============================================================================
 # Fixtures
-# =============================================================================
 @pytest_asyncio.fixture
 async def market_data_client():
     """Market data API client."""
@@ -97,9 +95,7 @@ async def ingestion_service(market_data_client, redis_cache, kafka_publisher):
     await service.shutdown()
 
 
-# =============================================================================
 # Market Data Client Tests
-# =============================================================================
 class TestMarketDataClient:
     """Tests for direct market data API interaction."""
 
@@ -171,9 +167,7 @@ class TestMarketDataClient:
         assert len(successful) == len(results)
 
 
-# =============================================================================
 # Cache Integration Tests
-# =============================================================================
 class TestMarketDataCache:
     """Tests for Redis market data caching."""
 
@@ -243,9 +237,7 @@ class TestMarketDataCache:
             assert cached.price == Decimal(str(100 + i * 10))
 
 
-# =============================================================================
 # Kafka Publisher Tests
-# =============================================================================
 class TestMarketDataPublisher:
     """Tests for Kafka market data publishing."""
 
@@ -291,9 +283,7 @@ class TestMarketDataPublisher:
         assert len(results) == 100
 
 
-# =============================================================================
 # Full Ingestion Pipeline Tests
-# =============================================================================
 class TestIngestionPipeline:
     """Tests for the complete market data ingestion pipeline."""
 

@@ -119,9 +119,7 @@ class MockRedis:
         self._store.clear()
 
 
-# ── Pytest Fixtures ──────────────────────────────────────────────────────────
-
-
+# Pytest Fixtures
 @pytest.fixture
 def mock_producer() -> MockPyhronProducer:
     """Provide a mock Kafka producer."""

@@ -31,9 +31,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Routing configuration
-# ---------------------------------------------------------------------------
 
 # Symbols containing "/" or ending with common crypto quote currencies
 # are assumed to be crypto pairs routed to CCXT.
@@ -48,9 +46,7 @@ def _looks_like_crypto(symbol: str) -> bool:
     return any(upper.endswith(q) for q in _CRYPTO_QUOTES) and len(upper) > 4
 
 
-# ---------------------------------------------------------------------------
 # Route result dataclass
-# ---------------------------------------------------------------------------
 
 
 class RouteDecision:
@@ -71,9 +67,7 @@ class RouteDecision:
         }
 
 
-# ---------------------------------------------------------------------------
 # Pre-trade risk check stub
-# ---------------------------------------------------------------------------
 
 
 class _RiskServiceClient:
@@ -122,9 +116,7 @@ class _RiskServiceClient:
             return {"approved": True, "reason": "risk_service_unavailable"}
 
 
-# ---------------------------------------------------------------------------
 # OrderRouter
-# ---------------------------------------------------------------------------
 
 
 class OrderRouter:

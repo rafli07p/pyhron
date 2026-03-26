@@ -13,6 +13,8 @@ from decimal import Decimal
 
 import pytest
 
+pytestmark = pytest.mark.e2e
+
 # TODO: update imports when pyhron backtest/strategy interfaces are implemented
 # Future paths:
 #   from strategy_engine.backtesting.idx_vectorbt_backtest_engine import IDXVectorbtBacktestEngine (as BacktestEngine), BacktestResult
@@ -32,18 +34,14 @@ from pyhron.shared.schemas.risk import RiskLimits
 from pyhron.strategy.mean_reversion import MeanReversionStrategy
 from pyhron.strategy.momentum import MomentumStrategy
 
-# =============================================================================
 # Skip Conditions
-# =============================================================================
 SKIP_E2E = pytest.mark.skipif(
     os.environ.get("SKIP_E2E", "false").lower() == "true",
     reason="SKIP_E2E is set. Skipping end-to-end tests.",
 )
 
 
-# =============================================================================
 # Fixtures
-# =============================================================================
 @pytest.fixture
 def backtest_config() -> BacktestConfig:
     """Standard backtest configuration."""
@@ -119,9 +117,7 @@ def backtest_engine(
     )
 
 
-# =============================================================================
 # Full Backtest Chain Tests
-# =============================================================================
 class TestFullBacktestChain:
     """End-to-end tests for the complete backtest pipeline."""
 
@@ -253,9 +249,7 @@ class TestFullBacktestChain:
         assert result.information_ratio is not None
 
 
-# =============================================================================
 # Data Loading Tests
-# =============================================================================
 class TestBacktestDataLoading:
     """Tests for historical data loading within backtest."""
 
@@ -319,9 +313,7 @@ class TestBacktestDataLoading:
             assert bar.volume >= 0, f"Negative volume on {bar.date}"
 
 
-# =============================================================================
 # Report Generation Tests
-# =============================================================================
 class TestBacktestReportGeneration:
     """Tests for backtest report generation."""
 

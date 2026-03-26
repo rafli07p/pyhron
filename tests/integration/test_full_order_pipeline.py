@@ -27,9 +27,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-
+# Helpers
 def _make_order(
     quantity: int = 100,
     side: int = 1,
@@ -70,9 +68,7 @@ def _make_portfolio(
     return portfolio
 
 
-# ── Pipeline Tests ───────────────────────────────────────────────────────────
-
-
+# Pipeline Tests
 class TestFullOrderPipeline:
     """End-to-end risk check pipeline with realistic scenarios."""
 

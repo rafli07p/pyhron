@@ -58,9 +58,7 @@ def sample_market_order() -> OrderRequest:
     return order
 
 
-# ── Alpaca Mapping Tests ─────────────────────────────────────────────────────
-
-
+# Alpaca Mapping Tests
 class TestAlpacaMapping:
     def test_limit_buy_to_alpaca(self, mapper: BrokerOrderMapper, sample_limit_order: OrderRequest) -> None:
         payload = mapper.to_alpaca_order(sample_limit_order)
@@ -104,9 +102,7 @@ class TestAlpacaMapping:
         assert pos.current_price == pytest.approx(152.00)
 
 
-# ── IDX FIX Mapping Tests ───────────────────────────────────────────────────
-
-
+# IDX FIX Mapping Tests
 class TestIDXFIXMapping:
     def test_limit_buy_to_fix(self, mapper: BrokerOrderMapper, sample_limit_order: OrderRequest) -> None:
         tags = mapper.to_fix_new_order(sample_limit_order)
@@ -145,9 +141,7 @@ class TestIDXFIXMapping:
         assert result["broker_name"] == "IDX"
 
 
-# ── Unified Broker Interface Tests ──────────────────────────────────────────
-
-
+# Unified Broker Interface Tests
 class TestUnifiedBrokerInterface:
     def test_to_broker_alpaca(self, mapper: BrokerOrderMapper, sample_limit_order: OrderRequest) -> None:
         payload = mapper.to_broker(sample_limit_order, "ALPACA")
@@ -207,9 +201,7 @@ class TestUnifiedBrokerInterface:
             mapper.from_broker({}, "BINANCE")
 
 
-# ── Side/Type Map Coverage ───────────────────────────────────────────────────
-
-
+# Side/Type Map Coverage
 class TestMappingCoverage:
     def test_all_sides_mapped_for_alpaca(self) -> None:
         assert OrderSide.ORDER_SIDE_BUY in ALPACA_SIDE_MAP

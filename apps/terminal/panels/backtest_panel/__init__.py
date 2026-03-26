@@ -17,9 +17,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
 
-# ── Formatting Helpers ───────────────────────────────────────────────────────
-
-
+# Formatting Helpers
 def _fmt_idr(value: int | float) -> str:
     """Format as IDR with period thousands separator."""
     s = f"{abs(int(value)):,}".replace(",", ".")
@@ -57,9 +55,7 @@ def _fmt_return_color(value: float) -> str:
     return _fmt_pct(0)
 
 
-# ── ASCII Equity Curve ───────────────────────────────────────────────────────
-
-
+# ASCII Equity Curve
 def render_equity_curve(
     nav_series: list[float],
     width: int = 60,
@@ -139,9 +135,7 @@ def render_equity_curve(
     return "\n".join(lines)
 
 
-# ── Panel Widget ─────────────────────────────────────────────────────────────
-
-
+# Panel Widget
 class BacktestPanel(Static):
     """Backtest results display panel.
 

@@ -23,9 +23,7 @@ from pydantic import BaseModel, Field
 
 logger = structlog.stdlib.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
 # Configuration
-# ---------------------------------------------------------------------------
 
 from shared.configuration_settings import get_config as _get_config
 
@@ -42,9 +40,7 @@ HEARTBEAT_INTERVAL_SECONDS = 15
 HEARTBEAT_TIMEOUT_SECONDS = 30
 
 
-# ---------------------------------------------------------------------------
 # Message types
-# ---------------------------------------------------------------------------
 
 
 class WSMessageType(StrEnum):
@@ -67,9 +63,7 @@ class WSMessage(BaseModel):
     request_id: str | None = None
 
 
-# ---------------------------------------------------------------------------
 # Connection manager
-# ---------------------------------------------------------------------------
 
 
 class ConnectionManager:
@@ -226,9 +220,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-# ---------------------------------------------------------------------------
 # JWT authentication for WebSocket
-# ---------------------------------------------------------------------------
 
 
 async def _authenticate_first_message(websocket: WebSocket) -> dict[str, str] | None:
@@ -283,9 +275,7 @@ def authenticate_ws_token(token: str) -> dict[str, str]:
         raise ValueError(f"Invalid token: {exc}") from exc
 
 
-# ---------------------------------------------------------------------------
 # Heartbeat background task
-# ---------------------------------------------------------------------------
 
 
 async def _heartbeat_loop() -> None:
@@ -307,9 +297,7 @@ async def _heartbeat_loop() -> None:
                 await manager.disconnect(cid)
 
 
-# ---------------------------------------------------------------------------
 # Market data feed background task (Polygon WebSocket)
-# ---------------------------------------------------------------------------
 
 
 async def _polygon_market_feed() -> None:
@@ -387,9 +375,7 @@ async def _polygon_market_feed() -> None:
             await asyncio.sleep(5)
 
 
-# ---------------------------------------------------------------------------
 # Application factory
-# ---------------------------------------------------------------------------
 
 
 def create_ws_app() -> FastAPI:

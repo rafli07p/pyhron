@@ -21,9 +21,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/macro", tags=["macro-dashboard"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class MacroIndicator(BaseModel):
     code: str = Field(description="e.g. GDP_GROWTH, CPI_YOY, BI_RATE")
     name: str
@@ -63,9 +61,7 @@ class PolicyEvent(BaseModel):
     actual: str | None = None
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/indicators", response_model=list[MacroIndicator])
 async def get_indicators(
     category: str | None = Query(None, description="growth, inflation, monetary, trade"),

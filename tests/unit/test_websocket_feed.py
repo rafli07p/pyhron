@@ -35,9 +35,8 @@ except BaseException:
 
 from shared.kafka_topics import KafkaTopic
 
-# ── Helpers ──────────────────────────────────────────────────────────────
 
-
+# Helpers
 class MockWebSocket:
     """Minimal WebSocket mock for testing the connection manager."""
 
@@ -81,9 +80,7 @@ def _valid_jwt_payload() -> MagicMock:
     return payload
 
 
-# ── Test 1: Connection registered on connect ─────────────────────────────
-
-
+# Test 1: Connection registered on connect
 async def test_connection_registered_on_connect() -> None:
     manager = WebSocketConnectionManager(_mock_redis())
     ws = MockWebSocket()
@@ -91,9 +88,7 @@ async def test_connection_registered_on_connect() -> None:
     assert manager.is_connected("conn-001")
 
 
-# ── Test 2: Unauthenticated connection cannot subscribe ──────────────────
-
-
+# Test 2: Unauthenticated connection cannot subscribe
 async def test_unauthenticated_cannot_subscribe() -> None:
     manager = WebSocketConnectionManager(_mock_redis())
     ws = MockWebSocket()
@@ -102,9 +97,7 @@ async def test_unauthenticated_cannot_subscribe() -> None:
     assert result is False
 
 
-# ── Test 3: Valid JWT authenticates connection ───────────────────────────
-
-
+# Test 3: Valid JWT authenticates connection
 async def test_valid_jwt_authenticates() -> None:
     manager = WebSocketConnectionManager(_mock_redis())
     ws = MockWebSocket()
@@ -121,9 +114,7 @@ async def test_valid_jwt_authenticates() -> None:
     assert manager.is_authenticated("conn-001")
 
 
-# ── Test 4: Expired JWT fails authentication ─────────────────────────────
-
-
+# Test 4: Expired JWT fails authentication
 async def test_expired_jwt_fails() -> None:
     manager = WebSocketConnectionManager(_mock_redis())
     ws = MockWebSocket()
@@ -139,9 +130,7 @@ async def test_expired_jwt_fails() -> None:
     assert not manager.is_authenticated("conn-001")
 
 
-# ── Test 5: Message router maps topics to correct channels ───────────────
-
-
+# Test 5: Message router maps topics to correct channels
 def test_router_maps_ohlcv_to_quotes_channel() -> None:
     router = MessageRouter()
     payload: dict[str, str] = {"symbol": "BBCA", "close": "9250"}
@@ -170,9 +159,7 @@ def test_router_maps_signals_to_strategy_channel() -> None:
     assert channel == "pyhron:signals:strat-100"
 
 
-# ── Test 6: Rate limiter allows up to limit then blocks ──────────────────
-
-
+# Test 6: Rate limiter allows up to limit then blocks
 async def test_rate_limiter_blocks_at_limit() -> None:
     mock_redis = _mock_redis()
 
@@ -199,9 +186,7 @@ async def test_rate_limiter_blocks_at_limit() -> None:
     assert result is False
 
 
-# ── Test 7: Max connections per user enforced ────────────────────────────
-
-
+# Test 7: Max connections per user enforced
 async def test_max_connections_per_user_enforced() -> None:
     manager = WebSocketConnectionManager(_mock_redis())
     user_id = "user-abc"
@@ -229,9 +214,7 @@ async def test_max_connections_per_user_enforced() -> None:
         assert result is None
 
 
-# ── Test 8: Disconnect cleans up subscriptions ───────────────────────────
-
-
+# Test 8: Disconnect cleans up subscriptions
 async def test_disconnect_removes_subscriptions() -> None:
     manager = WebSocketConnectionManager(_mock_redis())
     ws = MockWebSocket()
@@ -254,9 +237,7 @@ async def test_disconnect_removes_subscriptions() -> None:
     assert count == 0
 
 
-# ── Test 9: Market status returns correct session ────────────────────────
-
-
+# Test 9: Market status returns correct session
 def test_market_status_session1() -> None:
     broadcaster = MarketStatusBroadcaster()
     wib = ZoneInfo("Asia/Jakarta")
@@ -317,9 +298,7 @@ def test_market_status_holiday() -> None:
     assert status.session == "HOLIDAY"
 
 
-# ── Test 10: Kafka-Redis bridge transforms EOD to QUOTE_UPDATE ───────────
-
-
+# Test 10: Kafka-Redis bridge transforms EOD to QUOTE_UPDATE
 async def test_bridge_transforms_eod_to_quote_update() -> None:
     mock_kafka = MagicMock()
     mock_redis = _mock_redis()

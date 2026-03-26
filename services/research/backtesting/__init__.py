@@ -25,9 +25,7 @@ from shared.schemas.research_events import BacktestResult, BacktestStatus
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Strategy protocol — users implement this to plug into the engine
-# ---------------------------------------------------------------------------
 
 @runtime_checkable
 class Strategy(Protocol):
@@ -57,9 +55,7 @@ class Strategy(Protocol):
         ...
 
 
-# ---------------------------------------------------------------------------
 # Data fetching helpers
-# ---------------------------------------------------------------------------
 
 async def _fetch_yfinance(
     symbols: list[str],
@@ -123,9 +119,7 @@ async def _fetch_polygon(
     return pd.DataFrame(frames)
 
 
-# ---------------------------------------------------------------------------
 # Performance metrics (vectorised)
-# ---------------------------------------------------------------------------
 
 def _compute_returns(equity_curve: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     """Compute log returns from an equity curve."""
@@ -201,9 +195,7 @@ def _annualized_volatility(returns: npt.NDArray[np.float64], trading_days: int =
     return float(np.std(returns, ddof=1) * np.sqrt(trading_days))
 
 
-# ---------------------------------------------------------------------------
 # Backtest engine
-# ---------------------------------------------------------------------------
 
 class BacktestEngine:
     """Full-featured vectorised backtesting engine.

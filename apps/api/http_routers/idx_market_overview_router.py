@@ -21,9 +21,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/market", tags=["market-data"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class MarketOverview(BaseModel):
     index_name: str = "IHSG"
     last_value: Decimal
@@ -58,9 +56,7 @@ class OHLCVBar(BaseModel):
     value: Decimal | None = None
 
 
-# ── Market Overview ──────────────────────────────────────────────────────────
-
-
+# Market Overview
 @router.get("/overview", response_model=MarketOverview)
 async def get_market_overview() -> MarketOverview:
     """Get current IDX market overview with index value and breadth."""
@@ -71,9 +67,7 @@ async def get_market_overview() -> MarketOverview:
     )
 
 
-# ── OHLCV ────────────────────────────────────────────────────────────────────
-
-
+# OHLCV
 @router.get("/ohlcv/{symbol}", response_model=list[OHLCVBar])
 async def get_ohlcv(
     symbol: str,
@@ -87,9 +81,7 @@ async def get_ohlcv(
     return []
 
 
-# ── Instruments ──────────────────────────────────────────────────────────────
-
-
+# Instruments
 @router.get("/instruments", response_model=list[InstrumentResponse])
 async def list_instruments(
     exchange: str = Query("IDX"),

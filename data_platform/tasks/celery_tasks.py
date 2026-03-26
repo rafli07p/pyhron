@@ -33,8 +33,7 @@ celery_app.conf.update(
     task_default_queue="ingestion",
 )
 
-# ── Beat Schedule ───────────────────────────────────────────────────────────
-
+# Beat Schedule
 celery_app.conf.beat_schedule = {
     "ingest-daily-eod": {
         "task": "tasks.ingest_daily_eod",
@@ -96,9 +95,7 @@ def _run_async(coro: Any) -> Any:
         loop.close()
 
 
-# ── New ingestion tasks ──────────────────────────────────────────────────────
-
-
+# New ingestion tasks
 @_task(
     bind=True,
     name="tasks.ingest_daily_eod",
@@ -425,9 +422,7 @@ def backfill_symbol(
         raise self.retry(exc=exc)
 
 
-# ── Legacy tasks (kept for backward compatibility) ───────────────────────────
-
-
+# Legacy tasks (kept for backward compatibility)
 @_task(
     bind=True,
     name="data_platform.tasks.celery_tasks.ingest_idx_eod_daily",

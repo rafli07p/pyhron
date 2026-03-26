@@ -48,8 +48,7 @@ class SentimentResult:
     method: str
 
 
-# ── Indonesian financial sentiment lexicon ────────────────────────────────────
-
+# Indonesian financial sentiment lexicon
 POSITIVE_WORDS_ID: set[str] = {
     "naik",
     "untung",

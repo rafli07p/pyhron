@@ -21,9 +21,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/commodities", tags=["commodities"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class CommodityPrice(BaseModel):
     code: str = Field(description="e.g. CPO, COAL_NEX, NICKEL, TIN, RUBBER")
     name: str
@@ -55,9 +53,7 @@ class CommodityDashboard(BaseModel):
     last_updated: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/", response_model=list[CommodityPrice])
 async def list_commodities(
     category: str | None = Query(None, description="energy, metals, agriculture"),

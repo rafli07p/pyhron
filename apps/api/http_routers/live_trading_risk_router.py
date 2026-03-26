@@ -19,9 +19,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/api/v1/live-trading-risk", tags=["live-trading-risk"])
 
 
-# ── Enumerations ─────────────────────────────────────────────────────────────
-
-
+# Enumerations
 @unique
 class KillSwitchState(StrEnum):
     """Possible states for the portfolio-wide kill switch."""
@@ -40,9 +38,7 @@ class PromotionVerdict(StrEnum):
     NEEDS_REVIEW = "NEEDS_REVIEW"
 
 
-# ── Request Models ───────────────────────────────────────────────────────────
-
-
+# Request Models
 class KillSwitchTriggerRequest(BaseModel):
     reason: str = Field(..., min_length=10, max_length=500, description="Audit trail reason for triggering kill switch")
     cancel_open_orders: bool = Field(default=True, description="Cancel all open orders when triggering")
@@ -70,9 +66,7 @@ class DemotionRequest(BaseModel):
     liquidate_positions: bool = Field(default=True, description="Liquidate all positions before demotion")
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class KillSwitchStatusResponse(BaseModel):
     state: KillSwitchState
     armed_at: datetime | None = None
@@ -182,9 +176,7 @@ class CapitalAllocationsResponse(BaseModel):
     computed_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
-# ── Kill Switch Endpoints ────────────────────────────────────────────────────
-
-
+# Kill Switch Endpoints
 @router.post("/kill-switch/trigger", response_model=KillSwitchActionResponse, status_code=status.HTTP_200_OK)
 @require_role(Role.ADMIN)
 async def trigger_kill_switch(
@@ -256,9 +248,7 @@ async def get_kill_switch_status(
     )
 
 
-# ── Promotion / Demotion Endpoints ───────────────────────────────────────────
-
-
+# Promotion / Demotion Endpoints
 @router.post(
     "/promotion/evaluate/{session_id}",
     response_model=PromotionEvaluationResponse,
@@ -391,9 +381,7 @@ async def demote_strategy(
     )
 
 
-# ── Risk Snapshot Endpoints ──────────────────────────────────────────────────
-
-
+# Risk Snapshot Endpoints
 @router.get("/risk/{strategy_id}/snapshot", response_model=RiskSnapshotResponse)
 @require_role(Role.TRADER)
 async def get_risk_snapshot(
@@ -466,9 +454,7 @@ async def get_risk_history(
     )
 
 
-# ── Capital Allocation Endpoints ─────────────────────────────────────────────
-
-
+# Capital Allocation Endpoints
 @router.get("/capital/allocations", response_model=CapitalAllocationsResponse)
 @require_role(Role.ADMIN)
 async def get_capital_allocations(

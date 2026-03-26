@@ -39,9 +39,7 @@ from shared.utils import PyhronJSONEncoder
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-# ---------------------------------------------------------------------------
 # Enumerations
-# ---------------------------------------------------------------------------
 
 @unique
 class AuditAction(StrEnum):
@@ -73,9 +71,7 @@ class ExportFormat(StrEnum):
     CSV = "csv"
 
 
-# ---------------------------------------------------------------------------
 # Audit record
-# ---------------------------------------------------------------------------
 
 class AuditRecord:
     """Immutable audit log entry.
@@ -156,9 +152,7 @@ class AuditRecord:
         )
 
 
-# ---------------------------------------------------------------------------
 # Audit logger
-# ---------------------------------------------------------------------------
 
 class AuditLogger:
     """Structured audit logger with in-memory buffer and export support.

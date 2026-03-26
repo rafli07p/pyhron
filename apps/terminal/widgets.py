@@ -11,9 +11,7 @@ from textual.widgets import Input, Label, Static
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-# ── IDR formatting helpers ──────────────────────────────────
-
-
+# IDR formatting helpers
 def fmt_idr(value: int | float) -> str:
     """Format number as IDR with period thousands separator."""
     n = int(value)
@@ -32,9 +30,7 @@ def fmt_change(value: int) -> str:
     return f"{prefix}{fmt_idr(value)}"
 
 
-# ── Chart panel widget ──────────────────────────────────────
-
-
+# Chart panel widget
 class ChartWidget(Static):
     """Unicode candlestick chart for OHLCV data."""
 
@@ -96,9 +92,7 @@ class ChartWidget(Static):
         self.update("\n".join(lines))
 
 
-# ── Orderbook widget ────────────────────────────────────────
-
-
+# Orderbook widget
 class OrderbookWidget(Static):
     """Displays a live order book with depth bars."""
 
@@ -138,9 +132,7 @@ class OrderbookWidget(Static):
         self.update("\n".join(lines))
 
 
-# ── Positions widget ────────────────────────────────────────
-
-
+# Positions widget
 class PositionsWidget(Static):
     """Displays portfolio positions with P&L."""
 
@@ -169,9 +161,7 @@ class PositionsWidget(Static):
         self.update("\n".join(lines))
 
 
-# ── Orders widget ───────────────────────────────────────────
-
-
+# Orders widget
 class OrdersWidget(Static):
     """Displays today's orders."""
 
@@ -197,9 +187,7 @@ class OrdersWidget(Static):
         self.update("\n".join(lines))
 
 
-# ── Momentum signals widget ────────────────────────────────
-
-
+# Momentum signals widget
 class MomentumWidget(Static):
     """Displays momentum strategy signals."""
 
@@ -235,9 +223,7 @@ class MomentumWidget(Static):
         self.update("\n".join(lines))
 
 
-# ── Order confirmation dialog ───────────────────────────────
-
-
+# Order confirmation dialog
 class OrderConfirmDialog(ModalScreen[bool]):
     """Modal confirmation dialog before order submission."""
 

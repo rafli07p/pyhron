@@ -19,9 +19,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
-# ── Transition Table Tests ───────────────────────────────────────────────────
-
-
+# Transition Table Tests
 class TestTransitionTable:
     """Validate the transition graph is well-formed."""
 
@@ -54,9 +52,7 @@ class TestTransitionTable:
                 assert status not in allowed, f"{status.value} has unexpected self-loop"
 
 
-# ── Specific Transition Validation ───────────────────────────────────────────
-
-
+# Specific Transition Validation
 class TestSpecificTransitions:
     """Validate key business rules in the transition graph."""
 
@@ -106,9 +102,7 @@ class TestSpecificTransitions:
         assert VALID_TRANSITIONS[OrderStatusEnum.RISK_REJECTED] == set()
 
 
-# ── Invalid Transition Detection ─────────────────────────────────────────────
-
-
+# Invalid Transition Detection
 class TestInvalidTransitions:
     """Ensure invalid transitions are properly blocked."""
 

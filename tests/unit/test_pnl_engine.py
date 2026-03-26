@@ -27,9 +27,7 @@ from pyhron.pnl.models import (
 )
 
 
-# =============================================================================
 # Fixtures
-# =============================================================================
 @pytest.fixture
 def pnl_engine() -> PnLEngine:
     """Fresh PnL engine instance."""
@@ -66,9 +64,7 @@ def sample_fills() -> list[FillRecord]:
     ]
 
 
-# =============================================================================
 # Realized PnL Tests
-# =============================================================================
 class TestRealizedPnL:
     """Tests for realized PnL calculations."""
 
@@ -190,9 +186,7 @@ class TestRealizedPnL:
         assert remaining == Decimal("400")
 
 
-# =============================================================================
 # Unrealized PnL Tests
-# =============================================================================
 class TestUnrealizedPnL:
     """Tests for unrealized PnL calculations."""
 
@@ -277,9 +271,7 @@ class TestUnrealizedPnL:
         assert unrealized == Decimal("0")
 
 
-# =============================================================================
 # Daily PnL Aggregation Tests
-# =============================================================================
 class TestDailyPnLAggregation:
     """Tests for daily PnL report generation."""
 
@@ -388,9 +380,7 @@ class TestDailyPnLAggregation:
         assert summary.total_net_pnl > 0
 
 
-# =============================================================================
 # Fee and Commission Tests
-# =============================================================================
 class TestFeeHandling:
     """Tests for commission and fee calculations."""
 
@@ -463,9 +453,7 @@ class TestFeeHandling:
         assert pnl.gross_pnl == pnl.net_pnl
 
 
-# =============================================================================
 # Edge Case Tests
-# =============================================================================
 class TestEdgeCases:
     """Tests for edge cases and boundary conditions."""
 

@@ -23,9 +23,7 @@ from shared.schemas.portfolio_events import AssetClass, PositionUpdate
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # SQLAlchemy model
-# ---------------------------------------------------------------------------
 
 class Base(DeclarativeBase):
     """Declarative base for portfolio models."""
@@ -61,9 +59,7 @@ class Position(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
 
-# ---------------------------------------------------------------------------
 # Position manager
-# ---------------------------------------------------------------------------
 
 class PositionManager:
     """Manages positions with real-time updates from order fills.

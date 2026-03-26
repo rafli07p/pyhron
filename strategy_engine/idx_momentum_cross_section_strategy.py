@@ -45,8 +45,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-# ── Default universe (LQ45 subset) ──────────────────────────────────────────
-
+# Default universe (LQ45 subset)
 _DEFAULT_UNIVERSE: list[str] = [
     "BBCA",
     "BBRI",
@@ -90,8 +89,7 @@ _DEFAULT_UNIVERSE: list[str] = [
     "MAPI",
 ]
 
-# ── Constants ────────────────────────────────────────────────────────────────
-
+# Constants
 _TRADING_DAYS_PER_MONTH = 21
 _IDX_LOT_SIZE = 100
 _MIN_LOTS_PER_POSITION = 1

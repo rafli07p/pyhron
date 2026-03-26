@@ -32,9 +32,7 @@ router = APIRouter(prefix="/v1/paper-trading", tags=["paper-trading"])
 _session_manager = PaperTradingSessionManager()
 
 
-# ── Request/Response Models ──────────────────────────────────────────────────
-
-
+# Request/Response Models
 class CreatePaperSessionRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     strategy_id: UUID
@@ -121,9 +119,7 @@ class ReconciliationReportResponse(BaseModel):
     actions_taken: list[str] = Field(default_factory=list)
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-
+# Helpers
 def _session_to_response(s: PaperTradingSession) -> PaperSessionResponse:
     return PaperSessionResponse(
         id=s.id,
@@ -158,9 +154,7 @@ async def _get_session_or_404(session_id: UUID) -> PaperTradingSession:
     return session
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.post("/sessions", response_model=PaperSessionResponse, status_code=status.HTTP_201_CREATED)
 async def create_paper_session(
     request: CreatePaperSessionRequest,
@@ -495,9 +489,7 @@ async def get_reconciliation_report(
     )
 
 
-# ── Consumer Health Check ────────────────────────────────────────────────────
-
-
+# Consumer Health Check
 # Singleton reference set by the consumer process when it starts.
 # When the API runs in-process with the consumer (e.g. dev/test), this
 # allows the health endpoint to report consumer status.

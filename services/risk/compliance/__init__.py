@@ -23,9 +23,7 @@ from cryptography.fernet import Fernet
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Regulatory limit configuration
-# ---------------------------------------------------------------------------
 
 @dataclass
 class RegulatoryLimits:
@@ -47,9 +45,7 @@ class RegulatoryLimits:
 _DEFAULT_LIMITS = RegulatoryLimits()
 
 
-# ---------------------------------------------------------------------------
 # PII fields for UU PDP compliance
-# ---------------------------------------------------------------------------
 
 _PII_FIELDS = frozenset({
     "name", "full_name", "email", "phone", "phone_number",
@@ -59,9 +55,7 @@ _PII_FIELDS = frozenset({
 })
 
 
-# ---------------------------------------------------------------------------
 # Report types
-# ---------------------------------------------------------------------------
 
 @dataclass
 class ComplianceReport:
@@ -77,9 +71,7 @@ class ComplianceReport:
     warnings: list[str] = field(default_factory=list)
 
 
-# ---------------------------------------------------------------------------
 # Compliance engine
-# ---------------------------------------------------------------------------
 
 class ComplianceEngine:
     """Regulatory compliance engine with multi-jurisdiction support.

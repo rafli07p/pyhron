@@ -37,8 +37,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-# ── Default pairs universe (banking & telco) ────────────────────────────────
-
+# Default pairs universe (banking & telco)
 _DEFAULT_PAIR_CANDIDATES: list[tuple[str, str]] = [
     ("BBCA", "BBRI"),
     ("BBRI", "BMRI"),

@@ -16,15 +16,12 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
-# ── Configuration ────────────────────────────────────────────────────────────
-
+# Configuration
 DEFAULT_RATE_LIMIT = 100  # requests per window
 DEFAULT_WINDOW_SECONDS = 60
 
 
-# ── In-Memory Fallback Store ────────────────────────────────────────────────
-
-
+# In-Memory Fallback Store
 class _InMemoryStore:
     """Simple in-memory sliding window counter (fallback when Redis unavailable)."""
 
@@ -50,9 +47,7 @@ class _InMemoryStore:
         return False, limit - count - 1, window
 
 
-# ── Redis Store ──────────────────────────────────────────────────────────────
-
-
+# Redis Store
 _RATE_LIMIT_LUA = """
 local current = redis.call('INCR', KEYS[1])
 if current == 1 then
@@ -78,9 +73,7 @@ class _RedisStore:
         return False, limit - current, max(ttl, 1)
 
 
-# ── Middleware ───────────────────────────────────────────────────────────────
-
-
+# Middleware
 class PerIPRateLimiterMiddleware(BaseHTTPMiddleware):
     """Rate-limit incoming requests by client IP address."""
 

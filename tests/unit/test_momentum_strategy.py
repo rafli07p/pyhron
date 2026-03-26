@@ -33,8 +33,7 @@ try:
 except (ImportError, ModuleNotFoundError):
     pytest.skip("Missing optional dependency (e.g. statsmodels)", allow_module_level=True)
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# Helpers
 SEED = 42
 
 
@@ -94,9 +93,7 @@ def _make_metadata(symbols: list[str], sectors: list[str] | None = None) -> pd.D
     )
 
 
-# ── Test 1: Look-ahead bias (CRITICAL) ──────────────────────────────────────
-
-
+# Test 1: Look-ahead bias (CRITICAL)
 class TestNoLookaheadBias:
     def test_signals_unchanged_when_future_prices_corrupted(self) -> None:
         """Generate signals for date T. Corrupt all prices from T onwards
@@ -158,9 +155,7 @@ class TestNoLookaheadBias:
         assert available.index[-1] < pd.Timestamp(as_of, tz=prices.index.tz)
 
 
-# ── Test 2: Momentum score correctness ──────────────────────────────────────
-
-
+# Test 2: Momentum score correctness
 class TestMomentumScoreKnownValues:
     def test_known_momentum_scores(self) -> None:
         """Construct synthetic price series with known 12-1 momentum.
@@ -205,9 +200,7 @@ class TestMomentumScoreKnownValues:
         assert scores["A"] > scores["B"]
 
 
-# ── Test 3: IDX lot rounding ────────────────────────────────────────────────
-
-
+# Test 3: IDX lot rounding
 class TestLotSizeRounding:
     def test_lot_size_basic(self) -> None:
         """Portfolio NAV 1B, weight 5%, price 3750 → 133 lots."""
@@ -249,9 +242,7 @@ class TestLotSizeRounding:
         assert lots == 0
 
 
-# ── Test 4: No short selling ────────────────────────────────────────────────
-
-
+# Test 4: No short selling
 class TestNoShortSelling:
     def test_no_short_signals(self) -> None:
         """All target_lots in generate_signals_full must be >= 0."""
@@ -296,9 +287,7 @@ class TestNoShortSelling:
             assert (signals["target_weight"] >= 0).all()
 
 
-# ── Test 5: Sector concentration cap ────────────────────────────────────────
-
-
+# Test 5: Sector concentration cap
 class TestSectorConcentrationCap:
     def test_sector_cap_enforced(self) -> None:
         """When 80% of top quintile is in same sector, cap at 40%."""
@@ -346,9 +335,7 @@ class TestSectorConcentrationCap:
                 assert weight <= 0.40 + 1e-6, f"Sector weight {weight} exceeds cap"
 
 
-# ── Test 6: Liquidity filter ────────────────────────────────────────────────
-
-
+# Test 6: Liquidity filter
 class TestLiquidityFilter:
     def test_illiquid_stock_excluded(self) -> None:
         """Stock with avg daily value IDR 5B (below 10B) must be excluded."""
@@ -392,9 +379,7 @@ class TestLiquidityFilter:
         assert "ILLIQUID" not in filtered
 
 
-# ── Test 7: Minimum history requirement ──────────────────────────────────────
-
-
+# Test 7: Minimum history requirement
 class TestMinimumHistory:
     def test_short_history_excluded(self) -> None:
         """Stock with only 200 days of history must be excluded."""
@@ -434,9 +419,7 @@ class TestMinimumHistory:
         assert "SHORT" not in filtered
 
 
-# ── Test 8: Sell before buy ordering ─────────────────────────────────────────
-
-
+# Test 8: Sell before buy ordering
 class TestSellsBeforeBuys:
     def test_sells_before_buys_in_rebalance(self) -> None:
         """compute_rebalance_trades() must have sells before buys."""
@@ -476,9 +459,7 @@ class TestSellsBeforeBuys:
                 assert max(sell_indices) < min(buy_indices), "Sells must come before buys"
 
 
-# ── Test 9: Backtest regression (golden file) ───────────────────────────────
-
-
+# Test 9: Backtest regression (golden file)
 class TestBacktestRegression:
     def test_deterministic_output(self) -> None:
         """Same inputs must always produce identical scores.
@@ -539,9 +520,7 @@ class TestBacktestRegression:
             golden_file.write_text(json.dumps(current, indent=2))
 
 
-# ── Test 10: Walk-forward overfitting warning ────────────────────────────────
-
-
+# Test 10: Walk-forward overfitting warning
 class TestWalkForwardOverfitWarning:
     def test_overfitting_warning_logged(self, caplog: pytest.LogCaptureFixture) -> None:
         """When IS/OOS Sharpe ratio > 2.0, warning must be logged."""
@@ -563,9 +542,7 @@ class TestWalkForwardOverfitWarning:
         assert any("potential overfitting" in r.message for r in caplog.records)
 
 
-# ── Test: IDX Trading Calendar ───────────────────────────────────────────────
-
-
+# Test: IDX Trading Calendar
 class TestIDXTradingCalendar:
     def test_weekend_not_trading_day(self) -> None:
         from strategy_engine.idx_trading_calendar import is_trading_day
@@ -611,9 +588,7 @@ def is_trading_day_standalone(d: date) -> bool:
     return is_trading_day(d)
 
 
-# ── Test: Transaction cost model ─────────────────────────────────────────────
-
-
+# Test: Transaction cost model
 class TestTransactionCostModel:
     def test_buy_includes_levy_and_vat(self) -> None:
         from strategy_engine.backtesting.idx_transaction_cost_model import (

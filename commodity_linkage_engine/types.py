@@ -15,9 +15,8 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass, field
 
-# ── Enums ──────────────────────────────────────────────────────────────────
 
-
+# Enums
 class CommodityType(enum.Enum):
     """Supported commodity types."""
 
@@ -35,9 +34,7 @@ class ConfidenceLevel(enum.Enum):
     LOW = "LOW"
 
 
-# ── Data Contracts ─────────────────────────────────────────────────────────
-
-
+# Data Contracts
 @dataclass(frozen=True)
 class CommodityPriceChangeEvent:
     """Describes a commodity price movement.

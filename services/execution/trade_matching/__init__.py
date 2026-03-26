@@ -30,9 +30,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Internal order representation
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -69,9 +67,7 @@ class _HeapEntry:
     order: BookOrder = field(compare=False)
 
 
-# ---------------------------------------------------------------------------
 # TradeMatchingEngine
-# ---------------------------------------------------------------------------
 
 
 class TradeMatchingEngine:

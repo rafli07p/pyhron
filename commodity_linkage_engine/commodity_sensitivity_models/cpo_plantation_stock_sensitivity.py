@@ -33,9 +33,7 @@ from shared.structured_json_logger import get_logger
 logger = get_logger(__name__)
 
 
-# ── Company Data ────────────────────────────────────────────────────────────
-
-
+# Company Data
 @dataclass(frozen=True)
 class PlantationCompanyProfile:
     """Static profile for a plantation company.

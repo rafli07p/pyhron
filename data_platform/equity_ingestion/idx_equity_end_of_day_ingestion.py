@@ -35,8 +35,7 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
-# ── Constants ────────────────────────────────────────────────────────────────
-
+# Constants
 IDX_LQ45_SYMBOLS: list[str] = [
     "BBCA",
     "BBRI",

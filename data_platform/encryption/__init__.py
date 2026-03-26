@@ -21,9 +21,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 logger = structlog.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
 # Constants
-# ---------------------------------------------------------------------------
 _CHUNK_SIZE: int = 64 * 1024  # 64 KiB file-streaming chunk size
 _KEY_ROTATION_HEADER = b"PYHRON_ENC_V1"
 
@@ -36,9 +34,7 @@ class KeyManagementError(Exception):
     """Raised on key-lifecycle errors (missing key, rotation failure)."""
 
 
-# ---------------------------------------------------------------------------
 # EncryptionService
-# ---------------------------------------------------------------------------
 class EncryptionService:
     """AES-256 encryption service backed by ``cryptography.fernet``.
 

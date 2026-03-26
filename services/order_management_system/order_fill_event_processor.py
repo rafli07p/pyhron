@@ -34,8 +34,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-# ── IDX T+2 Settlement ──────────────────────────────────────────────────────
-
+# IDX T+2 Settlement
 IDX_MARKET_HOLIDAYS_2025 = [
     date(2025, 1, 1),  # New Year
     date(2025, 1, 27),  # Isra Mi'raj
@@ -65,9 +64,7 @@ def calculate_settlement_date(trade_date: date) -> date:
     return settlement
 
 
-# ── Fill Event ───────────────────────────────────────────────────────────────
-
-
+# Fill Event
 @dataclass(frozen=True)
 class FillEvent:
     """A broker fill event to be processed.

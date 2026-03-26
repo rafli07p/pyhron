@@ -1,11 +1,8 @@
-# =============================================================================
 # Pyhron Trading Platform — Docker Compose (Local Development)
-# =============================================================================
 # Usage:
 #   docker compose up -d                       # Start all services
 #   docker compose --profile monitoring up -d  # Include Prometheus/Grafana
 #   docker compose down -v                     # Tear down with volumes
-# =============================================================================
 
 services:
   # ---------------------------------------------------------------------------

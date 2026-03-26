@@ -23,9 +23,7 @@ from shared.schemas.portfolio_events import ExposureType, ExposureUpdate
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Concentration limit configuration
-# ---------------------------------------------------------------------------
 
 class ConcentrationLimits:
     """Configurable concentration limits per tenant.

@@ -19,9 +19,7 @@ from shared.schemas.order_events import OrderFill, OrderRequest, OrderSide
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Result types
-# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class CheckResult:
@@ -33,9 +31,7 @@ class CheckResult:
     details: dict[str, Any] = field(default_factory=dict)
 
 
-# ---------------------------------------------------------------------------
 # Configuration
-# ---------------------------------------------------------------------------
 
 @dataclass
 class PreTradeConfig:
@@ -60,9 +56,7 @@ class PreTradeConfig:
 _DEFAULT_CONFIG = PreTradeConfig()
 
 
-# ---------------------------------------------------------------------------
 # Service
-# ---------------------------------------------------------------------------
 
 class PreTradeCheckService:
     """Runs a battery of pre-trade checks on incoming orders.

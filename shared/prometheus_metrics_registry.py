@@ -8,8 +8,7 @@ from __future__ import annotations
 
 from prometheus_client import Counter, Gauge, Histogram
 
-# ── Risk Engine ─────────────────────────────────────────────────────────────
-
+# Risk Engine
 RISK_CHECK_DURATION = Histogram(
     "pyhron_risk_check_duration_seconds",
     "Pre-trade risk check latency",
@@ -17,16 +16,14 @@ RISK_CHECK_DURATION = Histogram(
     buckets=[0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5],
 )
 
-# ── Orders ──────────────────────────────────────────────────────────────────
-
+# Orders
 ORDERS_TOTAL = Counter(
     "pyhron_orders_total",
     "Total orders by outcome",
     ["status", "exchange", "strategy_id"],
 )
 
-# ── Positions ───────────────────────────────────────────────────────────────
-
+# Positions
 # Values should be reported in whole IDR units (no decimals) to minimize float precision loss.
 POSITION_PNL = Gauge(
     "pyhron_position_pnl_idr",
@@ -34,8 +31,7 @@ POSITION_PNL = Gauge(
     ["symbol", "strategy_id"],
 )
 
-# ── Ingestion ───────────────────────────────────────────────────────────────
-
+# Ingestion
 INGESTION_ROWS = Counter(
     "pyhron_ingestion_rows_total",
     "Total rows ingested",
@@ -48,8 +44,7 @@ DATA_FRESHNESS = Gauge(
     ["symbol"],
 )
 
-# ── API ─────────────────────────────────────────────────────────────────────
-
+# API
 API_REQUEST_DURATION = Histogram(
     "pyhron_api_request_duration_seconds",
     "API request latency",

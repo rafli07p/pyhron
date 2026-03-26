@@ -8,9 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# ── Mock Screener Models ────────────────────────────────────────────────────
 
-
+# Mock Screener Models
 @dataclass
 class ScreenerRow:
     """Simplified equity screener result row."""
@@ -57,9 +56,7 @@ def screen_equities(
     return results
 
 
-# ── Sector Filter Tests ─────────────────────────────────────────────────────
-
-
+# Sector Filter Tests
 class TestSectorFilter:
     def test_filter_financials(self):
         results = screen_equities(sector="FINANCIALS")
@@ -80,9 +77,7 @@ class TestSectorFilter:
         assert len(results) == len(MOCK_SCREENER_DB)
 
 
-# ── Market Cap Filter Tests ─────────────────────────────────────────────────
-
-
+# Market Cap Filter Tests
 class TestMarketCapFilter:
     def test_large_cap_filter(self):
         results = screen_equities(min_market_cap=500_000_000_000)
@@ -99,9 +94,7 @@ class TestMarketCapFilter:
         assert len(results) == 0
 
 
-# ── PE Ratio Filter Tests ──────────────────────────────────────────────────
-
-
+# PE Ratio Filter Tests
 class TestPERatioFilter:
     def test_value_stocks(self):
         results = screen_equities(max_pe_ratio=10.0)
@@ -115,9 +108,7 @@ class TestPERatioFilter:
         assert len(results) == len(MOCK_SCREENER_DB)
 
 
-# ── Combined Filter Tests ──────────────────────────────────────────────────
-
-
+# Combined Filter Tests
 class TestCombinedFilters:
     def test_financial_large_cap(self):
         results = screen_equities(sector="FINANCIALS", min_market_cap=500_000_000_000)

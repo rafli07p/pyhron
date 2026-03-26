@@ -15,9 +15,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-# ---------------------------------------------------------------------------
 # Enumerations
-# ---------------------------------------------------------------------------
 
 class BacktestStatus(StrEnum):
     """Lifecycle status of a backtest job."""
@@ -62,9 +60,7 @@ class SimulationType(StrEnum):
     HISTORICAL_BOOTSTRAP = "HISTORICAL_BOOTSTRAP"
 
 
-# ---------------------------------------------------------------------------
 # Models
-# ---------------------------------------------------------------------------
 
 class ResearchEventBase(BaseModel):
     """Base class for all research events."""

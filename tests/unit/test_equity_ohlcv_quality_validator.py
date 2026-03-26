@@ -12,9 +12,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-# ── Validator (pure functions under test) ───────────────────────────────────
 
-
+# Validator (pure functions under test)
 def validate_ohlcv_bar(bar: dict) -> list[str]:
     """Validate a single OHLCV bar. Returns list of error messages (empty = valid)."""
     errors = []
@@ -54,9 +53,7 @@ def validate_timestamp_order(bars: list[dict]) -> list[str]:
     return errors
 
 
-# ── Valid Bar Tests ─────────────────────────────────────────────────────────
-
-
+# Valid Bar Tests
 class TestValidBars:
     def test_normal_bar_passes(self):
         bar = {"open": 9200, "high": 9350, "low": 9150, "close": 9300, "volume": 12_500_000}
@@ -72,9 +69,7 @@ class TestValidBars:
         assert validate_ohlcv_bar(bar) == []
 
 
-# ── Invalid Bar Tests ──────────────────────────────────────────────────────
-
-
+# Invalid Bar Tests
 class TestInvalidBars:
     def test_high_below_open(self):
         bar = {"open": 9200, "high": 9100, "low": 9050, "close": 9080, "volume": 1000}
@@ -117,9 +112,7 @@ class TestInvalidBars:
         assert len(errors) >= 5  # 4 zero prices + negative volume
 
 
-# ── Timestamp Order Tests ──────────────────────────────────────────────────
-
-
+# Timestamp Order Tests
 class TestTimestampOrder:
     def test_ordered_timestamps_pass(self):
         bars = [

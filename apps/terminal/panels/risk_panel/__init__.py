@@ -17,9 +17,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
 
-# ── Formatting Helpers ───────────────────────────────────────────────────────
-
-
+# Formatting Helpers
 def _fmt_idr(value: int | float) -> str:
     """Format as IDR with period thousands separator."""
     s = f"{abs(int(value)):,}".replace(",", ".")
@@ -39,9 +37,7 @@ def _fmt_ratio(value: float | None) -> str:
     return f"{value:.2f}"
 
 
-# ── Color Thresholds ─────────────────────────────────────────────────────────
-
-
+# Color Thresholds
 _KILL_SWITCH_COLORS: dict[str, str] = {
     "ARMED": "#00c853",
     "TRIGGERED": "#ff1744",
@@ -82,8 +78,7 @@ def _render_progress_bar(pct: float, width: int = 20) -> str:
     return f"[{color}]{bar}[/] {pct:.1f}%"
 
 
-# ── Supported Commands ───────────────────────────────────────────────────────
-
+# Supported Commands
 RISK_PANEL_COMMANDS: dict[str, str] = {
     "KILL ARM": "Arm the kill switch",
     "KILL TRIGGER": "Trigger the kill switch (emergency halt)",
@@ -94,9 +89,7 @@ RISK_PANEL_COMMANDS: dict[str, str] = {
 }
 
 
-# ── Panel Widget ─────────────────────────────────────────────────────────────
-
-
+# Panel Widget
 class RiskPanel(Static):
     """Bloomberg-style real-time portfolio risk dashboard.
 

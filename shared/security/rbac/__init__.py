@@ -36,9 +36,7 @@ from shared.security.auth import TokenPayload, verify_token
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-# ---------------------------------------------------------------------------
 # Enumerations
-# ---------------------------------------------------------------------------
 
 _bearer_scheme = HTTPBearer(auto_error=True)
 
@@ -85,9 +83,7 @@ class Permission(StrEnum):
     MANAGE_CONFIG = "MANAGE_CONFIG"
 
 
-# ---------------------------------------------------------------------------
 # Role -> Permission mapping
-# ---------------------------------------------------------------------------
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
     Role.ADMIN: frozenset(Permission),  # Admin gets everything
@@ -122,9 +118,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
 }
 
 
-# ---------------------------------------------------------------------------
 # Permission checks
-# ---------------------------------------------------------------------------
 
 def check_permission(role: Role | str, permission: Permission) -> bool:
     """Check whether *role* has *permission*.

@@ -10,9 +10,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-# ── Mock BI Rate Response ───────────────────────────────────────────────────
-
-
+# Mock BI Rate Response
 MOCK_BI_RATE_HTML = """
 <table>
   <tr><td>17 Jan 2024</td><td>6.00%</td></tr>
@@ -60,9 +58,7 @@ def validate_macro_record(record: dict) -> list[str]:
     return errors
 
 
-# ── Fixtures ────────────────────────────────────────────────────────────────
-
-
+# Fixtures
 @pytest.fixture
 def mock_db_session():
     session = AsyncMock()
@@ -80,9 +76,7 @@ def mock_httpx_response():
     return response
 
 
-# ── Parse Tests ─────────────────────────────────────────────────────────────
-
-
+# Parse Tests
 class TestBIRateParsing:
     def test_parse_valid_html(self):
         records = parse_bi_rate_response(MOCK_BI_RATE_HTML)
@@ -103,9 +97,7 @@ class TestBIRateParsing:
         assert records == []
 
 
-# ── Validation Tests ────────────────────────────────────────────────────────
-
-
+# Validation Tests
 class TestMacroRecordValidation:
     def test_valid_record_passes(self):
         record = {"date": "2024-01-17", "indicator": "bi_rate", "value": 6.0}
@@ -127,9 +119,7 @@ class TestMacroRecordValidation:
         assert any("numeric" in e.lower() for e in errors)
 
 
-# ── DB Write Tests ──────────────────────────────────────────────────────────
-
-
+# DB Write Tests
 class TestDBWrites:
     @pytest.mark.asyncio
     async def test_db_session_execute_called(self, mock_db_session):

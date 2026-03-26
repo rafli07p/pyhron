@@ -48,9 +48,7 @@ logger = structlog.stdlib.get_logger(__name__)
 API_VERSION = "v1"
 
 
-# ---------------------------------------------------------------------------
 # RBAC
-# ---------------------------------------------------------------------------
 
 
 class Role(StrEnum):
@@ -68,9 +66,7 @@ ROLE_HIERARCHY: dict[Role, int] = {
 }
 
 
-# ---------------------------------------------------------------------------
 # Request / Response models
-# ---------------------------------------------------------------------------
 
 
 class TokenPayload(BaseModel):
@@ -189,9 +185,7 @@ class UserUpdateRequest(BaseModel):
     role: Role | None = None
 
 
-# ---------------------------------------------------------------------------
 # JWT auth dependency
-# ---------------------------------------------------------------------------
 
 
 async def get_current_user(request: Request) -> TokenPayload:
@@ -219,9 +213,7 @@ def get_tenant_id(user: TokenPayload = Depends(get_current_user)) -> str:
     return user.tenant_id
 
 
-# ---------------------------------------------------------------------------
 # RBAC decorator
-# ---------------------------------------------------------------------------
 
 
 _F = TypeVar("_F", bound=Callable[..., Any])
@@ -248,9 +240,7 @@ def require_role(minimum_role: Role) -> Callable[[_F], _F]:
     return decorator
 
 
-# ---------------------------------------------------------------------------
 # CSRF protection middleware (double-submit cookie)
-# ---------------------------------------------------------------------------
 
 _CSRF_SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _CSRF_EXEMPT_PREFIXES = ("/v1/auth/", "/health")
@@ -309,9 +299,7 @@ class CSRFMiddleware:
             await self.app(scope, receive, send)
 
 
-# ---------------------------------------------------------------------------
 # Security headers middleware
-# ---------------------------------------------------------------------------
 
 _SECURITY_HEADERS = [
     (b"x-content-type-options", b"nosniff"),
@@ -343,9 +331,7 @@ class SecurityHeadersMiddleware:
         await self.app(scope, receive, send_with_security_headers)
 
 
-# ---------------------------------------------------------------------------
 # Structlog request-logging middleware
-# ---------------------------------------------------------------------------
 
 
 class RequestIDMiddleware:
@@ -375,9 +361,7 @@ class RequestIDMiddleware:
 
 from services.api.logging import RequestLoggingMiddleware
 
-# ---------------------------------------------------------------------------
 # Application factory
-# ---------------------------------------------------------------------------
 
 
 def create_rest_app() -> FastAPI:

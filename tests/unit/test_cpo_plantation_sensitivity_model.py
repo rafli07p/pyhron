@@ -13,9 +13,8 @@ from dataclasses import dataclass
 
 import pytest
 
-# ── Sensitivity Model (pure functions under test) ───────────────────────────
 
-
+# Sensitivity Model (pure functions under test)
 @dataclass(frozen=True)
 class CommodityImpact:
     """Impact of a commodity price change on a stock."""
@@ -60,9 +59,7 @@ def compute_cpo_impact(
     )
 
 
-# ── Positive CPO Impact Tests ──────────────────────────────────────────────
-
-
+# Positive CPO Impact Tests
 class TestCPOPriceIncrease:
     """CPO price increases should produce positive impacts on plantation stocks."""
 
@@ -83,9 +80,7 @@ class TestCPOPriceIncrease:
         assert lsip.impact_pct > aali.impact_pct > simp.impact_pct
 
 
-# ── Negative CPO Impact Tests ──────────────────────────────────────────────
-
-
+# Negative CPO Impact Tests
 class TestCPOPriceDecrease:
     """CPO price decreases should produce negative impacts."""
 
@@ -100,9 +95,7 @@ class TestCPOPriceDecrease:
         assert up.impact_pct == pytest.approx(-down.impact_pct)
 
 
-# ── Edge Cases ──────────────────────────────────────────────────────────────
-
-
+# Edge Cases
 class TestEdgeCases:
     def test_zero_change_gives_zero_impact(self):
         result = compute_cpo_impact("AALI", cpo_price_change_pct=0.0)

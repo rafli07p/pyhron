@@ -11,9 +11,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-# ── Domain Models ───────────────────────────────────────────────────────────
 
-
+# Domain Models
 @dataclass(frozen=True)
 class CommodityPrice:
     commodity: str
@@ -66,9 +65,7 @@ def compute_stock_impacts(
     ]
 
 
-# ── Fixtures ────────────────────────────────────────────────────────────────
-
-
+# Fixtures
 @pytest.fixture
 def cpo_price_up():
     return CommodityPrice(commodity="CPO", price=4200.0, prev_price=4000.0, currency="MYR")
@@ -91,9 +88,7 @@ def mock_api_client():
     return client
 
 
-# ── CPO Impact Tests ────────────────────────────────────────────────────────
-
-
+# CPO Impact Tests
 class TestCPOImpact:
     def test_cpo_increase_positive_impacts(self, cpo_price_up):
         impacts = compute_stock_impacts(cpo_price_up)
@@ -115,9 +110,7 @@ class TestCPOImpact:
         assert impact_map["AALI"].sensitivity > impact_map["SIMP"].sensitivity
 
 
-# ── Coal Impact Tests ──────────────────────────────────────────────────────
-
-
+# Coal Impact Tests
 class TestCoalImpact:
     def test_coal_decrease_negative_impacts(self, coal_price_down):
         impacts = compute_stock_impacts(coal_price_down)
@@ -133,9 +126,7 @@ class TestCoalImpact:
         assert coal_price_down.change_pct == pytest.approx(-8.333, rel=1e-2)
 
 
-# ── Nickel Impact Tests ────────────────────────────────────────────────────
-
-
+# Nickel Impact Tests
 class TestNickelImpact:
     def test_flat_price_zero_impact(self, nickel_price_flat):
         impacts = compute_stock_impacts(nickel_price_flat)
@@ -147,9 +138,7 @@ class TestNickelImpact:
         assert symbols == {"ANTM", "INCO", "VALE"}
 
 
-# ── Edge Cases ──────────────────────────────────────────────────────────────
-
-
+# Edge Cases
 class TestEdgeCases:
     def test_unknown_commodity_returns_empty(self):
         price = CommodityPrice(commodity="GOLD", price=2000.0, prev_price=1950.0, currency="USD")

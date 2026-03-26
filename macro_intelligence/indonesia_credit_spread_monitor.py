@@ -97,8 +97,7 @@ class CreditSpreadDashboard:
     stress_indicator: str
 
 
-# ── Historical average spreads for z-score calculation ──────────────────────
-
+# Historical average spreads for z-score calculation
 _HISTORICAL_SPREADS_BPS: dict[str, tuple[float, float]] = {
     "idAAA": (80.0, 25.0),
     "idAA+": (120.0, 35.0),

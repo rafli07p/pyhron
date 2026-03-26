@@ -11,9 +11,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-# ── Test 1: Health check returns 200 when DB and Redis are healthy ──────────
 
-
+# Test 1: Health check returns 200 when DB and Redis are healthy
 @pytest.mark.asyncio
 async def test_health_check_ok() -> None:
     """Health endpoint should return 200 with status 'ok' when all deps are up."""
@@ -94,9 +93,7 @@ async def test_health_check_ok() -> None:
         assert data["checks"]["redis"] == "ok"
 
 
-# ── Test 2: Health check returns 503 when DB is unreachable ─────────────────
-
-
+# Test 2: Health check returns 503 when DB is unreachable
 @pytest.mark.asyncio
 async def test_health_check_db_down() -> None:
     """Health endpoint should return 503 when postgres is unreachable."""
@@ -173,9 +170,7 @@ async def test_health_check_db_down() -> None:
         assert data["checks"]["postgres"].startswith("error")
 
 
-# ── Test 3: Request tracing middleware injects trace_id ─────────────────────
-
-
+# Test 3: Request tracing middleware injects trace_id
 def test_trace_id_in_response_header() -> None:
     """Request tracing middleware must inject X-Trace-ID into response."""
     from fastapi import FastAPI
@@ -198,9 +193,7 @@ def test_trace_id_in_response_header() -> None:
     uuid.UUID(response.headers["X-Trace-ID"])
 
 
-# ── Test 4: Metrics endpoint returns Prometheus format ──────────────────────
-
-
+# Test 4: Metrics endpoint returns Prometheus format
 def test_metrics_endpoint() -> None:
     """Metrics endpoint must return Prometheus text format with pyhron_ prefixed metrics."""
     from prometheus_client import generate_latest
@@ -212,9 +205,7 @@ def test_metrics_endpoint() -> None:
     assert "TYPE" in content
 
 
-# ── Test 5: Kafka topic list is complete ────────────────────────────────────
-
-
+# Test 5: Kafka topic list is complete
 def test_all_topics_defined() -> None:
     """Every required topic must be defined in KafkaTopic."""
     from shared.kafka_topics import KafkaTopic

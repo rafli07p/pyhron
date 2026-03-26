@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 ProtoT = TypeVar("ProtoT", bound=Message)
 
 
-# ── Topic Registry ──────────────────────────────────────────────────────────
+# Topic Registry
 # Single source of truth for topic names. Never hardcode topic strings.
 
 

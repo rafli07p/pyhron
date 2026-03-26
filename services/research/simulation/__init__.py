@@ -21,9 +21,7 @@ from shared.schemas.research_events import SimulationType
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Result types
-# ---------------------------------------------------------------------------
 
 @dataclass
 class SimulationOutput:
@@ -65,9 +63,7 @@ class StressTestResult:
     paths: npt.NDArray[np.float64] | None = None
 
 
-# ---------------------------------------------------------------------------
 # Simulator
-# ---------------------------------------------------------------------------
 
 class MonteCarloSimulator:
     """Numpy-vectorised Monte Carlo simulator.

@@ -41,9 +41,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Circuit breaker for exchange failures
-# ---------------------------------------------------------------------------
 
 exchange_breaker = pybreaker.CircuitBreaker(
     fail_max=5,
@@ -52,9 +50,7 @@ exchange_breaker = pybreaker.CircuitBreaker(
 )
 
 
-# ---------------------------------------------------------------------------
 # Priority wrapper for the queue
-# ---------------------------------------------------------------------------
 
 
 @dataclass(order=True)
@@ -70,9 +66,7 @@ class _PrioritisedOrder:
     order: OrderRequest = field(compare=False)
 
 
-# ---------------------------------------------------------------------------
 # ExecutionEngine
-# ---------------------------------------------------------------------------
 
 
 class ExecutionEngine:

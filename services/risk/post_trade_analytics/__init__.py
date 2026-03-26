@@ -20,9 +20,7 @@ from shared.schemas.order_events import OrderFill, OrderSide
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Result types
-# ---------------------------------------------------------------------------
 
 @dataclass
 class SlippageResult:
@@ -71,9 +69,7 @@ class ExecutionQualityReport:
     summary_df: pd.DataFrame | None = None
 
 
-# ---------------------------------------------------------------------------
 # Analytics engine
-# ---------------------------------------------------------------------------
 
 class PostTradeAnalytics:
     """Post-trade analytics with pandas-based batch processing.

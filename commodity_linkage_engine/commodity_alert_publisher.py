@@ -28,8 +28,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-# ── Alert severity thresholds ───────────────────────────────────────────────
-
+# Alert severity thresholds
 _SEVERITY_THRESHOLDS: dict[str, float] = {
     "CRITICAL": 5.0,  # > 5% revenue impact
     "HIGH": 2.0,  # > 2% revenue impact

@@ -20,9 +20,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/news", tags=["news-sentiment"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class NewsArticle(BaseModel):
     id: str
     title: str
@@ -53,9 +51,7 @@ class SentimentSummaryResponse(BaseModel):
     total_articles_analyzed: int
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/", response_model=list[NewsArticle])
 async def get_news(
     symbol: str | None = Query(None, description="Filter by ticker symbol"),

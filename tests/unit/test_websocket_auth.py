@@ -10,9 +10,7 @@ import pytest
 
 from services.api.websocket_gateway import authenticate_ws_token
 
-# =============================================================================
 # authenticate_ws_token
-# =============================================================================
 
 _TEST_SECRET = "test-jwt-secret-for-unit-tests-minimum-64-characters-long-enough"  # noqa: S105
 _TEST_ALGORITHM = "HS256"
