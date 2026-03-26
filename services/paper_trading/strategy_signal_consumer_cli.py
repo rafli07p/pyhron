@@ -61,7 +61,7 @@ async def _run(batch_size: int, batch_timeout_s: float) -> None:
 async def _shutdown(consumer: object) -> None:
     logger.info("shutdown_signal_received")
     if hasattr(consumer, "stop"):
-        await consumer.stop()  # type: ignore[attr-defined]
+        await consumer.stop()
     sys.exit(0)
 
 
