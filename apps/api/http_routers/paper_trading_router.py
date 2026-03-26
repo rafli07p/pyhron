@@ -506,7 +506,7 @@ _consumer_instance: Any = None
 
 def register_consumer(consumer: Any) -> None:
     """Register a running StrategySignalKafkaConsumer for health reporting."""
-    global _consumer_instance  # noqa: PLW0603
+    global _consumer_instance
     _consumer_instance = consumer
 
 
