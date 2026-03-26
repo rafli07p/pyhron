@@ -36,16 +36,42 @@ jobs:
         run: |
           poetry run python -c "
           import asyncio
-          from shared.configuration_settings import get_config
-          print('Running position reconciliation...')
-          print(f'Database: {get_config().database_url[:30]}...')
-          print('Comparing internal positions vs broker positions...')
-          # TODO: Implement PositionReconciliationMonitor.reconcile()
-          # and trigger circuit breaker if mismatch > threshold
-          print('Reconciliation complete.')
+          import sys
+
+          from services.order_management_system.position_reconciliation_monitor import (
+              PositionReconciliationMonitor,
+          )
+          from services.broker_connectivity.alpaca_broker_adapter import AlpacaBrokerAdapter
+          from shared.structured_json_logger import get_logger
+
+          logger = get_logger('reconciliation-check')
+
+          async def run_reconciliation():
+              logger.info('reconciliation_check_started')
+
+              adapter = AlpacaBrokerAdapter()
+              await adapter.connect()
+
+              monitor = PositionReconciliationMonitor(
+                  broker_adapters={'ALPACA': adapter},
+              )
+              await monitor.start()
+
+              try:
+                  await monitor.reconcile()
+                  logger.info('reconciliation_check_completed')
+              except Exception as exc:
+                  logger.critical('reconciliation_check_failed', error=str(exc))
+                  sys.exit(1)
+              finally:
+                  await monitor.stop()
+                  await adapter.disconnect()
+
+          asyncio.run(run_reconciliation())
           "
 
       - name: Notify on failure
         if: failure()
         run: |
           echo "::error::Reconciliation check failed — manual review required"
+          echo "::error::Check logs for position discrepancies between internal state and broker"

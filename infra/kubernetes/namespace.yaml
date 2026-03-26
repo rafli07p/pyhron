@@ -1,23 +1,23 @@
 # =============================================================================
-# Enthropy - Kubernetes Namespace
+# Pyhron - Kubernetes Namespace
 # =============================================================================
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: enthropy
+  name: pyhron
   labels:
-    app.kubernetes.io/name: enthropy
-    app.kubernetes.io/part-of: enthropy-platform
+    app.kubernetes.io/name: pyhron
+    app.kubernetes.io/part-of: pyhron-platform
     app.kubernetes.io/managed-by: kubectl
   annotations:
-    description: "Enthropy Quantitative Trading Platform"
+    description: "Pyhron Quantitative Trading Platform"
 
 ---
 apiVersion: v1
 kind: ResourceQuota
 metadata:
-  name: enthropy-quota
-  namespace: enthropy
+  name: pyhron-quota
+  namespace: pyhron
 spec:
   hard:
     requests.cpu: "20"
@@ -32,8 +32,8 @@ spec:
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: enthropy-limit-range
-  namespace: enthropy
+  name: pyhron-limit-range
+  namespace: pyhron
 spec:
   limits:
     - type: Container
@@ -54,8 +54,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: enthropy-default-deny
-  namespace: enthropy
+  name: pyhron-default-deny
+  namespace: pyhron
 spec:
   podSelector: {}
   policyTypes:
@@ -65,12 +65,12 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              app.kubernetes.io/name: enthropy
+              app.kubernetes.io/name: pyhron
   egress:
     - to:
         - namespaceSelector:
             matchLabels:
-              app.kubernetes.io/name: enthropy
+              app.kubernetes.io/name: pyhron
     - to: []
       ports:
         - port: 53

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Enthropy provides automated compliance reporting for both SEC (U.S. Securities and Exchange Commission) and OJK (Otoritas Jasa Keuangan, Indonesia's Financial Services Authority) regulatory requirements. The compliance engine generates, validates, encrypts, and archives all required reports.
+Pyhron provides automated compliance reporting for both SEC (U.S. Securities and Exchange Commission) and OJK (Otoritas Jasa Keuangan, Indonesia's Financial Services Authority) regulatory requirements. The compliance engine generates, validates, encrypts, and archives all required reports.
 
 ## SEC Compliance
 
@@ -19,7 +19,7 @@ Enthropy provides automated compliance reporting for both SEC (U.S. Securities a
 ### Implementation
 
 ```python
-from enthropy.compliance.engine import ComplianceEngine
+from pyhron.compliance.engine import ComplianceEngine
 
 engine = ComplianceEngine()
 
@@ -112,7 +112,7 @@ risk_report = await engine.generate_ojk_report(
 
 ### AML Transaction Monitoring
 
-Enthropy integrates real-time AML monitoring for OJK compliance:
+Pyhron integrates real-time AML monitoring for OJK compliance:
 
 ```python
 # AML rules are applied to every transaction
@@ -157,7 +157,7 @@ All compliance exports follow a strict integrity chain:
 ```python
 # Verify report integrity
 is_valid = await engine.verify_report_integrity(
-    report_path="s3://enthropy-backups/compliance/13F_2026_Q1.enc",
+    report_path="s3://pyhron-backups/compliance/13F_2026_Q1.enc",
     expected_hash="sha256:abc123...",
 )
 ```
@@ -171,7 +171,7 @@ Every compliance action is recorded in `audit.logs`:
   "event_type": "compliance_export",
   "entity_type": "sec_13f_report",
   "entity_id": "RPT-2026-Q1-001",
-  "actor": "compliance_bot@enthropy.dev",
+  "actor": "compliance_bot@pyhron.dev",
   "action": "generate_and_export",
   "details": {
     "report_type": "13F",

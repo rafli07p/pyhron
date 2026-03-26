@@ -2,13 +2,13 @@
 
 ## Overview
 
-Indonesia's Personal Data Protection Law (UU PDP, Law No. 27/2022) establishes comprehensive data privacy requirements that apply to any entity processing personal data of Indonesian citizens. Enthropy implements technical and organizational controls to ensure full compliance.
+Indonesia's Personal Data Protection Law (UU PDP, Law No. 27/2022) establishes comprehensive data privacy requirements that apply to any entity processing personal data of Indonesian citizens. Pyhron implements technical and organizational controls to ensure full compliance.
 
 This guide covers the platform's data protection architecture, encryption implementation, audit trail mechanisms, and data retention policies.
 
 ## Regulatory Requirements Summary
 
-| Requirement | UU PDP Article | Enthropy Implementation |
+| Requirement | UU PDP Article | Pyhron Implementation |
 |-------------|---------------|------------------------|
 | Lawful processing | Art. 20 | Consent tracking, purpose limitation |
 | Data minimization | Art. 16(d) | Field-level access control |
@@ -33,7 +33,7 @@ This guide covers the platform's data protection architecture, encryption implem
 
 ### Encryption Architecture
 
-Enthropy uses AES-256-GCM (Galois/Counter Mode) for authenticated encryption, providing both confidentiality and integrity verification.
+Pyhron uses AES-256-GCM (Galois/Counter Mode) for authenticated encryption, providing both confidentiality and integrity verification.
 
 **Key hierarchy:**
 ```
@@ -44,10 +44,10 @@ Master Key (256-bit, from HSM/KMS)
   └── Audit Key (derived via HKDF, context: "audit_data")
 ```
 
-**Implementation:** See `src/enthropy/shared/encryption/service.py`
+**Implementation:** See `src/pyhron/shared/encryption/service.py`
 
 ```python
-from enthropy.shared.encryption.service import EncryptionService, FieldEncryptor
+from pyhron.shared.encryption.service import EncryptionService, FieldEncryptor
 
 # Field-level encryption for PII
 encryptor = FieldEncryptor(encryption_service)
@@ -89,7 +89,7 @@ Every data mutation and sensitive operation is logged to the immutable `audit.lo
   "event_type": "data_access",
   "entity_type": "user_pii",
   "entity_id": "USR-12345",
-  "actor": "trader@enthropy.dev",
+  "actor": "trader@pyhron.dev",
   "action": "decrypt_field",
   "details": {
     "fields": ["name", "nik"],
@@ -124,7 +124,7 @@ Automated lifecycle management via:
 
 ### Data Residency
 
-For Indonesian data subjects, Enthropy supports data residency in the Jakarta region (ap-southeast-3):
+For Indonesian data subjects, Pyhron supports data residency in the Jakarta region (ap-southeast-3):
 
 - Primary data store: ap-southeast-1 (Singapore)
 - Jakarta replica: ap-southeast-3 for PII of Indonesian citizens
@@ -137,7 +137,7 @@ For Indonesian data subjects, Enthropy supports data residency in the Jakarta re
 
 ```python
 # Export all data for a user
-from enthropy.compliance.data_subject import DataSubjectService
+from pyhron.compliance.data_subject import DataSubjectService
 
 service = DataSubjectService()
 export = await service.export_user_data(
@@ -168,7 +168,7 @@ Data exports available in JSON and CSV formats via the admin API endpoint `/admi
 
 ## Compliance Reporting
 
-Automated compliance reports generated via `src/enthropy/compliance/`:
+Automated compliance reports generated via `src/pyhron/compliance/`:
 
 | Report | Frequency | Format | Description |
 |--------|-----------|--------|-------------|

@@ -1,13 +1,13 @@
 # =============================================================================
-# Enthropy Trading Platform - CI/CD Pipeline (GitLab CI)
+# Pyhron Trading Platform - CI/CD Pipeline (GitLab CI)
 # =============================================================================
 # This pipeline is designed for trunk-based development with feature flags.
 # Reusable stages can be adapted for GitHub Actions or other CI systems.
 # =============================================================================
 
 variables:
-  DOCKER_REGISTRY: "ghcr.io/enthropy"
-  IMAGE_NAME: "enthropy-api"
+  DOCKER_REGISTRY: "ghcr.io/pyhron"
+  IMAGE_NAME: "pyhron-api"
   PYTHON_VERSION: "3.11"
   POETRY_VERSION: "1.7.1"
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -93,10 +93,10 @@ test:unit:
     - postgres:16-alpine
     - redis:7-alpine
   variables:
-    POSTGRES_DB: enthropy_test
-    POSTGRES_USER: enthropy
+    POSTGRES_DB: pyhron_test
+    POSTGRES_USER: pyhron
     POSTGRES_PASSWORD: test_password
-    DATABASE_URL: "postgresql+asyncpg://enthropy:test_password@postgres:5432/enthropy_test"
+    DATABASE_URL: "postgresql+asyncpg://pyhron:test_password@postgres:5432/pyhron_test"
     REDIS_URL: "redis://redis:6379/0"
   script:
     - poetry run pytest tests/unit/
@@ -125,10 +125,10 @@ test:integration:
     - postgres:16-alpine
     - redis:7-alpine
   variables:
-    POSTGRES_DB: enthropy_test
-    POSTGRES_USER: enthropy
+    POSTGRES_DB: pyhron_test
+    POSTGRES_USER: pyhron
     POSTGRES_PASSWORD: test_password
-    DATABASE_URL: "postgresql+asyncpg://enthropy:test_password@postgres:5432/enthropy_test"
+    DATABASE_URL: "postgresql+asyncpg://pyhron:test_password@postgres:5432/pyhron_test"
     REDIS_URL: "redis://redis:6379/0"
   script:
     - poetry run pytest tests/integration/
@@ -247,14 +247,14 @@ deploy:staging:
   needs: ["build:docker", "build:trivy-scan"]
   environment:
     name: staging
-    url: https://staging.enthropy.dev
+    url: https://staging.pyhron.dev
   variables:
-    K8S_NAMESPACE: enthropy-staging
+    K8S_NAMESPACE: pyhron-staging
   script:
-    - kubectl set image deployment/enthropy-api
-      enthropy-api="${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - kubectl set image deployment/pyhron-api
+      pyhron-api="${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
       --namespace ${K8S_NAMESPACE}
-    - kubectl rollout status deployment/enthropy-api
+    - kubectl rollout status deployment/pyhron-api
       --namespace ${K8S_NAMESPACE}
       --timeout=300s
   rules:
@@ -268,7 +268,7 @@ integration-test:staging:
   stage: integration-test
   needs: ["deploy:staging"]
   variables:
-    API_BASE_URL: "https://staging.enthropy.dev"
+    API_BASE_URL: "https://staging.pyhron.dev"
   script:
     - poetry run pytest tests/e2e/
       --junitxml=junit-e2e.xml
@@ -290,20 +290,20 @@ deploy:production:
   needs: ["integration-test:staging"]
   environment:
     name: production
-    url: https://api.enthropy.dev
+    url: https://api.pyhron.dev
   variables:
-    K8S_NAMESPACE: enthropy
+    K8S_NAMESPACE: pyhron
   script:
-    - kubectl set image deployment/enthropy-api
-      enthropy-api="${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - kubectl set image deployment/pyhron-api
+      pyhron-api="${DOCKER_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
       --namespace ${K8S_NAMESPACE}
-    - kubectl rollout status deployment/enthropy-api
+    - kubectl rollout status deployment/pyhron-api
       --namespace ${K8S_NAMESPACE}
       --timeout=600s
     - |
       echo "Verifying production health..."
       for i in $(seq 1 30); do
-        if curl -sf https://api.enthropy.dev/health > /dev/null; then
+        if curl -sf https://api.pyhron.dev/health > /dev/null; then
           echo "Production health check passed."
           exit 0
         fi
@@ -311,7 +311,7 @@ deploy:production:
         sleep 10
       done
       echo "Health check failed. Rolling back..."
-      kubectl rollout undo deployment/enthropy-api --namespace ${K8S_NAMESPACE}
+      kubectl rollout undo deployment/pyhron-api --namespace ${K8S_NAMESPACE}
       exit 1
   when: manual
   rules:

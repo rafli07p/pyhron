@@ -1,5 +1,5 @@
 # =============================================================================
-# Enthropy Trading Platform - Terraform Infrastructure
+# Pyhron Trading Platform - Terraform Infrastructure
 # =============================================================================
 # Usage:
 #   terraform init
@@ -18,11 +18,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "enthropy-terraform-state"
+    bucket         = "pyhron-terraform-state"
     key            = "infrastructure/terraform.tfstate"
     region         = "ap-southeast-1"
     encrypt        = true
-    dynamodb_table = "enthropy-terraform-locks"
+    dynamodb_table = "pyhron-terraform-locks"
   }
 }
 
@@ -34,7 +34,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "enthropy"
+      Project     = "pyhron"
       Environment = var.environment
       ManagedBy   = "terraform"
       Team        = "platform-engineering"
@@ -48,7 +48,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "enthropy"
+      Project     = "pyhron"
       Environment = var.environment
       ManagedBy   = "terraform"
       Team        = "platform-engineering"
@@ -73,7 +73,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.4"
 
-  name = "enthropy-${var.environment}-vpc"
+  name = "pyhron-${var.environment}-vpc"
   cidr = var.vpc_cidr
 
   azs             = slice(data.aws_availability_zones.available.names, 0, 3)
@@ -114,7 +114,7 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.21"
 
-  cluster_name    = "enthropy-${var.environment}"
+  cluster_name    = "pyhron-${var.environment}"
   cluster_version = var.eks_cluster_version
 
   vpc_id     = module.vpc.vpc_id
@@ -140,7 +140,7 @@ module "eks" {
 
   eks_managed_node_groups = {
     general = {
-      name           = "enthropy-general"
+      name           = "pyhron-general"
       instance_types = var.eks_general_instance_types
       capacity_type  = "ON_DEMAND"
 
@@ -154,7 +154,7 @@ module "eks" {
     }
 
     compute = {
-      name           = "enthropy-compute"
+      name           = "pyhron-compute"
       instance_types = var.eks_compute_instance_types
       capacity_type  = var.environment == "production" ? "ON_DEMAND" : "SPOT"
 
@@ -190,7 +190,7 @@ module "rds" {
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.3"
 
-  identifier = "enthropy-${var.environment}"
+  identifier = "pyhron-${var.environment}"
 
   engine               = "postgres"
   engine_version       = "16.1"
@@ -201,8 +201,8 @@ module "rds" {
   allocated_storage     = var.rds_allocated_storage
   max_allocated_storage = var.rds_max_allocated_storage
 
-  db_name  = "enthropy"
-  username = "enthropy_admin"
+  db_name  = "pyhron"
+  username = "pyhron_admin"
   port     = 5432
 
   multi_az               = var.environment == "production"
@@ -220,7 +220,7 @@ module "rds" {
   performance_insights_enabled    = true
   monitoring_interval             = 60
   create_monitoring_role          = true
-  monitoring_role_name            = "enthropy-rds-monitoring-${var.environment}"
+  monitoring_role_name            = "pyhron-rds-monitoring-${var.environment}"
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   storage_encrypted = true
@@ -246,7 +246,7 @@ module "rds" {
 }
 
 resource "aws_security_group" "rds" {
-  name_prefix = "enthropy-rds-${var.environment}-"
+  name_prefix = "pyhron-rds-${var.environment}-"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -265,7 +265,7 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "enthropy-rds-${var.environment}"
+    Name = "pyhron-rds-${var.environment}"
   }
 
   lifecycle {
@@ -277,12 +277,12 @@ resource "aws_security_group" "rds" {
 # ElastiCache Redis
 # =============================================================================
 resource "aws_elasticache_subnet_group" "redis" {
-  name       = "enthropy-redis-${var.environment}"
+  name       = "pyhron-redis-${var.environment}"
   subnet_ids = module.vpc.private_subnets
 }
 
 resource "aws_security_group" "redis" {
-  name_prefix = "enthropy-redis-${var.environment}-"
+  name_prefix = "pyhron-redis-${var.environment}-"
   vpc_id      = module.vpc.vpc_id
 
   ingress {
@@ -301,7 +301,7 @@ resource "aws_security_group" "redis" {
   }
 
   tags = {
-    Name = "enthropy-redis-${var.environment}"
+    Name = "pyhron-redis-${var.environment}"
   }
 
   lifecycle {
@@ -310,8 +310,8 @@ resource "aws_security_group" "redis" {
 }
 
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id = "enthropy-${var.environment}"
-  description          = "Enthropy Redis cluster - ${var.environment}"
+  replication_group_id = "pyhron-${var.environment}"
+  description          = "Pyhron Redis cluster - ${var.environment}"
 
   node_type            = var.redis_node_type
   num_cache_clusters   = var.environment == "production" ? 3 : 1
@@ -342,7 +342,7 @@ resource "aws_elasticache_replication_group" "redis" {
 # S3 Buckets - Backups & Artifacts
 # =============================================================================
 resource "aws_s3_bucket" "backups" {
-  bucket = "enthropy-backups-${var.environment}-${data.aws_caller_identity.current.account_id}"
+  bucket = "pyhron-backups-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
   tags = {
     Component = "storage"
@@ -403,7 +403,7 @@ resource "aws_s3_bucket_public_access_block" "backups" {
 }
 
 resource "aws_s3_bucket" "mlflow_artifacts" {
-  bucket = "enthropy-mlflow-artifacts-${var.environment}-${data.aws_caller_identity.current.account_id}"
+  bucket = "pyhron-mlflow-artifacts-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
   tags = {
     Component = "storage"
@@ -440,7 +440,7 @@ module "jakarta_vpc" {
     aws = aws.jakarta
   }
 
-  name = "enthropy-${var.environment}-jakarta-vpc"
+  name = "pyhron-${var.environment}-jakarta-vpc"
   cidr = var.jakarta_vpc_cidr
 
   azs             = ["ap-southeast-3a", "ap-southeast-3b", "ap-southeast-3c"]
@@ -460,7 +460,7 @@ module "jakarta_vpc" {
 
 resource "aws_s3_bucket" "jakarta_backups" {
   provider = aws.jakarta
-  bucket   = "enthropy-backups-jakarta-${var.environment}-${data.aws_caller_identity.current.account_id}"
+  bucket   = "pyhron-backups-jakarta-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
   tags = {
     Component = "storage"
