@@ -406,8 +406,11 @@ async def run_simulation(
 
         engine = PaperSimulationEngine()
         async with get_session() as db:
-            await engine.run_simulation(
-                session_id=str(session_id),
+            # Reload session inside this db context
+            result = await db.execute(select(PaperTradingSession).where(PaperTradingSession.id == session_id))
+            db_session_obj = result.scalar_one()
+            await engine.run(
+                session=db_session_obj,
                 date_from=request.date_from,
                 date_to=request.date_to,
                 slippage_bps=request.slippage_bps,
