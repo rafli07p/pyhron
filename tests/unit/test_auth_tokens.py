@@ -24,17 +24,6 @@ try:
 except ImportError:
     pytest.skip("Requires shared.security.auth module", allow_module_level=True)
 
-# passlib + bcrypt >=4.1 has an incompatibility where passlib's internal
-# detect_wrap_bug sends a 256-byte password that bcrypt rejects. Skip
-# password hashing tests if this bug is present.
-try:
-    _test_hash = hash_password("probe")
-    _BCRYPT_AVAILABLE = True
-except (ValueError, Exception):
-    _BCRYPT_AVAILABLE = False
-
-_skip_bcrypt = pytest.mark.skipif(not _BCRYPT_AVAILABLE, reason="passlib/bcrypt version incompatibility")
-
 
 def _mock_settings() -> MagicMock:
     settings = MagicMock()
@@ -49,27 +38,23 @@ def _mock_settings() -> MagicMock:
 class TestPasswordHashing:
     """Tests for password hashing and verification."""
 
-    @_skip_bcrypt
     def test_hash_and_verify(self) -> None:
         """Hashed password should verify correctly."""
         password = "secure_password_123!"
         hashed = hash_password(password)
         assert verify_password(password, hashed) is True
 
-    @_skip_bcrypt
     def test_wrong_password_fails(self) -> None:
         """Wrong password should not verify."""
         hashed = hash_password("correct_password")
         assert verify_password("wrong_password", hashed) is False
 
-    @_skip_bcrypt
     def test_hash_is_not_plaintext(self) -> None:
         """Hash should not contain the original password."""
         password = "my_secret"
         hashed = hash_password(password)
         assert password not in hashed
 
-    @_skip_bcrypt
     def test_different_hashes_for_same_password(self) -> None:
         """Same password should produce different hashes (salt)."""
         password = "same_password"
