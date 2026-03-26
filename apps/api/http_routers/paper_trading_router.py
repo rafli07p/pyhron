@@ -493,3 +493,41 @@ async def get_reconciliation_report(
         positions_checked=positions_checked,
         orders_checked=orders_checked,
     )
+
+
+# ── Consumer Health Check ────────────────────────────────────────────────────
+
+
+# Singleton reference set by the consumer process when it starts.
+# When the API runs in-process with the consumer (e.g. dev/test), this
+# allows the health endpoint to report consumer status.
+_consumer_instance: Any = None
+
+
+def register_consumer(consumer: Any) -> None:
+    """Register a running StrategySignalKafkaConsumer for health reporting."""
+    global _consumer_instance  # noqa: PLW0603
+    _consumer_instance = consumer
+
+
+@router.get("/consumer/health", tags=["ops"])
+async def consumer_health() -> dict[str, Any]:
+    """Health check for the strategy signal Kafka consumer."""
+    if _consumer_instance is None:
+        return {
+            "status": "not_registered",
+            "message": "No consumer instance registered with the API process",
+        }
+
+    health = _consumer_instance.health()
+    return {
+        "status": health.status,
+        "running": health.running,
+        "started_at": health.started_at.isoformat() if health.started_at else None,
+        "last_message_at": health.last_message_at.isoformat() if health.last_message_at else None,
+        "messages_processed": health.messages_processed,
+        "batches_flushed": health.batches_flushed,
+        "errors": health.errors,
+        "topics": health.topics,
+        "consumer_group": health.consumer_group,
+    }
