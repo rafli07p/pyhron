@@ -39,34 +39,37 @@ class TestIDXOrderValidator:
             pytest.skip("IDXOrderValidator not available")
 
     def test_valid_lot_size(self) -> None:
-        errors = self.validator.validate_quantity(500)  # 5 lots
-        assert len(errors) == 0
+        result = self.validator.validate("BBCA", "BUY", 5, "MARKET", None, 0)
+        assert result.is_valid
 
-    def test_invalid_lot_size_not_multiple_of_100(self) -> None:
-        errors = self.validator.validate_quantity(150)
-        assert any("lot" in e.lower() for e in errors)
-
-    def test_zero_quantity_rejected(self) -> None:
-        errors = self.validator.validate_quantity(0)
-        assert len(errors) > 0
+    def test_invalid_lot_size_zero(self) -> None:
+        result = self.validator.validate("BBCA", "BUY", 0, "MARKET", None, 0)
+        assert not result.is_valid
+        assert any("positive" in e.lower() for e in result.errors)
 
     def test_negative_quantity_rejected(self) -> None:
-        errors = self.validator.validate_quantity(-100)
-        assert len(errors) > 0
+        result = self.validator.validate("BBCA", "BUY", -1, "MARKET", None, 0)
+        assert not result.is_valid
+        assert any("positive" in e.lower() for e in result.errors)
+
+    def test_naked_short_sell_rejected(self) -> None:
+        result = self.validator.validate("BBCA", "SELL", 10, "MARKET", None, 5)
+        assert not result.is_valid
+        assert any("short" in e.lower() for e in result.errors)
 
     def test_valid_tick_size(self) -> None:
-        # IDX tick sizes depend on price range
-        # Price 200-500: tick = 2
-        errors = self.validator.validate_tick_size(Decimal("250"), Decimal("252"))
-        assert len(errors) == 0
+        # Price 200-500: tick = 2, so 252 is valid
+        result = self.validator.validate("BBCA", "BUY", 1, "LIMIT", Decimal("252"), 0)
+        assert result.is_valid
 
-    def test_valid_symbol_format(self) -> None:
-        errors = self.validator.validate_symbol("BBCA")
-        assert len(errors) == 0
+    def test_valid_symbol_buy(self) -> None:
+        result = self.validator.validate("BBCA", "BUY", 1, "MARKET", None, 0)
+        assert result.is_valid
 
-    def test_empty_symbol_rejected(self) -> None:
-        errors = self.validator.validate_symbol("")
-        assert len(errors) > 0
+    def test_price_below_minimum_rejected(self) -> None:
+        result = self.validator.validate("BBCA", "BUY", 1, "LIMIT", Decimal("0"), 0)
+        assert not result.is_valid
+        assert any("minimum" in e.lower() for e in result.errors)
 
 
 # ── Order Lifecycle Record Tests ────────────────────────────────────────────
@@ -137,89 +140,89 @@ class TestOrderLifecycleRecord:
 
 class TestCircuitBreakerStateManager:
     @pytest.fixture()
-    def manager(self):
-        from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
-            CircuitBreakerStateManager,
-        )
+    def cb_module(self):
+        try:
+            import services.pre_trade_risk_engine.circuit_breaker_state_manager as mod
+        except (ImportError, SyntaxError):
+            pytest.skip("CircuitBreakerStateManager not available (requires Python 3.12+)")
+        return mod
 
-        return CircuitBreakerStateManager(default_ttl_seconds=300)
+    @pytest.fixture()
+    def manager(self, cb_module):
+        return cb_module.CircuitBreakerStateManager(default_ttl_seconds=300)
 
     @pytest.mark.asyncio()
-    async def test_halt_sets_redis_key(self, manager) -> None:
-        from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
-            CircuitBreakerReason,
-        )
-
+    async def test_halt_sets_redis_key(self, manager, cb_module) -> None:
         mock_redis = AsyncMock()
         mock_redis.set = AsyncMock()
         mock_redis.lpush = AsyncMock()
         mock_redis.ltrim = AsyncMock()
 
-        with patch("services.pre_trade_risk_engine.circuit_breaker_state_manager.get_redis", return_value=mock_redis):
+        with patch.object(cb_module, "get_redis", return_value=mock_redis):
             state = await manager.halt(
                 entity_id="strat-001",
-                reason=CircuitBreakerReason.DAILY_LOSS_LIMIT,
+                reason=cb_module.CircuitBreakerReason.DAILY_LOSS_LIMIT,
                 detail="Lost 3% today",
             )
 
         assert state.is_active
-        assert state.reason == CircuitBreakerReason.DAILY_LOSS_LIMIT
+        assert state.reason == cb_module.CircuitBreakerReason.DAILY_LOSS_LIMIT
         assert state.entity_id == "strat-001"
         mock_redis.set.assert_called_once()
 
     @pytest.mark.asyncio()
-    async def test_resume_deletes_redis_key(self, manager) -> None:
+    async def test_resume_deletes_redis_key(self, manager, cb_module) -> None:
         mock_redis = AsyncMock()
         mock_redis.delete = AsyncMock(return_value=1)
         mock_redis.lpush = AsyncMock()
         mock_redis.ltrim = AsyncMock()
 
-        with patch("services.pre_trade_risk_engine.circuit_breaker_state_manager.get_redis", return_value=mock_redis):
+        with patch.object(cb_module, "get_redis", return_value=mock_redis):
             cleared = await manager.resume("strat-001", reason="manual clear")
 
         assert cleared is True
         mock_redis.delete.assert_called_once()
 
     @pytest.mark.asyncio()
-    async def test_resume_returns_false_if_not_active(self, manager) -> None:
+    async def test_resume_returns_false_if_not_active(self, manager, cb_module) -> None:
         mock_redis = AsyncMock()
         mock_redis.delete = AsyncMock(return_value=0)
         mock_redis.lpush = AsyncMock()
         mock_redis.ltrim = AsyncMock()
 
-        with patch("services.pre_trade_risk_engine.circuit_breaker_state_manager.get_redis", return_value=mock_redis):
+        with patch.object(cb_module, "get_redis", return_value=mock_redis):
             cleared = await manager.resume("strat-nonexistent")
 
         assert cleared is False
 
     @pytest.mark.asyncio()
-    async def test_is_halted_checks_redis(self, manager) -> None:
+    async def test_is_halted_checks_redis(self, manager, cb_module) -> None:
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value="DAILY_LOSS_LIMIT:detail:2024-01-01T00:00:00")
 
-        with patch("services.pre_trade_risk_engine.circuit_breaker_state_manager.get_redis", return_value=mock_redis):
+        with patch.object(cb_module, "get_redis", return_value=mock_redis):
             halted = await manager.is_halted("strat-001")
 
         assert halted is True
 
     @pytest.mark.asyncio()
-    async def test_get_state_inactive(self, manager) -> None:
+    async def test_get_state_inactive(self, manager, cb_module) -> None:
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value=None)
 
-        with patch("services.pre_trade_risk_engine.circuit_breaker_state_manager.get_redis", return_value=mock_redis):
+        with patch.object(cb_module, "get_redis", return_value=mock_redis):
             state = await manager.get_state("strat-001")
 
         assert state.is_active is False
         assert state.reason is None
 
     @pytest.mark.asyncio()
-    async def test_get_state_active_parses_value(self, manager) -> None:
+    async def test_get_state_active_parses_value(self, manager, cb_module) -> None:
         mock_redis = AsyncMock()
         mock_redis.get = AsyncMock(return_value="VAR_BREACH:VaR exceeded 95th pctl:2024-01-15T10:30:00+00:00")
         mock_redis.ttl = AsyncMock(return_value=250)
 
-        with patch("services.pre_trade_risk_engine.circuit_breaker_state_manager.get_redis", return_value=mock_redis):
+        with patch.object(cb_module, "get_redis", return_value=mock_redis):
             state = await manager.get_state("strat-001")
 
         assert state.is_active is True
