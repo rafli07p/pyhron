@@ -303,12 +303,23 @@ def run_momentum_backtest(
         for reb_date, group in signals.groupby("date"):
             rebal_map[reb_date] = dict(zip(group["symbol"], group["target_lots"], strict=False))
 
+    # Build execution date lookup: shift signal execution to T+1 (next trading day)
+    # to avoid look-ahead bias. Signals generated on date D are executed on D+1.
+    execution_map: dict[date, dict[str, int]] = {}
+    sorted_dates = sorted(d.date() if hasattr(d, "date") else d for d in all_dates)
+    for i, d in enumerate(sorted_dates):
+        if d in rebal_map and i + 1 < len(sorted_dates):
+            execution_map[sorted_dates[i + 1]] = rebal_map[d]
+        elif d in rebal_map:
+            # Last day: cannot execute next bar, skip
+            logger.warning("signal_on_last_day_skipped", signal_date=str(d))
+
     for ts in all_dates:
         current_date = ts.date() if hasattr(ts, "date") else ts
 
-        # Check if rebalancing day
-        if current_date in rebal_map:
-            target_lots = rebal_map[current_date]
+        # Execute rebalancing on T+1 (day after signal generation)
+        if current_date in execution_map:
+            target_lots = execution_map[current_date]
             target_shares: dict[str, int] = {sym: lots * 100 for sym, lots in target_lots.items()}
 
             # Sell positions not in target (or reduce)
@@ -324,9 +335,10 @@ def run_momentum_backtest(
                             shares=sell_shares,
                             side="sell",
                         )
-                        proceeds = price * sell_shares - cost_breakdown.total_cost
+                        trade_cost = float(cost_breakdown.total_cost)
+                        proceeds = price * sell_shares - trade_cost
                         cash += proceeds
-                        total_cost_paid += cost_breakdown.total_cost
+                        total_cost_paid += trade_cost
                         trade_records.append(
                             {
                                 "date": ts,
@@ -335,7 +347,7 @@ def run_momentum_backtest(
                                 "lots": sell_shares // 100,
                                 "price": price,
                                 "value": price * sell_shares,
-                                "cost": cost_breakdown.total_cost,
+                                "cost": trade_cost,
                                 "pnl": 0.0,  # computed later
                             }
                         )
@@ -355,10 +367,11 @@ def run_momentum_backtest(
                             shares=buy_shares,
                             side="buy",
                         )
-                        total_needed = price * buy_shares + cost_breakdown.total_cost
+                        trade_cost = float(cost_breakdown.total_cost)
+                        total_needed = price * buy_shares + trade_cost
                         if total_needed <= cash:
                             cash -= total_needed
-                            total_cost_paid += cost_breakdown.total_cost
+                            total_cost_paid += trade_cost
                             holdings[sym] = holdings.get(sym, 0) + buy_shares
                             trade_records.append(
                                 {
@@ -368,7 +381,7 @@ def run_momentum_backtest(
                                     "lots": buy_shares // 100,
                                     "price": price,
                                     "value": price * buy_shares,
-                                    "cost": cost_breakdown.total_cost,
+                                    "cost": trade_cost,
                                     "pnl": 0.0,
                                 }
                             )

@@ -131,7 +131,19 @@ class BacktestPerformanceMetrics:
         recovery_mask = cum.loc[trough_idx:] >= cum.loc[peak_idx]
         recovery_idx = recovery_mask[recovery_mask].index[0] if recovery_mask.any() else None
 
-        duration = (trough_idx - peak_idx).days
+        # Compute duration in trading days (count bars between peak and trough/recovery)
+        # Use recovery date if available, otherwise trough date
+        end_point = recovery_idx if recovery_idx is not None else trough_idx
+        try:
+            peak_loc = cum.index.get_loc(peak_idx)
+            end_loc = cum.index.get_loc(end_point)
+            duration = int(end_loc - peak_loc)
+        except (KeyError, TypeError):
+            # Fallback to calendar days if index location fails
+            try:
+                duration = (end_point - peak_idx).days
+            except (AttributeError, TypeError):
+                duration = 0
 
         return DrawdownInfo(
             max_drawdown=max_dd,

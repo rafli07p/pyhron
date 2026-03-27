@@ -186,7 +186,8 @@ class OrderFillEventProcessor:
             ) / cumulative_filled_dec
         else:
             new_avg_price_dec = filled_price
-        new_avg_price: float = float(new_avg_price_dec)
+        # Keep Decimal precision for DB storage (Numeric(18,6))
+        new_avg_price_dec = new_avg_price_dec.quantize(Decimal("0.000001"))
 
         # Step 4: Determine target status
         is_full_fill = cumulative_filled >= order.quantity
@@ -203,7 +204,7 @@ class OrderFillEventProcessor:
         event_data: dict[str, object] = {
             "filled_quantity": cumulative_filled,
             "filled_price": fill.filled_price,
-            "avg_fill_price": new_avg_price,
+            "avg_fill_price": new_avg_price_dec,
             "commission": fill.commission,
             "tax": fill.tax,
             "broker_order_id": fill.broker_order_id,
@@ -252,7 +253,7 @@ class OrderFillEventProcessor:
             this_fill_price=fill.filled_price,
             cumulative_filled=cumulative_filled,
             total_quantity=order.quantity,
-            vwap=round(new_avg_price, 4),
+            vwap=float(round(new_avg_price_dec, 4)),
             status=target_status.value,
             settlement_date=settlement.isoformat(),
             is_full_fill=is_full_fill,
