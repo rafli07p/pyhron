@@ -60,4 +60,8 @@ class IdxEquityOhlcvTick(Base):
         ),
         CheckConstraint("high >= low", name="ck_ohlcv_high_gte_low"),
         CheckConstraint("volume IS NULL OR volume >= 0", name="ck_ohlcv_volume_non_negative"),
+        CheckConstraint("open IS NULL OR open >= 0", name="ck_ohlcv_open_non_negative"),
+        CheckConstraint("high IS NULL OR high >= 0", name="ck_ohlcv_high_non_negative"),
+        CheckConstraint("low IS NULL OR low >= 0", name="ck_ohlcv_low_non_negative"),
+        CheckConstraint("close IS NULL OR close >= 0", name="ck_ohlcv_close_non_negative"),
     )

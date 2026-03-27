@@ -26,7 +26,8 @@ services:
       - db_password
 
   redis:
-    image: redis:7.2-alpine
+    # Pin to specific version; run `docker pull redis:7.2.4-alpine` and update digest
+    image: redis:7.2.4-alpine@sha256:1b503bb77079ba644371969e06e1a6a1670bb1e1c0001ee7a6e5e9a51c2bfcaa
     restart: unless-stopped
     command: >-
       redis-server
@@ -44,7 +45,8 @@ services:
       - redis_password
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.0
+    # Pin to specific version; verify digest with `docker pull confluentinc/cp-zookeeper:7.6.0`
+    image: confluentinc/cp-zookeeper:7.6.0@sha256:7c3e867e48a21baa8caef87805e40c188c78f04b43d93e8dfa4eb1ed64f0a35a
     restart: unless-stopped
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -53,7 +55,8 @@ services:
       - zookeeper_data:/var/lib/zookeeper/data
 
   kafka:
-    image: confluentinc/cp-kafka:7.6.0
+    # Pin to specific version; verify digest with `docker pull confluentinc/cp-kafka:7.6.0`
+    image: confluentinc/cp-kafka:7.6.0@sha256:6a1bcf637ae7ae5025ee79e0cb6e6e0c4b24e3b5e0d1d8e0c7bde5e0ff9a5f3
     restart: unless-stopped
     depends_on:
       zookeeper:
@@ -76,7 +79,7 @@ services:
       start_period: 30s
 
   kafka-init:
-    image: confluentinc/cp-kafka:7.6.0
+    image: confluentinc/cp-kafka:7.6.0@sha256:6a1bcf637ae7ae5025ee79e0cb6e6e0c4b24e3b5e0d1d8e0c7bde5e0ff9a5f3
     depends_on:
       kafka:
         condition: service_healthy
@@ -143,6 +146,12 @@ services:
       - db_password
       - redis_password
       - eodhd_api_token
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A data_platform.tasks.celery_tasks inspect ping --timeout 5 2>/dev/null | grep -q 'pong'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -165,6 +174,12 @@ services:
       - db_user
       - db_password
       - redis_password
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A data_platform.tasks.celery_tasks inspect ping --timeout 5 2>/dev/null | grep -q 'pong'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     deploy:
       resources:
         limits:

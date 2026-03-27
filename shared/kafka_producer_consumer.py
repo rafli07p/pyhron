@@ -225,6 +225,17 @@ class PyhronConsumer(Generic[ProtoT]):
         dlq_topic: str | None = None,
         auto_offset_reset: str = "latest",
     ) -> None:
+        if auto_offset_reset not in ("latest", "earliest", "none"):
+            raise ValueError(
+                f"Invalid auto_offset_reset={auto_offset_reset!r}; " "must be 'latest', 'earliest', or 'none'"
+            )
+        if auto_offset_reset == "earliest":
+            logger.warning(
+                "kafka_consumer_offset_earliest",
+                topic=topic,
+                group_id=group_id,
+                hint="'earliest' replays full topic history; use 'latest' or 'none' in production",
+            )
         self._bootstrap_servers = bootstrap_servers
         self._topic = topic
         self._proto_type = proto_type

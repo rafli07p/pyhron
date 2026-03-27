@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 try:
-    from data_platform.models.trading import OrderStatusEnum
+    from data_platform.database_models.order_lifecycle_record import OrderStatusEnum
     from services.order_management_system.order_state_machine import (
         TERMINAL_STATES,
         VALID_TRANSITIONS,
