@@ -15,7 +15,12 @@ from typing import cast
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import update
 
-from data_platform.models.trading import Order, OrderStatusEnum
+from data_platform.database_models.order_lifecycle_record import (
+    OrderLifecycleRecord as Order,
+)
+from data_platform.database_models.order_lifecycle_record import (
+    OrderStatusEnum,
+)
 from shared.async_database_session import get_session
 from shared.kafka_producer_consumer import PyhronProducer, Topics
 from shared.platform_exception_hierarchy import InvalidTransitionError

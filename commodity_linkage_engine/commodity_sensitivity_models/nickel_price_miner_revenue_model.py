@@ -3,8 +3,9 @@
 Models the impact of LME nickel price changes on Indonesian nickel
 producers listed on IDX.
 
-# TODO: Move hardcoded company profiles and production data to database-backed
-# or config-file-based reference data with quarterly update process.
+Profiles are loaded from the ``commodity_company_profiles`` database table
+(see ``profile_loader.py``).  Hardcoded fallback data is retained for offline
+development and tests only.
 
 Product mix matters significantly:
   - INCO: Nickel matte (high-grade, strong LME correlation ~0.85).
@@ -58,6 +59,7 @@ class NickelProducerProfile:
     trailing_revenue_idr: float
 
 
+# Fallback data for offline development/tests. Production reads from DB.
 _NICKEL_PRODUCERS: list[NickelProducerProfile] = [
     NickelProducerProfile(
         ticker="INCO",
@@ -113,8 +115,13 @@ class NickelPriceMinerRevenueModel:
         usd_idr_rate: USD/IDR exchange rate.
     """
 
-    def __init__(self, usd_idr_rate: float = 15_500.0) -> None:
+    def __init__(
+        self,
+        usd_idr_rate: float = 15_500.0,
+        producers: list[NickelProducerProfile] | None = None,
+    ) -> None:
         self._usd_idr = usd_idr_rate
+        self._producers = producers if producers is not None else _NICKEL_PRODUCERS
 
     def _compute_company_impact(
         self,
@@ -187,7 +194,7 @@ class NickelPriceMinerRevenueModel:
             List of earnings impact estimates for all nickel tickers.
         """
         estimates: list[StockEarningsImpactEstimate] = []
-        for producer in _NICKEL_PRODUCERS:
+        for producer in self._producers:
             estimate = self._compute_company_impact(producer, lme_change_usd_per_ton)
             logger.info(
                 "nickel_company_impact_computed",

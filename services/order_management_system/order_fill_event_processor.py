@@ -16,6 +16,12 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
+from data_platform.database_models.order_lifecycle_record import (
+    OrderLifecycleRecord as Order,
+)
+from data_platform.database_models.order_lifecycle_record import (
+    OrderStatusEnum,
+)
 from data_platform.database_models.strategy_position_snapshot import (
     StrategyPositionSnapshot,
 )
@@ -23,7 +29,6 @@ from data_platform.database_models.strategy_trade_execution_log import (
     StrategyTradeExecutionLog,
     TradeSideEnum,
 )
-from data_platform.models.trading import Order, OrderStatusEnum
 from services.order_management_system.order_state_machine import OrderStateMachine
 from shared.async_database_session import get_session
 from shared.structured_json_logger import get_logger

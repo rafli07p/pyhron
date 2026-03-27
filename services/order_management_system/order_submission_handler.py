@@ -27,7 +27,8 @@ from data_platform.database_models.order_lifecycle_record import (
 from data_platform.database_models.strategy_position_snapshot import (
     StrategyPositionSnapshot,
 )
-from data_platform.models.trading import Order
+
+Order = OrderLifecycleRecord
 from services.order_management_system.order_state_machine import OrderStateMachine
 from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
     CIRCUIT_BREAKER_KEY,

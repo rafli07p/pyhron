@@ -3,8 +3,9 @@
 Models the impact of HBA (Harga Batubara Acuan) price changes on
 Indonesian coal mining companies listed on IDX.
 
-# TODO: Move hardcoded company profiles and production data to database-backed
-# or config-file-based reference data with quarterly update process.
+Profiles are loaded from the ``commodity_company_profiles`` database table
+(see ``profile_loader.py``).  Hardcoded fallback data is retained for offline
+development and tests only.
 
 Key regulatory features:
   - Royalty rates are progressive based on coal calorie value and
@@ -59,6 +60,7 @@ class CoalMinerProfile:
     dmo_cap_usd: float = 90.0
 
 
+# Fallback data for offline development/tests. Production reads from DB.
 _COAL_MINERS: list[CoalMinerProfile] = [
     CoalMinerProfile(
         ticker="ADRO",
@@ -128,8 +130,13 @@ class CoalPriceMinerRevenueModel:
         usd_idr_rate: USD/IDR exchange rate.
     """
 
-    def __init__(self, usd_idr_rate: float = 15_500.0) -> None:
+    def __init__(
+        self,
+        usd_idr_rate: float = 15_500.0,
+        miners: list[CoalMinerProfile] | None = None,
+    ) -> None:
         self._usd_idr = usd_idr_rate
+        self._miners = miners if miners is not None else _COAL_MINERS
 
     @staticmethod
     def _calorie_adjustment_factor(avg_calorie_kcal: int) -> float:
@@ -225,7 +232,7 @@ class CoalPriceMinerRevenueModel:
             List of earnings impact estimates for all coal tickers.
         """
         estimates: list[StockEarningsImpactEstimate] = []
-        for miner in _COAL_MINERS:
+        for miner in self._miners:
             estimate = self._compute_company_impact(miner, hba_change_usd_per_ton)
             logger.info(
                 "coal_company_impact_computed",

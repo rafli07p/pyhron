@@ -3,8 +3,9 @@
 Detailed model mapping CPO price movements to revenue and earnings
 impact for Indonesian listed plantation companies.
 
-# TODO: Move hardcoded company profiles and production data to database-backed
-# or config-file-based reference data with quarterly update process.
+Profiles are loaded from the ``commodity_company_profiles`` database table
+(see ``profile_loader.py``).  Hardcoded fallback data is retained for offline
+development and tests only.
 
 Revenue model per company:
     revenue_delta = plantation_area_ha * ffb_yield_ton_per_ha * oer
@@ -64,7 +65,7 @@ class PlantationCompanyProfile:
     dmo_allocation_pct: float = 0.20
 
 
-# Realistic company profiles based on public filings.
+# Fallback data for offline development/tests. Production reads from DB.
 _PLANTATION_COMPANIES: list[PlantationCompanyProfile] = [
     PlantationCompanyProfile(
         ticker="AALI",
@@ -181,10 +182,12 @@ class CPOPlantationStockSensitivity:
         usd_idr_rate: float = 15_500.0,
         myr_idr_rate: float = _MYR_IDR_RATE,
         cpo_ref_price_myr: float = _CPO_REFERENCE_PRICE_MYR_PER_TON,
+        companies: list[PlantationCompanyProfile] | None = None,
     ) -> None:
         self._usd_idr = usd_idr_rate
         self._myr_idr = myr_idr_rate
         self._cpo_ref_price_myr = cpo_ref_price_myr
+        self._companies = companies if companies is not None else _PLANTATION_COMPANIES
 
     # Export Levy
 
@@ -306,7 +309,7 @@ class CPOPlantationStockSensitivity:
             List of earnings impact estimates for all plantation tickers.
         """
         estimates: list[StockEarningsImpactEstimate] = []
-        for company in _PLANTATION_COMPANIES:
+        for company in self._companies:
             estimate = self._compute_company_impact(company, cpo_price_change_pct)
             logger.info(
                 "cpo_company_impact_computed",
