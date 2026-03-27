@@ -75,6 +75,10 @@ def do_run_migrations(connection: Connection) -> None:
         except Exception:
             nested.rollback()
 
+    # Commit the extension-creation transaction so Alembic starts with a
+    # clean connection state (no dangling autobegin transaction).
+    connection.commit()
+
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
