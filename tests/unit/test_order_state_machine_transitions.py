@@ -22,6 +22,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
+
 # Valid Transition Path Tests
 class TestValidTransitionPaths:
     """Test complete valid order lifecycle paths."""

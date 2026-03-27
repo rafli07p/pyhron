@@ -18,6 +18,7 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
+
 # Configuration
 def _get_jwt_secret() -> str:
     return get_config().jwt_secret_key

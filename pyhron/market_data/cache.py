@@ -63,15 +63,17 @@ class MarketDataCache:
             raise RuntimeError("Cache not connected")
 
         key = f"{_KEY_PREFIX}{tick.symbol}"
-        payload = json.dumps({
-            "symbol": tick.symbol,
-            "price": str(tick.price),
-            "volume": tick.volume,
-            "bid": str(tick.bid),
-            "ask": str(tick.ask),
-            "timestamp": tick.timestamp.isoformat(),
-            "exchange": tick.exchange,
-        })
+        payload = json.dumps(
+            {
+                "symbol": tick.symbol,
+                "price": str(tick.price),
+                "volume": tick.volume,
+                "bid": str(tick.bid),
+                "ask": str(tick.ask),
+                "timestamp": tick.timestamp.isoformat(),
+                "exchange": tick.exchange,
+            }
+        )
         await self._redis.set(key, payload, ex=ttl_seconds)
 
     async def get_latest_tick(self, symbol: str) -> TickData | None:

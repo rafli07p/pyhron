@@ -124,16 +124,14 @@ class TestTransitionGraphProperties:
 
     def test_every_non_terminal_can_reach_a_terminal(self) -> None:
         """Every non-terminal state should have a path to a terminal state."""
+
         def can_reach_terminal(status: OrderStatusEnum, visited: set) -> bool:
             if status in TERMINAL_STATES:
                 return True
             if status in visited:
                 return False
             visited.add(status)
-            return any(
-                can_reach_terminal(next_s, visited)
-                for next_s in VALID_TRANSITIONS.get(status, set())
-            )
+            return any(can_reach_terminal(next_s, visited) for next_s in VALID_TRANSITIONS.get(status, set()))
 
         for status in OrderStatusEnum:
             if status not in TERMINAL_STATES:

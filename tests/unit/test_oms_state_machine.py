@@ -19,6 +19,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
+
 # Transition Table Tests
 class TestTransitionTable:
     """Validate the transition graph is well-formed."""

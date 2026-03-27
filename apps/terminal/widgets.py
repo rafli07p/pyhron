@@ -11,6 +11,7 @@ from textual.widgets import Input, Label, Static
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
+
 # IDR formatting helpers
 def fmt_idr(value: int | float) -> str:
     """Format number as IDR with period thousands separator."""

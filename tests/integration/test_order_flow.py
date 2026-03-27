@@ -40,6 +40,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
+
 # IDX Validator Tests
 class TestIDXOrderValidator:
     """Tests for IDX exchange-specific order validation."""

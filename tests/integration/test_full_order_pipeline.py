@@ -27,6 +27,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
+
 # Helpers
 def _make_order(
     quantity: int = 100,

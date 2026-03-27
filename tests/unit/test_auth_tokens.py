@@ -98,9 +98,7 @@ class TestTokenCreation:
         """Extra claims should be included in the token."""
         mock_get.return_value = _mock_settings()
 
-        token = create_access_token(
-            "user-1", "tenant-1", extra_claims={"strategy_id": "momentum_v1"}
-        )
+        token = create_access_token("user-1", "tenant-1", extra_claims={"strategy_id": "momentum_v1"})
         payload = verify_token(token)
         assert payload.raw.get("strategy_id") == "momentum_v1"
 
@@ -119,9 +117,7 @@ class TestTokenCreation:
         """Custom expiry should override default."""
         mock_get.return_value = _mock_settings()
 
-        token = create_access_token(
-            "user-1", "tenant-1", expires_delta=timedelta(hours=2)
-        )
+        token = create_access_token("user-1", "tenant-1", expires_delta=timedelta(hours=2))
         payload = verify_token(token)
         assert payload.exp is not None
         assert payload.iat is not None
@@ -137,9 +133,7 @@ class TestTokenVerification:
         """Expired token should raise TokenError."""
         mock_get.return_value = _mock_settings()
 
-        token = create_access_token(
-            "user-1", "tenant-1", expires_delta=timedelta(seconds=-1)
-        )
+        token = create_access_token("user-1", "tenant-1", expires_delta=timedelta(seconds=-1))
         with pytest.raises(TokenError, match="expired"):
             verify_token(token)
 
@@ -148,9 +142,7 @@ class TestTokenVerification:
         """Expired token should decode when verify_exp=False."""
         mock_get.return_value = _mock_settings()
 
-        token = create_access_token(
-            "user-1", "tenant-1", expires_delta=timedelta(seconds=-1)
-        )
+        token = create_access_token("user-1", "tenant-1", expires_delta=timedelta(seconds=-1))
         payload = verify_token(token, verify_exp=False)
         assert payload.sub == "user-1"
 
@@ -185,14 +177,16 @@ class TestTokenPayload:
         import time
 
         now = time.time()
-        payload = TokenPayload({
-            "sub": "user-1",
-            "tenant_id": "tenant-1",
-            "role": "ADMIN",
-            "iat": now,
-            "exp": now + 3600,
-            "scopes": ["all"],
-        })
+        payload = TokenPayload(
+            {
+                "sub": "user-1",
+                "tenant_id": "tenant-1",
+                "role": "ADMIN",
+                "iat": now,
+                "exp": now + 3600,
+                "scopes": ["all"],
+            }
+        )
         assert payload.sub == "user-1"
         assert payload.tenant_id == "tenant-1"
         assert payload.role == "ADMIN"

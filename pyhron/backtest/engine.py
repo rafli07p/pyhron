@@ -155,14 +155,16 @@ class BacktestEngine:
                     if positions[sym] == 0:
                         avg_costs.pop(sym, None)
 
-                trades.append(TradeRecord(
-                    symbol=sym,
-                    direction=direction,
-                    quantity=qty,
-                    price=exec_price,
-                    commission=commission,
-                    timestamp=datetime(trade_date.year, trade_date.month, trade_date.day, tzinfo=UTC),
-                ))
+                trades.append(
+                    TradeRecord(
+                        symbol=sym,
+                        direction=direction,
+                        quantity=qty,
+                        price=exec_price,
+                        commission=commission,
+                        timestamp=datetime(trade_date.year, trade_date.month, trade_date.day, tzinfo=UTC),
+                    )
+                )
 
             # Mark-to-market
             portfolio_value = cash
@@ -244,7 +246,11 @@ class BacktestEngine:
         """Heuristic: a sell at price > avg buy price for the same symbol."""
         if trade.direction != "SELL":
             return False
-        buys = [t for t in all_trades if t.symbol == trade.symbol and t.direction == "BUY" and t.timestamp <= trade.timestamp]
+        buys = [
+            t
+            for t in all_trades
+            if t.symbol == trade.symbol and t.direction == "BUY" and t.timestamp <= trade.timestamp
+        ]
         if not buys:
             return False
         avg_buy = sum(t.price * t.quantity for t in buys) / sum(t.quantity for t in buys)

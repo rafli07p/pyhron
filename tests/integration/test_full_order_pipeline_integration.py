@@ -22,6 +22,7 @@ except SyntaxError:
         allow_module_level=True,
     )
 
+
 # Fixtures
 @pytest.fixture
 def mock_kafka_producer():

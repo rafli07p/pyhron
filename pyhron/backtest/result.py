@@ -59,10 +59,7 @@ class BacktestResult:
             "max_drawdown": self.max_drawdown,
             "total_trades": self.total_trades,
             "win_rate": self.win_rate,
-            "equity_curve": [
-                {"date": p.date.isoformat(), "value": str(p.value)}
-                for p in self.equity_curve
-            ],
+            "equity_curve": [{"date": p.date.isoformat(), "value": str(p.value)} for p in self.equity_curve],
             "trades": [
                 {
                     "symbol": t.symbol,

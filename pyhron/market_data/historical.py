@@ -32,9 +32,7 @@ class HistoricalDataLoader:
         self.cache_dir = cache_dir
         self.source = source
 
-    def load(
-        self, symbols: list[str], start_date: date, end_date: date
-    ) -> dict[str, list[OHLCVBar]]:
+    def load(self, symbols: list[str], start_date: date, end_date: date) -> dict[str, list[OHLCVBar]]:
         """Load OHLCV bars for multiple symbols.
 
         Checks the local CSV cache first. On cache miss, fetches from
@@ -117,9 +115,7 @@ class HistoricalDataLoader:
         self._write_cache(symbol, start_date, end_date, bars)
         return bars
 
-    def _write_cache(
-        self, symbol: str, start_date: date, end_date: date, bars: list[OHLCVBar]
-    ) -> None:
+    def _write_cache(self, symbol: str, start_date: date, end_date: date, bars: list[OHLCVBar]) -> None:
         """Write bars to the CSV cache."""
         path = self._cache_path(symbol, start_date, end_date)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,11 +124,13 @@ class HistoricalDataLoader:
             writer = csv.DictWriter(f, fieldnames=["date", "open", "high", "low", "close", "volume"])
             writer.writeheader()
             for bar in bars:
-                writer.writerow({
-                    "date": bar.date.isoformat(),
-                    "open": str(bar.open),
-                    "high": str(bar.high),
-                    "low": str(bar.low),
-                    "close": str(bar.close),
-                    "volume": bar.volume,
-                })
+                writer.writerow(
+                    {
+                        "date": bar.date.isoformat(),
+                        "open": str(bar.open),
+                        "high": str(bar.high),
+                        "low": str(bar.low),
+                        "close": str(bar.close),
+                        "volume": bar.volume,
+                    }
+                )

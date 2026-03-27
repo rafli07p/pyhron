@@ -78,9 +78,7 @@ class KeyDerivationService:
 
     def __init__(self, master_key: bytes) -> None:
         if len(master_key) != 32:
-            raise InvalidKeyError(
-                f"Master key must be 32 bytes, got {len(master_key)}"
-            )
+            raise InvalidKeyError(f"Master key must be 32 bytes, got {len(master_key)}")
         self._master_key = master_key
 
     def derive_key(self, context: str) -> bytes:

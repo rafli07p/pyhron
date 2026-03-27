@@ -82,20 +82,18 @@ class TestIDXTickSize:
     @pytest.mark.parametrize(
         "price,expected_valid",
         [
-            (Decimal("100"), True),    # tick=1, 100%1=0
-            (Decimal("200"), True),    # tick=2, 200%2=0
-            (Decimal("201"), False),   # tick=2, 201%2=1
-            (Decimal("500"), True),    # tick=5, 500%5=0
-            (Decimal("503"), False),   # tick=5, 503%5=3
-            (Decimal("2000"), True),   # tick=10, 2000%10=0
+            (Decimal("100"), True),  # tick=1, 100%1=0
+            (Decimal("200"), True),  # tick=2, 200%2=0
+            (Decimal("201"), False),  # tick=2, 201%2=1
+            (Decimal("500"), True),  # tick=5, 500%5=0
+            (Decimal("503"), False),  # tick=5, 503%5=3
+            (Decimal("2000"), True),  # tick=10, 2000%10=0
             (Decimal("2005"), False),  # tick=10, 2005%10=5
-            (Decimal("5000"), True),   # tick=25, 5000%25=0
+            (Decimal("5000"), True),  # tick=25, 5000%25=0
             (Decimal("5010"), False),  # tick=25, 5010%25=10
         ],
     )
-    def test_tick_conformance(
-        self, validator: IDXOrderValidator, price: Decimal, expected_valid: bool
-    ) -> None:
+    def test_tick_conformance(self, validator: IDXOrderValidator, price: Decimal, expected_valid: bool) -> None:
         """Prices should conform to IDX tick size for their tier."""
         result = validator.validate("BBCA.JK", "BUY", 1, "LIMIT", price, 0)
         if expected_valid:
@@ -144,9 +142,7 @@ class TestIDXValidationResult:
 
     def test_invalid_result_with_errors(self) -> None:
         """Invalid result should carry error messages."""
-        result = IDXOrderValidationResult(
-            is_valid=False, errors=["too large"], warnings=["may be rounded"]
-        )
+        result = IDXOrderValidationResult(is_valid=False, errors=["too large"], warnings=["may be rounded"])
         assert result.is_valid is False
         assert len(result.errors) == 1
         assert len(result.warnings) == 1

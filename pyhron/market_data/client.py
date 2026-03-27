@@ -104,9 +104,7 @@ class MarketDataClient:
 
         yf_interval = _INTERVAL_MAP.get(interval, "1d")
         loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(
-            None, self._fetch_bars_sync, symbol, start, end, yf_interval
-        )
+        return await loop.run_in_executor(None, self._fetch_bars_sync, symbol, start, end, yf_interval)
 
     async def close(self) -> None:
         """Mark client as closed."""
@@ -145,9 +143,7 @@ class MarketDataClient:
             exchange=exchange,
         )
 
-    def _fetch_bars_sync(
-        self, symbol: str, start: datetime, end: datetime, interval: str
-    ) -> list[OHLCVBar]:
+    def _fetch_bars_sync(self, symbol: str, start: datetime, end: datetime, interval: str) -> list[OHLCVBar]:
         """Synchronous OHLCV fetch via yfinance."""
         import yfinance as yf
 

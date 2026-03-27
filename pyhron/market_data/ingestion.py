@@ -74,9 +74,14 @@ class MarketDataIngestionService:
         # Report failures for symbols that didn't return a tick
         for symbol in symbols:
             if symbol not in fetched_symbols:
-                results.append(IngestionResult(
-                    symbol=symbol, success=False, cached=False, published=False,
-                ))
+                results.append(
+                    IngestionResult(
+                        symbol=symbol,
+                        success=False,
+                        cached=False,
+                        published=False,
+                    )
+                )
 
         for tick in ticks:
             t0 = time.monotonic()
@@ -108,14 +113,16 @@ class MarketDataIngestionService:
 
             latency_ms = (time.monotonic() - t0) * 1000
 
-            results.append(IngestionResult(
-                symbol=tick.symbol,
-                success=cached or published,
-                cached=cached,
-                published=published,
-                deduplicated=deduplicated,
-                latency_ms=round(latency_ms, 2),
-            ))
+            results.append(
+                IngestionResult(
+                    symbol=tick.symbol,
+                    success=cached or published,
+                    cached=cached,
+                    published=published,
+                    deduplicated=deduplicated,
+                    latency_ms=round(latency_ms, 2),
+                )
+            )
 
         return results
 

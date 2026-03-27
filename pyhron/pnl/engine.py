@@ -57,12 +57,14 @@ class PnLEngine:
                     gross = (lot.price - fill.price) * matched
 
                 self._realized_gross[fill.symbol] += gross
-                self._closed_trades.append({
-                    "symbol": fill.symbol,
-                    "quantity": matched,
-                    "gross_pnl": gross,
-                    "strategy_id": fill.strategy_id,
-                })
+                self._closed_trades.append(
+                    {
+                        "symbol": fill.symbol,
+                        "quantity": matched,
+                        "gross_pnl": gross,
+                        "strategy_id": fill.strategy_id,
+                    }
+                )
 
                 lot.quantity -= matched
                 remaining -= matched
@@ -71,20 +73,24 @@ class PnLEngine:
 
             # If there's remaining quantity, it opens a new position in the fill's direction
             if remaining > Decimal("0"):
-                lots.append(_OpenLot(
-                    direction=fill.direction,
-                    quantity=remaining,
-                    price=fill.price,
-                    strategy_id=fill.strategy_id,
-                ))
+                lots.append(
+                    _OpenLot(
+                        direction=fill.direction,
+                        quantity=remaining,
+                        price=fill.price,
+                        strategy_id=fill.strategy_id,
+                    )
+                )
         else:
             # Same direction or no existing position: add new lot
-            lots.append(_OpenLot(
-                direction=fill.direction,
-                quantity=fill.quantity,
-                price=fill.price,
-                strategy_id=fill.strategy_id,
-            ))
+            lots.append(
+                _OpenLot(
+                    direction=fill.direction,
+                    quantity=fill.quantity,
+                    price=fill.price,
+                    strategy_id=fill.strategy_id,
+                )
+            )
 
     def get_realized_pnl(self, symbol: str) -> RealizedPnLResult:
         gross = self._realized_gross[symbol]
@@ -114,9 +120,7 @@ class PnLEngine:
                 unrealized += (lot.price - current_price) * lot.quantity
         return unrealized
 
-    def generate_daily_report(
-        self, report_date: date, current_prices: dict[str, Decimal]
-    ) -> PnLReport:
+    def generate_daily_report(self, report_date: date, current_prices: dict[str, Decimal]) -> PnLReport:
         all_symbols: set[str] = set()
         all_symbols.update(self._realized_gross.keys())
         all_symbols.update(self._positions.keys())
