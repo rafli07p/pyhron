@@ -32,9 +32,8 @@ from services.research.ml_signal.idx_label_builder import IDXLabelBuilder
 from services.research.ml_signal.idx_signal_combiner import IDXSignalCombiner
 from services.research.ml_signal.purged_kfold import PurgedKFold
 
-# ── Fixtures ───────────────────────────────────────────────────
 
-
+# Fixtures
 def _make_price_data(
     n_days: int = 500,
     n_symbols: int = 20,
@@ -60,9 +59,7 @@ def _make_price_data(
     return prices, volumes
 
 
-# ── Test 1: Feature Builder ────────────────────────────────────
-
-
+# Test 1: Feature Builder
 class TestIDXFeatureBuilder:
     """Tests for IDXFeatureBuilder."""
 
@@ -93,9 +90,7 @@ class TestIDXFeatureBuilder:
             assert any(n.startswith(prefix) for n in names), f"Missing features with prefix {prefix}"
 
 
-# ── Test 2: Label Builder ──────────────────────────────────────
-
-
+# Test 2: Label Builder
 class TestIDXLabelBuilder:
     """Tests for IDXLabelBuilder."""
 
@@ -146,9 +141,7 @@ class TestIDXLabelBuilder:
         assert len(X) > 0
 
 
-# ── Test 3: Purged K-Fold ──────────────────────────────────────
-
-
+# Test 3: Purged K-Fold
 class TestPurgedKFold:
     """Tests for PurgedKFold cross-validator."""
 
@@ -203,9 +196,7 @@ class TestPurgedKFold:
         assert len(splits) == 5
 
 
-# ── Test 4: Signal Combiner ────────────────────────────────────
-
-
+# Test 4: Signal Combiner
 class TestIDXSignalCombiner:
     """Tests for IDXSignalCombiner."""
 
@@ -260,9 +251,7 @@ class TestIDXSignalCombiner:
         assert "icir" in summary.columns
 
 
-# ── Test 5: Integration Test ──────────────────────────────────
-
-
+# Test 5: Integration Test
 class TestMLSignalIntegration:
     """Integration test: feature → label → align → purged CV."""
 

@@ -67,7 +67,7 @@ class IdxEquityFinancialStatement(Base):
 
     __tablename__ = "financial_statements"
 
-    # ── Relationships ────────────────────────────────────────────────────────
+    # Relationships
     instrument = relationship("IdxEquityInstrument", back_populates="financial_statements", lazy="selectin")
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

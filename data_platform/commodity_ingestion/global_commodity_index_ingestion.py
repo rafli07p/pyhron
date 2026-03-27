@@ -80,7 +80,7 @@ class GlobalCommodityIndexIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -134,7 +134,7 @@ class GlobalCommodityIndexIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_index(self, indicator: str, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch a single BCOM index from EODHD.
@@ -194,7 +194,7 @@ class GlobalCommodityIndexIngester:
 
         raise IngestionError(f"EODHD {ticker} failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a BCOM index record.
@@ -206,7 +206,7 @@ class GlobalCommodityIndexIngester:
         if v <= 0:
             raise DataQualityError(f"Non-positive index value {v} on {record['reference_date']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

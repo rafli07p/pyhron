@@ -34,9 +34,7 @@ from tenacity import (
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-# ---------------------------------------------------------------------------
 # Retry with exponential back-off
-# ---------------------------------------------------------------------------
 
 def retry_with_backoff(
     max_attempts: int = 3,
@@ -77,9 +75,7 @@ def retry_with_backoff(
     return decorator
 
 
-# ---------------------------------------------------------------------------
 # Token-bucket rate limiter
-# ---------------------------------------------------------------------------
 
 class RateLimiter:
     """Thread-safe token-bucket rate limiter.
@@ -158,9 +154,7 @@ def rate_limiter(rate: float, burst: int | None = None) -> RateLimiter:
     return RateLimiter(rate=rate, burst=burst)
 
 
-# ---------------------------------------------------------------------------
 # JSON serializer
-# ---------------------------------------------------------------------------
 
 class PyhronJSONEncoder(json.JSONEncoder):
     """JSON encoder that handles financial-domain types.
@@ -222,9 +216,7 @@ def json_deserialize(raw: str | bytes) -> Any:
     return json.loads(raw)
 
 
-# ---------------------------------------------------------------------------
 # ID generation
-# ---------------------------------------------------------------------------
 
 def generate_id() -> str:
     """Generate a new UUID4 string.
@@ -235,9 +227,7 @@ def generate_id() -> str:
     return str(uuid4())
 
 
-# ---------------------------------------------------------------------------
 # Timestamps
-# ---------------------------------------------------------------------------
 
 def timestamp_now() -> datetime:
     """Return the current UTC time as a timezone-aware ``datetime``.

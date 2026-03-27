@@ -18,9 +18,7 @@ from uuid import uuid4
 from locust import HttpUser, between, events, tag, task
 from locust.runners import MasterRunner
 
-# =============================================================================
 # Configuration
-# =============================================================================
 IDX_SYMBOLS = [
     "BBCA.JK", "BBRI.JK", "BMRI.JK", "TLKM.JK", "ASII.JK",
     "UNVR.JK", "HMSP.JK", "GGRM.JK", "ICBP.JK", "KLBF.JK",
@@ -36,9 +34,7 @@ STRATEGIES = [
 API_KEY = "load-test-api-key"
 
 
-# =============================================================================
 # Event Hooks
-# =============================================================================
 @events.test_start.add_listener
 def on_test_start(environment, **kwargs):
     """Log test start."""
@@ -51,9 +47,7 @@ def on_test_stop(environment, **kwargs):
     """Print summary statistics."""
 
 
-# =============================================================================
 # Helper Functions
-# =============================================================================
 def random_order_payload() -> dict:
     """Generate a random order payload."""
     symbol = random.choice(IDX_SYMBOLS)
@@ -105,9 +99,7 @@ def random_backtest_payload() -> dict:
     }
 
 
-# =============================================================================
 # Trade Submission User
-# =============================================================================
 class TradeSubmissionUser(HttpUser):
     """Simulates a high-frequency trade submission client."""
 
@@ -192,9 +184,7 @@ class TradeSubmissionUser(HttpUser):
                 response.failure(f"Cancel failed: {response.status_code}")
 
 
-# =============================================================================
 # Market Data User
-# =============================================================================
 class MarketDataUser(HttpUser):
     """Simulates a market data consumer requesting quotes and historical data."""
 
@@ -281,9 +271,7 @@ class MarketDataUser(HttpUser):
                 response.failure(f"Order book failed: {response.status_code}")
 
 
-# =============================================================================
 # Portfolio & Analytics User
-# =============================================================================
 class PortfolioUser(HttpUser):
     """Simulates portfolio management and analytics requests."""
 

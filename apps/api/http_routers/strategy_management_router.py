@@ -25,9 +25,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/strategies", tags=["strategies"])
 
 
-# ── Request/Response Models ──────────────────────────────────────────────────
-
-
+# Request/Response Models
 class StrategyCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     strategy_type: str = Field(default="momentum")
@@ -68,9 +66,7 @@ class StrategyPerformance(BaseModel):
     period_end: datetime | None = None
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
-
+# Helpers
 def _to_response(s: Strategy) -> StrategyResponse:
     return StrategyResponse(
         id=s.id,
@@ -85,9 +81,7 @@ def _to_response(s: Strategy) -> StrategyResponse:
     )
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/", response_model=list[StrategyResponse])
 async def list_strategies(
     strategy_type: str | None = Query(None),

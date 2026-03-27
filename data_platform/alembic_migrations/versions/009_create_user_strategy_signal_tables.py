@@ -16,7 +16,7 @@ depends_on = None
 
 def upgrade() -> None:
     """Create enum types and tables for users, strategies, backtests, and signals."""
-    # ── Enum types ────────────────────────────────────────────────────────
+    # Enum types
     op.execute(
         "DO $$ BEGIN CREATE TYPE user_role AS ENUM ('admin', 'trader', 'analyst', 'readonly'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
     )
@@ -27,7 +27,7 @@ def upgrade() -> None:
         "DO $$ BEGIN CREATE TYPE signal_type AS ENUM ('entry_long', 'entry_short', 'exit_long', 'exit_short', 'rebalance'); EXCEPTION WHEN duplicate_object THEN NULL; END $$"
     )
 
-    # ── users ─────────────────────────────────────────────────────────────
+    # users
     op.create_table(
         "users",
         sa.Column(
@@ -55,7 +55,7 @@ def upgrade() -> None:
     # Expression index for case-insensitive email lookup
     op.execute("CREATE UNIQUE INDEX ix_users_email_lower ON users (lower(email))")
 
-    # ── strategies ────────────────────────────────────────────────────────
+    # strategies
     op.create_table(
         "strategies",
         sa.Column(
@@ -86,7 +86,7 @@ def upgrade() -> None:
         ["user_id", sa.text("created_at DESC")],
     )
 
-    # ── backtest_runs ─────────────────────────────────────────────────────
+    # backtest_runs
     op.create_table(
         "backtest_runs",
         sa.Column(
@@ -137,7 +137,7 @@ def upgrade() -> None:
     op.create_index("ix_backtest_runs_strategy", "backtest_runs", ["strategy_id"])
     op.create_index("ix_backtest_runs_user", "backtest_runs", ["user_id"])
 
-    # ── signals (TimescaleDB hypertable) ──────────────────────────────────
+    # signals (TimescaleDB hypertable)
     op.create_table(
         "signals",
         sa.Column(

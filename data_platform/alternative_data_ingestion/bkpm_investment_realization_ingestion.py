@@ -72,7 +72,7 @@ class BKPMInvestmentRealizationIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -123,7 +123,7 @@ class BKPMInvestmentRealizationIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_realization(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch quarterly investment realization from BKPM.
@@ -201,7 +201,7 @@ class BKPMInvestmentRealizationIngester:
 
         raise IngestionError(f"BKPM failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate an investment realization record.
@@ -215,7 +215,7 @@ class BKPMInvestmentRealizationIngester:
                 f"Negative investment value {v} for {record['indicator']} on {record['reference_date']}"
             )
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

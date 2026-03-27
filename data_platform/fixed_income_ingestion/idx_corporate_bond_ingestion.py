@@ -72,7 +72,7 @@ class IDXCorporateBondIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -123,7 +123,7 @@ class IDXCorporateBondIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_bonds(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch corporate bond data from IDX.
@@ -199,7 +199,7 @@ class IDXCorporateBondIngester:
 
         raise IngestionError(f"IDX bond failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a corporate bond record.
@@ -221,7 +221,7 @@ class IDXCorporateBondIngester:
                     f"Bond yield {v}% outside plausible range [0, 30] for {record.get('bond_code', '?')}"
                 )
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

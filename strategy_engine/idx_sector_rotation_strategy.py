@@ -35,8 +35,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-# ── IDX sector mapping ──────────────────────────────────────────────────────
-
+# IDX sector mapping
 _SECTOR_CONSTITUENTS: dict[str, list[str]] = {
     "FINANCE": ["BBCA", "BBRI", "BMRI", "BBNI", "BRIS"],
     "CONSUMER": ["UNVR", "ICBP", "INDF", "KLBF", "HMSP"],

@@ -12,9 +12,7 @@ from datetime import date, timedelta
 
 import pytest
 
-# ── Calendar Utilities (pure functions under test) ──────────────────────────
-
-
+# Calendar Utilities (pure functions under test)
 # Indonesian public holidays for 2025 (subset for testing)
 IDX_HOLIDAYS_2025: set[date] = {
     date(2025, 1, 1),  # New Year
@@ -62,9 +60,7 @@ def compute_settlement_date_idx(
     return current
 
 
-# ── Weekend Tests ───────────────────────────────────────────────────────────
-
-
+# Weekend Tests
 class TestWeekends:
     def test_monday_is_trading_day(self):
         assert is_trading_day(date(2025, 1, 6)) is True  # Monday
@@ -87,9 +83,7 @@ class TestWeekends:
             assert is_trading_day(d, holidays=set()) is False
 
 
-# ── Holiday Tests ───────────────────────────────────────────────────────────
-
-
+# Holiday Tests
 class TestHolidays:
     def test_new_year_is_holiday(self):
         assert is_trading_day(date(2025, 1, 1)) is False
@@ -108,9 +102,7 @@ class TestHolidays:
         assert next_trading_day(date(2025, 12, 24)) == date(2025, 12, 26)
 
 
-# ── T+2 Settlement Tests ───────────────────────────────────────────────────
-
-
+# T+2 Settlement Tests
 class TestSettlementDate:
     def test_monday_trade_settles_wednesday(self):
         # Mon Jan 6 -> T+2 = Wed Jan 8

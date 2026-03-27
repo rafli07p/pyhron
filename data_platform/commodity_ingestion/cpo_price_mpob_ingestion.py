@@ -68,7 +68,7 @@ class CPOPriceMPOBIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -127,7 +127,7 @@ class CPOPriceMPOBIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_mpob_monthly(
         self,
@@ -217,7 +217,7 @@ class CPOPriceMPOBIngester:
 
         raise IngestionError(f"BMD fetch failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_mpob_response(
         self,
@@ -282,7 +282,7 @@ class CPOPriceMPOBIngester:
         self._logger.info("bmd_parsing", content_length=len(html_or_json))
         return []
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a CPO price record.
@@ -297,7 +297,7 @@ class CPOPriceMPOBIngester:
         if record["unit"] == "myr_per_ton" and (v < 500 or v > 10000):
             raise DataQualityError(f"CPO price {v} MYR/ton outside plausible range [500, 10000]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

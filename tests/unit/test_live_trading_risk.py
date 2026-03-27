@@ -17,9 +17,8 @@ from services.risk.kill_switch import KillSwitch
 from services.risk.paper_to_live_gate import PaperToLivePromotionGate, PromotionBlockedError
 from services.risk.portfolio_risk_engine import PortfolioRiskEngine, PositionData
 
-# ── Helpers ─────────────────────────────────────────────────────────────────
 
-
+# Helpers
 def _make_mock_redis(triggered: bool = False) -> AsyncMock:
     """Create a mock Redis that returns True/None for GET based on triggered."""
     mock = AsyncMock()
@@ -54,9 +53,7 @@ def _make_positions_across_sectors(
     return positions
 
 
-# ── Test 1: Kill switch halts order submission ──────────────────────────────
-
-
+# Test 1: Kill switch halts order submission
 @pytest.mark.asyncio
 async def test_kill_switch_blocks_order() -> None:
     """Kill switch must block orders when triggered."""
@@ -66,9 +63,7 @@ async def test_kill_switch_blocks_order() -> None:
     assert is_halted is True
 
 
-# ── Test 2: Kill switch allows order when not triggered ─────────────────────
-
-
+# Test 2: Kill switch allows order when not triggered
 @pytest.mark.asyncio
 async def test_kill_switch_allows_order_when_clear() -> None:
     """Kill switch must allow orders when not triggered."""
@@ -78,9 +73,7 @@ async def test_kill_switch_allows_order_when_clear() -> None:
     assert is_halted is False
 
 
-# ── Test 3: Promotion gate rejects session under minimum days ───────────────
-
-
+# Test 3: Promotion gate rejects session under minimum days
 @pytest.mark.asyncio
 async def test_promotion_gate_rejects_short_session() -> None:
     """Promotion gate must reject sessions with fewer than 30 trading days."""
@@ -113,9 +106,7 @@ async def test_promotion_gate_rejects_short_session() -> None:
     assert audit.min_trading_days_met is False
 
 
-# ── Test 4: Promotion gate passes qualifying session ────────────────────────
-
-
+# Test 4: Promotion gate passes qualifying session
 @pytest.mark.asyncio
 async def test_promotion_gate_passes_qualifying_session() -> None:
     """Promotion gate must pass sessions meeting all criteria."""
@@ -172,9 +163,7 @@ async def test_promotion_gate_passes_qualifying_session() -> None:
     assert audit.win_rate_met is True
 
 
-# ── Test 5: Parametric VaR computed correctly ───────────────────────────────
-
-
+# Test 5: Parametric VaR computed correctly
 def test_parametric_var_single_position() -> None:
     """VaR for single position: 100M * 1.645 * 0.02 = 3,290,000."""
     engine = PortfolioRiskEngine()
@@ -189,9 +178,7 @@ def test_parametric_var_single_position() -> None:
     assert abs(float(var) - 3_290_000) < 100
 
 
-# ── Test 6: Sector HHI correct for uniform distribution ────────────────────
-
-
+# Test 6: Sector HHI correct for uniform distribution
 def test_sector_hhi_uniform() -> None:
     """5 sectors equal weight: HHI = 5 * (0.2)^2 = 0.20."""
     engine = PortfolioRiskEngine()
@@ -210,9 +197,7 @@ def test_sector_hhi_uniform() -> None:
     assert abs(hhi - 0.20) < 0.01
 
 
-# ── Test 7: Capital allocator equal weight ──────────────────────────────────
-
-
+# Test 7: Capital allocator equal weight
 @pytest.mark.asyncio
 async def test_equal_weight_allocation() -> None:
     """Equal weight allocator must distribute evenly."""
@@ -227,9 +212,7 @@ async def test_equal_weight_allocation() -> None:
     assert sum(result.values()) == Decimal("1_000_000_000")
 
 
-# ── Test 8: Capital allocator respects max allocation constraint ────────────
-
-
+# Test 8: Capital allocator respects max allocation constraint
 @pytest.mark.asyncio
 async def test_risk_parity_max_allocation_capped() -> None:
     """Risk parity must cap allocations at 60% maximum."""
@@ -245,9 +228,7 @@ async def test_risk_parity_max_allocation_capped() -> None:
     assert sum(result.values()) == Decimal("1_000_000_000")
 
 
-# ── Test 9: Kill switch trigger cancels open orders ─────────────────────────
-
-
+# Test 9: Kill switch trigger cancels open orders
 @pytest.mark.asyncio
 async def test_kill_switch_cancels_open_orders() -> None:
     """Kill switch trigger must attempt to cancel all open orders."""
@@ -268,9 +249,7 @@ async def test_kill_switch_cancels_open_orders() -> None:
     assert event.reason == "manual test"
 
 
-# ── Test 10: Promotion blocked if no passing audit ─────────────────────────
-
-
+# Test 10: Promotion blocked if no passing audit
 @pytest.mark.asyncio
 async def test_promotion_blocked_without_audit() -> None:
     """Promotion must be blocked when no passing audit exists within 7 days."""

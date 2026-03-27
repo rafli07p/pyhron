@@ -41,27 +41,27 @@ create_compacted_topic() {
 
 echo "Creating Kafka topics on broker: $BROKER"
 
-# ── Market Data ─────────────────────────────────────────────────────────────
+# Market Data
 create_topic "pyhron.market.ticks"         12  3600000      # 1 hour
 create_topic "pyhron.market.ohlcv.1d"      4   604800000    # 7 days
 create_topic "pyhron.market.ohlcv.intraday" 8  86400000     # 24 hours
 
-# ── Signal Pipeline ─────────────────────────────────────────────────────────
+# Signal Pipeline
 create_topic "pyhron.signals"              4   3600000      # 1 hour
 
-# ── Order Lifecycle (event sourcing — compacted) ────────────────────────────
+# Order Lifecycle (event sourcing — compacted)
 create_compacted_topic "pyhron.orders.events"          4  2592000000  # 30 days
 create_topic           "pyhron.orders.risk-decisions"   4  3600000     # 1 hour
 
-# ── Position Events (event sourcing — compacted) ────────────────────────────
+# Position Events (event sourcing — compacted)
 create_compacted_topic "pyhron.positions.events"    4  2592000000  # 30 days
 create_topic           "pyhron.positions.snapshots"  2  86400000    # 24 hours
 
-# ── Risk Events ─────────────────────────────────────────────────────────────
+# Risk Events
 create_topic "pyhron.risk.breaches"        2  604800000   # 7 days
 create_topic "pyhron.risk.circuit-breaker" 1  604800000   # 7 days
 
-# ── Data Platform (canonical KafkaTopic names) ────────────────────────────
+# Data Platform (canonical KafkaTopic names)
 create_topic "pyhron.raw.eod_ohlcv"          4   604800000    # 7 days
 create_topic "pyhron.validated.eod_ohlcv"    4   604800000    # 7 days
 create_topic "pyhron.raw.fundamentals"       4   604800000    # 7 days
@@ -72,42 +72,42 @@ create_topic "pyhron.raw.macro_indicators"   2   604800000    # 7 days
 create_topic "pyhron.raw.commodity_prices"   2   604800000    # 7 days
 create_topic "pyhron.raw.news_articles"      2   604800000    # 7 days
 
-# ── Intraday Market Data ──────────────────────────────────────────────────
+# Intraday Market Data
 create_topic "pyhron.raw.intraday_trades"    12  3600000      # 1 hour
 create_topic "pyhron.raw.intraday_quotes"    12  3600000      # 1 hour
 create_topic "pyhron.raw.intraday_bars"      8   86400000     # 24 hours
 create_topic "pyhron.validated.intraday_bars" 8  86400000     # 24 hours
 
-# ── Order Lifecycle ───────────────────────────────────────────────────────
+# Order Lifecycle
 create_topic "pyhron.orders.order_submitted" 4   2592000000   # 30 days
 create_topic "pyhron.orders.order_filled"    4   2592000000   # 30 days
 
-# ── Portfolio ─────────────────────────────────────────────────────────────
+# Portfolio
 create_topic "pyhron.portfolio.position_updated" 4  2592000000  # 30 days
 
-# ── Strategy Signals ──────────────────────────────────────────────────────
+# Strategy Signals
 create_topic "pyhron.strategy.signals.momentum" 4  3600000     # 1 hour
 create_topic "pyhron.strategy.signals.ml"       4  3600000     # 1 hour
 
-# ── Paper Trading ─────────────────────────────────────────────────────────
+# Paper Trading
 create_topic "pyhron.paper.session_started"    2  604800000   # 7 days
 create_topic "pyhron.paper.session_stopped"    2  604800000   # 7 days
 create_topic "pyhron.paper.nav_snapshot"       4  604800000   # 7 days
 create_topic "pyhron.paper.rebalance_result"   4  604800000   # 7 days
 
-# ── Risk & Live Trading ──────────────────────────────────────────────────
+# Risk & Live Trading
 create_topic "pyhron.risk.snapshot"            2  604800000   # 7 days
 create_topic "pyhron.risk.kill_switch_triggered" 1 2592000000 # 30 days
 create_topic "pyhron.risk.kill_switch_reset"   1  2592000000  # 30 days
 create_topic "pyhron.live.activated"           1  2592000000  # 30 days
 
-# ── Dead Letter Queues (canonical) ────────────────────────────────────────
+# Dead Letter Queues (canonical)
 create_topic "pyhron.dlq.eod_ohlcv"          1   2592000000  # 30 days
 create_topic "pyhron.dlq.fundamentals"       1   2592000000  # 30 days
 create_topic "pyhron.dlq.corporate_actions"  1   2592000000  # 30 days
 create_topic "pyhron.dlq.intraday"           1   2592000000  # 30 days
 
-# ── Data Platform ───────────────────────────────────────────────────────
+# Data Platform
 create_topic "pyhron.data.ingestion-status" 2  86400000   # 24 hours
 create_topic "pyhron.data.quality-alerts"   2  604800000  # 7 days
 

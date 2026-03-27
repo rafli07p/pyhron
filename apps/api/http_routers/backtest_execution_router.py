@@ -25,9 +25,7 @@ router = APIRouter(prefix="/v1/backtest", tags=["backtest"])
 _task_status: dict[str, dict[str, Any]] = {}
 
 
-# -- Request/Response Models --------------------------------------------------
-
-
+# Request/Response Models
 class BacktestRequest(BaseModel):
     strategy_type: str = Field(default="momentum", description="Strategy name")
     symbols: list[str] = Field(..., min_length=1)
@@ -82,9 +80,7 @@ class BacktestHistoryEntry(BaseModel):
     sharpe_ratio: float | None = None
 
 
-# -- Background Task ----------------------------------------------------------
-
-
+# Background Task
 async def _run_backtest_task(
     task_id: str,
     body: BacktestRequest,
@@ -146,9 +142,7 @@ async def _run_backtest_task(
         logger.exception("backtest_task_failed", task_id=task_id)
 
 
-# -- Endpoints ----------------------------------------------------------------
-
-
+# Endpoints
 @router.post("/run", response_model=BacktestSubmission, status_code=202)
 async def submit_backtest(
     body: BacktestRequest,

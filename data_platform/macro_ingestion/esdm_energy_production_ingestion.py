@@ -75,7 +75,7 @@ class ESDMEnergyProductionIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -141,7 +141,7 @@ class ESDMEnergyProductionIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_hba(
         self,
@@ -266,7 +266,7 @@ class ESDMEnergyProductionIngester:
 
         raise IngestionError(f"ESDM lifting failed after {MAX_RETRIES} retries")
 
-    # ── HTML parsing ─────────────────────────────────────────────────────
+    # HTML parsing
 
     def _parse_hba_html(
         self,
@@ -404,7 +404,7 @@ class ESDMEnergyProductionIngester:
         self._logger.info("lifting_html_parsing", content_length=len(html))
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate an ESDM energy record.
@@ -425,7 +425,7 @@ class ESDMEnergyProductionIngester:
             if v < 5 or v > 250:
                 raise DataQualityError(f"ICP crude price {v} outside plausible range [5, 250]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

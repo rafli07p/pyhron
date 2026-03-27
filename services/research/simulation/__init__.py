@@ -21,9 +21,7 @@ from shared.schemas.research_events import SimulationType
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Result types
-# ---------------------------------------------------------------------------
 
 @dataclass
 class SimulationOutput:
@@ -65,9 +63,7 @@ class StressTestResult:
     paths: npt.NDArray[np.float64] | None = None
 
 
-# ---------------------------------------------------------------------------
 # Simulator
-# ---------------------------------------------------------------------------
 
 class MonteCarloSimulator:
     """Numpy-vectorised Monte Carlo simulator.
@@ -85,7 +81,7 @@ class MonteCarloSimulator:
         self._rng = np.random.default_rng(seed)
         self._log = logger.bind(component="MonteCarloSimulator")
 
-    # -- Path generation -----------------------------------------------------
+    # Path generation
 
     def run_simulation(
         self,
@@ -222,7 +218,7 @@ class MonteCarloSimulator:
         jd_result: npt.NDArray[np.float64] = s0 * np.exp(log_paths)
         return jd_result
 
-    # -- Portfolio-level simulation ------------------------------------------
+    # Portfolio-level simulation
 
     def simulate_portfolio_returns(
         self,
@@ -277,7 +273,7 @@ class MonteCarloSimulator:
             initial_value=initial_value,
         )
 
-    # -- Stress testing ------------------------------------------------------
+    # Stress testing
 
     def stress_test(
         self,
@@ -358,7 +354,7 @@ class MonteCarloSimulator:
 
         return results
 
-    # -- VaR / CVaR ----------------------------------------------------------
+    # VaR / CVaR
 
     def calculate_var(
         self,

@@ -12,7 +12,6 @@ from decimal import Decimal
 
 import pytest
 
-# TODO: update imports when pyhron.risk / pyhron.shared.schemas are implemented
 # Future paths:
 #   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
 #   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType
@@ -28,9 +27,7 @@ from pyhron.shared.schemas.position import PositionSnapshot
 from pyhron.shared.schemas.risk import RiskLimits
 
 
-# =============================================================================
 # Fixtures
-# =============================================================================
 @pytest.fixture
 def default_limits() -> RiskLimits:
     """Standard risk limits for testing."""
@@ -58,7 +55,7 @@ def sample_buy_order() -> OrderCreate:
         symbol="BBCA.JK",
         side=OrderSide.BUY,
         order_type=OrderType.LIMIT,
-        quantity=Decimal("1000"),
+        quantity=Decimal("100"),
         price=Decimal("9200.00"),
         strategy_id="momentum_v1",
     )
@@ -94,9 +91,7 @@ def sample_positions() -> list[PositionSnapshot]:
     ]
 
 
-# =============================================================================
 # Order Size Limit Tests
-# =============================================================================
 class TestOrderSizeLimits:
     """Tests for order size limit checks."""
 
@@ -136,9 +131,7 @@ class TestOrderSizeLimits:
         assert result.passed is True
 
 
-# =============================================================================
 # Position Size Limit Tests
-# =============================================================================
 class TestPositionSizeLimits:
     """Tests for position-level limit checks."""
 
@@ -189,9 +182,7 @@ class TestPositionSizeLimits:
         assert result.passed is True
 
 
-# =============================================================================
 # VaR Limit Tests
-# =============================================================================
 class TestVaRLimits:
     """Tests for Value at Risk limit checks."""
 
@@ -232,9 +223,7 @@ class TestVaRLimits:
         assert len(result.warnings) > 0
 
 
-# =============================================================================
 # Drawdown Limit Tests
-# =============================================================================
 class TestDrawdownLimits:
     """Tests for drawdown threshold checks."""
 
@@ -277,9 +266,7 @@ class TestDrawdownLimits:
         assert result.passed is should_pass
 
 
-# =============================================================================
 # Concentration Limit Tests
-# =============================================================================
 class TestConcentrationLimits:
     """Tests for portfolio concentration checks."""
 
@@ -319,9 +306,7 @@ class TestConcentrationLimits:
         assert result.passed is True
 
 
-# =============================================================================
 # Leverage Limit Tests
-# =============================================================================
 class TestLeverageLimits:
     """Tests for leverage constraint checks."""
 
@@ -352,9 +337,7 @@ class TestLeverageLimits:
         assert result.passed is False
 
 
-# =============================================================================
 # Combined Risk Check Tests
-# =============================================================================
 class TestCombinedRiskChecks:
     """Tests for the full pre-trade risk check pipeline."""
 

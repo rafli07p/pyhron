@@ -33,9 +33,7 @@ class ServiceStatus(StrEnum):
     UNHEALTHY = "UNHEALTHY"
 
 
-# ---------------------------------------------------------------------------
 # Response envelopes
-# ---------------------------------------------------------------------------
 
 class APIResponse[T](BaseModel):
     """Standard API response envelope.

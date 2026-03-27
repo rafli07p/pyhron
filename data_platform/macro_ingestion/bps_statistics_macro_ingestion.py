@@ -88,7 +88,7 @@ class BPSStatisticsMacroIngester:
         self._logger = get_logger(__name__)
         self._api_key: str = self._config.bps_api_key
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -143,7 +143,7 @@ class BPSStatisticsMacroIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_bps_indicator(
         self,
@@ -242,7 +242,7 @@ class BPSStatisticsMacroIngester:
 
         raise IngestionError(f"BPS API failed after {MAX_RETRIES} retries")
 
-    # ── Parsing helpers ──────────────────────────────────────────────────
+    # Parsing helpers
 
     @staticmethod
     def _parse_bps_period(
@@ -277,7 +277,7 @@ class BPSStatisticsMacroIngester:
             return date(year, month, 1)
         return date(year, 1, 1)
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a BPS macro record.
@@ -295,7 +295,7 @@ class BPSStatisticsMacroIngester:
             if v < 50 or v > 500:
                 raise DataQualityError(f"CPI headline {v} outside plausible range [50, 500]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

@@ -23,9 +23,7 @@ from shared.schemas.portfolio_events import AssetClass, PositionUpdate
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # SQLAlchemy model
-# ---------------------------------------------------------------------------
 
 class Base(DeclarativeBase):
     """Declarative base for portfolio models."""
@@ -61,9 +59,7 @@ class Position(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
 
-# ---------------------------------------------------------------------------
 # Position manager
-# ---------------------------------------------------------------------------
 
 class PositionManager:
     """Manages positions with real-time updates from order fills.
@@ -78,7 +74,7 @@ class PositionManager:
         self._session_factory = session_factory
         self._log = logger.bind(component="PositionManager")
 
-    # -- public API ----------------------------------------------------------
+    # public API
 
     async def track_position(
         self,
@@ -221,7 +217,7 @@ class PositionManager:
         price = current_price if current_price is not None else pos.market_price
         return pos.quantity * price
 
-    # -- helpers -------------------------------------------------------------
+    # helpers
 
     async def _get_or_create(
         self,

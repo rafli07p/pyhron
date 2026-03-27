@@ -22,9 +22,8 @@ except SyntaxError:
         allow_module_level=True,
     )
 
-# ── Fixtures ────────────────────────────────────────────────────────────────
 
-
+# Fixtures
 @pytest.fixture
 def mock_kafka_producer():
     producer = AsyncMock()
@@ -65,9 +64,7 @@ def sample_portfolio():
     return portfolio
 
 
-# ── Pipeline Flow Tests ─────────────────────────────────────────────────────
-
-
+# Pipeline Flow Tests
 class TestOrderPipelineFlow:
     """Test complete order lifecycle through the pipeline."""
 

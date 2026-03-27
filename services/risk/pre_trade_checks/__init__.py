@@ -19,9 +19,7 @@ from shared.schemas.order_events import OrderFill, OrderRequest, OrderSide
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Result types
-# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class CheckResult:
@@ -33,9 +31,7 @@ class CheckResult:
     details: dict[str, Any] = field(default_factory=dict)
 
 
-# ---------------------------------------------------------------------------
 # Configuration
-# ---------------------------------------------------------------------------
 
 @dataclass
 class PreTradeConfig:
@@ -60,9 +56,7 @@ class PreTradeConfig:
 _DEFAULT_CONFIG = PreTradeConfig()
 
 
-# ---------------------------------------------------------------------------
 # Service
-# ---------------------------------------------------------------------------
 
 class PreTradeCheckService:
     """Runs a battery of pre-trade checks on incoming orders.
@@ -92,7 +86,7 @@ class PreTradeCheckService:
     def _cfg(self, tenant_id: str) -> PreTradeConfig:
         return self._configs.get(tenant_id, _DEFAULT_CONFIG)
 
-    # -- Public API ----------------------------------------------------------
+    # Public API
 
     async def validate_order(
         self,
@@ -158,7 +152,7 @@ class PreTradeCheckService:
             check_name="all",
         )
 
-    # -- Individual checks ---------------------------------------------------
+    # Individual checks
 
     def _check_restricted_list(self, order: OrderRequest) -> CheckResult:
         """Reject orders for symbols on the restricted list."""

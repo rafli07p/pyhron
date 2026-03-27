@@ -90,9 +90,7 @@ class WebSocketConnectionManager:
         self._user_connections: dict[str, set[str]] = {}
         self._lock = asyncio.Lock()
 
-    # ------------------------------------------------------------------
     # Connection lifecycle
-    # ------------------------------------------------------------------
 
     async def connect(self, websocket: WebSocket, connection_id: str) -> None:
         """Accept the WebSocket and register it (unauthenticated)."""
@@ -148,9 +146,7 @@ class WebSocketConnectionManager:
         logger.info("ws.authenticated connection_id=%s user_id=%s", connection_id, user_id)
         return user
 
-    # ------------------------------------------------------------------
     # Subscription management
-    # ------------------------------------------------------------------
 
     async def subscribe(
         self,
@@ -199,9 +195,7 @@ class WebSocketConnectionManager:
                 if not subs:
                     del self._channel_subs[channel]
 
-    # ------------------------------------------------------------------
     # Message dispatch
-    # ------------------------------------------------------------------
 
     async def broadcast_to_channel(self, channel: str, message: dict) -> int:  # type: ignore[type-arg]
         """Send *message* to every connection subscribed to *channel*.
@@ -237,9 +231,7 @@ class WebSocketConnectionManager:
             logger.debug("ws.send_fail connection_id=%s", connection_id)
             return False
 
-    # ------------------------------------------------------------------
     # Disconnect / cleanup
-    # ------------------------------------------------------------------
 
     async def disconnect(
         self,
@@ -279,9 +271,7 @@ class WebSocketConnectionManager:
 
         logger.info("ws.disconnect connection_id=%s code=%d", connection_id, code)
 
-    # ------------------------------------------------------------------
     # Heartbeat
-    # ------------------------------------------------------------------
 
     async def run_heartbeat_loop(self, connection_id: str) -> None:
         """Send ``HEARTBEAT`` periodically; close on PONG timeout."""
@@ -321,9 +311,7 @@ class WebSocketConnectionManager:
         if state is not None:
             state.last_pong = datetime.now(UTC)
 
-    # ------------------------------------------------------------------
     # Introspection helpers
-    # ------------------------------------------------------------------
 
     def is_connected(self, connection_id: str) -> bool:
         return connection_id in self._connections

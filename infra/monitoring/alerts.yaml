@@ -1,11 +1,7 @@
-# =============================================================================
 # Pyhron Trading Platform - Prometheus Alerting Rules
-# =============================================================================
 
 groups:
-  # ---------------------------------------------------------------------------
   # Latency Alerts
-  # ---------------------------------------------------------------------------
   - name: pyhron.latency
     rules:
       - alert: HighOrderLatency
@@ -68,9 +64,7 @@ groups:
             p95 Kafka-to-WebSocket delivery latency is {{ $value | humanizeDuration }}.
             Check Redis pub/sub and bridge consumers.
 
-  # ---------------------------------------------------------------------------
   # DLQ & Data Pipeline Alerts
-  # ---------------------------------------------------------------------------
   - name: pyhron.data_pipeline
     rules:
       - alert: DLQDepthWarning
@@ -147,9 +141,7 @@ groups:
             Consumer group {{ $labels.consumergroup }} has a lag of
             {{ $value }} messages on topic {{ $labels.topic }}.
 
-  # ---------------------------------------------------------------------------
   # Intraday Market Data Alerts
-  # ---------------------------------------------------------------------------
   - name: pyhron.intraday
     rules:
       - alert: IntradayIngestionStopped
@@ -196,9 +188,7 @@ groups:
             Kafka publish errors at {{ $value | humanize }}/sec on
             topic {{ $labels.topic }}. Market data delivery compromised.
 
-  # ---------------------------------------------------------------------------
   # Paper Trading Alerts
-  # ---------------------------------------------------------------------------
   - name: pyhron.paper_trading
     rules:
       - alert: PaperTradingDrawdownWarning
@@ -257,9 +247,7 @@ groups:
             Session {{ $labels.session_name }} daily P&L is
             IDR {{ $value | humanize }}. Large single-day loss detected.
 
-  # ---------------------------------------------------------------------------
   # Risk Alerts
-  # ---------------------------------------------------------------------------
   - name: pyhron.risk
     rules:
       - alert: HighOrderSubmissionRate
@@ -292,9 +280,7 @@ groups:
             {{ $value | humanizePercentage }} of orders are being rejected.
             Check order parameters, risk limits, and market conditions.
 
-  # ---------------------------------------------------------------------------
   # System Health Alerts
-  # ---------------------------------------------------------------------------
   - name: pyhron.system
     rules:
       - alert: ServiceDown

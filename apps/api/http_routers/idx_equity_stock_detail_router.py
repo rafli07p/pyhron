@@ -21,9 +21,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/stocks", tags=["stock-detail"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class StockProfile(BaseModel):
     symbol: str
     name: str
@@ -69,9 +67,7 @@ class OwnershipEntry(BaseModel):
     change_from_prior: float | None = None
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/{symbol}", response_model=StockProfile)
 async def get_stock_profile(symbol: str) -> StockProfile:
     """Get comprehensive stock profile by ticker symbol."""

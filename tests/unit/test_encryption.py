@@ -12,7 +12,6 @@ import os
 
 import pytest
 
-# TODO: update imports when pyhron.shared.encryption is implemented
 # Future paths:
 #   from data_platform.encryption import EncryptionService, EncryptionError, KeyManagementError
 #   FieldEncryptor, KeyDerivationService, DecryptionError, InvalidKeyError, TamperedDataError — not yet implemented
@@ -29,9 +28,7 @@ from pyhron.shared.encryption.service import (
 )
 
 
-# =============================================================================
 # Fixtures
-# =============================================================================
 @pytest.fixture
 def encryption_key() -> bytes:
     """Generate a valid 256-bit encryption key."""
@@ -56,9 +53,7 @@ def field_encryptor(encryption_service: EncryptionService) -> FieldEncryptor:
     return FieldEncryptor(encryption_service=encryption_service)
 
 
-# =============================================================================
 # Basic Encryption/Decryption Tests
-# =============================================================================
 class TestBasicEncryption:
     """Tests for core encrypt/decrypt operations."""
 
@@ -108,9 +103,7 @@ class TestBasicEncryption:
         assert decrypted.decode("utf-8") == text
 
 
-# =============================================================================
 # Tampering Detection Tests
-# =============================================================================
 class TestTamperingDetection:
     """Tests for authenticated encryption (GCM tag validation)."""
 
@@ -151,9 +144,7 @@ class TestTamperingDetection:
             encryption_service.decrypt(b"")
 
 
-# =============================================================================
 # Key Derivation Tests
-# =============================================================================
 class TestKeyDerivation:
     """Tests for key derivation from master key."""
 
@@ -180,9 +171,7 @@ class TestKeyDerivation:
             KeyDerivationService(master_key=b"too_short")
 
 
-# =============================================================================
 # Field-Level Encryption Tests
-# =============================================================================
 class TestFieldEncryption:
     """Tests for field-level encryption of structured data."""
 
@@ -267,9 +256,7 @@ class TestFieldEncryption:
         assert encrypted["account_type"] == "premium"
 
 
-# =============================================================================
 # Compliance Tests (UU PDP)
-# =============================================================================
 class TestComplianceEncryption:
     """Tests ensuring encryption meets UU PDP compliance requirements."""
 

@@ -1,6 +1,4 @@
-# =============================================================================
 # Pyhron Trading Platform - Prometheus Configuration
-# =============================================================================
 
 global:
   scrape_interval: 15s
@@ -24,16 +22,12 @@ rule_files:
 
 # Scrape configurations
 scrape_configs:
-  # -------------------------------------------------------------------------
   # Prometheus self-monitoring
-  # -------------------------------------------------------------------------
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:9090"]
 
-  # -------------------------------------------------------------------------
   # Pyhron API service
-  # -------------------------------------------------------------------------
   - job_name: "pyhron-api"
     metrics_path: "/metrics"
     scrape_interval: 10s
@@ -58,9 +52,7 @@ scrape_configs:
     #     regex: (.+)
     #     replacement: ${1}:$1
 
-  # -------------------------------------------------------------------------
   # Custom Quantitative Trading Metrics
-  # -------------------------------------------------------------------------
   - job_name: "pyhron-quant-metrics"
     metrics_path: "/metrics/quant"
     scrape_interval: 5s
@@ -75,9 +67,7 @@ scrape_configs:
         regex: "(pyhron_order_fill_latency_seconds|pyhron_orders_submitted_total|pyhron_paper_session_nav_idr|pyhron_paper_session_drawdown_pct|pyhron_paper_session_sharpe_ratio|pyhron_paper_session_daily_pnl_idr|pyhron_intraday_events_total|pyhron_intraday_publish_errors_total|pyhron_dlq_depth|pyhron_records_ingested_total)"
         action: keep
 
-  # -------------------------------------------------------------------------
   # Intraday Ingestion service
-  # -------------------------------------------------------------------------
   - job_name: "pyhron-ingestion"
     metrics_path: "/metrics"
     scrape_interval: 10s
@@ -87,9 +77,7 @@ scrape_configs:
           service: "pyhron-ingestion"
           component: "data-pipeline"
 
-  # -------------------------------------------------------------------------
   # PostgreSQL Exporter
-  # -------------------------------------------------------------------------
   - job_name: "postgres"
     static_configs:
       - targets: ["postgres-exporter:9187"]
@@ -97,9 +85,7 @@ scrape_configs:
           service: "postgres"
           component: "database"
 
-  # -------------------------------------------------------------------------
   # Redis Exporter
-  # -------------------------------------------------------------------------
   - job_name: "redis"
     static_configs:
       - targets: ["redis-exporter:9121"]
@@ -107,9 +93,7 @@ scrape_configs:
           service: "redis"
           component: "cache"
 
-  # -------------------------------------------------------------------------
   # Kafka Exporter
-  # -------------------------------------------------------------------------
   - job_name: "kafka"
     static_configs:
       - targets: ["kafka-exporter:9308"]
@@ -117,18 +101,14 @@ scrape_configs:
           service: "kafka"
           component: "messaging"
 
-  # -------------------------------------------------------------------------
   # Node Exporter (system metrics)
-  # -------------------------------------------------------------------------
   - job_name: "node"
     static_configs:
       - targets: ["node-exporter:9100"]
         labels:
           component: "infrastructure"
 
-  # -------------------------------------------------------------------------
   # MLflow
-  # -------------------------------------------------------------------------
   - job_name: "mlflow"
     static_configs:
       - targets: ["mlflow:5000"]

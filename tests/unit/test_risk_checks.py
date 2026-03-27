@@ -20,9 +20,8 @@ from services.pre_trade_risk_engine.pre_trade_risk_checks import (
     check_signal_staleness,
 )
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
 
-
+# Helpers
 def _make_order(
     quantity: int = 100,
     side: int = 1,  # BUY
@@ -81,9 +80,7 @@ def _make_position(
     return pos
 
 
-# ── Lot Size ─────────────────────────────────────────────────────────────────
-
-
+# Lot Size
 class TestLotSizeConstraint:
     def test_valid_lot_size(self):
         order = _make_order(quantity=500)
@@ -126,9 +123,7 @@ class TestLotSizeConstraint:
         assert result.adjusted_quantity is None
 
 
-# ── Max Position Size ────────────────────────────────────────────────────────
-
-
+# Max Position Size
 class TestMaxPositionSize:
     def test_within_limit(self):
         order = _make_order(quantity=100, limit_price=9200.0)
@@ -158,9 +153,7 @@ class TestMaxPositionSize:
         assert "no price" in result.reason.lower()
 
 
-# ── Daily Loss Limit ─────────────────────────────────────────────────────────
-
-
+# Daily Loss Limit
 class TestDailyLossLimit:
     def test_no_loss(self):
         portfolio = _make_portfolio(total_unrealized_pnl=0, total_realized_pnl_today=0)
@@ -192,9 +185,7 @@ class TestDailyLossLimit:
         assert result.passed is False
 
 
-# ── Buying Power T+2 ────────────────────────────────────────────────────────
-
-
+# Buying Power T+2
 class TestBuyingPowerT2:
     def test_sufficient_cash(self):
         order = _make_order(quantity=100, limit_price=9200.0, side=1)
@@ -213,9 +204,7 @@ class TestBuyingPowerT2:
         assert result.passed is True
 
 
-# ── Duplicate Order ──────────────────────────────────────────────────────────
-
-
+# Duplicate Order
 class TestDuplicateOrder:
     def test_no_duplicate(self):
         order = _make_order(client_order_id="order-new")
@@ -234,9 +223,7 @@ class TestDuplicateOrder:
         assert result.passed is True
 
 
-# ── Signal Staleness ─────────────────────────────────────────────────────────
-
-
+# Signal Staleness
 class TestSignalStaleness:
     def test_fresh_signal(self):
         now = datetime.now(tz=UTC)
@@ -258,9 +245,7 @@ class TestSignalStaleness:
         assert "no signal_time" in result.reason
 
 
-# ── Portfolio VaR ────────────────────────────────────────────────────────────
-
-
+# Portfolio VaR
 class TestPortfolioVaR:
     def test_within_var_limit(self):
         order = _make_order(quantity=100, limit_price=9200.0)
@@ -286,9 +271,7 @@ class TestPortfolioVaR:
         assert result.passed is True
 
 
-# ── Sector Concentration ─────────────────────────────────────────────────────
-
-
+# Sector Concentration
 class TestSectorConcentration:
     def test_within_limit(self):
         order = _make_order(quantity=100, limit_price=9200.0)

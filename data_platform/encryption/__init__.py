@@ -21,9 +21,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 logger = structlog.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
 # Constants
-# ---------------------------------------------------------------------------
 _CHUNK_SIZE: int = 64 * 1024  # 64 KiB file-streaming chunk size
 _KEY_ROTATION_HEADER = b"PYHRON_ENC_V1"
 
@@ -36,9 +34,7 @@ class KeyManagementError(Exception):
     """Raised on key-lifecycle errors (missing key, rotation failure)."""
 
 
-# ---------------------------------------------------------------------------
 # EncryptionService
-# ---------------------------------------------------------------------------
 class EncryptionService:
     """AES-256 encryption service backed by ``cryptography.fernet``.
 
@@ -87,9 +83,7 @@ class EncryptionService:
 
         self._log.info("encryption_service_initialised", has_previous_keys=bool(previous_keys))
 
-    # ------------------------------------------------------------------
     # Key helpers
-    # ------------------------------------------------------------------
     @staticmethod
     def generate_key() -> str:
         """Generate a new Fernet-compatible encryption key."""
@@ -109,9 +103,7 @@ class EncryptionService:
         digest = hashlib.sha256(master_key + tenant_id.encode()).digest()
         return base64.urlsafe_b64encode(digest)
 
-    # ------------------------------------------------------------------
     # Core encrypt / decrypt
-    # ------------------------------------------------------------------
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=0.1, max=1),
@@ -167,9 +159,7 @@ class EncryptionService:
             self._log.error("decrypt_data_failed", error=str(exc))
             raise EncryptionError(f"Decryption failed: {exc}") from exc
 
-    # ------------------------------------------------------------------
     # File encrypt / decrypt
-    # ------------------------------------------------------------------
     def encrypt_file(self, src_path: str | Path, dst_path: str | Path | None = None) -> Path:
         """Encrypt a file on disk.
 
@@ -241,9 +231,7 @@ class EncryptionService:
             self._log.error("decrypt_file_failed", src=str(src), error=str(exc))
             raise EncryptionError(f"File decryption failed: {exc}") from exc
 
-    # ------------------------------------------------------------------
     # Key rotation
-    # ------------------------------------------------------------------
     def rotate_key(self, new_key: str | bytes | None = None) -> str:
         """Rotate to a new encryption key.
 
@@ -284,9 +272,7 @@ class EncryptionService:
         )
         return new_key_bytes.decode()
 
-    # ------------------------------------------------------------------
     # Convenience helpers
-    # ------------------------------------------------------------------
     def encrypt_string(self, value: str) -> str:
         """Encrypt a string and return a base64-encoded ciphertext string."""
         return self.encrypt_data(value).decode()

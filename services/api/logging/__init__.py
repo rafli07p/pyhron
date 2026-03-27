@@ -17,9 +17,7 @@ import structlog
 from fastapi import Request
 from structlog.types import EventDict, WrappedLogger
 
-# ---------------------------------------------------------------------------
 # JSON log formatter (ELK / Elasticsearch compatible)
-# ---------------------------------------------------------------------------
 
 
 class ELKJSONRenderer(structlog.dev.ConsoleRenderer):
@@ -48,9 +46,7 @@ class ELKJSONRenderer(structlog.dev.ConsoleRenderer):
         return _json.dumps(record, default=str)
 
 
-# ---------------------------------------------------------------------------
 # configure_logging
-# ---------------------------------------------------------------------------
 
 
 def configure_logging(
@@ -119,9 +115,7 @@ def configure_logging(
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
 
-# ---------------------------------------------------------------------------
 # RequestLoggingMiddleware
-# ---------------------------------------------------------------------------
 
 
 class RequestLoggingMiddleware:
@@ -174,9 +168,7 @@ class RequestLoggingMiddleware:
             )
 
 
-# ---------------------------------------------------------------------------
 # AuditLogMiddleware
-# ---------------------------------------------------------------------------
 
 _MUTATION_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 

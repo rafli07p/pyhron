@@ -30,7 +30,7 @@ class Config(BaseSettings):
         "extra": "ignore",
     }
 
-    # -- General --
+    # General
     app_name: str = Field(default="pyhron", max_length=64, description="Application name")
     app_env: str = Field(default="development", description="Deployment environment")
     app_secret_key: str = Field(default="local-dev-secret-key-min-32-chars-long", min_length=32)
@@ -39,7 +39,7 @@ class Config(BaseSettings):
     app_port: int = Field(default=8000)
     log_level: str = Field(default="INFO")
 
-    # -- Database --
+    # Database
     database_url: str = Field(
         default="postgresql+asyncpg://pyhron:pyhron@localhost:5432/pyhron",
     )
@@ -50,16 +50,16 @@ class Config(BaseSettings):
     database_max_overflow: int = Field(default=10, ge=0, le=100)
     database_pool_timeout: int = Field(default=30, ge=1)
 
-    # -- Redis --
+    # Redis
     redis_url: str = Field(default="redis://localhost:6379/0")
     celery_broker_url: str = Field(default="redis://localhost:6379/1")
     celery_result_backend: str = Field(default="redis://localhost:6379/2")
 
-    # -- Kafka --
+    # Kafka
     kafka_bootstrap_servers: str = Field(default="localhost:9092")
     kafka_consumer_group: str = Field(default="pyhron-consumers")
 
-    # -- Market Data --
+    # Market Data
     bps_api_key: str = Field(default="")
     nasa_firms_api_key: str = Field(default="")
     globalcoal_api_key: str = Field(default="")
@@ -69,13 +69,13 @@ class Config(BaseSettings):
     alpaca_secret_key: str = Field(default="")
     alpaca_base_url: str = Field(default="https://paper-api.alpaca.markets")
 
-    # -- JWT / Auth --
+    # JWT / Auth
     jwt_secret_key: str = Field(default="local-dev-jwt-secret-change-in-prod-min-64", min_length=32)
     jwt_algorithm: str = Field(default="HS256")
     jwt_access_token_expire_minutes: int = Field(default=15, ge=1)
     jwt_refresh_token_expire_days: int = Field(default=7, ge=1)
 
-    # -- Risk Engine --
+    # Risk Engine
     risk_max_position_size_pct: float = Field(default=0.10)
     risk_max_sector_concentration_pct: float = Field(default=0.30)
     risk_daily_loss_limit_pct: float = Field(default=0.02)
@@ -83,24 +83,24 @@ class Config(BaseSettings):
     risk_max_var_95_pct: float = Field(default=0.05)
     risk_idx_lot_size: int = Field(default=100)
 
-    # -- MLflow --
+    # MLflow
     mlflow_tracking_uri: str = Field(default="http://localhost:5000")
     mlflow_experiment_name: str = Field(default="pyhron-strategies")
 
-    # -- Monitoring --
+    # Monitoring
     sentry_dsn: str = Field(default="")
     prometheus_port: int = Field(default=9090)
 
-    # -- CORS --
+    # CORS
     allowed_cors_origins: str = Field(
         default="http://localhost:3000", description="Comma-separated allowed CORS origins"
     )
 
-    # -- Notifications --
+    # Notifications
     slack_webhook_url: str = Field(default="")
     alert_email: str = Field(default="")
 
-    # -- Data Ingestion --
+    # Data Ingestion
     eodhd_api_token: str = Field(default="")
     eodhd_max_rps: int = Field(default=5)
     eodhd_timeout_seconds: int = Field(default=30)

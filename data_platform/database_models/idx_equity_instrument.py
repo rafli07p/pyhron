@@ -56,7 +56,7 @@ class IdxEquityInstrument(Base):
         TIMESTAMP(timezone=True), server_default="now()", onupdate=lambda: datetime.now(UTC)
     )
 
-    # ── Relationships ────────────────────────────────────────────────────────
+    # Relationships
     financial_statements = relationship("IdxEquityFinancialStatement", back_populates="instrument", lazy="selectin")
     corporate_actions = relationship("IdxEquityCorporateAction", back_populates="instrument", lazy="selectin")
     computed_ratios = relationship("IdxEquityComputedRatio", back_populates="instrument", lazy="selectin")

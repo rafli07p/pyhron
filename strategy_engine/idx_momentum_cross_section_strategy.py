@@ -45,8 +45,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-# ── Default universe (LQ45 subset) ──────────────────────────────────────────
-
+# Default universe (LQ45 subset)
 _DEFAULT_UNIVERSE: list[str] = [
     "BBCA",
     "BBRI",
@@ -90,8 +89,7 @@ _DEFAULT_UNIVERSE: list[str] = [
     "MAPI",
 ]
 
-# ── Constants ────────────────────────────────────────────────────────────────
-
+# Constants
 _TRADING_DAYS_PER_MONTH = 21
 _IDX_LOT_SIZE = 100
 _MIN_LOTS_PER_POSITION = 1
@@ -191,7 +189,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
             top_pct=self._top_pct,
         )
 
-    # ── BaseStrategyInterface implementation ─────────────────────────────
+    # BaseStrategyInterface implementation
 
     def get_parameters(self) -> StrategyParameters:
         return StrategyParameters(
@@ -241,7 +239,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
     async def on_tick(self, tick: TickData) -> list[StrategySignal]:
         return []
 
-    # ── Full production API ──────────────────────────────────────────────
+    # Full production API
 
     def generate_signals_full(
         self,
@@ -337,7 +335,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
             )
         return pd.concat(all_signals, ignore_index=True)
 
-    # ── Core computations ────────────────────────────────────────────────
+    # Core computations
 
     def compute_momentum_scores(
         self,
@@ -592,7 +590,7 @@ class IDXMomentumCrossSectionStrategy(BaseStrategyInterface):
         result = pd.concat([sells, buys], ignore_index=True)
         return result[["symbol", "action", "lots_delta", "estimated_value_idr"]]
 
-    # ── Private helpers ──────────────────────────────────────────────────
+    # Private helpers
 
     def _get_prices_as_of(
         self,

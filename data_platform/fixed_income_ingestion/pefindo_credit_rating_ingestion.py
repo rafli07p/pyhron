@@ -97,7 +97,7 @@ class PEFINDOCreditRatingIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -148,7 +148,7 @@ class PEFINDOCreditRatingIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_ratings(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch rating actions from PEFINDO.
@@ -226,7 +226,7 @@ class PEFINDOCreditRatingIngester:
 
         raise IngestionError(f"PEFINDO failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a credit rating record.
@@ -241,7 +241,7 @@ class PEFINDOCreditRatingIngester:
                     f"Rating score {v} outside valid range [1, 22] for {record.get('entity_code', '?')}"
                 )
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

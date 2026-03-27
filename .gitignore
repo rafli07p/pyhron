@@ -1,8 +1,6 @@
-# =============================================================================
 # Pyhron .gitignore
-# =============================================================================
 
-# -- Python -------------------------------------------------------------------
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -22,7 +20,7 @@ wheels/
 venv/
 ENV/
 
-# -- IDE & Editors ------------------------------------------------------------
+# IDE & Editors
 .idea/
 .vscode/
 *.swp
@@ -31,27 +29,27 @@ ENV/
 .project
 .settings/
 
-# -- Testing ------------------------------------------------------------------
+# Testing
 .pytest_cache/
 .coverage
 htmlcov/
 coverage.xml
 *.cover
 
-# -- Linting & Type Checking -------------------------------------------------
+# Linting & Type Checking
 .mypy_cache/
 .ruff_cache/
 .dmypy.json
 dmypy.json
 
-# -- Environment & Secrets ---------------------------------------------------
+# Environment & Secrets
 .env
 .env.local
 .env.*.local
 *.pem
 *.key
 
-# -- ML & Experiments --------------------------------------------------------
+# ML & Experiments
 mlruns/
 mlartifacts/
 *.onnx
@@ -60,31 +58,31 @@ mlartifacts/
 *.pkl
 *.joblib
 
-# -- Databases ---------------------------------------------------------------
+# Databases
 *.db
 *.sqlite3
 
-# -- Docker -------------------------------------------------------------------
+# Docker
 docker-compose.override.yml
 
-# -- OS generated files -------------------------------------------------------
+# OS generated files
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# -- Node (if any frontend tooling) ------------------------------------------
+# Node (if any frontend tooling)
 node_modules/
 package-lock.json
 yarn.lock
 
-# -- Jupyter ------------------------------------------------------------------
+# Jupyter
 .ipynb_checkpoints/
 
-# -- Logs ---------------------------------------------------------------------
+# Logs
 *.log
 logs/
 
-# -- Misc ---------------------------------------------------------------------
+# Misc
 *.bak
 *.tmp
 .cache/

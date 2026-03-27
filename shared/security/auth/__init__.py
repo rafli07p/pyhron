@@ -22,9 +22,7 @@ from passlib.context import CryptContext
 
 from shared.configuration_settings import get_config as get_settings
 
-# ---------------------------------------------------------------------------
 # Password hashing
-# ---------------------------------------------------------------------------
 
 _pwd_context = CryptContext(
     schemes=["bcrypt"],
@@ -58,9 +56,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return cast(bool, _pwd_context.verify(plain_password, hashed_password))
 
 
-# ---------------------------------------------------------------------------
 # JWT token management
-# ---------------------------------------------------------------------------
 
 
 class TokenError(Exception):

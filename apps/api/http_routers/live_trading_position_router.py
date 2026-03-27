@@ -63,9 +63,7 @@ def _get_order_handler() -> OrderSubmissionHandler:
     return _order_handler
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class PositionResponse(BaseModel):
     symbol: str
     exchange: str = "IDX"
@@ -121,9 +119,7 @@ class OrderSubmitRequest(BaseModel):
     strategy_id: str | None = Field(default=None, max_length=100, description="Strategy identifier")
 
 
-# ── Order Submission ────────────────────────────────────────────────────
-
-
+# Order Submission
 @router.post("/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def submit_order(
     body: OrderSubmitRequest,
@@ -178,9 +174,7 @@ async def submit_order(
     )
 
 
-# ── Positions ────────────────────────────────────────────────────────────────
-
-
+# Positions
 @router.get("/positions", response_model=list[PositionResponse])
 async def get_positions(
     strategy_id: str | None = Query(None),
@@ -219,9 +213,7 @@ async def get_positions(
     ]
 
 
-# ── Orders ───────────────────────────────────────────────────────────────────
-
-
+# Orders
 @router.get("/orders", response_model=list[OrderResponse])
 async def get_orders(
     strategy_id: str | None = Query(None),
@@ -271,9 +263,7 @@ async def get_orders(
     ]
 
 
-# ── P&L ──────────────────────────────────────────────────────────────────────
-
-
+# P&L
 @router.get("/pnl", response_model=list[PnLResponse])
 async def get_daily_pnl(
     days: int = Query(30, ge=1, le=365),
@@ -348,9 +338,7 @@ async def get_daily_pnl(
     return results
 
 
-# ── Circuit Breaker ─────────────────────────────────────────────────────────
-
-
+# Circuit Breaker
 @router.get("/circuit-breaker/status", response_model=list[CircuitBreakerStatus])
 async def get_circuit_breaker_status(
     _user: TokenPayload = Depends(require_role(Role.TRADER)),

@@ -20,9 +20,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/screener", tags=["screener"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class ScreenerResult(BaseModel):
     symbol: str
     name: str
@@ -50,9 +48,7 @@ class ScreenerResponse(BaseModel):
     results: list[ScreenerResult]
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/screen", response_model=ScreenerResponse)
 async def screen_stocks(
     sector: str | None = Query(None, description="IDX sector code"),

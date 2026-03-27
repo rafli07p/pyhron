@@ -21,9 +21,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/fixed-income", tags=["fixed-income"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class GovernmentBond(BaseModel):
     series: str = Field(description="e.g. FR0098, FR0100, PBS035")
     bond_type: str = Field(description="SUN, SBSN, SPN")
@@ -60,9 +58,7 @@ class CreditSpread(BaseModel):
     benchmark_yield: float
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/government-bonds", response_model=list[GovernmentBond])
 async def get_government_bonds(
     bond_type: str | None = Query(None, description="SUN, SBSN, SPN"),

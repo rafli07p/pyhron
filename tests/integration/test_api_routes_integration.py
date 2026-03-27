@@ -16,8 +16,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-# ── JWT Helper ──────────────────────────────────────────────────────────────
-
+# JWT Helper
 _TEST_SECRET = "test-jwt-secret-for-integration-tests-minimum-64-characters-long-enough"  # noqa: S105
 _TEST_ALGORITHM = "HS256"
 
@@ -43,9 +42,7 @@ def _auth_header(role: str = "ADMIN") -> dict[str, str]:
     return {"Authorization": f"Bearer {_make_token(role=role)}"}
 
 
-# ── Fixtures ────────────────────────────────────────────────────────────────
-
-
+# Fixtures
 @pytest.fixture()
 def _mock_jwt_settings():
     """Patch JWT settings to use test secret."""
@@ -58,9 +55,7 @@ def _mock_jwt_settings():
         yield mock_settings
 
 
-# ── Strategy Management Route Tests ─────────────────────────────────────────
-
-
+# Strategy Management Route Tests
 class TestStrategyManagementRoutes:
     """Test /v1/strategies CRUD endpoints."""
 
@@ -166,9 +161,7 @@ class TestStrategyManagementRoutes:
         assert resp.status_code == 403
 
 
-# ── Live Trading Route Tests ────────────────────────────────────────────────
-
-
+# Live Trading Route Tests
 class TestLiveTradingRoutes:
     """Test /v1/trading endpoints."""
 
@@ -356,9 +349,7 @@ class TestLiveTradingRoutes:
         assert resp.status_code in {422, 503}
 
 
-# ── Backtest Route Tests ────────────────────────────────────────────────────
-
-
+# Backtest Route Tests
 class TestBacktestRoutes:
     """Test /v1/backtest endpoints."""
 
@@ -414,9 +405,7 @@ class TestBacktestRoutes:
         assert resp.status_code in {200, 422}
 
 
-# ── Paper Trading Route Tests ───────────────────────────────────────────────
-
-
+# Paper Trading Route Tests
 class TestPaperTradingRoutes:
     """Test /v1/paper-trading endpoints."""
 
@@ -489,9 +478,7 @@ class TestPaperTradingRoutes:
         assert resp.status_code == 422
 
 
-# ── Auth Enforcement Tests ──────────────────────────────────────────────────
-
-
+# Auth Enforcement Tests
 class TestAuthEnforcement:
     """Test that endpoints reject unauthenticated and unauthorized requests."""
 

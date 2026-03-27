@@ -13,13 +13,13 @@ from uuid import uuid4
 
 import pytest
 
-# TODO: update imports when pyhron.shared.schemas is implemented
 # Future paths:
 #   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType, OrderStatusEnum (as OrderStatus)
 #   from shared.schemas.market_events import TickEvent (as TickData)
 #   OrderResponse, PositionSnapshot, RiskLimits — not yet implemented under pyhron interface
 pytest.importorskip("pyhron.shared.schemas.order", reason="module not yet implemented")
 from pydantic import ValidationError
+
 from pyhron.shared.schemas.order import (
     OrderCreate,
     OrderResponse,
@@ -32,9 +32,7 @@ from pyhron.shared.schemas.risk import RiskLimits
 from pyhron.shared.schemas.tick import TickData
 
 
-# =============================================================================
 # OrderCreate Schema Tests
-# =============================================================================
 class TestOrderCreateSchema:
     """Tests for the OrderCreate schema."""
 
@@ -155,9 +153,7 @@ class TestOrderCreateSchema:
         assert restored.price == order.price
 
 
-# =============================================================================
 # OrderResponse Schema Tests
-# =============================================================================
 class TestOrderResponseSchema:
     """Tests for the OrderResponse schema."""
 
@@ -202,9 +198,7 @@ class TestOrderResponseSchema:
         assert response.status == OrderStatus.PARTIALLY_FILLED
 
 
-# =============================================================================
 # TickData Schema Tests
-# =============================================================================
 class TestTickDataSchema:
     """Tests for the TickData schema."""
 
@@ -273,9 +267,7 @@ class TestTickDataSchema:
             TickData(**invalid_data)
 
 
-# =============================================================================
 # PositionSnapshot Schema Tests
-# =============================================================================
 class TestPositionSnapshotSchema:
     """Tests for the PositionSnapshot schema."""
 
@@ -328,9 +320,7 @@ class TestPositionSnapshotSchema:
         assert "unrealized_pnl" in data
 
 
-# =============================================================================
 # RiskLimits Schema Tests
-# =============================================================================
 class TestRiskLimitsSchema:
     """Tests for the RiskLimits schema."""
 

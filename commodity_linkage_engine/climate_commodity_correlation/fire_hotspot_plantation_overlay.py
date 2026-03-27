@@ -96,8 +96,7 @@ class PlantationFireAlert:
     detected_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
-# ── Sample concession registry ──────────────────────────────────────────────
-
+# Sample concession registry
 _PLANTATION_CONCESSIONS: list[PlantationConcession] = [
     PlantationConcession(
         "AALI-KAL01",

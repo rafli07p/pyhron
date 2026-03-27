@@ -18,7 +18,7 @@ class MessageType(StrEnum):
     Naming convention: ``DOMAIN_ACTION`` (e.g. ``ORDER_NEW``).
     """
 
-    # -- Order lifecycle --
+    # Order lifecycle
     ORDER_NEW = "ORDER_NEW"
     ORDER_ACKNOWLEDGED = "ORDER_ACKNOWLEDGED"
     ORDER_FILL = "ORDER_FILL"
@@ -30,7 +30,7 @@ class MessageType(StrEnum):
     ORDER_EXPIRED = "ORDER_EXPIRED"
     ORDER_STATUS = "ORDER_STATUS"
 
-    # -- Market data --
+    # Market data
     MARKET_DATA = "MARKET_DATA"
     MARKET_TICK = "MARKET_TICK"
     MARKET_BAR = "MARKET_BAR"
@@ -39,33 +39,33 @@ class MessageType(StrEnum):
     MARKET_DEPTH = "MARKET_DEPTH"
     MARKET_STATUS = "MARKET_STATUS"
 
-    # -- Risk & compliance --
+    # Risk & compliance
     RISK_ALERT = "RISK_ALERT"
     RISK_BREACH = "RISK_BREACH"
     RISK_LIMIT_UPDATE = "RISK_LIMIT_UPDATE"
     MARGIN_CALL = "MARGIN_CALL"
     COMPLIANCE_ALERT = "COMPLIANCE_ALERT"
 
-    # -- Portfolio --
+    # Portfolio
     POSITION_UPDATE = "POSITION_UPDATE"
     PNL_UPDATE = "PNL_UPDATE"
     EXPOSURE_UPDATE = "EXPOSURE_UPDATE"
     PORTFOLIO_REBALANCE = "PORTFOLIO_REBALANCE"
 
-    # -- Research --
+    # Research
     BACKTEST_REQUEST = "BACKTEST_REQUEST"
     BACKTEST_RESULT = "BACKTEST_RESULT"
     FACTOR_RESULT = "FACTOR_RESULT"
     SIGNAL_GENERATED = "SIGNAL_GENERATED"
 
-    # -- System --
+    # System
     HEARTBEAT = "HEARTBEAT"
     SERVICE_UP = "SERVICE_UP"
     SERVICE_DOWN = "SERVICE_DOWN"
     CONFIG_CHANGE = "CONFIG_CHANGE"
     AUDIT_LOG = "AUDIT_LOG"
 
-    # -- Notifications --
+    # Notifications
     NOTIFICATION_EMAIL = "NOTIFICATION_EMAIL"
     NOTIFICATION_SLACK = "NOTIFICATION_SLACK"
     NOTIFICATION_WEBHOOK = "NOTIFICATION_WEBHOOK"

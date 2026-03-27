@@ -15,8 +15,7 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
-# ── Tier Configuration ───────────────────────────────────────────────────────
-
+# Tier Configuration
 TIER_LEVELS: dict[str, int] = {
     "free": 0,
     "basic": 1,
@@ -49,9 +48,7 @@ def _user_tier_level(tier: str) -> int:
     return TIER_LEVELS.get(tier, 0)
 
 
-# ── Middleware ───────────────────────────────────────────────────────────────
-
-
+# Middleware
 class SubscriptionTierMiddleware(BaseHTTPMiddleware):
     """Enforce subscription tier requirements on premium endpoints."""
 

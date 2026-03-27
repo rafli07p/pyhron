@@ -6,9 +6,8 @@ import asyncio
 
 import pytest
 
-# ── Event Loop ───────────────────────────────────────────────────────────────
 
-
+# Event Loop
 @pytest.fixture(scope="session")
 def event_loop():
     """Create a single event loop for the entire test session."""
@@ -17,9 +16,7 @@ def event_loop():
     loop.close()
 
 
-# ── Pytest Configuration ────────────────────────────────────────────────────
-
-
+# Pytest Configuration
 def pytest_configure(config: pytest.Config) -> None:
     """Register custom markers."""
     config.addinivalue_line("markers", "slow: marks tests as slow")

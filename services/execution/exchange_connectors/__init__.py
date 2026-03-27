@@ -38,9 +38,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Base connector
-# ---------------------------------------------------------------------------
 
 
 class BaseConnector(ABC):
@@ -89,9 +87,7 @@ class BaseConnector(ABC):
         """Return account / balance information."""
 
 
-# ---------------------------------------------------------------------------
 # Alpaca connector (equities) -- real alpaca-py API
-# ---------------------------------------------------------------------------
 
 
 class AlpacaConnector(BaseConnector):
@@ -107,7 +103,7 @@ class AlpacaConnector(BaseConnector):
         super().__init__(name="alpaca")
         self._client: Any = None
 
-    # -- lifecycle -----------------------------------------------------------
+    # lifecycle
 
     async def connect(self) -> None:
         async with self._lock:
@@ -134,7 +130,7 @@ class AlpacaConnector(BaseConnector):
             self._connected = False
             logger.info("alpaca.disconnected")
 
-    # -- orders --------------------------------------------------------------
+    # orders
 
     @retry(
         retry=retry_if_exception_type((ConnectionError, TimeoutError)),
@@ -304,9 +300,7 @@ class AlpacaConnector(BaseConnector):
             }
 
 
-# ---------------------------------------------------------------------------
 # CCXT connector (crypto) -- real ccxt API
-# ---------------------------------------------------------------------------
 
 
 class CCXTConnector(BaseConnector):

@@ -63,8 +63,7 @@ class CPOProductionForecast:
     cpo_price_impact_pct: float
 
 
-# ── ENSO impact parameters ──────────────────────────────────────────────────
-
+# ENSO impact parameters
 _BASELINE_YIELD_KG_PER_HA: float = 18_000.0
 _INDONESIA_CPO_PRODUCTION_MT: float = 46.0  # million metric tons
 

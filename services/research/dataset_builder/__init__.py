@@ -21,9 +21,7 @@ import yfinance as yf
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Feature engineering functions
-# ---------------------------------------------------------------------------
 
 def _add_returns(df: pd.DataFrame, windows: list[int] | None = None) -> pd.DataFrame:
     """Add log and simple return columns for various windows."""
@@ -119,9 +117,7 @@ def _add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ---------------------------------------------------------------------------
 # Data fetching
-# ---------------------------------------------------------------------------
 
 async def _fetch_ohlcv_yfinance(
     symbol: str,
@@ -174,9 +170,7 @@ async def _fetch_ohlcv_polygon(
     return df[["open", "high", "low", "close", "volume", "symbol"]]
 
 
-# ---------------------------------------------------------------------------
 # Dataset builder
-# ---------------------------------------------------------------------------
 
 # Map of supported feature groups to their engineering functions
 _FEATURE_MAP: dict[str, Callable[[pd.DataFrame], pd.DataFrame]] = {

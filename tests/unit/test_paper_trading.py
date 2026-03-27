@@ -16,9 +16,8 @@ from services.paper_trading.idx_cost_model import IDXTransactionCostModel
 from services.paper_trading.simulation_engine import PaperSimulationEngine
 from services.paper_trading.strategy_executor import PaperStrategyExecutor
 
-# ── Test 1: Target lot computation floors correctly ──────────────────────────
 
-
+# Test 1: Target lot computation floors correctly
 def test_target_lots_floor() -> None:
     executor = PaperStrategyExecutor()
     lots = executor.compute_target_lots(
@@ -43,9 +42,7 @@ def test_target_lots_zero_price() -> None:
     assert lots == 0
 
 
-# ── Test 2: Trade diff produces correct buy/sell instructions ────────────────
-
-
+# Test 2: Trade diff produces correct buy/sell instructions
 def test_trade_diff_buy_and_sell() -> None:
     executor = PaperStrategyExecutor()
     target: dict[str, int] = {"BBCA": 50, "BMRI": 30, "GOTO": 0}
@@ -79,9 +76,7 @@ def test_trade_diff_exit_all() -> None:
     assert all(t.side == "SELL" for t in trades)
 
 
-# ── Test 3: Buy transaction cost breakdown ───────────────────────────────────
-
-
+# Test 3: Buy transaction cost breakdown
 def test_buy_cost_breakdown() -> None:
     model = IDXTransactionCostModel()
     cost = model.compute_buy_cost(Decimal("10_000_000"))
@@ -99,9 +94,7 @@ def test_buy_cost_minimum_commission() -> None:
     assert cost.commission_idr == Decimal("10000")
 
 
-# ── Test 4: Sell transaction cost includes PPh ───────────────────────────────
-
-
+# Test 4: Sell transaction cost includes PPh
 def test_sell_cost_includes_pph() -> None:
     model = IDXTransactionCostModel()
     cost = model.compute_sell_cost(Decimal("10_000_000"))
@@ -118,9 +111,7 @@ def test_sell_cost_vat_on_commission() -> None:
     assert cost.vat_idr == Decimal("2750")
 
 
-# ── Test 5: Simulation fill — market buy adds slippage ───────────────────────
-
-
+# Test 5: Simulation fill — market buy adds slippage
 def test_simulation_market_buy_slippage() -> None:
     engine = PaperSimulationEngine()
     price = engine.compute_simulated_fill_price(
@@ -149,9 +140,7 @@ def test_simulation_market_sell_slippage() -> None:
     assert price == Decimal("8991")
 
 
-# ── Test 6: Simulation fill — limit buy misses if low > limit ────────────────
-
-
+# Test 6: Simulation fill — limit buy misses if low > limit
 def test_simulation_limit_buy_no_fill() -> None:
     engine = PaperSimulationEngine()
     price = engine.compute_simulated_fill_price(
@@ -206,9 +195,7 @@ def test_simulation_limit_sell_fills() -> None:
     assert price == Decimal("9300")
 
 
-# ── Test 7: NAV snapshot drawdown computed correctly ─────────────────────────
-
-
+# Test 7: NAV snapshot drawdown computed correctly
 async def test_nav_snapshot_drawdown() -> None:
     """Drawdown = (peak - current) / peak."""
     peak = Decimal("520_000_000")
@@ -218,9 +205,7 @@ async def test_nav_snapshot_drawdown() -> None:
     assert abs(float(drawdown_pct) - 1.923) < 0.01
 
 
-# ── Test 8: Reconciliation detects position mismatch ─────────────────────────
-
-
+# Test 8: Reconciliation detects position mismatch
 async def test_reconciliation_detects_position_mismatch() -> None:
     from services.paper_trading.alpaca_reconciliation import AlpacaPaperReconciliation
 
@@ -254,9 +239,7 @@ async def test_reconciliation_detects_position_mismatch() -> None:
     assert report.discrepancies[0].symbol == "BBCA"
 
 
-# ── Test 9: Session minimum capital enforced ─────────────────────────────────
-
-
+# Test 9: Session minimum capital enforced
 async def test_session_minimum_capital_enforced() -> None:
     from services.paper_trading.session_manager import PaperTradingSessionManager
 
@@ -274,9 +257,7 @@ async def test_session_minimum_capital_enforced() -> None:
         )
 
 
-# ── Test 10: Only one running session per strategy ───────────────────────────
-
-
+# Test 10: Only one running session per strategy
 async def test_one_running_session_per_strategy() -> None:
     from services.paper_trading.session_manager import PaperTradingSessionManager
 
@@ -308,9 +289,7 @@ async def test_one_running_session_per_strategy() -> None:
         )
 
 
-# ── Test: Breakeven return ───────────────────────────────────────────────────
-
-
+# Test: Breakeven return
 def test_breakeven_return() -> None:
     model = IDXTransactionCostModel()
     breakeven = model.compute_breakeven_return(Decimal("10_000_000"))
@@ -319,9 +298,7 @@ def test_breakeven_return() -> None:
     assert breakeven == Decimal("0.005640")
 
 
-# ── Test: Zero slippage market buy ───────────────────────────────────────────
-
-
+# Test: Zero slippage market buy
 def test_simulation_zero_slippage() -> None:
     engine = PaperSimulationEngine()
     price = engine.compute_simulated_fill_price(

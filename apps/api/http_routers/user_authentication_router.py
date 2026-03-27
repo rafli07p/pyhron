@@ -32,14 +32,11 @@ router = APIRouter(prefix="/v1/auth", tags=["authentication"])
 _limiter = Limiter(key_func=get_remote_address)
 
 
-# ── In-memory user store (swap for database in production) ───────────────────
-
+# In-memory user store (swap for database in production)
 _users_db: dict[str, dict[str, Any]] = {}
 
 
-# ── Request/Response Models ──────────────────────────────────────────────────
-
-
+# Request/Response Models
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
@@ -73,9 +70,7 @@ class UserProfileResponse(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.post("/login", response_model=TokenResponse)
 @_limiter.limit("5/minute")
 async def login(request: Request, body: LoginRequest) -> TokenResponse:

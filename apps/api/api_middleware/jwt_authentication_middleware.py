@@ -18,9 +18,8 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 
-# ── Configuration ────────────────────────────────────────────────────────────
 
-
+# Configuration
 def _get_jwt_secret() -> str:
     return get_config().jwt_secret_key
 
@@ -40,9 +39,7 @@ PUBLIC_PATHS: set[str] = {
 }
 
 
-# ── Helper ───────────────────────────────────────────────────────────────────
-
-
+# Helper
 def _decode_token(token: str) -> dict[str, Any]:
     """Decode and validate a JWT token, returning the payload claims."""
     result: dict[str, Any] = jwt.decode(token, _get_jwt_secret(), algorithms=[_get_jwt_algorithm()])
@@ -54,9 +51,7 @@ def _is_public_path(path: str) -> bool:
     return path in PUBLIC_PATHS or path.startswith("/v1/auth/")
 
 
-# ── Middleware ───────────────────────────────────────────────────────────────
-
-
+# Middleware
 class JWTAuthenticationMiddleware(BaseHTTPMiddleware):
     """Starlette middleware that validates JWT Bearer tokens."""
 

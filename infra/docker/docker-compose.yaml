@@ -1,16 +1,11 @@
-# =============================================================================
 # Pyhron Trading Platform — Docker Compose (Local Development)
-# =============================================================================
 # Usage:
 #   docker compose up -d                       # Start all services
 #   docker compose --profile monitoring up -d  # Include Prometheus/Grafana
 #   docker compose down -v                     # Tear down with volumes
-# =============================================================================
 
 services:
-  # ---------------------------------------------------------------------------
   # TimescaleDB — Time-series optimised PostgreSQL
-  # ---------------------------------------------------------------------------
   postgres:
     image: timescale/timescaledb:2.17.2-pg16
     container_name: pyhron-postgres
@@ -31,9 +26,7 @@ services:
       retries: 10
       start_period: 10s
 
-  # ---------------------------------------------------------------------------
   # Redis — Caching, session store, Celery broker
-  # ---------------------------------------------------------------------------
   redis:
     image: redis:7.2-alpine
     container_name: pyhron-redis
@@ -54,9 +47,7 @@ services:
       timeout: 3s
       retries: 5
 
-  # ---------------------------------------------------------------------------
   # Zookeeper — Kafka coordination
-  # ---------------------------------------------------------------------------
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: pyhron-zookeeper
@@ -73,9 +64,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # ---------------------------------------------------------------------------
   # Kafka — Event streaming
-  # ---------------------------------------------------------------------------
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: pyhron-kafka
@@ -104,9 +93,7 @@ services:
       retries: 10
       start_period: 30s
 
-  # ---------------------------------------------------------------------------
   # Kafka Init — Topic creation (run-once sidecar)
-  # ---------------------------------------------------------------------------
   kafka-init:
     image: confluentinc/cp-kafka:7.6.0
     container_name: pyhron-kafka-init
@@ -120,9 +107,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     restart: "no"
 
-  # ---------------------------------------------------------------------------
   # API — FastAPI gateway
-  # ---------------------------------------------------------------------------
   api:
     build:
       context: ../..
@@ -153,9 +138,7 @@ services:
       retries: 5
       start_period: 20s
 
-  # ---------------------------------------------------------------------------
   # Celery Worker — Data ingestion and analytics
-  # ---------------------------------------------------------------------------
   worker:
     build:
       context: ../..
@@ -180,9 +163,7 @@ services:
       retries: 3
       start_period: 30s
 
-  # ---------------------------------------------------------------------------
   # Celery Beat — Scheduler
-  # ---------------------------------------------------------------------------
   beat:
     build:
       context: ../..
@@ -204,9 +185,7 @@ services:
       retries: 3
       start_period: 30s
 
-  # ---------------------------------------------------------------------------
   # MLflow — ML experiment tracking
-  # ---------------------------------------------------------------------------
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.9.2
     container_name: pyhron-mlflow
@@ -228,9 +207,7 @@ services:
       retries: 5
       start_period: 15s
 
-  # ---------------------------------------------------------------------------
   # Monitoring Stack (optional — --profile monitoring)
-  # ---------------------------------------------------------------------------
   prometheus:
     image: prom/prometheus:v2.48.1
     container_name: pyhron-prometheus

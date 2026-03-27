@@ -38,14 +38,14 @@ class FactorEngine:
         self._rf = risk_free_rate
         self._log = logger.bind(component="FactorEngine")
 
-    # -- Helper: cross-sectional Z-score ------------------------------------
+    # Helper: cross-sectional Z-score
 
     @staticmethod
     def _zscore(df: pd.DataFrame) -> pd.DataFrame:
         """Cross-sectional Z-score normalisation (row-wise)."""
         return df.sub(df.mean(axis=1), axis=0).div(df.std(axis=1), axis=0).fillna(0)
 
-    # -- Factor calculations -------------------------------------------------
+    # Factor calculations
 
     def calculate_momentum(
         self,
@@ -152,7 +152,7 @@ class FactorEngine:
         self._log.info("calculate_value_factor", metric=metric, tenant_id=tenant_id)
         return self._zscore(fundamental_data)
 
-    # -- Full factor analysis ------------------------------------------------
+    # Full factor analysis
 
     def run_factor_analysis(
         self,

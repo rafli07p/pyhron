@@ -20,18 +20,14 @@ from datetime import datetime
 # Add source directory to path for autodoc
 sys.path.insert(0, os.path.abspath("../../src"))
 
-# =============================================================================
 # Project Information
-# =============================================================================
 project = "Pyhron"
 copyright = f"{datetime.now().year}, Pyhron Engineering"
 author = "Pyhron Engineering"
 release = "1.0.0"
 version = "1.0"
 
-# =============================================================================
 # General Configuration
-# =============================================================================
 extensions = [
     # Core Sphinx extensions
     "sphinx.ext.autodoc",
@@ -64,9 +60,7 @@ master_doc = "index"
 # Language
 language = "en"
 
-# =============================================================================
 # Autodoc Configuration
-# =============================================================================
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
@@ -83,9 +77,7 @@ autodoc_class_signature = "separated"
 # Generate autosummary pages
 autosummary_generate = True
 
-# =============================================================================
 # Napoleon Configuration (Google/NumPy docstrings)
-# =============================================================================
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
@@ -99,9 +91,7 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_keyword = True
 
-# =============================================================================
 # Intersphinx Mapping
-# =============================================================================
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
@@ -112,9 +102,7 @@ intersphinx_mapping = {
     "redis": ("https://redis-py.readthedocs.io/en/stable/", None),
 }
 
-# =============================================================================
 # HTML Output Configuration
-# =============================================================================
 html_theme = "furo"
 
 html_theme_options = {
@@ -153,9 +141,7 @@ html_css_files = ["custom.css"]
 html_title = "Pyhron API Documentation"
 html_short_title = "Pyhron"
 
-# =============================================================================
 # MyST Parser Configuration (Markdown support)
-# =============================================================================
 myst_enable_extensions = [
     "colon_fence",
     "deflist",
@@ -163,13 +149,9 @@ myst_enable_extensions = [
     "tasklist",
 ]
 
-# =============================================================================
 # Todo Extension
-# =============================================================================
 todo_include_todos = True
 
-# =============================================================================
 # Copy Button Configuration
-# =============================================================================
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True

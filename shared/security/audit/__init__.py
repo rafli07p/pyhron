@@ -39,9 +39,7 @@ from shared.utils import PyhronJSONEncoder
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-# ---------------------------------------------------------------------------
 # Enumerations
-# ---------------------------------------------------------------------------
 
 @unique
 class AuditAction(StrEnum):
@@ -73,9 +71,7 @@ class ExportFormat(StrEnum):
     CSV = "csv"
 
 
-# ---------------------------------------------------------------------------
 # Audit record
-# ---------------------------------------------------------------------------
 
 class AuditRecord:
     """Immutable audit log entry.
@@ -156,9 +152,7 @@ class AuditRecord:
         )
 
 
-# ---------------------------------------------------------------------------
 # Audit logger
-# ---------------------------------------------------------------------------
 
 class AuditLogger:
     """Structured audit logger with in-memory buffer and export support.
@@ -187,7 +181,7 @@ class AuditLogger:
         self._lock = threading.Lock()
         self._logger = structlog.get_logger("audit").bind(service=service)
 
-    # -- Core API -----------------------------------------------------------
+    # Core API
 
     def log_action(
         self,
@@ -259,7 +253,7 @@ class AuditLogger:
 
         return record
 
-    # -- Query / export -----------------------------------------------------
+    # Query / export
 
     def get_records(
         self,
@@ -352,7 +346,7 @@ class AuditLogger:
         with self._lock:
             return len(self._records)
 
-    # -- Helpers ------------------------------------------------------------
+    # Helpers
 
     @staticmethod
     def _to_csv(records: Sequence[dict[str, Any]]) -> str:

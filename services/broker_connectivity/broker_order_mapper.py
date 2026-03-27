@@ -22,8 +22,7 @@ from shared.structured_json_logger import get_logger
 logger = get_logger(__name__)
 
 
-# ── Alpaca-specific mappings ─────────────────────────────────────────────────
-
+# Alpaca-specific mappings
 ALPACA_SIDE_MAP: dict[int, str] = {
     OrderSide.ORDER_SIDE_BUY: "buy",
     OrderSide.ORDER_SIDE_SELL: "sell",
@@ -49,8 +48,7 @@ ALPACA_ORDER_TYPE_REVERSE: dict[str, int] = {v: k for k, v in ALPACA_ORDER_TYPE_
 ALPACA_TIF_REVERSE: dict[str, int] = {v: k for k, v in ALPACA_TIF_MAP.items()}
 
 
-# ── IDX FIX-specific mappings ────────────────────────────────────────────────
-
+# IDX FIX-specific mappings
 IDX_FIX_SIDE_MAP: dict[int, str] = {
     OrderSide.ORDER_SIDE_BUY: "1",  # FIX Side: Buy
     OrderSide.ORDER_SIDE_SELL: "2",  # FIX Side: Sell

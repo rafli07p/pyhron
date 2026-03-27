@@ -74,7 +74,7 @@ class NickelLMEPriceIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -133,7 +133,7 @@ class NickelLMEPriceIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_lme_nickel(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch LME nickel cash and 3-month prices.
@@ -251,7 +251,7 @@ class NickelLMEPriceIngester:
 
         raise IngestionError(f"ANTAM fetch failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a nickel price record.
@@ -266,7 +266,7 @@ class NickelLMEPriceIngester:
         if record["unit"] == "usd_per_ton" and (v < 3000 or v > 60000):
             raise DataQualityError(f"Nickel price {v} USD/ton outside plausible range [3000, 60000]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

@@ -20,9 +20,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/governance", tags=["governance"])
 
 
-# ── Response Models ──────────────────────────────────────────────────────────
-
-
+# Response Models
 class GovernanceFlag(BaseModel):
     id: str
     symbol: str
@@ -59,9 +57,7 @@ class AuditOpinion(BaseModel):
     report_date: date | None = None
 
 
-# ── Endpoints ────────────────────────────────────────────────────────────────
-
-
+# Endpoints
 @router.get("/flags", response_model=list[GovernanceFlag])
 async def get_governance_flags(
     symbol: str | None = Query(None, description="Filter by ticker symbol"),

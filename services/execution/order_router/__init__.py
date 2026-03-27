@@ -31,9 +31,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Routing configuration
-# ---------------------------------------------------------------------------
 
 # Symbols containing "/" or ending with common crypto quote currencies
 # are assumed to be crypto pairs routed to CCXT.
@@ -48,9 +46,7 @@ def _looks_like_crypto(symbol: str) -> bool:
     return any(upper.endswith(q) for q in _CRYPTO_QUOTES) and len(upper) > 4
 
 
-# ---------------------------------------------------------------------------
 # Route result dataclass
-# ---------------------------------------------------------------------------
 
 
 class RouteDecision:
@@ -71,9 +67,7 @@ class RouteDecision:
         }
 
 
-# ---------------------------------------------------------------------------
 # Pre-trade risk check stub
-# ---------------------------------------------------------------------------
 
 
 class _RiskServiceClient:
@@ -122,9 +116,7 @@ class _RiskServiceClient:
             return {"approved": True, "reason": "risk_service_unavailable"}
 
 
-# ---------------------------------------------------------------------------
 # OrderRouter
-# ---------------------------------------------------------------------------
 
 
 class OrderRouter:
@@ -158,7 +150,7 @@ class OrderRouter:
         self._audit_log: list[dict[str, Any]] = []
         self._lock = asyncio.Lock()
 
-    # -- public API ----------------------------------------------------------
+    # public API
 
     async def route_order(self, order: OrderRequest) -> OrderFill:
         """Route *order* to the best connector, execute, and return the fill.
@@ -285,7 +277,7 @@ class OrderRouter:
         if len(order.symbol.strip()) == 0:
             raise ValueError("Symbol must not be empty")
 
-    # -- audit ---------------------------------------------------------------
+    # audit
 
     def _record_audit(self, order: OrderRequest, action: str, detail: str) -> None:
         entry = {

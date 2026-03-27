@@ -15,9 +15,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-# ---------------------------------------------------------------------------
 # Enumerations
-# ---------------------------------------------------------------------------
 
 class OrderSide(StrEnum):
     """Order direction."""
@@ -74,9 +72,7 @@ class CancelReason(StrEnum):
     SYSTEM = "SYSTEM"
 
 
-# ---------------------------------------------------------------------------
 # Models
-# ---------------------------------------------------------------------------
 
 class OrderEventBase(BaseModel):
     """Base fields shared across all order events."""
@@ -177,9 +173,7 @@ class OrderStatus(OrderEventBase):
     last_updated: datetime = Field(default_factory=lambda: datetime.now(tz=UTC), description="Last status change time")
 
 
-# ---------------------------------------------------------------------------
 # Kafka Event Schemas (OMS domain events)
-# ---------------------------------------------------------------------------
 
 
 class OrderSubmittedEvent(BaseModel):

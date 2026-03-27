@@ -86,7 +86,7 @@ class PanelHargaPanganIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -140,7 +140,7 @@ class PanelHargaPanganIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_prices(self, indicator: str, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch food prices for a single commodity from Badan Pangan.
@@ -202,7 +202,7 @@ class PanelHargaPanganIngester:
 
         raise IngestionError(f"Panel Harga {indicator} failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a food price record.
@@ -217,7 +217,7 @@ class PanelHargaPanganIngester:
         if v > 500000:
             raise DataQualityError(f"Price {v} IDR/kg exceeds plausible max for {record['indicator']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

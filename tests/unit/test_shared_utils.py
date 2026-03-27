@@ -22,9 +22,7 @@ from shared.utils import (
     timestamp_now_iso,
 )
 
-# =============================================================================
 # PyhronJSONEncoder
-# =============================================================================
 
 
 class TestPyhronJSONEncoder:
@@ -78,9 +76,7 @@ class TestPyhronJSONEncoder:
         assert parsed["m"] == {"a": 1}
 
 
-# =============================================================================
 # json_serializer / json_deserialize
-# =============================================================================
 
 
 def test_json_serializer_roundtrip() -> None:
@@ -96,9 +92,7 @@ def test_json_serializer_indent() -> None:
     assert "\n" in raw
 
 
-# =============================================================================
 # RateLimiter
-# =============================================================================
 
 
 class TestRateLimiter:
@@ -142,9 +136,7 @@ def test_rate_limiter_factory() -> None:
     assert isinstance(limiter, RateLimiter)
 
 
-# =============================================================================
 # retry_with_backoff
-# =============================================================================
 
 
 def test_retry_with_backoff_succeeds_on_retry() -> None:
@@ -171,9 +163,7 @@ def test_retry_with_backoff_raises_after_max() -> None:
         always_fail()
 
 
-# =============================================================================
 # ID / Timestamp helpers
-# =============================================================================
 
 
 def test_generate_id_is_valid_uuid() -> None:

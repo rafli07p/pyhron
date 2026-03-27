@@ -39,9 +39,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("pyhron.seed_data")
 
-# =============================================================================
 # Configuration
-# =============================================================================
 DEFAULT_SYMBOLS = {
     "idx_bluechips": [
         "BBCA.JK",
@@ -76,9 +74,7 @@ SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")
 DEFAULT_TENANT = "dev"
 
 
-# =============================================================================
 # Data Download
-# =============================================================================
 def download_symbol_data(
     symbol: str,
     period: str = "2y",
@@ -142,9 +138,7 @@ def download_all_symbols(
     return results
 
 
-# =============================================================================
 # Data Storage
-# =============================================================================
 def save_to_parquet(
     data: dict[str, pd.DataFrame],
     output_dir: Path,
@@ -236,9 +230,7 @@ def insert_to_database_sync(
     logger.info(f"Inserted {total_inserted} total rows into database.")
 
 
-# =============================================================================
 # Data Validation
-# =============================================================================
 def validate_data(data: dict[str, pd.DataFrame]) -> dict[str, list[str]]:
     """Validate downloaded data quality."""
     issues: dict[str, list[str]] = {}
@@ -285,9 +277,7 @@ def validate_data(data: dict[str, pd.DataFrame]) -> dict[str, list[str]]:
     return issues
 
 
-# =============================================================================
 # Main
-# =============================================================================
 def get_symbol_list(args: argparse.Namespace) -> list[str]:
     """Resolve the list of symbols to download."""
     if args.symbols:

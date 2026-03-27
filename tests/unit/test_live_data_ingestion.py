@@ -49,9 +49,7 @@ def make_valid_ohlcv_record(symbol: str, trade_date: date) -> EODHDOHLCVRecord:
     )
 
 
-# ── Test 1: OHLCV validation rejects ARA/ARB violation ──────────
-
-
+# Test 1: OHLCV validation rejects ARA/ARB violation
 def test_ara_arb_violation_rejected() -> None:
     validator = IDXOHLCVValidator()
     # Find a valid trading day
@@ -74,9 +72,7 @@ def test_ara_arb_violation_rejected() -> None:
     assert "PRICE_SPIKE" in result.failed_rules
 
 
-# ── Test 2: OHLCV validation accepts valid record ───────────────
-
-
+# Test 2: OHLCV validation accepts valid record
 def test_valid_ohlcv_record_passes() -> None:
     validator = IDXOHLCVValidator()
     td = date(2024, 3, 1)
@@ -89,9 +85,7 @@ def test_valid_ohlcv_record_passes() -> None:
     assert result.failed_rules == []
 
 
-# ── Test 3: OHLCV validation detects internal inconsistency ─────
-
-
+# Test 3: OHLCV validation detects internal inconsistency
 def test_ohlcv_high_less_than_low_rejected() -> None:
     validator = IDXOHLCVValidator()
     td = date(2024, 3, 1)
@@ -105,9 +99,7 @@ def test_ohlcv_high_less_than_low_rejected() -> None:
     assert not result.is_valid
 
 
-# ── Test 4: Non-trading day rejected ────────────────────────────
-
-
+# Test 4: Non-trading day rejected
 def test_non_trading_day_rejected() -> None:
     validator = IDXOHLCVValidator()
     record = make_valid_ohlcv_record("BBCA", date(2024, 12, 25))
@@ -116,9 +108,7 @@ def test_non_trading_day_rejected() -> None:
     assert "NON_TRADING_DAY" in result.failed_rules
 
 
-# ── Test 5: Split adjustment factor calculation ─────────────────
-
-
+# Test 5: Split adjustment factor calculation
 def test_split_adjustment_factor_2for1() -> None:
     processor = IDXCorporateActionProcessor()
     split = EODHDSplitRecord(symbol="BBCA", date=date(2024, 6, 1), split_ratio=Decimal("2"))
@@ -126,9 +116,7 @@ def test_split_adjustment_factor_2for1() -> None:
     assert factor == Decimal("0.5")
 
 
-# ── Test 6: Dividend adjustment factor calculation ──────────────
-
-
+# Test 6: Dividend adjustment factor calculation
 def test_dividend_adjustment_factor() -> None:
     processor = IDXCorporateActionProcessor()
     dividend = EODHDDividendRecord(
@@ -142,9 +130,7 @@ def test_dividend_adjustment_factor() -> None:
     assert factor == Decimal("0.98")
 
 
-# ── Test 7: Coverage report detects missing symbols ─────────────
-
-
+# Test 7: Coverage report detects missing symbols
 @pytest.mark.asyncio
 async def test_coverage_report_detects_missing() -> None:
     from data_platform.quality.idx_data_quality_monitor import IDXDataQualityMonitor
@@ -170,9 +156,7 @@ async def test_coverage_report_detects_missing() -> None:
     assert report.coverage_pct < 1.0
 
 
-# ── Test 8: Gap detection identifies missing trading days ───────
-
-
+# Test 8: Gap detection identifies missing trading days
 @pytest.mark.asyncio
 async def test_gap_detection_finds_missing_dates() -> None:
     from datetime import timedelta
@@ -209,9 +193,7 @@ async def test_gap_detection_finds_missing_dates() -> None:
     assert gap_date in gaps
 
 
-# ── Test 9: Backfill skips existing records ─────────────────────
-
-
+# Test 9: Backfill skips existing records
 def test_backfill_skips_existing_data() -> None:
     # Find valid trading days in Jan 2024
     from datetime import timedelta
@@ -235,7 +217,7 @@ def test_backfill_skips_existing_data() -> None:
         assert existing not in to_fetch
 
 
-# ── Test 10: DLQ processor retries up to max then marks permanent
+# Test 10: DLQ processor retries up to max then marks permanent
 
 
 @pytest.mark.asyncio

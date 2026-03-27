@@ -40,9 +40,8 @@ except SyntaxError:
         allow_module_level=True,
     )
 
-# ── IDX Validator Tests ──────────────────────────────────────────────────
 
-
+# IDX Validator Tests
 class TestIDXOrderValidator:
     """Tests for IDX exchange-specific order validation."""
 
@@ -129,9 +128,7 @@ class TestIDXOrderValidator:
         assert any("minimum" in e.lower() for e in result.errors)
 
 
-# ── State Machine Transition Tests ───────────────────────────────────────
-
-
+# State Machine Transition Tests
 class TestOrderStateMachine:
     """Tests for the order state machine transition graph."""
 
@@ -165,9 +162,7 @@ class TestOrderStateMachine:
             assert len(VALID_TRANSITIONS[terminal]) == 0, f"{terminal} should be terminal"
 
 
-# ── Fill Processing Tests ────────────────────────────────────────────────
-
-
+# Fill Processing Tests
 class TestFillProcessing:
     """Tests for fill event processing and T+2 settlement."""
 
@@ -211,9 +206,7 @@ class TestFillProcessing:
         assert fill.fill_id == "fill-001"
 
 
-# ── Idempotency Tests ───────────────────────────────────────────────────
-
-
+# Idempotency Tests
 class TestIdempotency:
     """TC4: Idempotent order submission."""
 
@@ -248,9 +241,7 @@ class TestIdempotency:
             assert term in terminal
 
 
-# ── Broker Rejection Tests ──────────────────────────────────────────────
-
-
+# Broker Rejection Tests
 class TestBrokerRejection:
     """TC5/TC6: Pre-trade risk check and broker rejection handling."""
 
@@ -278,9 +269,7 @@ class TestBrokerRejection:
         assert exc.reason == "INSUFFICIENT_MARGIN"
 
 
-# ── Circuit Breaker Tests ────────────────────────────────────────────────
-
-
+# Circuit Breaker Tests
 class TestCircuitBreaker:
     """TC9: Circuit breaker blocks order submission."""
 
@@ -302,9 +291,7 @@ class TestCircuitBreaker:
         assert key == "pyhron:risk:circuit_breaker:strat-1"
 
 
-# ── VWAP Calculation Tests ──────────────────────────────────────────────
-
-
+# VWAP Calculation Tests
 class TestVWAPCalculation:
     """TC7/TC8: Volume-weighted average price calculation for fills."""
 
@@ -350,9 +337,7 @@ class TestVWAPCalculation:
         assert is_full
 
 
-# ── Position Update Tests ───────────────────────────────────────────────
-
-
+# Position Update Tests
 class TestPositionUpdate:
     """Tests for position upsert logic during fill processing."""
 

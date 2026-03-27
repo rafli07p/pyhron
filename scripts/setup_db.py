@@ -36,9 +36,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("pyhron.setup_db")
 
-# =============================================================================
 # Configuration
-# =============================================================================
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 if not DATABASE_URL:
     raise ValueError(
@@ -52,9 +50,7 @@ REQUIRED_EXTENSIONS = [
     "btree_gist",
 ]
 
-# =============================================================================
 # SQL Statements
-# =============================================================================
 CREATE_EXTENSIONS_SQL = """
 DO $$
 BEGIN
@@ -248,9 +244,7 @@ $$;
 """
 
 
-# =============================================================================
 # Setup Functions
-# =============================================================================
 async def create_extensions(engine: AsyncEngine) -> None:
     """Create required PostgreSQL extensions."""
     logger.info("Creating PostgreSQL extensions...")
@@ -382,9 +376,7 @@ async def verify_setup(engine: AsyncEngine) -> bool:
     return checks_passed
 
 
-# =============================================================================
 # Main
-# =============================================================================
 async def full_setup() -> None:
     """Run complete database setup."""
     engine = create_async_engine(DATABASE_URL, echo=False)

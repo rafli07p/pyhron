@@ -30,9 +30,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Internal order representation
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -69,9 +67,7 @@ class _HeapEntry:
     order: BookOrder = field(compare=False)
 
 
-# ---------------------------------------------------------------------------
 # TradeMatchingEngine
-# ---------------------------------------------------------------------------
 
 
 class TradeMatchingEngine:
@@ -102,7 +98,7 @@ class TradeMatchingEngine:
         # Quick lookup by order_id
         self._orders: dict[UUID, BookOrder] = {}
 
-    # -- public API ----------------------------------------------------------
+    # public API
 
     def add_order(self, order: OrderRequest) -> list[OrderFill]:
         """Add an order and attempt to match it immediately.
@@ -214,7 +210,7 @@ class TradeMatchingEngine:
                 return []
             return self._cross_book(symbol)
 
-    # -- internal matching logic ---------------------------------------------
+    # internal matching logic
 
     def _match_order(self, incoming: BookOrder) -> list[OrderFill]:
         """Try to fill *incoming* against the opposite side of the book."""

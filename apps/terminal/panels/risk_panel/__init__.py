@@ -17,9 +17,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
 
-# ── Formatting Helpers ───────────────────────────────────────────────────────
-
-
+# Formatting Helpers
 def _fmt_idr(value: int | float) -> str:
     """Format as IDR with period thousands separator."""
     s = f"{abs(int(value)):,}".replace(",", ".")
@@ -39,9 +37,7 @@ def _fmt_ratio(value: float | None) -> str:
     return f"{value:.2f}"
 
 
-# ── Color Thresholds ─────────────────────────────────────────────────────────
-
-
+# Color Thresholds
 _KILL_SWITCH_COLORS: dict[str, str] = {
     "ARMED": "#00c853",
     "TRIGGERED": "#ff1744",
@@ -82,8 +78,7 @@ def _render_progress_bar(pct: float, width: int = 20) -> str:
     return f"[{color}]{bar}[/] {pct:.1f}%"
 
 
-# ── Supported Commands ───────────────────────────────────────────────────────
-
+# Supported Commands
 RISK_PANEL_COMMANDS: dict[str, str] = {
     "KILL ARM": "Arm the kill switch",
     "KILL TRIGGER": "Trigger the kill switch (emergency halt)",
@@ -94,9 +89,7 @@ RISK_PANEL_COMMANDS: dict[str, str] = {
 }
 
 
-# ── Panel Widget ─────────────────────────────────────────────────────────────
-
-
+# Panel Widget
 class RiskPanel(Static):
     """Bloomberg-style real-time portfolio risk dashboard.
 
@@ -144,7 +137,7 @@ class RiskPanel(Static):
             content = self.query_one("#risk-panel-content", Static)
             content.update(self._render_panel())
 
-    # ── External update hooks ────────────────────────────────────────
+    # External update hooks
 
     def on_risk_snapshot(self, snapshot: dict[str, Any]) -> None:
         """Ingest a full risk snapshot from the WebSocket feed."""
@@ -206,7 +199,7 @@ class RiskPanel(Static):
         """Handle updated capital allocation data."""
         self.allocation_data = allocations
 
-    # ── Command handling ─────────────────────────────────────────────
+    # Command handling
 
     def handle_command(self, command: str) -> str | None:
         """Process a risk panel command and return a status message.
@@ -244,7 +237,7 @@ class RiskPanel(Static):
 
         return None
 
-    # ── Rendering ────────────────────────────────────────────────────
+    # Rendering
 
     def _render_panel(self) -> str:
         """Render the complete risk dashboard as a rich-markup string."""

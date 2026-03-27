@@ -15,9 +15,7 @@ import os
 
 import pytest
 
-# ---------------------------------------------------------------------------
 # Defaults match docker-compose.yaml development values
-# ---------------------------------------------------------------------------
 API_BASE = os.environ.get("API_BASE_URL", "http://localhost:8000")
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
@@ -29,9 +27,7 @@ KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 pytestmark = pytest.mark.integration
 
 
-# ---------------------------------------------------------------------------
 # API Gateway
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -60,9 +56,7 @@ async def test_api_openapi_docs() -> None:
     assert spec["info"]["title"] == "Pyhron Trading Platform API"
 
 
-# ---------------------------------------------------------------------------
 # PostgreSQL (TimescaleDB)
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -100,9 +94,7 @@ async def test_postgres_timescaledb_extension() -> None:
         await engine.dispose()
 
 
-# ---------------------------------------------------------------------------
 # Redis
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -133,9 +125,7 @@ async def test_redis_set_get() -> None:
         await client.aclose()
 
 
-# ---------------------------------------------------------------------------
 # Kafka
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio

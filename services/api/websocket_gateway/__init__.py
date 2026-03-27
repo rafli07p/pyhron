@@ -23,9 +23,7 @@ from pydantic import BaseModel, Field
 
 logger = structlog.stdlib.get_logger(__name__)
 
-# ---------------------------------------------------------------------------
 # Configuration
-# ---------------------------------------------------------------------------
 
 from shared.configuration_settings import get_config as _get_config
 
@@ -42,9 +40,7 @@ HEARTBEAT_INTERVAL_SECONDS = 15
 HEARTBEAT_TIMEOUT_SECONDS = 30
 
 
-# ---------------------------------------------------------------------------
 # Message types
-# ---------------------------------------------------------------------------
 
 
 class WSMessageType(StrEnum):
@@ -67,9 +63,7 @@ class WSMessage(BaseModel):
     request_id: str | None = None
 
 
-# ---------------------------------------------------------------------------
 # Connection manager
-# ---------------------------------------------------------------------------
 
 
 class ConnectionManager:
@@ -226,9 +220,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-# ---------------------------------------------------------------------------
 # JWT authentication for WebSocket
-# ---------------------------------------------------------------------------
 
 
 async def _authenticate_first_message(websocket: WebSocket) -> dict[str, str] | None:
@@ -283,9 +275,7 @@ def authenticate_ws_token(token: str) -> dict[str, str]:
         raise ValueError(f"Invalid token: {exc}") from exc
 
 
-# ---------------------------------------------------------------------------
 # Heartbeat background task
-# ---------------------------------------------------------------------------
 
 
 async def _heartbeat_loop() -> None:
@@ -307,9 +297,7 @@ async def _heartbeat_loop() -> None:
                 await manager.disconnect(cid)
 
 
-# ---------------------------------------------------------------------------
 # Market data feed background task (Polygon WebSocket)
-# ---------------------------------------------------------------------------
 
 
 async def _polygon_market_feed() -> None:
@@ -387,9 +375,7 @@ async def _polygon_market_feed() -> None:
             await asyncio.sleep(5)
 
 
-# ---------------------------------------------------------------------------
 # Application factory
-# ---------------------------------------------------------------------------
 
 
 def create_ws_app() -> FastAPI:
@@ -416,9 +402,7 @@ def create_ws_app() -> FastAPI:
             "timestamp": datetime.now(tz=UTC).isoformat(),
         }
 
-    # ------------------------------------------------------------------
     # Main WebSocket endpoint
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws")
     async def websocket_endpoint(
@@ -550,9 +534,7 @@ def create_ws_app() -> FastAPI:
             logger.exception("ws_handler_error", connection_id=connection_id)
             await manager.disconnect(connection_id)
 
-    # ------------------------------------------------------------------
     # Dedicated market data WebSocket
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws/market-data")
     async def market_data_ws(
@@ -611,9 +593,7 @@ def create_ws_app() -> FastAPI:
             logger.exception("market_data_ws_error", connection_id=connection_id)
             await manager.disconnect(connection_id)
 
-    # ------------------------------------------------------------------
     # Dedicated order updates WebSocket
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws/orders")
     async def orders_ws(
@@ -653,9 +633,7 @@ def create_ws_app() -> FastAPI:
             logger.exception("orders_ws_error", connection_id=connection_id)
             await manager.disconnect(connection_id)
 
-    # ------------------------------------------------------------------
     # Dedicated portfolio updates WebSocket
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws/portfolio")
     async def portfolio_ws(

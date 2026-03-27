@@ -15,9 +15,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
-# ---------------------------------------------------------------------------
 # Enumerations
-# ---------------------------------------------------------------------------
 
 class AssetClass(StrEnum):
     """Broad asset class categories."""
@@ -46,9 +44,7 @@ class ExposureType(StrEnum):
     COUNTRY = "COUNTRY"
 
 
-# ---------------------------------------------------------------------------
 # Models
-# ---------------------------------------------------------------------------
 
 class PortfolioEventBase(BaseModel):
     """Base class for all portfolio events."""

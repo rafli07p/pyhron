@@ -59,7 +59,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
     await manager.connect(websocket, connection_id)
 
     try:
-        # ── Authentication phase (10 s timeout) ──────────────────────
+        # Authentication phase (10 s timeout)
         try:
             raw = await asyncio.wait_for(
                 websocket.receive_json(),
@@ -122,7 +122,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         if state is not None:
             state.heartbeat_task = heartbeat_task
 
-        # ── Message loop ─────────────────────────────────────────────
+        # Message loop
         while True:
             try:
                 raw_message = await websocket.receive_json()

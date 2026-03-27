@@ -72,7 +72,7 @@ class IndonesianCrudePriceIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -123,7 +123,7 @@ class IndonesianCrudePriceIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_icp(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch ICP data from ESDM.
@@ -191,7 +191,7 @@ class IndonesianCrudePriceIngester:
 
         raise IngestionError(f"ESDM ICP failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate an ICP record.
@@ -206,7 +206,7 @@ class IndonesianCrudePriceIngester:
         if v < 10 or v > 200:
             raise DataQualityError(f"ICP {v} USD/barrel outside plausible range [10, 200]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

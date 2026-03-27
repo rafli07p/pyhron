@@ -23,9 +23,7 @@ from cryptography.fernet import Fernet
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Regulatory limit configuration
-# ---------------------------------------------------------------------------
 
 @dataclass
 class RegulatoryLimits:
@@ -47,9 +45,7 @@ class RegulatoryLimits:
 _DEFAULT_LIMITS = RegulatoryLimits()
 
 
-# ---------------------------------------------------------------------------
 # PII fields for UU PDP compliance
-# ---------------------------------------------------------------------------
 
 _PII_FIELDS = frozenset({
     "name", "full_name", "email", "phone", "phone_number",
@@ -59,9 +55,7 @@ _PII_FIELDS = frozenset({
 })
 
 
-# ---------------------------------------------------------------------------
 # Report types
-# ---------------------------------------------------------------------------
 
 @dataclass
 class ComplianceReport:
@@ -77,9 +71,7 @@ class ComplianceReport:
     warnings: list[str] = field(default_factory=list)
 
 
-# ---------------------------------------------------------------------------
 # Compliance engine
-# ---------------------------------------------------------------------------
 
 class ComplianceEngine:
     """Regulatory compliance engine with multi-jurisdiction support.
@@ -108,7 +100,7 @@ class ComplianceEngine:
     def _limits(self, tenant_id: str) -> RegulatoryLimits:
         return self._tenant_limits.get(tenant_id, _DEFAULT_LIMITS)
 
-    # -- SEC reporting -------------------------------------------------------
+    # SEC reporting
 
     def generate_sec_report(
         self,
@@ -188,7 +180,7 @@ class ComplianceEngine:
             warnings=warnings,
         )
 
-    # -- OJK reporting -------------------------------------------------------
+    # OJK reporting
 
     def generate_ojk_report(
         self,
@@ -254,7 +246,7 @@ class ComplianceEngine:
             warnings=warnings,
         )
 
-    # -- Audit trail export --------------------------------------------------
+    # Audit trail export
 
     def export_audit_trail(
         self,
@@ -303,7 +295,7 @@ class ComplianceEngine:
 
         return content
 
-    # -- Regulatory limits ---------------------------------------------------
+    # Regulatory limits
 
     def check_regulatory_limits(
         self,
@@ -367,7 +359,7 @@ class ComplianceEngine:
 
         return breaches
 
-    # -- Encrypted export ----------------------------------------------------
+    # Encrypted export
 
     def encrypt_export(self, data: str) -> bytes:
         """Encrypt a string payload using Fernet symmetric encryption.
@@ -382,7 +374,7 @@ class ComplianceEngine:
         """Decrypt a Fernet token back to the original string."""
         return self._fernet.decrypt(token).decode("utf-8")
 
-    # -- UU PDP compliance ---------------------------------------------------
+    # UU PDP compliance
 
     def check_pdp_compliance(
         self,
@@ -438,7 +430,7 @@ class ComplianceEngine:
             )
         return findings
 
-    # -- Helpers -------------------------------------------------------------
+    # Helpers
 
     def _scrub_pii(self, records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Redact PII fields from records before export."""

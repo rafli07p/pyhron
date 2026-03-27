@@ -247,7 +247,7 @@ class PyhronTerminal(App[None]):
             bar = self.query_one("#status-bar", Static)
             bar.update("  |  ".join(parts))
 
-    # ── Command handling ────────────────────────────────────
+    # Command handling
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id != "command-input":
@@ -359,7 +359,7 @@ class PyhronTerminal(App[None]):
         else:
             self._show_status_message("Order submission requires API connection")
 
-    # ── Paper trading command handlers ─────────────────────
+    # Paper trading command handlers
 
     def _handle_paper_start(self, cmd: TerminalCommand) -> None:
         """Handle PAPER START command — start a paper trading session."""
@@ -502,7 +502,7 @@ class PyhronTerminal(App[None]):
         # Restore status bar after 3 seconds
         self.set_timer(3.0, self._update_status_bar)
 
-    # ── Layout switching ────────────────────────────────────
+    # Layout switching
 
     def _switch_layout(self, layout: str) -> None:
         self._current_layout = layout
@@ -531,7 +531,7 @@ class PyhronTerminal(App[None]):
 
             self._show_status_message(f"Layout: {layout.upper()}")
 
-    # ── Actions ─────────────────────────────────────────────
+    # Actions
 
     def action_quit_confirm(self) -> None:
         """Quit with confirmation if open orders exist."""
@@ -601,7 +601,7 @@ class PyhronTerminal(App[None]):
         with contextlib.suppress(Exception):
             self.query_one("#command-input", Input).focus()
 
-    # ── Help text ───────────────────────────────────────────
+    # Help text
 
     @staticmethod
     def _help_text() -> str:

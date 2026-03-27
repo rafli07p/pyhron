@@ -22,9 +22,8 @@ except SyntaxError:
         allow_module_level=True,
     )
 
-# ── Valid Transition Path Tests ──────────────────────────────────────────────
 
-
+# Valid Transition Path Tests
 class TestValidTransitionPaths:
     """Test complete valid order lifecycle paths."""
 
@@ -76,9 +75,7 @@ class TestValidTransitionPaths:
         assert VALID_TRANSITIONS[OrderStatusEnum.REJECTED] == set()
 
 
-# ── Invalid Transition Tests ────────────────────────────────────────────────
-
-
+# Invalid Transition Tests
 class TestInvalidTransitions:
     """Test that invalid transitions are properly blocked in the table."""
 

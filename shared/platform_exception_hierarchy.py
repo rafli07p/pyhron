@@ -50,16 +50,12 @@ class PyhronValidationError(PyhronError):
         self.errors = errors or []
 
 
-# ── Configuration ───────────────────────────────────────────────────────────
-
-
+# Configuration
 class ConfigurationError(PyhronError):
     """Invalid or missing configuration."""
 
 
-# ── Database ────────────────────────────────────────────────────────────────
-
-
+# Database
 class DatabaseError(PyhronError):
     """Database operation failed."""
 
@@ -72,16 +68,12 @@ class MigrationError(DatabaseError):
     """Database migration failed."""
 
 
-# ── Cache ───────────────────────────────────────────────────────────────────
-
-
+# Cache
 class CacheError(PyhronError):
     """Redis cache operation failed."""
 
 
-# ── Messaging ───────────────────────────────────────────────────────────────
-
-
+# Messaging
 class MessagingError(PyhronError):
     """Kafka messaging operation failed."""
 
@@ -98,9 +90,7 @@ class DeserializationError(MessagingError):
     """Failed to deserialize Protobuf message from Kafka."""
 
 
-# ── Broker ──────────────────────────────────────────────────────────────────
-
-
+# Broker
 class BrokerError(PyhronError):
     """Broker adapter operation failed."""
 
@@ -122,9 +112,7 @@ class BrokerTimeoutError(BrokerError):
     """Broker operation timed out."""
 
 
-# ── Risk ────────────────────────────────────────────────────────────────────
-
-
+# Risk
 class RiskError(PyhronError):
     """Risk engine error."""
 
@@ -145,9 +133,7 @@ class CircuitBreakerOpenError(RiskError):
         self.strategy_id = strategy_id
 
 
-# ── Order ───────────────────────────────────────────────────────────────────
-
-
+# Order
 class OrderError(PyhronError):
     """Order management error."""
 
@@ -169,9 +155,7 @@ class OrderNotFoundError(OrderError):
     """Order not found."""
 
 
-# ── Ingestion ───────────────────────────────────────────────────────────────
-
-
+# Ingestion
 class IngestionError(PyhronError):
     """Data ingestion error."""
 

@@ -1,9 +1,6 @@
-# =============================================================================
 # Pyhron API - Kubernetes Deployment, Service, and HPA
-# =============================================================================
 # Apply: kubectl apply -f infra/kubernetes/namespace.yaml
 #        kubectl apply -f infra/kubernetes/deployment.yaml
-# =============================================================================
 
 ---
 apiVersion: apps/v1

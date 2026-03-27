@@ -83,7 +83,7 @@ class BMKGDailyRainfallIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -138,7 +138,7 @@ class BMKGDailyRainfallIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_station_rainfall(
         self,
@@ -189,7 +189,7 @@ class BMKGDailyRainfallIngester:
 
         raise IngestionError(f"BMKG fetch failed for station {station_id} after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_rainfall_response(
         self,
@@ -239,7 +239,7 @@ class BMKGDailyRainfallIngester:
 
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a rainfall record.
@@ -258,7 +258,7 @@ class BMKGDailyRainfallIngester:
                 f"Implausible rainfall {rainfall} mm at station {record['station_id']} on {record['observation_date']}"
             )
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

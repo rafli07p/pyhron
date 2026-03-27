@@ -7,7 +7,6 @@ nanosecond-resolution latency tracking.
 .. note::
 
    # FFI Extension Point
-   # -------------------
    # For ultra-low-latency hot paths (< 100us), this module is designed
    # to be extended with a Rust or Go shared library via ctypes / cffi.
    # The ``_submit_order_native()`` placeholder below marks the
@@ -41,9 +40,7 @@ from shared.schemas.order_events import (
 logger = structlog.get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Circuit breaker for exchange failures
-# ---------------------------------------------------------------------------
 
 exchange_breaker = pybreaker.CircuitBreaker(
     fail_max=5,
@@ -52,9 +49,7 @@ exchange_breaker = pybreaker.CircuitBreaker(
 )
 
 
-# ---------------------------------------------------------------------------
 # Priority wrapper for the queue
-# ---------------------------------------------------------------------------
 
 
 @dataclass(order=True)
@@ -70,9 +65,7 @@ class _PrioritisedOrder:
     order: OrderRequest = field(compare=False)
 
 
-# ---------------------------------------------------------------------------
 # ExecutionEngine
-# ---------------------------------------------------------------------------
 
 
 class ExecutionEngine:
@@ -118,7 +111,7 @@ class ExecutionEngine:
         self._total_rejections = 0
         self._latency_samples: list[int] = []  # nanoseconds
 
-    # -- public API ----------------------------------------------------------
+    # public API
 
     async def start(self) -> None:
         """Start the background queue processor."""
@@ -160,7 +153,7 @@ class ExecutionEngine:
         t0 = time.perf_counter_ns()
 
         try:
-            # --- Rust/Go FFI extension point ---
+            # Rust/Go FFI extension point
             # native_result = self._try_native_submit(order)
             # if native_result is not None:
             #     return native_result
@@ -220,7 +213,7 @@ class ExecutionEngine:
             queue_size=self._queue.qsize(),
         )
 
-    # -- queue processing ----------------------------------------------------
+    # queue processing
 
     async def _process_queue_loop(self) -> None:
         """Continuously drain the priority queue in batches."""
@@ -283,14 +276,14 @@ class ExecutionEngine:
                 )
         return fills
 
-    # -- circuit-breaker wrapper ---------------------------------------------
+    # circuit-breaker wrapper
 
     @exchange_breaker
     async def _submit_with_breaker(self, connector: BaseConnector, order: OrderRequest) -> OrderFill:
         """Submit through the circuit breaker."""
         return await connector.submit_order(order)
 
-    # -- callbacks -----------------------------------------------------------
+    # callbacks
 
     async def _handle_fill(self, fill: OrderFill) -> None:
         """Post-fill processing: invoke callback, emit metrics."""
@@ -312,7 +305,7 @@ class ExecutionEngine:
             except Exception:
                 logger.exception("engine.on_rejection_callback_error", order_id=str(order.order_id))
 
-    # -- Rust / Go FFI placeholder -------------------------------------------
+    # Rust / Go FFI placeholder
 
     # def _try_native_submit(self, order: OrderRequest) -> Optional[OrderFill]:
     #     """Attempt to submit via a compiled native library for sub-microsecond
@@ -331,7 +324,7 @@ class ExecutionEngine:
     #     """
     #     return None
 
-    # -- metrics -------------------------------------------------------------
+    # metrics
 
     @property
     def metrics(self) -> dict[str, Any]:

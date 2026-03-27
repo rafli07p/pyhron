@@ -25,9 +25,7 @@ except (ImportError, SyntaxError):
     )
 
 
-# ── IDX Order Validator Tests ───────────────────────────────────────────────
-
-
+# IDX Order Validator Tests
 class TestIDXOrderValidator:
     @pytest.fixture(autouse=True)
     def _setup(self) -> None:
@@ -72,9 +70,7 @@ class TestIDXOrderValidator:
         assert any("minimum" in e.lower() for e in result.errors)
 
 
-# ── Order Lifecycle Record Tests ────────────────────────────────────────────
-
-
+# Order Lifecycle Record Tests
 class TestOrderLifecycleRecord:
     def test_order_model_fields(self) -> None:
         """Verify the ORM model has all expected columns."""
@@ -135,9 +131,7 @@ class TestOrderLifecycleRecord:
         assert "ix_order_lifecycle_records_broker_id" in index_names
 
 
-# ── Circuit Breaker State Manager Tests ─────────────────────────────────────
-
-
+# Circuit Breaker State Manager Tests
 class TestCircuitBreakerStateManager:
     @pytest.fixture()
     def cb_module(self):
@@ -230,9 +224,7 @@ class TestCircuitBreakerStateManager:
         assert state.ttl_seconds == 250
 
 
-# ── Position Snapshot Tests ─────────────────────────────────────────────────
-
-
+# Position Snapshot Tests
 class TestStrategyPositionSnapshot:
     def test_position_model_fields(self) -> None:
         from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot

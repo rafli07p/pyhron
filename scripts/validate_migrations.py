@@ -24,7 +24,7 @@ if not DATABASE_URL:
 sync_url = DATABASE_URL.replace("+asyncpg", "+psycopg").replace("+aiopg", "+psycopg")
 engine = create_engine(sync_url)
 
-# ── Expected schema artifacts ────────────────────────────────────────────
+# Expected schema artifacts
 # After migration 013, ALL tables live in the public schema with canonical names.
 EXPECTED_TABLES_BY_SCHEMA: dict[str, list[str]] = {
     "public": [
