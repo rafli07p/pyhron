@@ -54,9 +54,12 @@ def upgrade() -> None:
     )
     op.create_primary_key("pk_ohlcv_tick", "idx_equity_ohlcv_tick", ["time", "symbol"], schema="market_data")
     try:
-        op.get_bind().execute(text("SELECT create_hypertable('market_data.idx_equity_ohlcv_tick', 'time')"))
+        conn = op.get_bind()
+        nested = conn.begin_nested()
+        conn.execute(text("SELECT create_hypertable('market_data.idx_equity_ohlcv_tick', 'time')"))
+        nested.commit()
     except Exception:
-        op.get_bind().rollback()
+        nested.rollback()
 
     # Financial statements
     op.create_table(

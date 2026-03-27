@@ -196,7 +196,9 @@ def upgrade() -> None:
 
     # Convert signals to TimescaleDB hypertable (optional — plain postgres in CI)
     try:
-        op.get_bind().execute(
+        conn = op.get_bind()
+        nested = conn.begin_nested()
+        conn.execute(
             text("""
             SELECT create_hypertable(
                 'signals',
@@ -207,8 +209,9 @@ def upgrade() -> None:
             );
         """)
         )
+        nested.commit()
     except Exception:
-        op.get_bind().rollback()
+        nested.rollback()
 
 
 def downgrade() -> None:

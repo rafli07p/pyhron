@@ -62,15 +62,18 @@ def do_run_migrations(connection: Connection) -> None:
     """Execute migrations against a live database connection."""
     # Enable required extensions before any migration runs.
     # TimescaleDB is optional — CI uses plain postgres:16 without it.
-    try:
-        connection.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"))
-    except Exception:
-        connection.rollback()
-    try:
-        connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm CASCADE;"))
-    except Exception:
-        connection.rollback()
-    connection.commit()
+    # Use savepoints so a failed CREATE EXTENSION doesn't roll back the
+    # outer transaction (which would drop the alembic_version table).
+    for ext_sql in (
+        "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;",
+        "CREATE EXTENSION IF NOT EXISTS pg_trgm CASCADE;",
+    ):
+        try:
+            nested = connection.begin_nested()
+            connection.execute(text(ext_sql))
+            nested.commit()
+        except Exception:
+            nested.rollback()
 
     context.configure(
         connection=connection,

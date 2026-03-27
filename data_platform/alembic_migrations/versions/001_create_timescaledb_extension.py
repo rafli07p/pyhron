@@ -14,12 +14,19 @@ depends_on = None
 
 
 def _try_execute(sql: str) -> None:
-    """Execute SQL, ignoring failures (e.g. missing extensions in plain postgres)."""
+    """Execute SQL, ignoring failures (e.g. missing extensions in plain postgres).
+
+    Uses a savepoint so that a failure only rolls back this statement,
+    not the entire Alembic migration transaction (which would drop the
+    alembic_version table).
+    """
     conn = op.get_bind()
     try:
+        nested = conn.begin_nested()
         conn.execute(text(sql))
+        nested.commit()
     except Exception:
-        conn.rollback()
+        nested.rollback()
 
 
 def upgrade() -> None:

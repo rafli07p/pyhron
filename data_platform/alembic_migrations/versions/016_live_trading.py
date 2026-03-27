@@ -162,13 +162,16 @@ def upgrade() -> None:
     )
 
     try:
-        op.get_bind().execute(
+        conn = op.get_bind()
+        nested = conn.begin_nested()
+        conn.execute(
             text(
                 "SELECT create_hypertable('portfolio_risk_snapshot', 'timestamp', chunk_time_interval => INTERVAL '1 day')"
             )
         )
+        nested.commit()
     except Exception:
-        op.get_bind().rollback()
+        nested.rollback()
 
     op.create_index(
         "ix_portfolio_risk_snapshot_strategy",
