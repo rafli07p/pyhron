@@ -88,7 +88,7 @@ class BankIndonesiaMonetaryDataIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -143,7 +143,7 @@ class BankIndonesiaMonetaryDataIngester:
         )
         return result
 
-    # ── Indicator fetchers ───────────────────────────────────────────────
+    # Indicator fetchers
 
     async def _fetch_indicator(
         self,
@@ -325,7 +325,7 @@ class BankIndonesiaMonetaryDataIngester:
             if row.get("date") or row.get("period")
         ]
 
-    # ── HTTP layer ───────────────────────────────────────────────────────
+    # HTTP layer
 
     async def _bi_api_request(
         self,
@@ -371,7 +371,7 @@ class BankIndonesiaMonetaryDataIngester:
 
         raise IngestionError(f"BI API failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a macro indicator record.
@@ -394,7 +394,7 @@ class BankIndonesiaMonetaryDataIngester:
             if v < 0 or v > 30:
                 raise DataQualityError(f"BI rate {v}% outside plausible range [0, 30]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

@@ -118,7 +118,7 @@ class BacktestResult(ResearchEventBase):
     end_date: date = Field(..., description="Actual backtest end date")
     symbols: list[str] = Field(default_factory=list, description="Symbols included in the backtest")
 
-    # -- Performance metrics --
+    # Performance metrics
     total_return: Decimal = Field(default=Decimal("0"), description="Total return (e.g. 0.25 = 25%)")
     annualized_return: Decimal = Field(default=Decimal("0"), description="Annualized return")
     sharpe_ratio: Decimal | None = Field(default=None, description="Annualized Sharpe ratio")
@@ -131,18 +131,18 @@ class BacktestResult(ResearchEventBase):
     alpha: Decimal | None = Field(default=None, description="Jensen's alpha")
     information_ratio: Decimal | None = Field(default=None, description="Information ratio")
 
-    # -- Trade statistics --
+    # Trade statistics
     total_trades: int = Field(default=0, ge=0, description="Total number of trades")
     win_rate: Decimal | None = Field(default=None, ge=0, le=1, description="Fraction of winning trades")
     profit_factor: Decimal | None = Field(default=None, ge=0, description="Gross profit / gross loss")
     avg_trade_pnl: Decimal | None = Field(default=None, description="Average P&L per trade")
     avg_holding_period_days: Decimal | None = Field(default=None, ge=0, description="Avg holding period")
 
-    # -- Costs --
+    # Costs
     total_commission: Decimal = Field(default=Decimal("0"), ge=0, description="Total commissions paid")
     total_slippage: Decimal = Field(default=Decimal("0"), ge=0, description="Total estimated slippage cost")
 
-    # -- Time series (stored as JSON-serializable lists) --
+    # Time series (stored as JSON-serializable lists)
     returns: list[float] = Field(default_factory=list, description="Period return series")
     equity_curve: list[float] = Field(default_factory=list, description="Equity curve values")
 
@@ -168,7 +168,7 @@ class FactorResult(ResearchEventBase):
     symbols: list[str] = Field(default_factory=list, description="Universe of symbols analyzed")
     frequency: Frequency = Field(default=Frequency.MONTHLY, description="Rebalance frequency")
 
-    # -- Factor metrics --
+    # Factor metrics
     returns: list[float] = Field(default_factory=list, description="Factor return series")
     cumulative_return: Decimal = Field(default=Decimal("0"), description="Cumulative factor return")
     annualized_return: Decimal = Field(default=Decimal("0"), description="Annualized factor return")
@@ -180,7 +180,7 @@ class FactorResult(ResearchEventBase):
     ic_ir: Decimal | None = Field(default=None, description="IC information ratio (IC mean / IC std)")
     turnover: Decimal | None = Field(default=None, ge=0, description="Average portfolio turnover")
 
-    # -- Quintile / decile spreads --
+    # Quintile / decile spreads
     long_short_return: Decimal | None = Field(default=None, description="Long-short portfolio return")
     quintile_returns: list[float] = Field(
         default_factory=list,

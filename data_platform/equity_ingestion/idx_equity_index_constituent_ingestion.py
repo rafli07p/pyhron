@@ -69,7 +69,7 @@ class IDXEquityIndexConstituentIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -132,7 +132,7 @@ class IDXEquityIndexConstituentIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_index_members(self, index_code: str) -> list[str]:
         """Fetch current members of an IDX index.
@@ -174,7 +174,7 @@ class IDXEquityIndexConstituentIngester:
 
         return members
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_constituent(self, record: dict[str, Any]) -> None:
         """Validate a constituent record.
@@ -188,7 +188,7 @@ class IDXEquityIndexConstituentIngester:
         if not symbol.isalpha():
             raise DataQualityError(f"Symbol '{symbol}' contains non-alpha characters")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_constituents(
         self,

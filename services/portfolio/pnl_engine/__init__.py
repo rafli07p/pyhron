@@ -41,7 +41,7 @@ class PnLEngine:
         self._log = logger.bind(component="PnLEngine")
         self._price_cache: dict[str, Decimal] = {}
 
-    # -- market data ---------------------------------------------------------
+    # market data
 
     async def _fetch_market_prices(self, symbols: list[str]) -> dict[str, Decimal]:
         """Fetch latest prices from yfinance and cache them.
@@ -72,7 +72,7 @@ class PnLEngine:
             prices = {s: self._price_cache.get(s, Decimal("0")) for s in symbols}
         return prices
 
-    # -- helpers -------------------------------------------------------------
+    # helpers
 
     async def _load_positions_df(
         self,
@@ -107,7 +107,7 @@ class PnLEngine:
         ]
         return pd.DataFrame(data)
 
-    # -- P&L calculations (vectorised) ---------------------------------------
+    # P&L calculations (vectorised)
 
     async def calculate_realized_pnl(
         self,

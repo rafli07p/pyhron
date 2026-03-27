@@ -85,7 +85,7 @@ class PostTradeAnalytics:
     def __init__(self) -> None:
         self._log = logger.bind(component="PostTradeAnalytics")
 
-    # -- Slippage ------------------------------------------------------------
+    # Slippage
 
     def calculate_slippage(
         self,
@@ -137,7 +137,7 @@ class PostTradeAnalytics:
 
         return results
 
-    # -- Market impact -------------------------------------------------------
+    # Market impact
 
     def calculate_market_impact(
         self,
@@ -207,7 +207,7 @@ class PostTradeAnalytics:
 
         return results
 
-    # -- Execution quality report --------------------------------------------
+    # Execution quality report
 
     def execution_quality_report(
         self,

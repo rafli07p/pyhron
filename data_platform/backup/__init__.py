@@ -86,9 +86,7 @@ class BackupManager:
             has_redis=bool(self._redis_rdb),
         )
 
-    # ------------------------------------------------------------------
     # Create backup
-    # ------------------------------------------------------------------
 
     @retry(
         stop=stop_after_attempt(2),
@@ -137,7 +135,7 @@ class BackupManager:
             "components": {},
         }
 
-        # --- PostgreSQL -------------------------------------------------------
+        # PostgreSQL
         if include_pg and self._pg_conn:
             pg_file = backup_path / "pg_dump.sql.gz" if compression else backup_path / "pg_dump.sql"
             try:
@@ -153,7 +151,7 @@ class BackupManager:
                 self._log.error("pg_backup_failed", error=str(exc))
                 manifest["components"]["postgresql"] = {"error": str(exc)}
 
-        # --- Redis ------------------------------------------------------------
+        # Redis
         if include_redis and self._redis_rdb and self._redis_rdb.exists():
             redis_dest = backup_path / "redis_dump.rdb"
             try:
@@ -175,9 +173,7 @@ class BackupManager:
         self._log.info("backup_created", name=backup_name)
         return manifest
 
-    # ------------------------------------------------------------------
     # Restore
-    # ------------------------------------------------------------------
 
     async def restore_backup(
         self,
@@ -220,7 +216,7 @@ class BackupManager:
 
         result: dict[str, Any] = {"backup_name": backup_name, "restored": []}
 
-        # --- PostgreSQL -------------------------------------------------------
+        # PostgreSQL
         if restore_pg and "postgresql" in manifest.get("components", {}):
             pg_info = manifest["components"]["postgresql"]
             if "error" not in pg_info:
@@ -233,7 +229,7 @@ class BackupManager:
                     self._log.error("pg_restore_failed", error=str(exc))
                     result["pg_error"] = str(exc)
 
-        # --- Redis ------------------------------------------------------------
+        # Redis
         if restore_redis and "redis" in manifest.get("components", {}):
             redis_info = manifest["components"]["redis"]
             if "error" not in redis_info and self._redis_rdb:
@@ -249,9 +245,7 @@ class BackupManager:
         self._log.info("backup_restored", **result)
         return result
 
-    # ------------------------------------------------------------------
     # List backups
-    # ------------------------------------------------------------------
 
     async def list_backups(self) -> list[dict[str, Any]]:
         """List all available backups for this tenant.
@@ -284,9 +278,7 @@ class BackupManager:
         self._log.debug("backups_listed", count=len(backups))
         return backups
 
-    # ------------------------------------------------------------------
     # Verify integrity
-    # ------------------------------------------------------------------
 
     async def verify_backup_integrity(self, backup_name: str) -> dict[str, Any]:
         """Verify SHA-256 checksums for all components in a backup.
@@ -331,9 +323,7 @@ class BackupManager:
         )
         return {"valid": valid, "checked": checked, "errors": errors}
 
-    # ------------------------------------------------------------------
     # Cleanup
-    # ------------------------------------------------------------------
 
     async def delete_backup(self, backup_name: str) -> bool:
         """Delete a backup directory.  Returns ``True`` on success."""
@@ -356,9 +346,7 @@ class BackupManager:
         self._log.info("backups_pruned", kept=keep, deleted=len(deleted))
         return deleted
 
-    # ------------------------------------------------------------------
     # Internal helpers
-    # ------------------------------------------------------------------
 
     async def _run_pg_dump(self, output_path: Path, *, compression: bool = True) -> None:
         cmd: list[str | None] = [

@@ -12,7 +12,6 @@ from decimal import Decimal
 
 import pytest
 
-# TODO: update imports when pyhron.risk / pyhron.shared.schemas are implemented
 # Future paths:
 #   from services.risk.risk_limits import RiskLimitEngine (as RiskEngine), TenantRiskLimits (as RiskLimits)
 #   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType

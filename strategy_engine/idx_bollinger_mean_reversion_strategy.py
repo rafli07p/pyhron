@@ -109,7 +109,7 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
             bb_std=self._bb_std,
         )
 
-    # ── Interface implementation ─────────────────────────────────────────
+    # Interface implementation
 
     def get_parameters(self) -> StrategyParameters:
         """Return current strategy parameters.
@@ -191,7 +191,7 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
         """
         return []
 
-    # ── Private helpers ──────────────────────────────────────────────────
+    # Private helpers
 
     def _check_regime_filter(self, close_prices: pd.DataFrame) -> bool:
         """Check whether the IHSG is above its 200-day MA (bull regime).

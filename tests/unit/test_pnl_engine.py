@@ -13,7 +13,6 @@ from uuid import uuid4
 
 import pytest
 
-# TODO: update imports when pyhron.pnl is implemented
 # Future paths:
 #   from services.portfolio.pnl_engine import PnLEngine
 #   pyhron.pnl.models (FillRecord, PnLReport, PnLSummary, TradeDirection) — not yet implemented

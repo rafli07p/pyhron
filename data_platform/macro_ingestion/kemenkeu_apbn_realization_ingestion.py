@@ -86,7 +86,7 @@ class KemenkeuAPBNRealizationIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -145,7 +145,7 @@ class KemenkeuAPBNRealizationIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_apbn_realization(
         self,
@@ -244,7 +244,7 @@ class KemenkeuAPBNRealizationIngester:
 
         raise IngestionError(f"DJPPR yield fetch failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_apbn_response(
         self,
@@ -331,7 +331,7 @@ class KemenkeuAPBNRealizationIngester:
 
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a Kemenkeu record.
@@ -347,7 +347,7 @@ class KemenkeuAPBNRealizationIngester:
             if v < 0 or v > 25:
                 raise DataQualityError(f"SBN yield {v}% outside plausible range [0, 25] for {record['indicator']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

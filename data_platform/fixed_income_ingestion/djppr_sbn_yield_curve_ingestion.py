@@ -87,7 +87,7 @@ class DJPPRSBNYieldCurveIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -138,7 +138,7 @@ class DJPPRSBNYieldCurveIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_yields(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch SBN benchmark yields from DJPPR.
@@ -180,7 +180,7 @@ class DJPPRSBNYieldCurveIngester:
 
         raise IngestionError(f"DJPPR failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_yield_data(self, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Parse DJPPR yield data and extract tenor yields and NSS params.
@@ -230,7 +230,7 @@ class DJPPRSBNYieldCurveIngester:
 
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a yield curve record.
@@ -244,7 +244,7 @@ class DJPPRSBNYieldCurveIngester:
             if v < 0 or v > 25:
                 raise DataQualityError(f"SBN yield {v}% outside plausible range [0, 25] on {record['reference_date']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

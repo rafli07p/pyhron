@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Pyhron — Staging Deployment Script
-# =============================================================================
+#
 # Deploys the full Pyhron stack to a staging environment using Docker Compose.
 #
 # Prerequisites:
@@ -14,7 +13,6 @@
 #   ./scripts/deploy_staging.sh --down   # Tear down staging
 #   ./scripts/deploy_staging.sh --logs   # Follow logs
 #   ./scripts/deploy_staging.sh --status # Show service status
-# =============================================================================
 
 set -euo pipefail
 
@@ -35,7 +33,7 @@ log_info() { echo -e "${GREEN}[INFO]${NC} $*"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
-# ── Pre-flight checks ────────────────────────────────────────────────────────
+# Pre-flight checks
 preflight() {
     if ! command -v docker &>/dev/null; then
         log_error "Docker is not installed"
@@ -66,7 +64,7 @@ preflight() {
     log_info "Pre-flight checks passed"
 }
 
-# ── Deploy ────────────────────────────────────────────────────────────────────
+# Deploy
 deploy() {
     preflight
 
@@ -100,7 +98,7 @@ deploy() {
     echo "  Tear down:  $0 --down"
 }
 
-# ── Tear down ─────────────────────────────────────────────────────────────────
+# Tear down
 teardown() {
     log_warn "Tearing down staging environment..."
     $COMPOSE_CMD down
@@ -108,12 +106,12 @@ teardown() {
     echo "  To remove volumes: $COMPOSE_CMD down -v"
 }
 
-# ── Logs ──────────────────────────────────────────────────────────────────────
+# Logs
 follow_logs() {
     $COMPOSE_CMD logs -f --tail=100
 }
 
-# ── Status ────────────────────────────────────────────────────────────────────
+# Status
 show_status() {
     $COMPOSE_CMD ps
     echo ""
@@ -121,7 +119,7 @@ show_status() {
     curl -sf http://localhost:${APP_PORT:-8000}/health 2>/dev/null && echo " API: OK" || echo " API: UNREACHABLE"
 }
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# Main
 case "${1:-deploy}" in
     --down|down)     teardown ;;
     --logs|logs)     follow_logs ;;

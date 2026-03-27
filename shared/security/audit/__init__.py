@@ -181,7 +181,7 @@ class AuditLogger:
         self._lock = threading.Lock()
         self._logger = structlog.get_logger("audit").bind(service=service)
 
-    # -- Core API -----------------------------------------------------------
+    # Core API
 
     def log_action(
         self,
@@ -253,7 +253,7 @@ class AuditLogger:
 
         return record
 
-    # -- Query / export -----------------------------------------------------
+    # Query / export
 
     def get_records(
         self,
@@ -346,7 +346,7 @@ class AuditLogger:
         with self._lock:
             return len(self._records)
 
-    # -- Helpers ------------------------------------------------------------
+    # Helpers
 
     @staticmethod
     def _to_csv(records: Sequence[dict[str, Any]]) -> str:

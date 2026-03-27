@@ -15,7 +15,6 @@ import pytest
 
 pytestmark = pytest.mark.e2e
 
-# TODO: update imports when pyhron backtest/strategy interfaces are implemented
 # Future paths:
 #   from strategy_engine.backtesting.idx_vectorbt_backtest_engine import IDXVectorbtBacktestEngine (as BacktestEngine), BacktestResult
 #   from strategy_engine.idx_momentum_cross_section_strategy import IDXMomentumCrossSectionStrategy (as MomentumStrategy)

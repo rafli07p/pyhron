@@ -402,9 +402,7 @@ def create_ws_app() -> FastAPI:
             "timestamp": datetime.now(tz=UTC).isoformat(),
         }
 
-    # ------------------------------------------------------------------
     # Main WebSocket endpoint
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws")
     async def websocket_endpoint(
@@ -536,9 +534,7 @@ def create_ws_app() -> FastAPI:
             logger.exception("ws_handler_error", connection_id=connection_id)
             await manager.disconnect(connection_id)
 
-    # ------------------------------------------------------------------
     # Dedicated market data WebSocket
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws/market-data")
     async def market_data_ws(
@@ -597,9 +593,7 @@ def create_ws_app() -> FastAPI:
             logger.exception("market_data_ws_error", connection_id=connection_id)
             await manager.disconnect(connection_id)
 
-    # ------------------------------------------------------------------
     # Dedicated order updates WebSocket
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws/orders")
     async def orders_ws(
@@ -639,9 +633,7 @@ def create_ws_app() -> FastAPI:
             logger.exception("orders_ws_error", connection_id=connection_id)
             await manager.disconnect(connection_id)
 
-    # ------------------------------------------------------------------
     # Dedicated portfolio updates WebSocket
-    # ------------------------------------------------------------------
 
     @app.websocket("/ws/portfolio")
     async def portfolio_ws(

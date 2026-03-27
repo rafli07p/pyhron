@@ -21,7 +21,6 @@ import pytest_asyncio
 
 pytestmark = pytest.mark.integration
 
-# TODO: update imports when pyhron.market_data is implemented
 # Future paths:
 #   MarketDataCache, MarketDataClient, MarketDataIngestionService, MarketDataPublisher — not yet implemented
 #   from shared.schemas.market_events import TickEvent (as TickData)

@@ -67,7 +67,7 @@ class GaikindoVehicleSalesIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_year(
         self,
@@ -117,7 +117,7 @@ class GaikindoVehicleSalesIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_sales(self, year: int) -> list[dict[str, Any]]:
         """Scrape vehicle sales data from Gaikindo website.
@@ -155,7 +155,7 @@ class GaikindoVehicleSalesIngester:
 
         raise IngestionError(f"Gaikindo failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_html(self, html: str, year: int) -> list[dict[str, Any]]:
         """Parse Gaikindo HTML table for monthly sales figures.
@@ -184,7 +184,7 @@ class GaikindoVehicleSalesIngester:
 
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a vehicle sales record.
@@ -199,7 +199,7 @@ class GaikindoVehicleSalesIngester:
         if v > 300000:
             raise DataQualityError(f"Sales {v} exceeds plausible monthly max of 300,000 units")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

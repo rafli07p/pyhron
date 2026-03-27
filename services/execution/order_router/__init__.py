@@ -150,7 +150,7 @@ class OrderRouter:
         self._audit_log: list[dict[str, Any]] = []
         self._lock = asyncio.Lock()
 
-    # -- public API ----------------------------------------------------------
+    # public API
 
     async def route_order(self, order: OrderRequest) -> OrderFill:
         """Route *order* to the best connector, execute, and return the fill.
@@ -277,7 +277,7 @@ class OrderRouter:
         if len(order.symbol.strip()) == 0:
             raise ValueError("Symbol must not be empty")
 
-    # -- audit ---------------------------------------------------------------
+    # audit
 
     def _record_audit(self, order: OrderRequest, action: str, detail: str) -> None:
         entry = {

@@ -73,7 +73,7 @@ class CoalHBAPriceIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -132,7 +132,7 @@ class CoalHBAPriceIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_hba(self, start: date, end: date) -> list[dict[str, Any]]:
         """Fetch monthly HBA prices from ESDM.
@@ -235,7 +235,7 @@ class CoalHBAPriceIngester:
 
         raise IngestionError(f"Newcastle failed after {MAX_RETRIES} retries")
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a coal price record.
@@ -250,7 +250,7 @@ class CoalHBAPriceIngester:
         if v < 20 or v > 500:
             raise DataQualityError(f"Coal price {v} USD/ton outside plausible range [20, 500]")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

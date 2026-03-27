@@ -46,7 +46,7 @@ def upgrade() -> None:
     op.bulk_insert(
         profiles,
         [
-            # --- Coal miners ---
+            # Coal miners
             {
                 "ticker": "ADRO",
                 "commodity_type": "coal",
@@ -127,7 +127,7 @@ def upgrade() -> None:
                     "dmo_cap_usd": 90.0,
                 },
             },
-            # --- CPO (palm oil) plantation companies ---
+            # CPO (palm oil) plantation companies
             {
                 "ticker": "AALI",
                 "commodity_type": "cpo",
@@ -233,7 +233,7 @@ def upgrade() -> None:
                     "dmo_allocation_pct": 0.0,
                 },
             },
-            # --- Nickel producers ---
+            # Nickel producers
             {
                 "ticker": "INCO",
                 "commodity_type": "nickel",
@@ -279,7 +279,7 @@ def upgrade() -> None:
                     "royalty_rate": 0.10,
                 },
             },
-            # --- Energy (ICP crude) ---
+            # Energy (ICP crude)
             {
                 "ticker": "PGAS",
                 "commodity_type": "energy",

@@ -1,10 +1,6 @@
-# =============================================================================
 # Pyhron Trading Platform - Terraform Variables
-# =============================================================================
 
-# -----------------------------------------------------------------------------
 # General
-# -----------------------------------------------------------------------------
 variable "environment" {
   description = "Deployment environment (development, staging, production)"
   type        = string
@@ -22,9 +18,7 @@ variable "aws_region" {
   default     = "ap-southeast-1"
 }
 
-# -----------------------------------------------------------------------------
 # VPC
-# -----------------------------------------------------------------------------
 variable "vpc_cidr" {
   description = "CIDR block for the primary VPC"
   type        = string
@@ -43,9 +37,7 @@ variable "public_subnet_cidrs" {
   default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
 
-# -----------------------------------------------------------------------------
 # Jakarta Region VPC
-# -----------------------------------------------------------------------------
 variable "jakarta_vpc_cidr" {
   description = "CIDR block for Jakarta region VPC"
   type        = string
@@ -64,9 +56,7 @@ variable "jakarta_public_subnet_cidrs" {
   default     = ["10.1.101.0/24", "10.1.102.0/24", "10.1.103.0/24"]
 }
 
-# -----------------------------------------------------------------------------
 # EKS
-# -----------------------------------------------------------------------------
 variable "eks_cluster_version" {
   description = "Kubernetes version for EKS cluster"
   type        = string
@@ -121,9 +111,7 @@ variable "eks_compute_desired_size" {
   default     = 2
 }
 
-# -----------------------------------------------------------------------------
 # RDS PostgreSQL
-# -----------------------------------------------------------------------------
 variable "rds_instance_class" {
   description = "RDS instance class"
   type        = string
@@ -142,9 +130,7 @@ variable "rds_max_allocated_storage" {
   default     = 500
 }
 
-# -----------------------------------------------------------------------------
 # ElastiCache Redis
-# -----------------------------------------------------------------------------
 variable "redis_node_type" {
   description = "ElastiCache Redis node type"
   type        = string

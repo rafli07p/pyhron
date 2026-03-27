@@ -71,7 +71,7 @@ class NASAFIRMSFireHotspotIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_recent(
         self,
@@ -120,7 +120,7 @@ class NASAFIRMSFireHotspotIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_viirs(self, days: int) -> list[dict[str, Any]]:
         """Fetch VIIRS active fire data from NASA FIRMS.
@@ -157,7 +157,7 @@ class NASAFIRMSFireHotspotIngester:
 
         raise IngestionError(f"FIRMS failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_csv(self, csv_text: str) -> list[dict[str, Any]]:
         """Parse FIRMS CSV and aggregate by province and date.
@@ -212,7 +212,7 @@ class NASAFIRMSFireHotspotIngester:
 
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate a fire hotspot record.
@@ -224,7 +224,7 @@ class NASAFIRMSFireHotspotIngester:
         if v < 0:
             raise DataQualityError(f"Negative value {v} for {record['indicator']} on {record['reference_date']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

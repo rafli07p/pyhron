@@ -13,7 +13,6 @@ from uuid import uuid4
 
 import pytest
 
-# TODO: update imports when pyhron.shared.schemas is implemented
 # Future paths:
 #   from shared.schemas.order_events import OrderRequest (as OrderCreate), OrderSide, OrderType, OrderStatusEnum (as OrderStatus)
 #   from shared.schemas.market_events import TickEvent (as TickData)

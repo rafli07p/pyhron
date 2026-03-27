@@ -86,7 +86,7 @@ class PreTradeCheckService:
     def _cfg(self, tenant_id: str) -> PreTradeConfig:
         return self._configs.get(tenant_id, _DEFAULT_CONFIG)
 
-    # -- Public API ----------------------------------------------------------
+    # Public API
 
     async def validate_order(
         self,
@@ -152,7 +152,7 @@ class PreTradeCheckService:
             check_name="all",
         )
 
-    # -- Individual checks ---------------------------------------------------
+    # Individual checks
 
     def _check_restricted_list(self, order: OrderRequest) -> CheckResult:
         """Reject orders for symbols on the restricted list."""

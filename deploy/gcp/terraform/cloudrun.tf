@@ -90,9 +90,7 @@ resource "google_cloud_run_v2_service" "pyhron_api" {
   }
 }
 
-# ---------------------------------------------------------------------------
 # Intraday Ingestion — long-running Cloud Run service for Alpaca market data
-# ---------------------------------------------------------------------------
 
 variable "intraday_symbols" {
   type        = string

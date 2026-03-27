@@ -406,9 +406,7 @@ def create_rest_app() -> FastAPI:
     # Structlog request logging
     app.add_middleware(RequestLoggingMiddleware)
 
-    # ------------------------------------------------------------------
     # Pyhron domain routers (IDX equity, macro, commodity, etc.)
-    # ------------------------------------------------------------------
     from apps.api.http_routers.backtest_execution_router import router as backtest_router
     from apps.api.http_routers.commodity_stock_impact_router import router as commodity_impact_router
     from apps.api.http_routers.governance_intelligence_router import router as governance_router
@@ -441,9 +439,7 @@ def create_rest_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(paper_trading_router)
 
-    # ------------------------------------------------------------------
     # Health / Readiness
-    # ------------------------------------------------------------------
 
     @app.get("/health", response_model=None, tags=["ops"])
     async def health() -> JSONResponse:
@@ -457,7 +453,7 @@ def create_rest_app() -> FastAPI:
         cfg = get_config()
         checks: dict[str, str] = {}
 
-        # -- Postgres --
+        # Postgres
         try:
             engine = create_async_engine(cfg.database_url, pool_pre_ping=True)
             async with engine.connect() as conn:
@@ -467,7 +463,7 @@ def create_rest_app() -> FastAPI:
         except Exception as exc:
             checks["postgres"] = f"error: {exc}"
 
-        # -- Redis --
+        # Redis
         try:
             r = aioredis.from_url(cfg.redis_url, decode_responses=True)  # type: ignore[no-untyped-call]
             await r.ping()
@@ -511,7 +507,7 @@ def create_rest_app() -> FastAPI:
         cfg = get_config()
         checks: dict[str, str] = {}
 
-        # -- Postgres --
+        # Postgres
         try:
             engine = create_async_engine(cfg.database_url, pool_pre_ping=True)
             async with engine.connect() as conn:
@@ -521,7 +517,7 @@ def create_rest_app() -> FastAPI:
         except Exception as exc:
             checks["postgres"] = f"error: {exc}"
 
-        # -- Redis --
+        # Redis
         try:
             r = aioredis.from_url(cfg.redis_url, decode_responses=True)  # type: ignore[no-untyped-call]
             await r.ping()
@@ -530,7 +526,7 @@ def create_rest_app() -> FastAPI:
         except Exception as exc:
             checks["redis"] = f"error: {exc}"
 
-        # -- Kafka --
+        # Kafka
         try:
             producer = AIOKafkaProducer(
                 bootstrap_servers=cfg.kafka_bootstrap_servers,
@@ -551,9 +547,7 @@ def create_rest_app() -> FastAPI:
             },
         )
 
-    # ------------------------------------------------------------------
     # Market Data
-    # ------------------------------------------------------------------
 
     @app.get(f"/api/{API_VERSION}/market-data/{{symbol}}", response_model=MarketDataResponse, tags=["market-data"])
     @limiter.limit("60/minute")
@@ -580,7 +574,7 @@ def create_rest_app() -> FastAPI:
         bars: list[dict[str, Any]] = []
         quotes: list[dict[str, Any]] = []
 
-        # --- Polygon.io bars ---
+        # Polygon.io bars
         polygon_key = os.environ.get("POLYGON_API_KEY", "")
         if polygon_key:
             try:
@@ -640,7 +634,7 @@ def create_rest_app() -> FastAPI:
             except Exception:
                 log.exception("polygon_api_error")
 
-        # --- yfinance fallback ---
+        # yfinance fallback
         if not bars:
             try:
                 import yfinance as yf
@@ -666,9 +660,7 @@ def create_rest_app() -> FastAPI:
 
         return MarketDataResponse(symbol=symbol, bars=bars, quotes=quotes)
 
-    # ------------------------------------------------------------------
     # Orders
-    # ------------------------------------------------------------------
 
     @app.post(f"/api/{API_VERSION}/orders", response_model=CreateOrderResponse, status_code=201, tags=["orders"])
     @limiter.limit("30/minute")
@@ -717,9 +709,7 @@ def create_rest_app() -> FastAPI:
         log.info("order_cancel_requested")
         return {"order_id": str(order_id), "status": "cancel_requested"}
 
-    # ------------------------------------------------------------------
     # Portfolio
-    # ------------------------------------------------------------------
 
     @app.get(f"/api/{API_VERSION}/portfolio", response_model=list[PositionResponse], tags=["portfolio"])
     @limiter.limit("60/minute")
@@ -842,9 +832,7 @@ def create_rest_app() -> FastAPI:
             positions=positions,
         )
 
-    # ------------------------------------------------------------------
     # Research / Backtest
-    # ------------------------------------------------------------------
 
     @app.post(
         f"/api/{API_VERSION}/research/backtest",
@@ -873,9 +861,7 @@ def create_rest_app() -> FastAPI:
         log.info("backtest_submitted", backtest_id=str(bt.backtest_id))
         return bt
 
-    # ------------------------------------------------------------------
     # Risk
-    # ------------------------------------------------------------------
 
     @app.post(f"/api/{API_VERSION}/risk/check", response_model=RiskCheckResponse, tags=["risk"])
     @limiter.limit("60/minute")
@@ -911,9 +897,7 @@ def create_rest_app() -> FastAPI:
 
         return RiskCheckResponse(approved=approved, checks=checks, reason=reason)
 
-    # ------------------------------------------------------------------
     # Admin / Users
-    # ------------------------------------------------------------------
 
     @app.post(f"/api/{API_VERSION}/admin/users", response_model=UserResponse, status_code=201, tags=["admin"])
     @limiter.limit("10/minute")
@@ -976,9 +960,7 @@ def create_rest_app() -> FastAPI:
         """Delete a user from the tenant."""
         logger.info("user_deleted", user_id=str(user_id), tenant_id=user.tenant_id)
 
-    # ------------------------------------------------------------------
     # Global exception handler
-    # ------------------------------------------------------------------
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:

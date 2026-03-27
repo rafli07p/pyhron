@@ -72,7 +72,7 @@ class IDXEquityGovernanceFlagIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -134,7 +134,7 @@ class IDXEquityGovernanceFlagIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_idx_disclosures(
         self,
@@ -240,7 +240,7 @@ class IDXEquityGovernanceFlagIngester:
 
         return self._parse_ojk_ownership_html(html_content, start, end, symbols)
 
-    # ── Parsing helpers ──────────────────────────────────────────────────
+    # Parsing helpers
 
     def _classify_disclosure(self, item: dict[str, Any]) -> str | None:
         """Classify an IDX disclosure into a governance flag type.
@@ -287,7 +287,7 @@ class IDXEquityGovernanceFlagIngester:
         self._logger.info("ojk_html_parsing", content_length=len(html_content))
         return []
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_flag(self, flag: dict[str, Any]) -> None:
         """Validate a governance flag record.
@@ -302,7 +302,7 @@ class IDXEquityGovernanceFlagIngester:
         if not flag.get("flag_date"):
             raise DataQualityError(f"Missing flag_date for {flag['symbol']}/{flag['flag_type']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_flags(
         self,

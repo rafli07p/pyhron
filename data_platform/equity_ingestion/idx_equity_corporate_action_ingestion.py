@@ -71,7 +71,7 @@ class IDXEquityCorporateActionIngester:
         self._logger = get_logger(__name__)
         self._eodhd_key: str = self._config.eodhd_api_key
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -154,7 +154,7 @@ class IDXEquityCorporateActionIngester:
             results.append(await self.ingest_for_date_range(sym, start, end))
         return results
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_dividends(
         self,
@@ -258,7 +258,7 @@ class IDXEquityCorporateActionIngester:
 
         raise IngestionError(f"EODHD failed after {MAX_RETRIES} retries")
 
-    # ── Helpers ──────────────────────────────────────────────────────────
+    # Helpers
 
     @staticmethod
     def _parse_split_ratio(ratio_str: str) -> Decimal:
@@ -275,7 +275,7 @@ class IDXEquityCorporateActionIngester:
             return Decimal(parts[0]) / Decimal(parts[1])
         return Decimal(ratio_str)
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_action(self, action: dict[str, Any]) -> None:
         """Validate a corporate action record.
@@ -291,7 +291,7 @@ class IDXEquityCorporateActionIngester:
         if action["ex_date"].weekday() >= 5:
             raise DataQualityError(f"Ex-date {action['ex_date']} falls on a weekend for {action['action_type']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_actions(
         self,

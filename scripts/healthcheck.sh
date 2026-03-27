@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
-# =============================================================================
 # Pyhron Platform — Local Health Check
-# =============================================================================
+#
 # Verifies all services are up and responding after `docker compose up`.
 # Exit 0 = all healthy, Exit 1 = one or more checks failed.
 #
 # Usage:
 #   ./scripts/healthcheck.sh
 #   ./scripts/healthcheck.sh --verbose
-# =============================================================================
 
 set -euo pipefail
 
@@ -46,14 +44,14 @@ echo "Pyhron Platform — Health Check"
 echo "=============================="
 echo ""
 
-# ── API Service ──────────────────────────────────────────────────────────────
+# API Service
 echo "API Service:"
 check "GET /health" \
     "curl -sf http://localhost:${APP_PORT:-8000}/health"
 check "GET /docs (OpenAPI)" \
     "curl -sf -o /dev/null -w '%{http_code}' http://localhost:${APP_PORT:-8000}/docs | grep -q 200"
 
-# ── PostgreSQL (TimescaleDB) ─────────────────────────────────────────────────
+# PostgreSQL (TimescaleDB)
 echo ""
 echo "PostgreSQL (TimescaleDB):"
 check "pg_isready" \
@@ -61,13 +59,13 @@ check "pg_isready" \
 check "TimescaleDB extension" \
     "docker compose -f $COMPOSE_FILE exec -T postgres psql -U ${POSTGRES_USER:-pyhron} -d ${POSTGRES_DB:-pyhron} -tAc \"SELECT extname FROM pg_extension WHERE extname='timescaledb';\" | grep -q timescaledb"
 
-# ── Redis ────────────────────────────────────────────────────────────────────
+# Redis
 echo ""
 echo "Redis:"
 check "PING" \
     "docker compose -f $COMPOSE_FILE exec -T redis redis-cli ping | grep -q PONG"
 
-# ── Kafka ────────────────────────────────────────────────────────────────────
+# Kafka
 echo ""
 echo "Kafka:"
 check "Broker API versions" \
@@ -75,13 +73,13 @@ check "Broker API versions" \
 check "Topic list" \
     "docker compose -f $COMPOSE_FILE exec -T kafka kafka-topics --bootstrap-server localhost:29092 --list 2>&1"
 
-# ── MLflow ───────────────────────────────────────────────────────────────────
+# MLflow
 echo ""
 echo "MLflow:"
 check "GET /health" \
     "curl -sf http://localhost:${MLFLOW_PORT:-5000}/health"
 
-# ── Summary ──────────────────────────────────────────────────────────────────
+# Summary
 echo ""
 echo "----------------------------------------------"
 TOTAL=$((PASS + FAIL))

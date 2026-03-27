@@ -251,9 +251,7 @@ class ChartEngine:
         )
         return result
 
-    # ------------------------------------------------------------------
     # Indicator computations
-    # ------------------------------------------------------------------
 
     @staticmethod
     def _compute_sma(data: list[float], period: int) -> list[float | None]:

@@ -239,7 +239,7 @@ class BacktestEngine:
         self._dask_npartitions = dask_npartitions
         self._log = logger.bind(component="BacktestEngine")
 
-    # -- data acquisition ----------------------------------------------------
+    # data acquisition
 
     async def _get_prices(
         self,
@@ -273,7 +273,7 @@ class BacktestEngine:
 
         return prices
 
-    # -- core backtest logic -------------------------------------------------
+    # core backtest logic
 
     async def run_backtest(
         self,
@@ -473,7 +473,7 @@ class BacktestEngine:
                 tenant_id, capital, str(exc),
             )
 
-    # -- QuantLib pricing helpers --------------------------------------------
+    # QuantLib pricing helpers
 
     @staticmethod
     def price_option_black_scholes(
@@ -534,7 +534,7 @@ class BacktestEngine:
         npv: float = option.NPV()
         return npv
 
-    # -- Helpers -------------------------------------------------------------
+    # Helpers
 
     @staticmethod
     def _failed_result(

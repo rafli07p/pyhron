@@ -186,7 +186,7 @@ class CPOPlantationStockSensitivity:
         self._myr_idr = myr_idr_rate
         self._cpo_ref_price_myr = cpo_ref_price_myr
 
-    # ── Export Levy ─────────────────────────────────────────────────────
+    # Export Levy
 
     @staticmethod
     def _compute_export_levy_usd(cpo_price_usd_per_ton: float) -> float:
@@ -211,7 +211,7 @@ class CPOPlantationStockSensitivity:
         # Above USD 950: base 140 + 5 per 50 above 950.
         return 140.0 + 5.0 * ((cpo_price_usd_per_ton - 950.0) / 50.0)
 
-    # ── Per-company Impact ──────────────────────────────────────────────
+    # Per-company Impact
 
     def _compute_company_impact(
         self,
@@ -294,7 +294,7 @@ class CPOPlantationStockSensitivity:
             ],
         )
 
-    # ── Public API ──────────────────────────────────────────────────────
+    # Public API
 
     def compute_all_impacts(self, cpo_price_change_pct: float) -> list[StockEarningsImpactEstimate]:
         """Compute impact across all covered plantation stocks.

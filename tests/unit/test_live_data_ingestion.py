@@ -217,7 +217,7 @@ def test_backfill_skips_existing_data() -> None:
         assert existing not in to_fetch
 
 
-# ── Test 10: DLQ processor retries up to max then marks permanent
+# Test 10: DLQ processor retries up to max then marks permanent
 
 
 @pytest.mark.asyncio

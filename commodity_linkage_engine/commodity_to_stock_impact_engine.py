@@ -61,7 +61,7 @@ class CommodityToStockImpactEngine:
         self._nickel_model = NickelPriceMinerRevenueModel(usd_idr_rate=usd_idr_rate)
         self._icp_model = ICPEnergyStockSensitivity(usd_idr_rate=usd_idr_rate)
 
-    # ── CPO ─────────────────────────────────────────────────────────────
+    # CPO
 
     def estimate_cpo_price_impact(self, cpo_price_change_pct: float) -> list[StockEarningsImpactEstimate]:
         """Estimate plantation stock earnings impact from CPO price change.
@@ -89,7 +89,7 @@ class CommodityToStockImpactEngine:
         )
         return estimates
 
-    # ── Coal ────────────────────────────────────────────────────────────
+    # Coal
 
     def estimate_coal_price_impact(self, hba_change_usd_per_ton: float) -> list[StockEarningsImpactEstimate]:
         """Estimate coal miner earnings impact from HBA price change.
@@ -116,7 +116,7 @@ class CommodityToStockImpactEngine:
         )
         return estimates
 
-    # ── Nickel ──────────────────────────────────────────────────────────
+    # Nickel
 
     def estimate_nickel_price_impact(self, lme_change_usd_per_ton: float) -> list[StockEarningsImpactEstimate]:
         """Estimate nickel producer earnings impact from LME nickel change.
@@ -141,7 +141,7 @@ class CommodityToStockImpactEngine:
         )
         return estimates
 
-    # ── ICP Crude ───────────────────────────────────────────────────────
+    # ICP Crude
 
     def estimate_icp_crude_impact(self, icp_change_usd_per_barrel: float) -> list[StockEarningsImpactEstimate]:
         """Estimate energy stock earnings impact from ICP crude change.
@@ -167,7 +167,7 @@ class CommodityToStockImpactEngine:
         )
         return estimates
 
-    # ── Unified ─────────────────────────────────────────────────────────
+    # Unified
 
     def estimate_impact(self, event: CommodityPriceChangeEvent) -> list[StockEarningsImpactEstimate]:
         """Dispatch a :class:`CommodityPriceChangeEvent` to the right model.

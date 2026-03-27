@@ -137,7 +137,7 @@ class RiskPanel(Static):
             content = self.query_one("#risk-panel-content", Static)
             content.update(self._render_panel())
 
-    # ── External update hooks ────────────────────────────────────────
+    # External update hooks
 
     def on_risk_snapshot(self, snapshot: dict[str, Any]) -> None:
         """Ingest a full risk snapshot from the WebSocket feed."""
@@ -199,7 +199,7 @@ class RiskPanel(Static):
         """Handle updated capital allocation data."""
         self.allocation_data = allocations
 
-    # ── Command handling ─────────────────────────────────────────────
+    # Command handling
 
     def handle_command(self, command: str) -> str | None:
         """Process a risk panel command and return a status message.
@@ -237,7 +237,7 @@ class RiskPanel(Static):
 
         return None
 
-    # ── Rendering ────────────────────────────────────────────────────
+    # Rendering
 
     def _render_panel(self) -> str:
         """Render the complete risk dashboard as a rich-markup string."""

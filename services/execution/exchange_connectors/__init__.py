@@ -103,7 +103,7 @@ class AlpacaConnector(BaseConnector):
         super().__init__(name="alpaca")
         self._client: Any = None
 
-    # -- lifecycle -----------------------------------------------------------
+    # lifecycle
 
     async def connect(self) -> None:
         async with self._lock:
@@ -130,7 +130,7 @@ class AlpacaConnector(BaseConnector):
             self._connected = False
             logger.info("alpaca.disconnected")
 
-    # -- orders --------------------------------------------------------------
+    # orders
 
     @retry(
         retry=retry_if_exception_type((ConnectionError, TimeoutError)),

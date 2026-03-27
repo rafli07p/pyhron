@@ -81,9 +81,7 @@ class DataClient:
     def is_ws_connected(self) -> bool:
         return self._ws is not None
 
-    # ------------------------------------------------------------------
     # HTTP lifecycle
-    # ------------------------------------------------------------------
 
     async def connect(self) -> None:
         """Initialize the HTTP client session."""
@@ -126,9 +124,7 @@ class DataClient:
         assert self._http_client is not None
         return self._http_client
 
-    # ------------------------------------------------------------------
     # WebSocket connection
-    # ------------------------------------------------------------------
 
     async def connect_websocket(self) -> None:
         """Establish WebSocket connection and authenticate.
@@ -245,9 +241,7 @@ class DataClient:
         msg = json.dumps({"type": "SUBSCRIBE", "channel": channel, "key": key})
         await self._ws.send(msg)
 
-    # ------------------------------------------------------------------
     # Subscription API
-    # ------------------------------------------------------------------
 
     async def subscribe_quotes(
         self,
@@ -297,9 +291,7 @@ class DataClient:
         """Register a callback for connection status changes."""
         self._connection_status_callback = callback
 
-    # ------------------------------------------------------------------
     # Heartbeat / auth handlers
-    # ------------------------------------------------------------------
 
     def _on_heartbeat(self, message: dict[str, Any]) -> None:
         """Respond to HEARTBEAT with PONG immediately."""
@@ -323,9 +315,7 @@ class DataClient:
             with contextlib.suppress(Exception):
                 self._connection_status_callback(status)
 
-    # ------------------------------------------------------------------
     # HTTP methods (unchanged)
-    # ------------------------------------------------------------------
 
     async def get_market_data(
         self,

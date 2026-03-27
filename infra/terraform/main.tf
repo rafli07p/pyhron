@@ -1,11 +1,8 @@
-# =============================================================================
 # Pyhron Trading Platform - Terraform Infrastructure
-# =============================================================================
 # Usage:
 #   terraform init
 #   terraform plan -var-file="environments/production.tfvars"
 #   terraform apply -var-file="environments/production.tfvars"
-# =============================================================================
 
 terraform {
   required_version = ">= 1.6.0"
@@ -26,9 +23,7 @@ terraform {
   }
 }
 
-# =============================================================================
 # Provider Configuration
-# =============================================================================
 provider "aws" {
   region = var.aws_region
 
@@ -57,18 +52,14 @@ provider "aws" {
   }
 }
 
-# =============================================================================
 # Data Sources
-# =============================================================================
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
 data "aws_caller_identity" "current" {}
 
-# =============================================================================
 # VPC
-# =============================================================================
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.4"
@@ -107,9 +98,7 @@ module "vpc" {
   }
 }
 
-# =============================================================================
 # EKS Cluster
-# =============================================================================
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.21"
@@ -183,9 +172,7 @@ module "eks" {
   }
 }
 
-# =============================================================================
 # RDS PostgreSQL
-# =============================================================================
 module "rds" {
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.3"
@@ -273,9 +260,7 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# =============================================================================
 # ElastiCache Redis
-# =============================================================================
 resource "aws_elasticache_subnet_group" "redis" {
   name       = "pyhron-redis-${var.environment}"
   subnet_ids = module.vpc.private_subnets
@@ -338,9 +323,7 @@ resource "aws_elasticache_replication_group" "redis" {
   }
 }
 
-# =============================================================================
 # S3 Buckets - Backups & Artifacts
-# =============================================================================
 resource "aws_s3_bucket" "backups" {
   bucket = "pyhron-backups-${var.environment}-${data.aws_caller_identity.current.account_id}"
 
@@ -429,9 +412,7 @@ resource "aws_s3_bucket_public_access_block" "mlflow_artifacts" {
   restrict_public_buckets = true
 }
 
-# =============================================================================
 # Jakarta Region Module (ap-southeast-3)
-# =============================================================================
 module "jakarta_vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.4"
@@ -497,9 +478,7 @@ resource "aws_s3_bucket_public_access_block" "jakarta_backups" {
   restrict_public_buckets = true
 }
 
-# =============================================================================
 # Outputs
-# =============================================================================
 output "vpc_id" {
   description = "VPC ID"
   value       = module.vpc.vpc_id

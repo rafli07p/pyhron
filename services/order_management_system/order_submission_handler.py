@@ -441,7 +441,7 @@ class OrderSubmissionHandler:
 
         return request
 
-    # ── Direct API submission ────────────────────────────────────────────────
+    # Direct API submission
 
     async def submit_order(
         self,

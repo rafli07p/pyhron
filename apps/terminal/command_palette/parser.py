@@ -62,15 +62,15 @@ class CommandParser:
         upper = text.upper()
         tokens = upper.split()
 
-        # ── Order commands: BUY / SELL ──────────────────────
+        # Order commands: BUY / SELL
         if tokens[0] in ("BUY", "SELL"):
             return self._parse_order(tokens, text)
 
-        # ── Equity lookup: SYMBOL EQUITY GO/GP/GF ──────────
+        # Equity lookup: SYMBOL EQUITY GO/GP/GF
         if len(tokens) >= 2 and tokens[1] == "EQUITY":
             return self._parse_equity(tokens, text)
 
-        # ── Layout switch ──────────────────────────────────
+        # Layout switch
         if len(tokens) == 1 and tokens[0] in _LAYOUT_COMMANDS:
             layout = _LAYOUT_COMMANDS[tokens[0]]
             return TerminalCommand(
@@ -80,7 +80,7 @@ class CommandParser:
                 raw=text,
             )
 
-        # ── Panel commands ─────────────────────────────────
+        # Panel commands
         if len(tokens) == 1 and tokens[0] in _PANEL_COMMANDS:
             return TerminalCommand(
                 command_type=_PANEL_COMMANDS[tokens[0]],
@@ -89,17 +89,17 @@ class CommandParser:
                 raw=text,
             )
 
-        # ── Paper trading: PAPER <action> [args] ─────────
+        # Paper trading: PAPER <action> [args]
         if tokens[0] == "PAPER" and len(tokens) >= 2:
             return self._parse_paper_command(tokens, text)
 
-        # ── Simulation: SIM <strategy_id> [start] [end] ──
+        # Simulation: SIM <strategy_id> [start] [end]
         if tokens[0] == "SIM" and len(tokens) >= 2:
             return self._parse_sim_command(tokens, text)
 
         return None
 
-    # ── Private helpers ────────────────────────────────────
+    # Private helpers
 
     def _parse_order(self, tokens: list[str], raw: str) -> TerminalCommand | None:
         """Parse BUY/SELL commands.

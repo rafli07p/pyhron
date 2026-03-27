@@ -78,7 +78,7 @@ class ExposureTracker:
         self._tenant_limits = tenant_limits or {}
         self._log = logger.bind(component="ExposureTracker")
 
-    # -- data loading --------------------------------------------------------
+    # data loading
 
     async def _load_positions_df(
         self,
@@ -118,7 +118,7 @@ class ExposureTracker:
         df["abs_market_value"] = df["market_value"].abs()
         return df
 
-    # -- gross / net exposure ------------------------------------------------
+    # gross / net exposure
 
     async def calculate_gross_exposure(
         self,
@@ -146,7 +146,7 @@ class ExposureTracker:
         net = float(df["market_value"].sum())
         return Decimal(str(round(net, 2)))
 
-    # -- sector exposure -----------------------------------------------------
+    # sector exposure
 
     async def get_sector_exposure(
         self,
@@ -180,7 +180,7 @@ class ExposureTracker:
         )
         return sector_df
 
-    # -- currency exposure ---------------------------------------------------
+    # currency exposure
 
     async def get_currency_exposure(
         self,
@@ -214,7 +214,7 @@ class ExposureTracker:
         )
         return ccy_df
 
-    # -- concentration limits ------------------------------------------------
+    # concentration limits
 
     async def check_concentration_limits(
         self,

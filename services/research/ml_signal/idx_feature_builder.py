@@ -139,7 +139,7 @@ class IDXFeatureBuilder:
         result = self._postprocess(combined)
         return result
 
-    # ── Group 1: Momentum ──────────────────────────────────────
+    # Group 1: Momentum
 
     def _momentum_features(
         self,
@@ -181,7 +181,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Group 2: Value ─────────────────────────────────────────
+    # Group 2: Value
 
     def _value_features(
         self,
@@ -226,7 +226,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Group 3: Quality ───────────────────────────────────────
+    # Group 3: Quality
 
     def _quality_features(self, fundamentals: pd.DataFrame) -> dict[str, pd.DataFrame]:
         """Quality factor group: ROE, ROA, D/E, current ratio, gross margin."""
@@ -249,7 +249,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Group 4: Low-Volatility ────────────────────────────────
+    # Group 4: Low-Volatility
 
     def _volatility_features(
         self,
@@ -286,7 +286,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Group 5: Liquidity ─────────────────────────────────────
+    # Group 5: Liquidity
 
     def _liquidity_features(
         self,
@@ -326,7 +326,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Group 6: Macro Sensitivity ─────────────────────────────
+    # Group 6: Macro Sensitivity
 
     def _macro_features(
         self,
@@ -372,7 +372,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Group 7: Technical ─────────────────────────────────────
+    # Group 7: Technical
 
     def _technical_features(
         self,
@@ -430,7 +430,7 @@ class IDXFeatureBuilder:
 
         return features
 
-    # ── Helpers ─────────────────────────────────────────────────
+    # Helpers
 
     def _postprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         """Winsorise and cross-sectionally rank-normalise features."""

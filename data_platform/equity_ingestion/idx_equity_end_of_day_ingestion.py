@@ -121,7 +121,7 @@ class IDXEquityEODIngester:
         self._logger = get_logger(__name__)
         self._eodhd_key: str = self._config.eodhd_api_key
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -210,7 +210,7 @@ class IDXEquityEODIngester:
             results.append(result)
         return results
 
-    # ── Data sources ─────────────────────────────────────────────────────
+    # Data sources
 
     async def _fetch_eodhd(
         self,
@@ -303,7 +303,7 @@ class IDXEquityEODIngester:
 
         return await asyncio.to_thread(_sync_yfinance_fetch)
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_ohlc(self, row: dict[str, Any]) -> None:
         """Validate OHLC sanity constraints.
@@ -326,7 +326,7 @@ class IDXEquityEODIngester:
                     f"Daily move {daily_move:.1%} exceeds IDX circuit breaker {MAX_DAILY_MOVE_PCT:.0%} on {row['time']}"
                 )
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_rows(
         self,

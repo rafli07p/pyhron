@@ -110,7 +110,7 @@ class RiskLimitEngine:
             )
         return self._breakers[tenant_id]
 
-    # -- Limit checks -------------------------------------------------------
+    # Limit checks
 
     def check_position_limit(
         self,
@@ -400,7 +400,7 @@ class RiskLimitEngine:
             self._log.warning("var_breach", tenant_id=tenant_id, msg=result.message)
         return result
 
-    # -- Circuit breaker management ------------------------------------------
+    # Circuit breaker management
 
     def get_breaker_state(self, tenant_id: str) -> str:
         """Return the current circuit breaker state for a tenant."""

@@ -71,7 +71,7 @@ class IDXEquityFundamentalIngester:
         self._logger = get_logger(__name__)
         self._eodhd_key: str = self._config.eodhd_api_key
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -149,7 +149,7 @@ class IDXEquityFundamentalIngester:
             results.append(result)
         return results
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_fundamentals(self, symbol: str) -> dict[str, Any]:
         """Fetch full fundamentals JSON from EODHD.
@@ -190,7 +190,7 @@ class IDXEquityFundamentalIngester:
 
         raise IngestionError(f"EODHD fundamentals failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _extract_quarterly_statements(
         self,
@@ -234,7 +234,7 @@ class IDXEquityFundamentalIngester:
                 )
         return statements
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_statement(self, stmt: dict[str, Any]) -> None:
         """Validate basic accounting identities.
@@ -257,7 +257,7 @@ class IDXEquityFundamentalIngester:
                         f"liab+equity={total_liab + total_equity}"
                     )
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_statements(
         self,

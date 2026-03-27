@@ -170,7 +170,7 @@ class BacktestPanel(Static):
             content = self.query_one("#backtest-panel-content", Static)
             content.update(self._render_panel())
 
-    # ── External update hook ─────────────────────────────────────────
+    # External update hook
 
     def on_backtest_result(self, result: dict[str, Any]) -> None:
         """Ingest a completed backtest result payload.
@@ -186,7 +186,7 @@ class BacktestPanel(Static):
         self.result_data = result
         self.nav_series = result.get("nav_series", [])
 
-    # ── Rendering ────────────────────────────────────────────────────
+    # Rendering
 
     def _render_panel(self) -> str:
         """Render the complete backtest results panel."""

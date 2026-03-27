@@ -87,7 +87,7 @@ class ENSOClimateIndexIngester:
         self._config = get_config()
         self._logger = get_logger(__name__)
 
-    # ── Public API ───────────────────────────────────────────────────────
+    # Public API
 
     async def ingest_for_date_range(
         self,
@@ -146,7 +146,7 @@ class ENSOClimateIndexIngester:
         )
         return result
 
-    # ── Data fetch ───────────────────────────────────────────────────────
+    # Data fetch
 
     async def _fetch_oni(
         self,
@@ -223,7 +223,7 @@ class ENSOClimateIndexIngester:
 
         raise IngestionError(f"NOAA SOI failed after {MAX_RETRIES} retries")
 
-    # ── Parsing ──────────────────────────────────────────────────────────
+    # Parsing
 
     def _parse_oni_text(
         self,
@@ -348,7 +348,7 @@ class ENSOClimateIndexIngester:
 
         return records
 
-    # ── Validation ───────────────────────────────────────────────────────
+    # Validation
 
     def _validate_record(self, record: dict[str, Any]) -> None:
         """Validate an ENSO index record.
@@ -366,7 +366,7 @@ class ENSOClimateIndexIngester:
         if record["indicator"] == "soi_index" and (v < -50 or v > 50):
             raise DataQualityError(f"SOI value {v} outside plausible range [-50, 50] on {record['reference_date']}")
 
-    # ── Persistence ──────────────────────────────────────────────────────
+    # Persistence
 
     async def _upsert_records(
         self,

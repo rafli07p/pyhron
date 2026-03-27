@@ -74,7 +74,7 @@ class PositionManager:
         self._session_factory = session_factory
         self._log = logger.bind(component="PositionManager")
 
-    # -- public API ----------------------------------------------------------
+    # public API
 
     async def track_position(
         self,
@@ -217,7 +217,7 @@ class PositionManager:
         price = current_price if current_price is not None else pos.market_price
         return pos.quantity * price
 
-    # -- helpers -------------------------------------------------------------
+    # helpers
 
     async def _get_or_create(
         self,
