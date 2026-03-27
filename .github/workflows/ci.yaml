@@ -89,7 +89,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:2.17.2-pg16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: pyhron
           POSTGRES_PASSWORD: pyhron
@@ -158,7 +158,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:2.17.2-pg16
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: pyhron
           POSTGRES_PASSWORD: pyhron

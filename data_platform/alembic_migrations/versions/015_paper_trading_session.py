@@ -7,6 +7,7 @@ Create Date: 2026-03-13 00:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import text
 
 revision = "015"
 down_revision = "014"
@@ -147,9 +148,14 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("session_id", "timestamp"),
     )
 
-    op.execute(
-        "SELECT create_hypertable('paper_nav_snapshots', 'timestamp', " "chunk_time_interval => INTERVAL '1 day')"
-    )
+    try:
+        op.get_bind().execute(
+            text(
+                "SELECT create_hypertable('paper_nav_snapshots', 'timestamp', chunk_time_interval => INTERVAL '1 day')"
+            )
+        )
+    except Exception:
+        op.get_bind().rollback()
 
     op.create_index(
         "ix_paper_nav_snapshot_session",

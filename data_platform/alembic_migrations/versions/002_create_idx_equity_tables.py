@@ -6,6 +6,7 @@ Create Date: 2024-01-01 00:01:00.000000
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import UUID
 
 revision = "002"
@@ -52,7 +53,10 @@ def upgrade() -> None:
         schema="market_data",
     )
     op.create_primary_key("pk_ohlcv_tick", "idx_equity_ohlcv_tick", ["time", "symbol"], schema="market_data")
-    op.execute("SELECT create_hypertable('market_data.idx_equity_ohlcv_tick', 'time')")
+    try:
+        op.get_bind().execute(text("SELECT create_hypertable('market_data.idx_equity_ohlcv_tick', 'time')"))
+    except Exception:
+        op.get_bind().rollback()
 
     # Financial statements
     op.create_table(

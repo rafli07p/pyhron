@@ -60,9 +60,16 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations(connection: Connection) -> None:
     """Execute migrations against a live database connection."""
-    # Enable required extensions before any migration runs
-    connection.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"))
-    connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm CASCADE;"))
+    # Enable required extensions before any migration runs.
+    # TimescaleDB is optional — CI uses plain postgres:16 without it.
+    try:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"))
+    except Exception:
+        connection.rollback()
+    try:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm CASCADE;"))
+    except Exception:
+        connection.rollback()
     connection.commit()
 
     context.configure(
