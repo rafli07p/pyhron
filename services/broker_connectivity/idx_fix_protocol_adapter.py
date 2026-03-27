@@ -124,26 +124,26 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
         # Lot size validation
         if order.quantity <= 0:
             raise OrderRejectedError(
+                "Quantity must be positive",
                 reason="Quantity must be positive",
-                broker_order_id=None,
             )
         if order.quantity % IDX_LOT_SIZE != 0:
             raise OrderRejectedError(
+                f"Quantity {order.quantity} is not a multiple of IDX lot size ({IDX_LOT_SIZE})",
                 reason=f"Quantity {order.quantity} is not a multiple of IDX lot size ({IDX_LOT_SIZE})",
-                broker_order_id=None,
             )
 
         # Price validation for limit orders (order_type == 2 is LIMIT)
         if order.order_type == 2:
             if order.limit_price <= 0:
                 raise OrderRejectedError(
+                    "Limit price must be positive",
                     reason="Limit price must be positive",
-                    broker_order_id=None,
                 )
             if order.limit_price < IDX_MIN_PRICE:
                 raise OrderRejectedError(
+                    f"Price {order.limit_price} below IDX minimum ({IDX_MIN_PRICE} IDR)",
                     reason=f"Price {order.limit_price} below IDX minimum ({IDX_MIN_PRICE} IDR)",
-                    broker_order_id=None,
                 )
 
             # Tick size validation
@@ -151,8 +151,8 @@ class IDXFIXProtocolAdapter(BrokerAdapterInterface):
             price_int = int(order.limit_price)
             if price_int % tick != 0:
                 raise OrderRejectedError(
+                    f"Price {order.limit_price} not aligned to tick size {tick} for this price tier",
                     reason=f"Price {order.limit_price} not aligned to tick size {tick} for this price tier",
-                    broker_order_id=None,
                 )
 
     async def submit_order(self, order: OrderRequest) -> str:
