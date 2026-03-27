@@ -106,9 +106,7 @@ def check_hypertables(conn) -> list[str]:
     """
     errors = []
     # Check if TimescaleDB extension is available before querying its catalog.
-    has_timescale = conn.execute(
-        text("SELECT 1 FROM pg_extension WHERE extname = 'timescaledb'")
-    ).scalar()
+    has_timescale = conn.execute(text("SELECT 1 FROM pg_extension WHERE extname = 'timescaledb'")).scalar()
     if not has_timescale:
         print("  [SKIP] TimescaleDB not installed — hypertable check skipped")
         return errors
