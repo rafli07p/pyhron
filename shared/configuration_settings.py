@@ -131,8 +131,9 @@ class Config(BaseSettings):
     @classmethod
     def _validate_app_secret(cls, v: str, info: Any) -> str:
         _dev_defaults = {"local-dev-secret-key-min-32-chars-long"}
-        if info.data.get("app_env") == "production" and v in _dev_defaults:
-            msg = "app_secret_key must be changed from the default in production"
+        env = info.data.get("app_env", "development")
+        if env in ("production", "staging") and v in _dev_defaults:
+            msg = "app_secret_key must be set via APP_SECRET_KEY env var in production/staging"
             raise ValueError(msg)
         return v
 
@@ -140,16 +141,21 @@ class Config(BaseSettings):
     @classmethod
     def _validate_jwt_secret(cls, v: str, info: Any) -> str:
         _dev_defaults = {"local-dev-jwt-secret-change-in-prod-min-64"}
-        if info.data.get("app_env") == "production" and v in _dev_defaults:
-            msg = "jwt_secret_key must be changed from the default in production"
+        env = info.data.get("app_env", "development")
+        if env in ("production", "staging") and v in _dev_defaults:
+            msg = "jwt_secret_key must be set via JWT_SECRET_KEY env var in production/staging"
+            raise ValueError(msg)
+        if env in ("production", "staging") and len(v) < 64:
+            msg = "jwt_secret_key must be at least 64 characters in production/staging"
             raise ValueError(msg)
         return v
 
     @field_validator("allowed_cors_origins")
     @classmethod
     def _validate_cors_origins(cls, v: str, info: Any) -> str:
-        if info.data.get("app_env") == "production" and "*" in v:
-            msg = "allowed_cors_origins must not contain '*' in production"
+        env = info.data.get("app_env", "development")
+        if env in ("production", "staging") and "*" in v:
+            msg = "allowed_cors_origins must not contain '*' in production/staging"
             raise ValueError(msg)
         return v
 

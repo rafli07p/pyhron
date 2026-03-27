@@ -2,19 +2,22 @@
 
 JWT-based authentication with access and refresh tokens,
 user registration, and profile management.
+Uses database-backed user storage with brute-force lockout protection.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from typing import Any
-from uuid import UUID, uuid4
+from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from sqlalchemy import select
 
+from data_platform.database_models.user import User, UserRole
+from shared.async_database_session import get_session
 from shared.security.auth import (
     TokenError,
     TokenPayload,
@@ -31,9 +34,17 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/auth", tags=["authentication"])
 _limiter = Limiter(key_func=get_remote_address)
 
+# Lockout configuration
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_DURATION_MINUTES = 15
 
-# In-memory user store (swap for database in production)
-_users_db: dict[str, dict[str, Any]] = {}
+# Role mapping: DB UserRole -> JWT Role string
+_ROLE_MAP: dict[UserRole, str] = {
+    UserRole.ADMIN: Role.ADMIN.value,
+    UserRole.TRADER: Role.TRADER.value,
+    UserRole.ANALYST: Role.ANALYST.value,
+    UserRole.READONLY: Role.VIEWER.value,
+}
 
 
 # Request/Response Models
@@ -61,13 +72,13 @@ class RefreshRequest(BaseModel):
 
 
 class UserProfileResponse(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
+    id: UUID
     email: str
     full_name: str
     is_active: bool = True
     role: str = "VIEWER"
     tenant_id: str = "default"
-    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
+    created_at: datetime
 
 
 # Endpoints
@@ -77,25 +88,63 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
     """Authenticate user and return JWT access + refresh tokens."""
     logger.info("login_attempt", email=body.email)
 
-    user = _users_db.get(body.email)
-    if not user or not verify_password(body.password, user["hashed_password"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.email == body.email))
+        user = result.scalar_one_or_none()
 
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Check lockout
+        if user.locked_until and user.locked_until > datetime.now(tz=UTC):
+            logger.warning("login_locked_out", email=body.email)
+            raise HTTPException(
+                status_code=status.HTTP_423_LOCKED,
+                detail="Account temporarily locked due to too many failed attempts",
+            )
+
+        # Check active
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is deactivated",
+            )
+
+        # Verify password
+        if not verify_password(body.password, user.hashed_password):
+            user.failed_login_attempts += 1
+            if user.failed_login_attempts >= MAX_FAILED_ATTEMPTS:
+                user.locked_until = datetime.now(tz=UTC) + timedelta(minutes=LOCKOUT_DURATION_MINUTES)
+                logger.warning("account_locked", email=body.email, attempts=user.failed_login_attempts)
+            await session.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Successful login: reset failed attempts
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        user.last_login_at = datetime.now(tz=UTC)
+        await session.commit()
+
+    jwt_role = _ROLE_MAP.get(user.role, Role.VIEWER.value)
     access_token = create_access_token(
-        user_id=str(user["id"]),
-        tenant_id=user["tenant_id"],
-        role=user["role"],
+        user_id=str(user.id),
+        tenant_id="default",
+        role=jwt_role,
     )
     refresh_tok = create_refresh_token(
-        user_id=str(user["id"]),
-        tenant_id=user["tenant_id"],
+        user_id=str(user.id),
+        tenant_id="default",
     )
 
-    logger.info("login_success", email=body.email, user_id=str(user["id"]))
+    logger.info("login_success", email=body.email, user_id=str(user.id))
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_tok,
@@ -106,30 +155,35 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
 @_limiter.limit("3/minute")
 async def register(request: Request, body: RegisterRequest) -> UserProfileResponse:
     """Register a new user account."""
-    if body.email in _users_db:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email already registered",
+    async with get_session() as session:
+        # Check if email already exists
+        existing = await session.execute(select(User).where(User.email == body.email))
+        if existing.scalar_one_or_none() is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered",
+            )
+
+        user = User(
+            email=body.email,
+            hashed_password=hash_password(body.password),
+            role=UserRole.READONLY,
+            is_active=True,
+            is_verified=False,
         )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
 
-    user_id = uuid4()
-    _users_db[body.email] = {
-        "id": user_id,
-        "email": body.email,
-        "full_name": body.full_name,
-        "hashed_password": hash_password(body.password),
-        "role": Role.VIEWER.value,
-        "tenant_id": body.tenant_id,
-        "is_active": True,
-        "created_at": datetime.now(tz=UTC),
-    }
-
-    logger.info("user_registered", email=body.email, user_id=str(user_id))
+    logger.info("user_registered", email=body.email, user_id=str(user.id))
     return UserProfileResponse(
-        id=user_id,
-        email=body.email,
+        id=user.id,
+        email=user.email,
         full_name=body.full_name,
         tenant_id=body.tenant_id,
+        is_active=user.is_active,
+        role=_ROLE_MAP.get(user.role, Role.VIEWER.value),
+        created_at=user.created_at,
     )
 
 
@@ -152,18 +206,22 @@ async def refresh_token(request: Request, body: RefreshRequest) -> TokenResponse
             detail="Token is not a refresh token",
         )
 
-    # Find user to get current role
-    user = None
-    for u in _users_db.values():
-        if str(u["id"]) == payload.sub:
-            user = u
-            break
+    # Look up user in DB for current role
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.id == UUID(payload.sub)))
+        user = result.scalar_one_or_none()
 
-    role = user["role"] if user else "VIEWER"
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or deactivated",
+        )
+
+    jwt_role = _ROLE_MAP.get(user.role, Role.VIEWER.value)
     access_token = create_access_token(
         user_id=payload.sub,
         tenant_id=payload.tenant_id,
-        role=role,
+        role=jwt_role,
     )
     new_refresh = create_refresh_token(
         user_id=payload.sub,
@@ -182,22 +240,22 @@ async def get_current_user(
     user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> UserProfileResponse:
     """Get the authenticated user's profile."""
-    for u in _users_db.values():
-        if str(u["id"]) == user.sub:
-            return UserProfileResponse(
-                id=u["id"],
-                email=u["email"],
-                full_name=u["full_name"],
-                is_active=u["is_active"],
-                role=u["role"],
-                tenant_id=u["tenant_id"],
-                created_at=u["created_at"],
-            )
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.id == UUID(user.sub)))
+        db_user = result.scalar_one_or_none()
+
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
 
     return UserProfileResponse(
-        id=UUID(user.sub) if user.sub else uuid4(),
-        email="unknown",
-        full_name="Unknown User",
-        role=user.role,
-        tenant_id=user.tenant_id,
+        id=db_user.id,
+        email=db_user.email,
+        full_name=db_user.email.split("@")[0],
+        is_active=db_user.is_active,
+        role=_ROLE_MAP.get(db_user.role, Role.VIEWER.value),
+        tenant_id="default",
+        created_at=db_user.created_at,
     )

@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -65,6 +67,7 @@ async def get_government_bonds(
     min_tenor_years: int | None = Query(None, ge=0),
     max_tenor_years: int | None = Query(None, ge=0),
     limit: int = Query(50, ge=1, le=200),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[GovernmentBond]:
     """Get Indonesian government bond listings with yield data."""
     logger.info("govt_bonds_queried", bond_type=bond_type)
@@ -76,6 +79,7 @@ async def get_corporate_bonds(
     rating: str | None = Query(None, description="Credit rating filter"),
     issuer_symbol: str | None = Query(None, description="Filter by issuer stock symbol"),
     limit: int = Query(50, ge=1, le=200),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[CorporateBond]:
     """Get corporate bond listings with yield and rating data."""
     return []
@@ -85,6 +89,7 @@ async def get_corporate_bonds(
 async def get_yield_curve(
     curve_date: date | None = Query(None),
     bond_type: str = Query("SUN", description="SUN or SBSN"),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[YieldCurvePoint]:
     """Get government bond yield curve for a specific date."""
     return []
@@ -93,6 +98,7 @@ async def get_yield_curve(
 @router.get("/credit-spreads", response_model=list[CreditSpread])
 async def get_credit_spreads(
     rating: str | None = Query(None),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[CreditSpread]:
     """Get credit spreads by rating and tenor over government benchmark."""
     return []

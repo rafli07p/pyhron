@@ -9,9 +9,11 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -57,6 +59,7 @@ class CommodityDashboard(BaseModel):
 @router.get("/", response_model=list[CommodityPrice])
 async def list_commodities(
     category: str | None = Query(None, description="energy, metals, agriculture"),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[CommodityPrice]:
     """Get latest prices for all tracked commodities."""
     logger.info("commodities_queried", category=category)
@@ -64,7 +67,7 @@ async def list_commodities(
 
 
 @router.get("/dashboard", response_model=CommodityDashboard)
-async def get_commodity_dashboard() -> CommodityDashboard:
+async def get_commodity_dashboard(_user: TokenPayload = Depends(require_role(Role.VIEWER))) -> CommodityDashboard:
     """Get commodity dashboard with all prices and trends."""
     return CommodityDashboard(commodities=[])
 
@@ -75,6 +78,7 @@ async def get_commodity_history(
     start_date: date | None = Query(None),
     end_date: date | None = Query(None),
     limit: int = Query(100, ge=1, le=500),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> CommodityHistory:
     """Get historical price data for a specific commodity."""
     raise HTTPException(
