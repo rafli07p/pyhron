@@ -17,7 +17,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -49,6 +49,8 @@ class IdxEquityIndexConstituent(Base):
     removal_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     weight_pct: Mapped[Decimal | None] = mapped_column(Numeric(8, 4))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    instrument = relationship("IdxEquityInstrument", back_populates="index_memberships", lazy="selectin")
 
     __table_args__ = (
         UniqueConstraint("index_name", "symbol", "effective_date"),

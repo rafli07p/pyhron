@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from sqlalchemy import Date, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -54,6 +54,8 @@ class IdxEquityGovernanceFlag(Base):
     event_date: Mapped[date] = mapped_column(Date, nullable=False)
     source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     ingested_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    instrument = relationship("IdxEquityInstrument", back_populates="governance_flags", lazy="selectin")
 
     __table_args__ = (
         Index(

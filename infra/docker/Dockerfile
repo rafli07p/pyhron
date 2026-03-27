@@ -8,7 +8,7 @@
 # ---------------------------------------------------------------------------
 # Stage 1: Install dependencies with Poetry
 # ---------------------------------------------------------------------------
-FROM python:3.12.8-slim AS builder
+FROM python:3.12.8-slim@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0 AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -49,7 +49,7 @@ RUN poetry install --only main
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
 # ---------------------------------------------------------------------------
-FROM python:3.12.8-slim AS runtime
+FROM python:3.12.8-slim@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0 AS runtime
 
 LABEL maintainer="Pyhron Engineering <eng@pyhron.dev>" \
       description="Pyhron Quantitative Trading Platform API" \

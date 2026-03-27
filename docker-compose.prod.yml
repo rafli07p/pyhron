@@ -3,7 +3,7 @@
 
 services:
   postgres:
-    image: timescale/timescaledb:2.14.2-pg15
+    image: timescale/timescaledb:2.14.2-pg15@sha256:0698d9bf8cfd81e042f653ff3be767682b376bf0e95b431b2922e2d8a72195d1
     restart: unless-stopped
     environment:
       POSTGRES_DB: pyhron
