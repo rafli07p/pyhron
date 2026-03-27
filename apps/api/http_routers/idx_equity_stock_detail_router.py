@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -69,7 +71,7 @@ class OwnershipEntry(BaseModel):
 
 # Endpoints
 @router.get("/{symbol}", response_model=StockProfile)
-async def get_stock_profile(symbol: str) -> StockProfile:
+async def get_stock_profile(symbol: str, _user: TokenPayload = Depends(require_role(Role.VIEWER))) -> StockProfile:
     """Get comprehensive stock profile by ticker symbol."""
     logger.info("stock_profile_queried", symbol=symbol)
     raise HTTPException(
@@ -83,6 +85,7 @@ async def get_financials(
     symbol: str,
     period_type: str = Query("annual", pattern="^(annual|quarterly)$"),
     limit: int = Query(8, ge=1, le=20),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[FinancialSummary]:
     """Get historical financial statements for a stock."""
     logger.info("financials_queried", symbol=symbol, period_type=period_type)
@@ -94,12 +97,13 @@ async def get_corporate_actions(
     symbol: str,
     action_type: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[CorporateAction]:
     """Get corporate actions history (dividends, splits, rights issues)."""
     return []
 
 
 @router.get("/{symbol}/ownership", response_model=list[OwnershipEntry])
-async def get_ownership(symbol: str) -> list[OwnershipEntry]:
+async def get_ownership(symbol: str, _user: TokenPayload = Depends(require_role(Role.VIEWER))) -> list[OwnershipEntry]:
     """Get ownership breakdown for a stock."""
     return []

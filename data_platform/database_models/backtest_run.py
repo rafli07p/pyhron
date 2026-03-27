@@ -12,7 +12,7 @@ from typing import Any
 
 from sqlalchemy import Date, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -94,3 +94,6 @@ class BacktestRun(Base):
     started_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    strategy = relationship("Strategy", back_populates="backtest_runs", lazy="selectin")
+    user = relationship("User", lazy="selectin")

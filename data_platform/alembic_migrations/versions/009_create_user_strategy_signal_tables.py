@@ -6,6 +6,7 @@ Create Date: 2026-03-10 00:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, UUID
 
 revision = "009"
@@ -193,16 +194,24 @@ def upgrade() -> None:
     # CHECK constraints
     op.execute("ALTER TABLE signals ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)")
 
-    # Convert signals to TimescaleDB hypertable
-    op.execute("""
-        SELECT create_hypertable(
-            'signals',
-            'generated_at',
-            chunk_time_interval => INTERVAL '7 days',
-            if_not_exists => TRUE,
-            migrate_data => TRUE
-        );
-    """)
+    # Convert signals to TimescaleDB hypertable (optional — plain postgres in CI)
+    try:
+        conn = op.get_bind()
+        nested = conn.begin_nested()
+        conn.execute(
+            text("""
+            SELECT create_hypertable(
+                'signals',
+                'generated_at',
+                chunk_time_interval => INTERVAL '7 days',
+                if_not_exists => TRUE,
+                migrate_data => TRUE
+            );
+        """)
+        )
+        nested.commit()
+    except Exception:
+        nested.rollback()
 
 
 def downgrade() -> None:

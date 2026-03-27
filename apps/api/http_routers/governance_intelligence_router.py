@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -64,6 +66,7 @@ async def get_governance_flags(
     severity: str | None = Query(None, pattern="^(low|medium|high|critical)$", description="Min severity"),
     resolved: bool | None = Query(None, description="Filter by resolution status"),
     limit: int = Query(50, ge=1, le=200),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[GovernanceFlag]:
     """Get governance flags with optional symbol and severity filters."""
     logger.info("governance_flags_queried", symbol=symbol, severity=severity)
@@ -77,6 +80,7 @@ async def get_ownership_changes(
     start_date: date | None = Query(None),
     end_date: date | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[OwnershipChange]:
     """Get ownership change history for a specific stock."""
     logger.info("ownership_changes_queried", symbol=symbol)
@@ -87,6 +91,7 @@ async def get_ownership_changes(
 async def get_audit_opinions(
     symbol: str,
     limit: int = Query(5, ge=1, le=20),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[AuditOpinion]:
     """Get historical audit opinions for a specific stock."""
     return []

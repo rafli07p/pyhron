@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -51,6 +53,7 @@ class ScreenerResponse(BaseModel):
 # Endpoints
 @router.get("/screen", response_model=ScreenerResponse)
 async def screen_stocks(
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
     sector: str | None = Query(None, description="IDX sector code"),
     market_cap_min: Decimal | None = Query(None, description="Min market cap in IDR"),
     market_cap_max: Decimal | None = Query(None, description="Max market cap in IDR"),

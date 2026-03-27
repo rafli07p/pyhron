@@ -60,6 +60,8 @@ class IdxEquityInstrument(Base):
     financial_statements = relationship("IdxEquityFinancialStatement", back_populates="instrument", lazy="selectin")
     corporate_actions = relationship("IdxEquityCorporateAction", back_populates="instrument", lazy="selectin")
     computed_ratios = relationship("IdxEquityComputedRatio", back_populates="instrument", lazy="selectin")
+    governance_flags = relationship("IdxEquityGovernanceFlag", back_populates="instrument", lazy="selectin")
+    index_memberships = relationship("IdxEquityIndexConstituent", back_populates="instrument", lazy="selectin")
 
     __table_args__ = (
         Index("ix_idx_equity_instruments_exchange_active", "exchange", "is_active"),

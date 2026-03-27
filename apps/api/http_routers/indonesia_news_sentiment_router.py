@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -60,6 +62,7 @@ async def get_news(
     end_date: date | None = Query(None, description="End date for date range"),
     sentiment: str | None = Query(None, pattern="^(bullish|neutral|bearish)$", description="Filter by sentiment"),
     limit: int = Query(20, ge=1, le=100),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[NewsArticle]:
     """Get news articles with sentiment scores, optionally filtered."""
     logger.info("news_queried", symbol=symbol, category=category)
@@ -70,6 +73,7 @@ async def get_news(
 async def get_sentiment_summary(
     symbols: str | None = Query(None, description="Comma-separated symbols"),
     days: int = Query(7, ge=1, le=90, description="Lookback period in days"),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> SentimentSummaryResponse:
     """Get aggregated sentiment summary by symbol over a time period."""
     symbol_list = symbols.split(",") if symbols else []

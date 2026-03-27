@@ -1,7 +1,7 @@
 # =============================================================================
 # Pyhron API — Multi-Stage Dockerfile
 # =============================================================================
-FROM python:3.12.8-slim AS builder
+FROM python:3.12.8-slim@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0 AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -36,7 +36,7 @@ COPY governance_intelligence/ ./governance_intelligence/
 RUN poetry install --only main
 
 # ---------------------------------------------------------------------------
-FROM python:3.12.8-slim AS runtime
+FROM python:3.12.8-slim@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

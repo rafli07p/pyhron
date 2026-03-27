@@ -385,10 +385,14 @@ def create_rest_app() -> FastAPI:
 
     app.add_exception_handler(RateLimitExceeded, _handle_rate_limit)
 
-    # CORS
+    # CORS — reject wildcard origins when credentials are enabled
+    _cors_origins = [o.strip() for o in _get_settings().allowed_cors_origins.split(",") if o.strip()]
+    if "*" in _cors_origins and _get_settings().is_production:
+        logger.error("cors_wildcard_blocked", message="Wildcard CORS origin blocked in production")
+        _cors_origins = []
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[o.strip() for o in _get_settings().allowed_cors_origins.split(",") if o.strip()],
+        allow_origins=_cors_origins,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-CSRF-Token"],

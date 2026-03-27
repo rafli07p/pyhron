@@ -100,8 +100,17 @@ def check_tables(conn) -> list[str]:
 
 
 def check_hypertables(conn) -> list[str]:
-    """Verify TimescaleDB hypertables are configured."""
+    """Verify TimescaleDB hypertables are configured.
+
+    Skips gracefully when TimescaleDB is not installed (e.g. CI with plain postgres).
+    """
     errors = []
+    # Check if TimescaleDB extension is available before querying its catalog.
+    has_timescale = conn.execute(text("SELECT 1 FROM pg_extension WHERE extname = 'timescaledb'")).scalar()
+    if not has_timescale:
+        print("  [SKIP] TimescaleDB not installed — hypertable check skipped")
+        return errors
+
     result = conn.execute(text("SELECT hypertable_name FROM timescaledb_information.hypertables")).fetchall()
     existing = {r[0] for r in result}
     for table in EXPECTED_HYPERTABLES:
@@ -190,6 +199,9 @@ def main() -> None:
                     print(f"  [FAIL] {err}")
                 all_errors.extend(errors)
             except Exception as exc:
+                # Rollback the failed transaction so subsequent checks
+                # are not blocked by InFailedSqlTransaction.
+                conn.rollback()
                 msg = f"{name}: {exc}"
                 print(f"  [FAIL] {msg}")
                 all_errors.append(msg)

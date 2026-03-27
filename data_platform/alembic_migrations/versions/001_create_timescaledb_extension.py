@@ -5,6 +5,7 @@ Create Date: 2024-01-01 00:00:00.000000
 """
 
 from alembic import op
+from sqlalchemy import text
 
 revision = "001"
 down_revision = None
@@ -12,9 +13,25 @@ branch_labels = None
 depends_on = None
 
 
+def _try_execute(sql: str) -> None:
+    """Execute SQL, ignoring failures (e.g. missing extensions in plain postgres).
+
+    Uses a savepoint so that a failure only rolls back this statement,
+    not the entire Alembic migration transaction (which would drop the
+    alembic_version table).
+    """
+    conn = op.get_bind()
+    try:
+        nested = conn.begin_nested()
+        conn.execute(text(sql))
+        nested.commit()
+    except Exception:
+        nested.rollback()
+
+
 def upgrade() -> None:
     """Create TimescaleDB extension and all required schemas."""
-    op.execute("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE")
+    _try_execute("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE")
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
     op.execute("CREATE EXTENSION IF NOT EXISTS btree_gist")
     op.execute("CREATE SCHEMA IF NOT EXISTS market_data")

@@ -7,6 +7,7 @@ Create Date: 2026-03-13 12:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import text
 
 revision = "016"
 down_revision = "015"
@@ -160,9 +161,17 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id", "timestamp"),
     )
 
-    op.execute(
-        "SELECT create_hypertable('portfolio_risk_snapshot', 'timestamp', " "chunk_time_interval => INTERVAL '1 day')"
-    )
+    try:
+        conn = op.get_bind()
+        nested = conn.begin_nested()
+        conn.execute(
+            text(
+                "SELECT create_hypertable('portfolio_risk_snapshot', 'timestamp', chunk_time_interval => INTERVAL '1 day')"
+            )
+        )
+        nested.commit()
+    except Exception:
+        nested.rollback()
 
     op.create_index(
         "ix_portfolio_risk_snapshot_strategy",

@@ -9,9 +9,11 @@ from __future__ import annotations
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -58,7 +60,7 @@ class OHLCVBar(BaseModel):
 
 # Market Overview
 @router.get("/overview", response_model=MarketOverview)
-async def get_market_overview() -> MarketOverview:
+async def get_market_overview(_user: TokenPayload = Depends(require_role(Role.VIEWER))) -> MarketOverview:
     """Get current IDX market overview with index value and breadth."""
     # In production: query real-time market data feed
     raise HTTPException(
@@ -75,6 +77,7 @@ async def get_ohlcv(
     start: date | None = Query(None),
     end: date | None = Query(None),
     limit: int = Query(100, ge=1, le=1000),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[OHLCVBar]:
     """Get OHLCV bars for a symbol with configurable interval."""
     logger.info("ohlcv_queried", symbol=symbol, interval=interval, limit=limit)
@@ -88,13 +91,14 @@ async def list_instruments(
     sector: str | None = Query(None),
     lq45_only: bool = Query(False),
     board: str | None = Query(None),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[InstrumentResponse]:
     """List tradeable instruments with optional filters."""
     return []
 
 
 @router.get("/instruments/{symbol}", response_model=InstrumentResponse)
-async def get_instrument(symbol: str) -> InstrumentResponse:
+async def get_instrument(symbol: str, _user: TokenPayload = Depends(require_role(Role.VIEWER))) -> InstrumentResponse:
     """Get instrument details by ticker symbol."""
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,

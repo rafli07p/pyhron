@@ -10,7 +10,7 @@ from typing import Any
 
 from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -49,5 +49,10 @@ class Strategy(Base):
     risk_config: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    user = relationship("User", back_populates="strategies", lazy="selectin")
+    signals = relationship("Signal", back_populates="strategy", lazy="selectin")
+    backtest_runs = relationship("BacktestRun", back_populates="strategy", lazy="selectin")
+    paper_sessions = relationship("PaperTradingSession", back_populates="strategy", lazy="selectin")
 
     __table_args__ = (Index("ix_strategies_user_created", "user_id", created_at.desc()),)

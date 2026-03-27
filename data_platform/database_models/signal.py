@@ -13,7 +13,7 @@ from typing import Any
 
 from sqlalchemy import Boolean, ForeignKey, Index, Numeric, PrimaryKeyConstraint, String, text
 from sqlalchemy.dialects.postgresql import ENUM, JSONB, TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -67,6 +67,8 @@ class Signal(Base):
     acted_on: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     resulting_order_id: Mapped[str | None] = mapped_column(String(36))
     metadata_json: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+
+    strategy = relationship("Strategy", back_populates="signals", lazy="selectin")
 
     __table_args__ = (
         PrimaryKeyConstraint("id", "generated_at", name="pk_signals"),

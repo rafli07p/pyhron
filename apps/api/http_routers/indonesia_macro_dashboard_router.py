@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from shared.security.auth import TokenPayload
+from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -65,6 +67,7 @@ class PolicyEvent(BaseModel):
 @router.get("/indicators", response_model=list[MacroIndicator])
 async def get_indicators(
     category: str | None = Query(None, description="growth, inflation, monetary, trade"),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[MacroIndicator]:
     """Get latest values for all macro economic indicators."""
     logger.info("macro_indicators_queried", category=category)
@@ -77,6 +80,7 @@ async def get_indicator_history(
     start_date: date | None = Query(None),
     end_date: date | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> IndicatorHistory:
     """Get historical data for a specific macro indicator."""
     raise HTTPException(
@@ -88,6 +92,7 @@ async def get_indicator_history(
 @router.get("/yield-curve", response_model=list[YieldCurvePoint])
 async def get_yield_curve(
     curve_date: date | None = Query(None, description="Date for yield curve snapshot"),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[YieldCurvePoint]:
     """Get Indonesian government bond yield curve."""
     return []
@@ -98,6 +103,7 @@ async def get_policy_calendar(
     start_date: date | None = Query(None),
     end_date: date | None = Query(None),
     event_type: str | None = Query(None),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[PolicyEvent]:
     """Get Bank Indonesia and BPS policy/data release calendar."""
     return []

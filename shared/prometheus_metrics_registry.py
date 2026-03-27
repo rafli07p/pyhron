@@ -24,10 +24,11 @@ ORDERS_TOTAL = Counter(
 )
 
 # Positions
-# Values should be reported in whole IDR units (no decimals) to minimize float precision loss.
+# Values are reported in whole IDR units (no decimals) to avoid float precision
+# loss at large IDR magnitudes.  Callers must round to int before calling .set().
 POSITION_PNL = Gauge(
-    "pyhron_position_pnl_idr",
-    "Current unrealized P&L in IDR",
+    "pyhron_position_pnl_idr_whole",
+    "Current unrealized P&L in whole IDR (no decimals)",
     ["symbol", "strategy_id"],
 )
 

@@ -10,7 +10,7 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.dialects.postgresql import ENUM, TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -58,3 +58,5 @@ class User(Base):
     last_login_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    strategies = relationship("Strategy", back_populates="user", lazy="selectin")

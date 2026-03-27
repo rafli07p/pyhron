@@ -112,10 +112,31 @@ class IDXWalkForwardValidator:
         strategy: BaseStrategyInterface,
         market_data: pd.DataFrame,
         data_start: datetime,
+        param_grid: dict[str, list[Any]] | None = None,
+        optimization_metric: str = "sharpe_ratio",
     ) -> WalkForwardReport:
-        """Run walk-forward validation across all folds."""
+        """Run walk-forward validation with in-sample optimization.
+
+        For each fold, a grid search over ``param_grid`` is performed on the
+        in-sample window.  The best parameters are then applied to the
+        out-of-sample window.  When ``param_grid`` is ``None``, the strategy
+        is run with its current parameters (backward-compatible behaviour).
+        """
         params = strategy.get_parameters()
-        logger.info("walk_forward_start", strategy=params.name, n_folds=self._n_folds)
+        strategy_class = type(strategy)
+        logger.info(
+            "walk_forward_start",
+            strategy=params.name,
+            n_folds=self._n_folds,
+            has_param_grid=param_grid is not None,
+        )
+
+        # Build parameter combinations for grid search
+        param_combos: list[dict[str, Any]] = []
+        if param_grid:
+            keys = list(param_grid.keys())
+            values = list(param_grid.values())
+            param_combos = [dict(zip(keys, combo, strict=False)) for combo in itertools.product(*values)]
 
         folds: list[WalkForwardFold] = []
         all_oos_returns: list[pd.Series] = []
@@ -126,12 +147,37 @@ class IDXWalkForwardValidator:
             oos_start = is_end + timedelta(days=1)
             oos_end = oos_start + timedelta(days=self._oos_months * 30)
 
-            is_result = await self._engine.run(strategy, market_data, is_start, is_end)
+            # --- In-sample optimization ---
+            if param_combos:
+                best_is_metric = float("-inf")
+                best_strategy = strategy
+                for combo in param_combos:
+                    candidate = strategy_class(**combo)
+                    is_result = await self._engine.run(candidate, market_data, is_start, is_end)
+                    is_returns = is_result.equity_curve.pct_change().dropna()
+                    is_m = self._metrics.compute_all(is_returns)
+                    metric_val = is_m.get(optimization_metric, 0.0)
+                    if metric_val > best_is_metric:
+                        best_is_metric = metric_val
+                        best_strategy = candidate
+
+                logger.info(
+                    "walk_forward_is_optimization_complete",
+                    fold=i,
+                    best_params=best_strategy.get_parameters().custom,
+                    best_is_metric=best_is_metric,
+                )
+            else:
+                best_strategy = strategy
+
+            # Re-run IS with best params to record IS metrics
+            is_result = await self._engine.run(best_strategy, market_data, is_start, is_end)
             is_returns = is_result.equity_curve.pct_change().dropna()
             is_metrics = self._metrics.compute_all(is_returns)
 
+            # --- Out-of-sample evaluation with best IS parameters ---
             oos_result = await self._engine.run(
-                strategy,
+                best_strategy,
                 market_data,
                 oos_start,
                 oos_end,
@@ -160,7 +206,9 @@ class IDXWalkForwardValidator:
             logger.info(
                 "walk_forward_fold_complete",
                 fold=i,
-                oos_sharpe=oos_metrics.get("sharpe_ratio", 0.0),
+                is_sharpe=is_sharpe,
+                oos_sharpe=oos_sharpe,
+                degradation=round(degradation, 4),
             )
 
         combined_returns = pd.concat(all_oos_returns)

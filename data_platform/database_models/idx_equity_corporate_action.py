@@ -20,7 +20,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -70,6 +70,8 @@ class IdxEquityCorporateAction(Base):
     currency: Mapped[str] = mapped_column(String(3), default="IDR")
     notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    instrument = relationship("IdxEquityInstrument", back_populates="corporate_actions", lazy="selectin")
 
     __table_args__ = (
         UniqueConstraint("symbol", "action_type", "ex_date"),

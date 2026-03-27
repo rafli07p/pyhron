@@ -22,6 +22,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from enum import StrEnum
 
 from shared.structured_json_logger import get_logger
@@ -53,15 +54,15 @@ class TradeCostBreakdown:
         settlement_date: Expected settlement date (T+2).
     """
 
-    gross_value: float
-    commission: float
-    levy: float
-    vat: float
-    sales_tax: float
-    market_impact: float
-    total_cost: float
-    net_value: float
-    cost_bps: float
+    gross_value: Decimal
+    commission: Decimal
+    levy: Decimal
+    vat: Decimal
+    sales_tax: Decimal
+    market_impact: Decimal
+    total_cost: Decimal
+    net_value: Decimal
+    cost_bps: Decimal
     settlement_date: datetime
 
 
@@ -184,27 +185,30 @@ class IDXTransactionCostModel:
             side = TradeSide(side)
 
         trade_date = trade_date or datetime.now(tz=UTC)
-        gross_value = price * shares
+        # Use Decimal for all financial calculations to avoid floating-point errors
+        d_price = Decimal(str(price))
+        d_shares = Decimal(str(shares))
+        gross_value = d_price * d_shares
 
         if side == TradeSide.BUY:
-            commission = gross_value * self._buy_commission
+            commission = gross_value * Decimal(str(self._buy_commission))
         else:
-            commission = gross_value * self._sell_commission
+            commission = gross_value * Decimal(str(self._sell_commission))
 
-        levy = gross_value * self._levy_rate
-        vat = commission * self._vat_rate
-        sales_tax = gross_value * self._sell_tax if side == TradeSide.SELL else 0.0
+        levy = gross_value * Decimal(str(self._levy_rate))
+        vat = commission * Decimal(str(self._vat_rate))
+        sales_tax = gross_value * Decimal(str(self._sell_tax)) if side == TradeSide.SELL else Decimal("0")
 
         # Slippage (bid-ask spread)
-        slippage = gross_value * self._slippage_rate
+        slippage = gross_value * Decimal(str(self._slippage_rate))
 
         # Market impact
-        impact_pct = self.estimate_market_impact(shares, avg_daily_volume, daily_spread_pct)
+        impact_pct = Decimal(str(self.estimate_market_impact(shares, avg_daily_volume, daily_spread_pct)))
         market_impact = gross_value * impact_pct
 
         total_cost = commission + levy + vat + sales_tax + slippage + market_impact
         net_value = gross_value + total_cost if side == TradeSide.BUY else gross_value - total_cost
-        cost_bps = (total_cost / gross_value * 10_000) if gross_value > 0 else 0.0
+        cost_bps = (total_cost / gross_value * Decimal("10000")) if gross_value > 0 else Decimal("0")
 
         settlement = self._compute_settlement_date(trade_date)
 

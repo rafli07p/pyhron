@@ -20,7 +20,7 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from shared.async_database_session import Base
 
@@ -81,6 +81,11 @@ class PaperTradingSession(Base):
         ForeignKey("users.id"),
     )
 
+    strategy = relationship("Strategy", back_populates="paper_sessions", lazy="selectin")
+    creator = relationship("User", lazy="selectin")
+    nav_snapshots = relationship("PaperNavSnapshot", back_populates="session", lazy="selectin")
+    pnl_attributions = relationship("PaperPnlAttribution", back_populates="session", lazy="selectin")
+
     __table_args__ = (
         CheckConstraint("initial_capital_idr > 0", name="ck_paper_session_capital_positive"),
         CheckConstraint(
@@ -119,6 +124,8 @@ class PaperNavSnapshot(Base):
     daily_pnl_idr: Mapped[Decimal] = mapped_column(Numeric(20, 2), nullable=False)
     daily_return_pct: Mapped[Decimal] = mapped_column(Numeric(10, 6), nullable=False)
 
+    session = relationship("PaperTradingSession", back_populates="nav_snapshots", lazy="selectin")
+
     __table_args__ = (
         PrimaryKeyConstraint("session_id", "timestamp"),
         Index("ix_paper_nav_snapshot_session", "session_id", timestamp.desc()),
@@ -149,6 +156,8 @@ class PaperPnlAttribution(Base):
     signal_source: Mapped[str | None] = mapped_column(String(50))
     alpha_score: Mapped[Decimal | None] = mapped_column(Numeric(10, 6))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+
+    session = relationship("PaperTradingSession", back_populates="pnl_attributions", lazy="selectin")
 
     __table_args__ = (
         UniqueConstraint("session_id", "symbol", "date", name="uq_paper_pnl_session_symbol_date"),
