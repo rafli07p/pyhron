@@ -50,13 +50,12 @@ def _expect_db(resp_or_exc, allowed: tuple[int, ...] = (200, 404, 500, 503)):
     if isinstance(resp_or_exc, Exception):
         # DB/Redis/Kafka connection errors propagate through ASGI transport
         assert any(
-            kw in str(resp_or_exc).lower()
-            for kw in ("connect", "refused", "asyncpg", "redis", "kafka", "module")
+            kw in str(resp_or_exc).lower() for kw in ("connect", "refused", "asyncpg", "redis", "kafka", "module")
         ), f"Unexpected exception: {resp_or_exc}"
         return  # Infrastructure error — route reachable but service down
-    assert resp_or_exc.status_code in allowed, (
-        f"Expected one of {allowed}, got {resp_or_exc.status_code}: {resp_or_exc.text[:200]}"
-    )
+    assert (
+        resp_or_exc.status_code in allowed
+    ), f"Expected one of {allowed}, got {resp_or_exc.status_code}: {resp_or_exc.text[:200]}"
 
 
 async def _safe_request(client, method, url, **kwargs):
