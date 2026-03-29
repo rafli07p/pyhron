@@ -31,7 +31,7 @@ TESTS_PATH = "tests/e2e/test_demo_web_features.py"
 
 def run_tests() -> dict:
     """Execute pytest and capture JSON results."""
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [
             sys.executable,
             "-m",
