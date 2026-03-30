@@ -45,6 +45,27 @@ const stockData = [
   { symbol: 'EMTK', name: 'Elang Mahkota Teknologi', sector: 'Communication Services', market_cap: 32_000_000_000_000, price: 5525, change: 1.84, pe: 15.2, pb: 1.5, roe: 9.8, dy: 0.5 },
   { symbol: 'ACES', name: 'Ace Hardware Indonesia Tbk', sector: 'Consumer Discretionary', market_cap: 18_000_000_000_000, price: 1050, change: 0.96, pe: 25.8, pb: 4.5, roe: 17.4, dy: 2.0 },
   { symbol: 'JPFA', name: 'Japfa Comfeed Indonesia', sector: 'Consumer Staples', market_cap: 12_000_000_000_000, price: 1100, change: -1.35, pe: 8.5, pb: 1.2, roe: 14.1, dy: 3.5 },
+  { symbol: 'SIDO', name: 'Industri Jamu Sido Muncul', sector: 'Health Care', market_cap: 22_000_000_000_000, price: 735, change: 0.68, pe: 18.5, pb: 6.2, roe: 33.5, dy: 3.8 },
+  { symbol: 'MEDC', name: 'Medco Energi Internasional', sector: 'Energy', market_cap: 28_000_000_000_000, price: 1250, change: 1.22, pe: 5.8, pb: 0.9, roe: 15.6, dy: 2.4 },
+  { symbol: 'ESSA', name: 'Surya Esa Perkasa Tbk', sector: 'Energy', market_cap: 18_000_000_000_000, price: 830, change: -0.60, pe: 9.2, pb: 1.4, roe: 15.2, dy: 0.0 },
+  { symbol: 'AALI', name: 'Astra Agro Lestari Tbk', sector: 'Consumer Staples', market_cap: 22_000_000_000_000, price: 11400, change: 0.44, pe: 12.1, pb: 1.3, roe: 10.8, dy: 4.2 },
+  { symbol: 'LSIP', name: 'PP London Sumatra Indonesia', sector: 'Consumer Staples', market_cap: 9_500_000_000_000, price: 1395, change: 0.72, pe: 10.8, pb: 1.1, roe: 10.2, dy: 3.6 },
+  { symbol: 'JSMR', name: 'Jasa Marga Tbk', sector: 'Industrials', market_cap: 45_000_000_000_000, price: 5850, change: -0.85, pe: 18.3, pb: 2.2, roe: 12.0, dy: 1.5 },
+  { symbol: 'WIKA', name: 'Wijaya Karya Tbk', sector: 'Industrials', market_cap: 12_000_000_000_000, price: 1340, change: -1.47, pe: 15.2, pb: 0.8, roe: 5.3, dy: 1.2 },
+  { symbol: 'PTPP', name: 'PP (Persero) Tbk', sector: 'Industrials', market_cap: 8_500_000_000_000, price: 1395, change: -0.36, pe: 12.8, pb: 0.7, roe: 5.5, dy: 1.8 },
+  { symbol: 'BBTN', name: 'Bank Tabungan Negara Tbk', sector: 'Financials', market_cap: 28_000_000_000_000, price: 2660, change: 0.76, pe: 7.5, pb: 0.9, roe: 12.0, dy: 4.8 },
+  { symbol: 'BSDE', name: 'Bumi Serpong Damai Tbk', sector: 'Real Estate', market_cap: 24_000_000_000_000, price: 1280, change: 1.19, pe: 11.5, pb: 0.8, roe: 7.0, dy: 2.0 },
+  { symbol: 'CTRA', name: 'Ciputra Development Tbk', sector: 'Real Estate', market_cap: 20_000_000_000_000, price: 1085, change: 0.93, pe: 9.8, pb: 1.2, roe: 12.2, dy: 2.5 },
+  { symbol: 'PWON', name: 'Pakuwon Jati Tbk', sector: 'Real Estate', market_cap: 18_000_000_000_000, price: 374, change: -0.27, pe: 8.5, pb: 1.1, roe: 12.9, dy: 3.0 },
+  { symbol: 'TBIG', name: 'Tower Bersama Infrastructure', sector: 'Communication Services', market_cap: 48_000_000_000_000, price: 2130, change: 0.47, pe: 22.5, pb: 8.5, roe: 37.8, dy: 2.2 },
+  { symbol: 'INKP', name: 'Indah Kiat Pulp & Paper', sector: 'Materials', market_cap: 58_000_000_000_000, price: 10500, change: -0.95, pe: 8.2, pb: 0.7, roe: 8.5, dy: 2.8 },
+  { symbol: 'TKIM', name: 'Pabrik Kertas Tjiwi Kimia', sector: 'Materials', market_cap: 22_000_000_000_000, price: 7050, change: -0.42, pe: 6.8, pb: 0.5, roe: 7.4, dy: 3.2 },
+  { symbol: 'SRTG', name: 'Saratoga Investama Sedaya', sector: 'Financials', market_cap: 32_000_000_000_000, price: 2350, change: 1.30, pe: 5.2, pb: 0.6, roe: 11.5, dy: 4.5 },
+  { symbol: 'AMRT', name: 'Sumber Alfaria Trijaya Tbk', sector: 'Consumer Staples', market_cap: 65_000_000_000_000, price: 2490, change: 0.81, pe: 32.5, pb: 8.2, roe: 25.2, dy: 0.8 },
+  { symbol: 'MNCN', name: 'Media Nusantara Citra Tbk', sector: 'Communication Services', market_cap: 8_500_000_000_000, price: 580, change: -2.52, pe: 5.8, pb: 0.6, roe: 10.3, dy: 6.2 },
+  { symbol: 'TPIA', name: 'Chandra Asri Pacific Tbk', sector: 'Materials', market_cap: 85_000_000_000_000, price: 8250, change: -1.19, pe: 28.5, pb: 2.1, roe: 7.4, dy: 0.5 },
+  { symbol: 'UNTR', name: 'United Tractors Tbk', sector: 'Industrials', market_cap: 110_000_000_000_000, price: 29500, change: 0.51, pe: 6.8, pb: 1.5, roe: 22.1, dy: 6.8 },
+  { symbol: 'INTP', name: 'Indocement Tunggal Prakarsa', sector: 'Materials', market_cap: 42_000_000_000_000, price: 11400, change: 0.22, pe: 20.5, pb: 2.0, roe: 9.8, dy: 2.5 },
 ];
 
 export const mockInstruments: InstrumentResponse[] = stockData.map((s) => ({
@@ -54,7 +75,7 @@ export const mockInstruments: InstrumentResponse[] = stockData.map((s) => ({
   sector: s.sector,
   industry: null,
   market_cap: s.market_cap,
-  is_lq45: ['BBCA', 'BBRI', 'TLKM', 'ASII', 'BMRI', 'UNVR', 'BBNI', 'BRIS', 'ADRO', 'ITMG', 'PTBA', 'ANTM', 'INCO', 'MDKA', 'KLBF', 'ICBP', 'INDF', 'HMSP', 'GGRM', 'EXCL', 'SMGR', 'CPIN', 'PGAS', 'TOWR', 'BRPT', 'EMTK', 'ERAA', 'MAPI', 'ACES', 'JPFA'].includes(s.symbol),
+  is_lq45: ['BBCA', 'BBRI', 'TLKM', 'ASII', 'BMRI', 'UNVR', 'BBNI', 'BRIS', 'ADRO', 'ITMG', 'PTBA', 'ANTM', 'INCO', 'MDKA', 'KLBF', 'ICBP', 'INDF', 'HMSP', 'GGRM', 'EXCL', 'SMGR', 'CPIN', 'PGAS', 'TOWR', 'BRPT', 'EMTK', 'ERAA', 'MAPI', 'ACES', 'JPFA', 'SIDO', 'MEDC', 'BBTN', 'AMRT', 'UNTR', 'INKP', 'TPIA', 'JSMR', 'TBIG', 'BSDE', 'CTRA', 'SRTG', 'INTP', 'MNCN', 'ESSA'].includes(s.symbol),
   board: 'Main',
 }));
 

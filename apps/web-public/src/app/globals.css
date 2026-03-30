@@ -33,8 +33,8 @@
   --color-accent-500: #00d4aa;
   --color-accent-600: #00b894;
   --color-accent-700: #009b7d;
-  --color-positive: #10b981;
-  --color-negative: #ef4444;
+  --color-positive: #047857;
+  --color-negative: #dc2626;
   --color-warning: #f59e0b;
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
@@ -54,7 +54,7 @@
   --bg-tertiary: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #475569;
   --border-color: #e2e8f0;
 }
 

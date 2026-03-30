@@ -25,7 +25,7 @@ const config: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               `connect-src 'self' ${FASTAPI_URL} wss://*`,
               "img-src 'self' data: blob:",
