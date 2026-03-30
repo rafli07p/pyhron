@@ -30,6 +30,7 @@ from strategy_engine.base_strategy_interface import (
     StrategySignal,
     TickData,
 )
+from strategy_engine.survivorship_filter import filter_tradable_symbols
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -97,6 +98,7 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
         pbv_weight: float = 0.5,
         roe_weight: float = 0.5,
         strategy_id: str = "idx_value_pbv_roe",
+        instrument_metadata: pd.DataFrame | None = None,
     ) -> None:
         self._universe = universe or list(_DEFAULT_UNIVERSE)
         self._top_quantile = top_quantile
@@ -104,6 +106,7 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
         self._pbv_weight = pbv_weight
         self._roe_weight = roe_weight
         self._strategy_id = strategy_id
+        self._instrument_metadata = instrument_metadata
 
         logger.info(
             "value_strategy_initialised",
@@ -158,8 +161,11 @@ class IDXValueFactorStrategy(BaseStrategyInterface):
         else:
             latest = market_data
 
+        # Survivorship bias filter (M-1)
+        universe = filter_tradable_symbols(self._universe, as_of_date, self._instrument_metadata)
+
         fundamentals = latest[["pbv", "roe"]].copy()
-        fundamentals = fundamentals.reindex(self._universe).dropna()
+        fundamentals = fundamentals.reindex(universe).dropna()
 
         # Filter value traps: ROE must exceed minimum threshold.
         fundamentals = fundamentals[fundamentals["roe"] >= self._min_roe]

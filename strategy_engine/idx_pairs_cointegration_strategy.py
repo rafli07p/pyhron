@@ -31,6 +31,7 @@ from strategy_engine.base_strategy_interface import (
     StrategySignal,
     TickData,
 )
+from strategy_engine.survivorship_filter import filter_tradable_symbols
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -103,6 +104,7 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
         zscore_exit: float = 0.5,
         coint_pvalue: float = 0.05,
         strategy_id: str = "idx_pairs_coint",
+        instrument_metadata: pd.DataFrame | None = None,
     ) -> None:
         self._pairs = pair_candidates or list(_DEFAULT_PAIR_CANDIDATES)
         self._formation_days = formation_days
@@ -110,6 +112,7 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
         self._zscore_exit = zscore_exit
         self._coint_pvalue = coint_pvalue
         self._strategy_id = strategy_id
+        self._instrument_metadata = instrument_metadata
         self._kalman_filters: dict[tuple[str, str], _KalmanHedgeRatio] = {}
         self._bar_buffer: dict[str, list[BarData]] = {}
 
@@ -174,7 +177,13 @@ class IDXPairsCointegrationStrategy(BaseStrategyInterface):
         close = close.iloc[-self._formation_days :]
         signals: list[StrategySignal] = []
 
+        # Survivorship bias filter (M-1): only trade pairs where both symbols are tradable
+        all_pair_symbols = list({s for pair in self._pairs for s in pair})
+        tradable = set(filter_tradable_symbols(all_pair_symbols, as_of_date, self._instrument_metadata))
+
         for sym_a, sym_b in self._pairs:
+            if sym_a not in tradable or sym_b not in tradable:
+                continue
             if sym_a not in close.columns or sym_b not in close.columns:
                 continue
 

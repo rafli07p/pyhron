@@ -29,6 +29,7 @@ from strategy_engine.base_strategy_interface import (
     StrategySignal,
     TickData,
 )
+from strategy_engine.survivorship_filter import filter_tradable_symbols
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -73,12 +74,14 @@ class IDXSectorRotationStrategy(BaseStrategyInterface):
         n_sectors: int = 3,
         stocks_per_sector: int = 3,
         strategy_id: str = "idx_sector_rotation",
+        instrument_metadata: pd.DataFrame | None = None,
     ) -> None:
         self._sectors = sector_map or dict(_SECTOR_CONSTITUENTS)
         self._lookback_months = lookback_months
         self._n_sectors = n_sectors
         self._stocks_per_sector = stocks_per_sector
         self._strategy_id = strategy_id
+        self._instrument_metadata = instrument_metadata
 
         self._all_symbols = [s for syms in self._sectors.values() for s in syms]
 
@@ -132,10 +135,13 @@ class IDXSectorRotationStrategy(BaseStrategyInterface):
 
         window = close.iloc[-lookback_days:]
 
+        # Survivorship bias filter (M-1)
+        tradable = set(filter_tradable_symbols(self._all_symbols, as_of_date, self._instrument_metadata))
+
         # Compute sector returns (equal-weight of constituents).
         sector_returns: dict[str, float] = {}
         for sector, constituents in self._sectors.items():
-            available = [c for c in constituents if c in window.columns]
+            available = [c for c in constituents if c in window.columns and c in tradable]
             if not available:
                 continue
             sector_ret = window[available].pct_change().mean(axis=1).add(1).prod() - 1
@@ -150,7 +156,7 @@ class IDXSectorRotationStrategy(BaseStrategyInterface):
         # Within each top sector, pick best-performing stocks.
         selected: list[tuple[str, float, str]] = []
         for sector, sector_ret in top_sectors:
-            constituents = [c for c in self._sectors[sector] if c in window.columns]
+            constituents = [c for c in self._sectors[sector] if c in window.columns and c in tradable]
             stock_returns: dict[str, float] = {}
             for sym in constituents:
                 sym_close = window[sym].dropna()
