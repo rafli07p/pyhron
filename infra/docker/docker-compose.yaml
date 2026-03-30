@@ -236,7 +236,7 @@ services:
     profiles:
       - monitoring
     ports:
-      - "${GRAFANA_PORT:-3000}:3000"
+      - "${GRAFANA_PORT:-3100}:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-pyhron_grafana}
@@ -250,6 +250,22 @@ services:
       retries: 3
     volumes:
       - grafana-data:/var/lib/grafana
+
+  web-public:
+    build:
+      context: ../../apps/web-public
+      dockerfile: Dockerfile
+    container_name: pyhron-web-public
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      FASTAPI_URL: http://api:8000
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${APP_SECRET_KEY}
+      NEXT_PUBLIC_USE_MSW: "false"
+    depends_on:
+      - api
 
 volumes:
   pgdata:
