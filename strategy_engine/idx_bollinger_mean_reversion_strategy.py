@@ -26,6 +26,7 @@ from strategy_engine.base_strategy_interface import (
     StrategySignal,
     TickData,
 )
+from strategy_engine.survivorship_filter import filter_tradable_symbols
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -89,6 +90,7 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
         ihsg_symbol: str = "IHSG",
         equal_weight_per_position: float = 0.05,
         strategy_id: str = "idx_bollinger_mean_reversion",
+        instrument_metadata: pd.DataFrame | None = None,
     ) -> None:
         self._universe = universe or list(_DEFAULT_UNIVERSE)
         self._bb_period = bb_period
@@ -97,6 +99,7 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
         self._ihsg_symbol = ihsg_symbol
         self._weight = equal_weight_per_position
         self._strategy_id = strategy_id
+        self._instrument_metadata = instrument_metadata
 
         # Track open positions: symbol -> entry price
         self._open_positions: dict[str, float] = {}
@@ -283,9 +286,12 @@ class IDXBollingerMeanReversionStrategy(BaseStrategyInterface):
         # Regime filter
         is_bullish = self._check_regime_filter(close_prices)
 
+        # Survivorship bias filter (M-1)
+        universe = filter_tradable_symbols(self._universe, as_of_date, self._instrument_metadata)
+
         signals: list[StrategySignal] = []
 
-        for symbol in self._universe:
+        for symbol in universe:
             if symbol not in close_prices.columns:
                 continue
 

@@ -35,6 +35,8 @@ ENV/
 htmlcov/
 coverage.xml
 *.cover
+playwright-report/
+test-results/
 
 # Linting & Type Checking
 .mypy_cache/
