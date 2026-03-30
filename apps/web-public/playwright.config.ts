@@ -13,16 +13,39 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 5'] } },
+    // Setup project — creates auth storage state
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Public pages — no auth required
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /dashboard\.spec\.ts|auth\.setup\.ts/,
+    },
+    // Authenticated pages — depends on setup
+    {
+      name: 'authenticated',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/user.json',
+      },
+      testMatch: /dashboard\.spec\.ts/,
+      dependencies: ['setup'],
+    },
+    // Mobile viewport
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 5'] },
+      testMatch: /responsive\.spec\.ts/,
+    },
   ],
   webServer: {
     command: 'npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: {
-      NEXT_PUBLIC_USE_MSW: 'false',
-    },
   },
 });
