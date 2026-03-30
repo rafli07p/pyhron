@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { StockChart } from '@/components/charts/StockChart';
+import { MonthlyReturnsHeatmap } from '@/components/charts/MonthlyReturnsHeatmap';
+import { SectorPieChart } from '@/components/charts/SectorPieChart';
+import { SectorTreemap } from '@/components/charts/SectorTreemap';
 import { mockIndexData, mockIndexPerformance } from '@/lib/mock/data/indices';
 import { formatPct, pctColor } from '@/lib/utils/format';
 
@@ -22,24 +25,49 @@ const metrics = [
   { label: 'Calmar', value: '0.56' },
 ];
 
+function computeMonthlyReturns(data: { timestamp: string; close: number }[]) {
+  const monthlyMap = new Map<string, { first: number; last: number }>();
+  for (const bar of data) {
+    const date = bar.timestamp.split('T')[0];
+    const key = date.substring(0, 7);
+    const entry = monthlyMap.get(key);
+    if (!entry) {
+      monthlyMap.set(key, { first: bar.close, last: bar.close });
+    } else {
+      entry.last = bar.close;
+    }
+  }
+  const returns: { year: number; month: number; value: number }[] = [];
+  for (const [key, val] of monthlyMap) {
+    const [yearStr, monthStr] = key.split('-');
+    const ret = ((val.last - val.first) / val.first) * 100;
+    returns.push({ year: parseInt(yearStr), month: parseInt(monthStr), value: Math.round(ret * 10) / 10 });
+  }
+  return returns;
+}
+
 export function IndexDashboard() {
   const [selectedIndex, setSelectedIndex] = useState('composite');
 
-  const chartData = (mockIndexData[selectedIndex] || []).map((bar) => ({
+  const indexData = mockIndexData[selectedIndex] || [];
+
+  const chartData = indexData.map((bar) => ({
     time: bar.timestamp.split('T')[0],
     value: bar.close,
   }));
 
+  const monthlyReturns = useMemo(() => computeMonthlyReturns(indexData), [indexData]);
+
   const handleExportCSV = () => {
-    const data = mockIndexData[selectedIndex] || [];
+    const today = new Date().toISOString().split('T')[0];
     const csv = ['Date,Open,High,Low,Close,Volume']
-      .concat(data.map((d) => `${d.timestamp.split('T')[0]},${d.open},${d.high},${d.low},${d.close},${d.volume}`))
+      .concat(indexData.map((d) => `${d.timestamp.split('T')[0]},${d.open},${d.high},${d.low},${d.close},${d.volume}`))
       .join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `pyhron-${selectedIndex}-data.csv`;
+    a.download = `pyhron-${selectedIndex}-${today}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -105,6 +133,22 @@ export function IndexDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-lg border border-border bg-bg-secondary p-6">
+          <h3 className="text-sm font-medium text-text-muted mb-4">Sector Allocation</h3>
+          <SectorPieChart />
+        </div>
+        <div className="rounded-lg border border-border bg-bg-secondary p-6">
+          <h3 className="text-sm font-medium text-text-muted mb-4">Sector Heatmap</h3>
+          <SectorTreemap />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-bg-secondary p-6">
+        <h3 className="text-sm font-medium text-text-muted mb-4">Monthly Returns Heatmap</h3>
+        <MonthlyReturnsHeatmap data={monthlyReturns} />
       </div>
     </div>
   );

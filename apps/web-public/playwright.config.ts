@@ -6,7 +6,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? 'list' : 'html',
+  timeout: 30_000,
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -16,8 +17,12 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+    env: {
+      NEXT_PUBLIC_USE_MSW: 'false',
+    },
   },
 });
