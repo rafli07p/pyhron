@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { mockArticles } from '@/lib/mock/data/research';
 import { formatDate } from '@/lib/utils/format';
 import { ShareButtons } from '@/components/research/ShareButtons';
+import { renderMDX } from '@/lib/mdx/render';
+import { articleContent } from '@/lib/mdx/articles';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -31,6 +33,11 @@ export default async function ResearchArticlePage({ params }: { params: Promise<
     );
   }
 
+  const rawMdx = articleContent[slug];
+  const mdxContent = rawMdx
+    ? await renderMDX(rawMdx)
+    : <><p>{article.excerpt}</p><p>Full article content coming soon.</p></>;
+
   const related = mockArticles.filter((a) => a.slug !== slug && a.category === article.category).slice(0, 3);
 
   return (
@@ -58,27 +65,7 @@ export default async function ResearchArticlePage({ params }: { params: Promise<
           </div>
 
           <div className="prose prose-lg max-w-none text-text-secondary">
-            <p>{article.excerpt}</p>
-            <p>
-              This is a placeholder for the full MDX content of the article. In production, this would be rendered
-              via next-mdx-remote with KaTeX equations, Shiki code blocks, and embedded Recharts/D3 charts.
-            </p>
-            <h2>Methodology</h2>
-            <p>
-              The analysis uses daily return data from IDX for the period 2015-2025. Factor returns are computed
-              following the Fama-French methodology with adjustments for IDX market structure including T+2 settlement
-              and 100-share lot sizes.
-            </p>
-            <h2>Results</h2>
-            <p>
-              Our findings show persistent value and momentum premia in Indonesian equities, with the momentum factor
-              delivering the highest risk-adjusted returns (Sharpe ratio of 0.82) over the sample period.
-            </p>
-            <h2>Conclusion</h2>
-            <p>
-              Factor investing in IDX offers meaningful diversification benefits compared to cap-weighted benchmarks.
-              The results support systematic factor allocation strategies for institutional investors in Indonesia.
-            </p>
+            {mdxContent}
           </div>
 
           <div className="mt-12 flex items-center gap-4 border-t border-border pt-8">

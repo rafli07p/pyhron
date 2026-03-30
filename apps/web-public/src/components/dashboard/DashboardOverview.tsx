@@ -1,6 +1,7 @@
 'use client';
 
 import { MetricCard } from './MetricCard';
+import { PnLChart } from '@/components/charts/PnLChart';
 
 const metrics = [
   { label: 'NAV', value: 'Rp 1.25B', change: 2.34 },
@@ -29,9 +30,7 @@ export function DashboardOverview() {
 
       <div className="rounded-lg border border-border bg-bg-secondary p-6">
         <h3 className="text-sm font-medium text-text-muted mb-4">P&L Chart</h3>
-        <div className="h-[300px] flex items-center justify-center text-text-muted">
-          P&L line chart placeholder (Recharts)
-        </div>
+        <PnLChart />
       </div>
 
       <div className="rounded-lg border border-border bg-bg-secondary p-6">

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { PortfolioCharts } from '@/components/dashboard/PortfolioCharts';
 
 export const metadata: Metadata = { title: 'Portfolio' };
 
@@ -6,12 +7,7 @@ export default function PortfolioPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-medium text-text-primary">Portfolio</h1>
-      <div className="rounded-lg border border-border bg-bg-secondary p-6">
-        <h3 className="text-sm font-medium text-text-muted mb-4">Factor Exposure</h3>
-        <div className="h-[300px] flex items-center justify-center text-text-muted">
-          Factor exposure bar chart placeholder (Recharts)
-        </div>
-      </div>
+      <PortfolioCharts />
       <div className="rounded-lg border border-border bg-bg-secondary p-6">
         <h3 className="text-sm font-medium text-text-muted mb-4">Positions</h3>
         <div className="overflow-x-auto">
