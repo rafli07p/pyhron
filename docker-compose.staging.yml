@@ -1,10 +1,13 @@
+# =============================================================================
 # Pyhron Trading Platform — Docker Compose (Staging)
+# =============================================================================
 # Staging environment that mirrors production with resource limits,
 # health checks, and monitoring enabled by default.
 #
 # Usage:
 #   docker compose -f infra/docker/docker-compose.yaml -f docker-compose.staging.yml up -d
 #   docker compose -f infra/docker/docker-compose.yaml -f docker-compose.staging.yml down
+# =============================================================================
 
 services:
   # TimescaleDB — With production-like settings
@@ -121,7 +124,7 @@ services:
         limits:
           cpus: "0.5"
           memory: 512M
-
+          
   # Monitoring — Enabled by default in staging
   prometheus:
     profiles: []  # Override dev profile, always run in staging
