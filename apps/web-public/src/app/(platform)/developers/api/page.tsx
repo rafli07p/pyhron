@@ -199,11 +199,11 @@ const methodColors: Record<string, string> = {
 };
 
 const errorCodes = [
-  { code: '400', description: 'Bad Request — Invalid parameters or malformed request body.' },
-  { code: '401', description: 'Unauthorized — Missing or expired access token.' },
-  { code: '403', description: 'Forbidden — Insufficient permissions for this resource.' },
-  { code: '404', description: 'Not Found — Resource does not exist.' },
-  { code: '429', description: 'Rate Limited — Too many requests. Check X-RateLimit-* headers.' },
+  { code: '400', description: 'Bad Request \u2014 Invalid parameters or malformed request body.' },
+  { code: '401', description: 'Unauthorized \u2014 Missing or expired access token.' },
+  { code: '403', description: 'Forbidden \u2014 Insufficient permissions for this resource.' },
+  { code: '404', description: 'Not Found \u2014 Resource does not exist.' },
+  { code: '429', description: 'Rate Limited \u2014 Too many requests. Check X-RateLimit-* headers.' },
 ];
 
 export default function ApiDocsPage() {
@@ -336,7 +336,7 @@ ws.send(JSON.stringify({ type: "AUTH", token: accessToken }));
 ws.send(JSON.stringify({ type: "SUBSCRIBE", channel: "quotes", key: "BBCA" }));
 
 // Available channels: quotes, orders, positions, signals, paper_nav
-// Numeric values are JSON strings (Decimal precision) — parse with parseFloat()`}</pre>
+// Numeric values are JSON strings (Decimal precision) \u2014 parse with parseFloat()`}</pre>
       </section>
 
       {/* Python SDK */}
