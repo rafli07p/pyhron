@@ -4,22 +4,20 @@ Advanced multi-factor stock screening for the Indonesia Stock Exchange
 with fundamental and technical filters.
 """
 
-
-
-
 from decimal import Decimal
+
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 
+from data_platform.database_models.idx_equity_computed_ratio import IdxEquityComputedRatio
+from data_platform.database_models.idx_equity_index_constituent import IdxEquityIndexConstituent
+from data_platform.database_models.idx_equity_instrument import IdxEquityInstrument
+from data_platform.database_models.idx_equity_ohlcv_tick import IdxEquityOhlcvTick
 from shared.async_database_session import get_session
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
-from data_platform.database_models.idx_equity_instrument import IdxEquityInstrument
-from data_platform.database_models.idx_equity_ohlcv_tick import IdxEquityOhlcvTick
-from data_platform.database_models.idx_equity_computed_ratio import IdxEquityComputedRatio
-from data_platform.database_models.idx_equity_index_constituent import IdxEquityIndexConstituent
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/screener", tags=["screener"])

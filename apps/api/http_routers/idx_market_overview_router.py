@@ -4,22 +4,20 @@ Market summary, OHLCV bars, and instrument lookup
 for the Indonesia Stock Exchange.
 """
 
-
-
-
 from datetime import UTC, date, datetime
 from decimal import Decimal
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func, exists
+from sqlalchemy import exists, func, select
 
+from data_platform.database_models.idx_equity_index_constituent import IdxEquityIndexConstituent
+from data_platform.database_models.idx_equity_instrument import IdxEquityInstrument
+from data_platform.database_models.idx_equity_ohlcv_tick import IdxEquityOhlcvTick
 from shared.async_database_session import get_session
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
-from data_platform.database_models.idx_equity_instrument import IdxEquityInstrument
-from data_platform.database_models.idx_equity_ohlcv_tick import IdxEquityOhlcvTick
-from data_platform.database_models.idx_equity_index_constituent import IdxEquityIndexConstituent
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/market", tags=["market-data"])
@@ -123,9 +121,7 @@ async def get_ohlcv(
     logger.info("ohlcv_queried", symbol=symbol, interval=interval, limit=limit)
 
     async with get_session() as session:
-        stmt = select(IdxEquityOhlcvTick).where(
-            IdxEquityOhlcvTick.symbol == symbol.upper()
-        )
+        stmt = select(IdxEquityOhlcvTick).where(IdxEquityOhlcvTick.symbol == symbol.upper())
         if start is not None:
             stmt = stmt.where(IdxEquityOhlcvTick.time >= datetime.combine(start, datetime.min.time(), tzinfo=UTC))
         if end is not None:
@@ -180,19 +176,14 @@ async def list_instruments(
         )
         lq45_symbols = {row[0] for row in lq45_result.all()}
 
-    return [
-        _instrument_to_response(inst, inst.symbol in lq45_symbols)
-        for inst in instruments
-    ]
+    return [_instrument_to_response(inst, inst.symbol in lq45_symbols) for inst in instruments]
 
 
 @router.get("/instruments/{symbol}", response_model=InstrumentResponse)
 async def get_instrument(symbol: str, _user: TokenPayload = Depends(require_role(Role.VIEWER))) -> InstrumentResponse:
     """Get instrument details by ticker symbol."""
     async with get_session() as session:
-        result = await session.execute(
-            select(IdxEquityInstrument).where(IdxEquityInstrument.symbol == symbol.upper())
-        )
+        result = await session.execute(select(IdxEquityInstrument).where(IdxEquityInstrument.symbol == symbol.upper()))
         inst = result.scalar_one_or_none()
         if inst is None:
             raise HTTPException(

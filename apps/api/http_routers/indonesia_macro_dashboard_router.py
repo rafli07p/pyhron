@@ -4,11 +4,9 @@ Key macroeconomic indicators, yield curves, and Bank Indonesia
 policy calendar for the Indonesian economy.
 """
 
-
-
-
 from datetime import date, datetime
 from decimal import Decimal
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 

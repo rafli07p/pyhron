@@ -6,7 +6,6 @@ Uses database-backed user storage with brute-force lockout protection.
 """
 
 from datetime import UTC, datetime, timedelta
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
