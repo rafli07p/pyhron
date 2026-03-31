@@ -9,12 +9,8 @@ test.describe('Auth', () => {
     await page.locator('input[type="password"]').fill('wrongpass');
     const submitBtn = page.locator('button[type="submit"]');
     await submitBtn.click();
-    // After submitting wrong credentials, expect either an error message,
-    // a disabled button, or the URL to remain on /login (no redirect).
-    // MSW may not be running in the built app, so be resilient.
     const errorVisible = page.locator('text=/invalid|error|failed|incorrect/i');
     const stayedOnLogin = page.locator('input[type="email"]');
-    // Wait for either an error message or confirm we stayed on the login page
     await expect(async () => {
       const hasError = await errorVisible.isVisible().catch(() => false);
       const stillOnLogin = await stayedOnLogin.isVisible().catch(() => false);

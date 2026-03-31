@@ -18,7 +18,6 @@ test.describe('Accessibility', () => {
 
   test('focus ring visible on tab navigation', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
-    // Tab through several elements to ensure we land on one with a focus ring
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
@@ -29,20 +28,16 @@ test.describe('Accessibility', () => {
       const style = window.getComputedStyle(el);
       return style.outlineStyle;
     });
-    // Should have some kind of outline (solid, auto, etc.)
     expect(outlineStyle).not.toBe('none');
   });
 
   test('skip-to-content link works', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' });
-    // Tab to skip-to-content link
     await page.keyboard.press('Tab');
     const skipLink = page.locator('.skip-to-content');
-    // The skip link is in the DOM but only visible on focus
     await expect(skipLink).toBeAttached({ timeout: 10000 });
     await expect(skipLink).toBeFocused({ timeout: 10000 });
     await page.keyboard.press('Enter');
-    // Focus should move to main content
     const mainContent = page.locator('#main-content');
     await expect(mainContent).toBeAttached({ timeout: 10000 });
   });

@@ -17,7 +17,6 @@ test.describe('Command Palette', () => {
     await expect(input).toBeAttached({ timeout: 10000 });
     await input.fill('momentum');
     await page.waitForTimeout(500);
-    // Results are plain buttons inside the palette
     const results = page.locator('button', { hasText: /momentum/i });
     await expect(results.first()).toBeAttached({ timeout: 10000 });
   });
@@ -26,10 +25,8 @@ test.describe('Command Palette', () => {
     await page.keyboard.press('Control+k');
     const input = page.getByPlaceholder(/search/i);
     await expect(input).toBeAttached({ timeout: 10000 });
-    // Press down arrow to highlight an item
     await page.keyboard.press('ArrowDown');
     await page.waitForTimeout(300);
-    // The selected item gets accent-500 color class in the component
     const highlighted = page.locator('button[class*="accent"]');
     const count = await highlighted.count();
     expect(count).toBeGreaterThan(0);
