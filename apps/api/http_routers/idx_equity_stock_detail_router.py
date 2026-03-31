@@ -4,11 +4,9 @@ Single stock deep dive: profile, financials, corporate actions,
 and ownership structure.
 """
 
-
-
-
 from datetime import date
 from decimal import Decimal
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 

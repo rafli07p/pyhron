@@ -4,11 +4,9 @@ Government bonds (SBN/SUN), corporate bonds, yield curves,
 and credit spread analysis for the Indonesian bond market.
 """
 
-
-
-
 from datetime import date
 from decimal import Decimal
+
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 

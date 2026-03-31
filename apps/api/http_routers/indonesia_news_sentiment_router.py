@@ -4,10 +4,8 @@ News aggregation with NLP-based sentiment scoring
 for Indonesian market and company-specific coverage.
 """
 
-
-
-
 from datetime import date, datetime
+
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
