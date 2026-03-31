@@ -4,20 +4,17 @@ Key macroeconomic indicators, yield curves, and Bank Indonesia
 policy calendar for the Indonesian economy.
 """
 
-from __future__ import annotations
 
-from typing import TYPE_CHECKING
 
+
+from datetime import date, datetime
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/macro", tags=["macro-dashboard"])
@@ -34,17 +31,17 @@ class MacroIndicator(BaseModel):
     updated_at: datetime
 
 
+class IndicatorDataPoint(BaseModel):
+    period: str
+    value: Decimal
+    date: date
+
+
 class IndicatorHistory(BaseModel):
     code: str
     name: str
     unit: str
     data_points: list[IndicatorDataPoint]
-
-
-class IndicatorDataPoint(BaseModel):
-    period: str
-    value: Decimal
-    date: date
 
 
 class YieldCurvePoint(BaseModel):

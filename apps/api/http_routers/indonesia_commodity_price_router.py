@@ -4,20 +4,17 @@ Commodity prices and trends for key Indonesian commodities
 including palm oil, coal, nickel, tin, rubber, and crude oil.
 """
 
-from __future__ import annotations
+
+
 
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING
-
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
-
-if TYPE_CHECKING:
-    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/commodities", tags=["commodities"])

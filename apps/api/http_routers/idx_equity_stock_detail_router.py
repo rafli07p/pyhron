@@ -4,20 +4,17 @@ Single stock deep dive: profile, financials, corporate actions,
 and ownership structure.
 """
 
-from __future__ import annotations
 
-from typing import TYPE_CHECKING
 
+
+from datetime import date
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
-
-if TYPE_CHECKING:
-    from datetime import date
-    from decimal import Decimal
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/stocks", tags=["stock-detail"])
