@@ -25,21 +25,7 @@ class UserRole(enum.StrEnum):
 
 
 class User(Base):
-    """Platform user account.
-
-    Attributes:
-        id: UUID primary key.
-        email: Unique email address.
-        hashed_password: bcrypt/argon2 hash — never plaintext.
-        role: Role-based access level.
-        is_active: Whether the account is enabled.
-        is_verified: Whether email has been verified.
-        failed_login_attempts: Counter for brute-force lockout.
-        locked_until: Lockout expiry timestamp.
-        last_login_at: Most recent successful login.
-        created_at: Row creation timestamp.
-        updated_at: Row last-update timestamp.
-    """
+    """Platform user account."""
 
     __tablename__ = "users"
 
@@ -47,7 +33,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        ENUM(UserRole, name="user_role", create_type=False),
+        ENUM(UserRole, name="user_role", create_type=False, values_callable=lambda e: [x.value for x in e]),
         nullable=False,
         default=UserRole.READONLY,
     )
