@@ -25,7 +25,21 @@ class UserRole(enum.StrEnum):
 
 
 class User(Base):
-    """Platform user account."""
+    """Platform user account.
+
+    Attributes:
+        id: UUID primary key.
+        email: Unique email address.
+        hashed_password: bcrypt/argon2 hash — never plaintext.
+        role: Role-based access level.
+        is_active: Whether the account is enabled.
+        is_verified: Whether email has been verified.
+        failed_login_attempts: Counter for brute-force lockout.
+        locked_until: Lockout expiry timestamp.
+        last_login_at: Most recent successful login.
+        created_at: Row creation timestamp.
+        updated_at: Row last-update timestamp.
+    """
 
     __tablename__ = "users"
 
