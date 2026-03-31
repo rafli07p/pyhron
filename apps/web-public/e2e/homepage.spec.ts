@@ -10,7 +10,6 @@ test.describe('Homepage', () => {
   });
 
   test('animated counters reach non-zero values', async ({ page }) => {
-    // Counters are client components that animate on intersection
     await page.waitForTimeout(3000);
     const counters = page.locator('text=/\\d+\\+/');
     const count = await counters.count();
@@ -36,7 +35,6 @@ test.describe('Homepage', () => {
   test('solutions cards appear on scroll', async ({ page }) => {
     const heading = page.locator('text=Built for quantitative analysis');
     await expect(heading).toBeAttached({ timeout: 10000 });
-    // Solutions section has cards with icon+title+description
     await expect(page.locator('text=Algorithmic Trading').first()).toBeAttached({ timeout: 10000 });
   });
 
