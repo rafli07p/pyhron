@@ -139,7 +139,10 @@ const endpoints: EndpointDoc[] = [
     ],
     responseShape: `{ "task_id": "bt-abc123", "status": "PENDING", "strategy_name": "IDX Momentum" }`,
     examples: [
-      { label: 'cURL', code: `curl -X POST https://api.pyhron.com/v1/backtest/ \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -H "Content-Type: application/json" \\\n  -d '{"strategy_name":"IDX Momentum","symbols":["BBCA","BBRI"],"start_date":"2024-01-01","end_date":"2025-12-31","initial_capital":1000000000}'` },
+      { label: 'cURL', code: `curl -X POST https://api.pyhron.com/v1/backtest/ \\
+  -H "Authorization: Bearer $TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"strategy_name":"IDX Momentum","symbols":["BBCA","BBRI"],"start_date":"2024-01-01","end_date":"2025-12-31","initial_capital":1000000000}'` },
       { label: 'Python', code: `res = requests.post("https://api.pyhron.com/v1/backtest/",\n    json={"strategy_name": "IDX Momentum", "symbols": ["BBCA", "BBRI"],\n          "start_date": "2024-01-01", "end_date": "2025-12-31",\n          "initial_capital": 1_000_000_000},\n    headers={"Authorization": f"Bearer {token}"})` },
       { label: 'JavaScript', code: `const res = await fetch("https://api.pyhron.com/v1/backtest/", {\n  method: "POST",\n  headers: { Authorization: \`Bearer \${token}\`, "Content-Type": "application/json" },\n  body: JSON.stringify({\n    strategy_name: "IDX Momentum", symbols: ["BBCA", "BBRI"],\n    start_date: "2024-01-01", end_date: "2025-12-31", initial_capital: 1e9\n  })\n});` },
     ],
@@ -170,7 +173,9 @@ const endpoints: EndpointDoc[] = [
     responseShape: `{ "access_token": "eyJ...", "refresh_token": "eyJ...",
   "token_type": "bearer", "expires_in": 3600 }`,
     examples: [
-      { label: 'cURL', code: `curl -X POST https://api.pyhron.com/v1/auth/login \\\n  -H "Content-Type: application/json" \\\n  -d '{"email":"you@company.com","password":"your-password"}'` },
+      { label: 'cURL', code: `curl -X POST https://api.pyhron.com/v1/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"you@company.com","password":"your-password"}'` },
       { label: 'Python', code: `res = requests.post("https://api.pyhron.com/v1/auth/login",\n    json={"email": "you@company.com", "password": "your-password"})` },
       { label: 'JavaScript', code: `const res = await fetch("https://api.pyhron.com/v1/auth/login", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ email: "you@company.com", password: "your-password" })\n});` },
     ],
@@ -184,7 +189,9 @@ const endpoints: EndpointDoc[] = [
     responseShape: `{ "access_token": "eyJ...", "refresh_token": "eyJ...",
   "token_type": "bearer", "expires_in": 3600 }`,
     examples: [
-      { label: 'cURL', code: `curl -X POST https://api.pyhron.com/v1/auth/refresh \\\n  -H "Content-Type: application/json" \\\n  -d '{"refresh_token":"eyJ..."}'` },
+      { label: 'cURL', code: `curl -X POST https://api.pyhron.com/v1/auth/refresh \\
+  -H "Content-Type: application/json" \\
+  -d '{"refresh_token":"eyJ..."}'` },
       { label: 'Python', code: `res = requests.post("https://api.pyhron.com/v1/auth/refresh",\n    json={"refresh_token": refresh_token})` },
       { label: 'JavaScript', code: `const res = await fetch("https://api.pyhron.com/v1/auth/refresh", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({ refresh_token: refreshToken })\n});` },
     ],
@@ -199,11 +206,11 @@ const methodColors: Record<string, string> = {
 };
 
 const errorCodes = [
-  { code: '400', description: 'Bad Request \u2014 Invalid parameters or malformed request body.' },
-  { code: '401', description: 'Unauthorized \u2014 Missing or expired access token.' },
-  { code: '403', description: 'Forbidden \u2014 Insufficient permissions for this resource.' },
-  { code: '404', description: 'Not Found \u2014 Resource does not exist.' },
-  { code: '429', description: 'Rate Limited \u2014 Too many requests. Check X-RateLimit-* headers.' },
+  { code: '400', description: 'Bad Request — Invalid parameters or malformed request body.' },
+  { code: '401', description: 'Unauthorized — Missing or expired access token.' },
+  { code: '403', description: 'Forbidden — Insufficient permissions for this resource.' },
+  { code: '404', description: 'Not Found — Resource does not exist.' },
+  { code: '429', description: 'Rate Limited — Too many requests. Check X-RateLimit-* headers.' },
 ];
 
 export default function ApiDocsPage() {
@@ -336,7 +343,7 @@ ws.send(JSON.stringify({ type: "AUTH", token: accessToken }));
 ws.send(JSON.stringify({ type: "SUBSCRIBE", channel: "quotes", key: "BBCA" }));
 
 // Available channels: quotes, orders, positions, signals, paper_nav
-// Numeric values are JSON strings (Decimal precision) \u2014 parse with parseFloat()`}</pre>
+// Numeric values are JSON strings (Decimal precision) — parse with parseFloat()`}</pre>
       </section>
 
       {/* Python SDK */}
