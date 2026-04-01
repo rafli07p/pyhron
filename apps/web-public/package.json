@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:e2e": "playwright test",
-    "prepare": "cd ../.. && husky apps/web-public/.husky"
+    "test:e2e": "playwright test"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
