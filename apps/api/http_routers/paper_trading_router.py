@@ -18,7 +18,7 @@ from data_platform.database_models.pyhron_paper_trading_session import (
     PyhronPaperPnlAttribution,
     PyhronPaperTradingSession,
 )
-from services.paper_trading.session_manager import PyhronPaperTradingSessionManager
+from services.paper_trading.session_manager import PaperTradingSessionManager
 from shared.async_database_session import get_session
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
@@ -27,7 +27,7 @@ from shared.structured_json_logger import get_logger
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/paper-trading", tags=["paper-trading"])
 
-_session_manager = PyhronPaperTradingSessionManager()
+_session_manager = PaperTradingSessionManager()
 
 
 # Request/Response Models

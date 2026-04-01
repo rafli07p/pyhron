@@ -190,7 +190,7 @@ async def register(request: Request, payload: RegisterRequest) -> UserProfileRes
 async def refresh_token(request: Request, payload: RefreshRequest) -> TokenResponse:
     """Refresh an expired access token using a valid refresh token."""
     try:
-        payload = verify_token(payload.refresh_token)
+        token_data = verify_token(payload.refresh_token)
     except TokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -198,7 +198,7 @@ async def refresh_token(request: Request, payload: RefreshRequest) -> TokenRespo
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if payload.raw.get("type") != "refresh":
+    if token_data.raw.get("type") != "refresh":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token is not a refresh token",
@@ -206,7 +206,7 @@ async def refresh_token(request: Request, payload: RefreshRequest) -> TokenRespo
 
     # Look up user in DB for current role
     async with get_session() as session:
-        result = await session.execute(select(PyhronUser).where(PyhronUser.id == UUID(payload.sub)))
+        result = await session.execute(select(PyhronUser).where(PyhronUser.id == UUID(token_data.sub)))
         user = result.scalar_one_or_none()
 
     if user is None or not user.is_active:
@@ -217,16 +217,16 @@ async def refresh_token(request: Request, payload: RefreshRequest) -> TokenRespo
 
     jwt_role = _ROLE_MAP.get(user.role, Role.VIEWER.value)
     access_token = create_access_token(
-        user_id=payload.sub,
-        tenant_id=payload.tenant_id,
+        user_id=token_data.sub,
+        tenant_id=token_data.tenant_id,
         role=jwt_role,
     )
     new_refresh = create_refresh_token(
-        user_id=payload.sub,
-        tenant_id=payload.tenant_id,
+        user_id=token_data.sub,
+        tenant_id=token_data.tenant_id,
     )
 
-    logger.info("token_refreshed", user_id=payload.sub)
+    logger.info("token_refreshed", user_id=token_data.sub)
     return TokenResponse(
         access_token=access_token,
         refresh_token=new_refresh,
