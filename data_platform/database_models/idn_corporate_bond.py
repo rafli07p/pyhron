@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class IndonesiaCorporateBond(Base):
+class IdnCorporateBond(Base):
     """Corporate bond daily market snapshot with credit rating.
 
     Attributes:
@@ -35,7 +35,7 @@ class IndonesiaCorporateBond(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "corporate_bonds"
+    __tablename__ = "idn_corporate_bond"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     isin: Mapped[str] = mapped_column(String(12), nullable=False)

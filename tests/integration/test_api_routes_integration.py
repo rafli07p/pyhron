@@ -583,7 +583,7 @@ class TestAuthEnforcement:
         # Patch Strategy constructor and UUID conversion
         with (
             patch("apps.api.http_routers.strategy_management_router.get_session", return_value=mock_session),
-            patch("apps.api.http_routers.strategy_management_router.Strategy", return_value=mock_strategy),
+            patch("apps.api.http_routers.strategy_management_router.PyhronStrategy", return_value=mock_strategy),
         ):
             resp = self.client.post(
                 "/v1/strategies/",

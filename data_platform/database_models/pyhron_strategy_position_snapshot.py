@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class StrategyPositionSnapshot(Base):
+class PyhronStrategyPositionSnapshot(Base):
     """Current position state per strategy per symbol.
 
     Attributes:
@@ -32,7 +32,7 @@ class StrategyPositionSnapshot(Base):
         last_updated: Timestamp of the most recent update.
     """
 
-    __tablename__ = "positions"
+    __tablename__ = "pyhron_strategy_position_snapshot"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     strategy_id: Mapped[str] = mapped_column(String(100), nullable=False)

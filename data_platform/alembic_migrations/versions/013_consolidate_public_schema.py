@@ -44,6 +44,14 @@ TABLE_MOVES = [
     ("governance", "idx_equity_governance_flag", "governance_flags"),
 ]
 
+# Tables already in public schema that need renaming to canonical short names
+PUBLIC_RENAMES = [
+    ("pyhron_user", "users"),
+    ("pyhron_strategy", "strategies"),
+    ("pyhron_backtest_run", "backtest_runs"),
+    ("pyhron_signal", "signals"),
+]
+
 
 def upgrade() -> None:
     """Move all tables to public schema and rename to canonical names."""
@@ -54,12 +62,17 @@ def upgrade() -> None:
         if old_table != new_table:
             op.execute(f"ALTER TABLE IF EXISTS public.{old_table} RENAME TO {new_table}")
 
-    # Drop now-empty schemas (they still exist but are empty)
-    # Keep them around — they can be dropped manually if desired
+    # Rename public-schema tables to canonical short names
+    for old_name, new_name in PUBLIC_RENAMES:
+        op.execute(f"ALTER TABLE IF EXISTS public.{old_name} RENAME TO {new_name}")
 
 
 def downgrade() -> None:
     """Move tables back to their original schemas and restore original names."""
+    # Restore public-schema table names
+    for old_name, new_name in reversed(PUBLIC_RENAMES):
+        op.execute(f"ALTER TABLE IF EXISTS public.{new_name} RENAME TO {old_name}")
+
     for old_schema, old_table, new_table in reversed(TABLE_MOVES):
         # Rename back to original name
         if old_table != new_table:

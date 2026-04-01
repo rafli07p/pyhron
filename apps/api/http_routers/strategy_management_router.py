@@ -12,8 +12,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
-from data_platform.database_models.backtest_run import BacktestRun, BacktestStatus
-from data_platform.database_models.strategy import Strategy
+from data_platform.database_models.pyhron_backtest_run import BacktestStatus, PyhronBacktestRun
+from data_platform.database_models.pyhron_strategy import PyhronStrategy
 from shared.async_database_session import get_session
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
@@ -65,7 +65,7 @@ class StrategyPerformance(BaseModel):
 
 
 # Helpers
-def _to_response(s: Strategy) -> StrategyResponse:
+def _to_response(s: PyhronStrategy) -> StrategyResponse:
     return StrategyResponse(
         id=s.id,
         name=s.name,
@@ -88,11 +88,11 @@ async def list_strategies(
 ) -> list[StrategyResponse]:
     """List all configured trading strategies."""
     async with get_session() as session:
-        stmt = select(Strategy).order_by(Strategy.created_at.desc())
+        stmt = select(PyhronStrategy).order_by(PyhronStrategy.created_at.desc())
         if strategy_type:
-            stmt = stmt.where(Strategy.strategy_type == strategy_type)
+            stmt = stmt.where(PyhronStrategy.strategy_type == strategy_type)
         if enabled_only:
-            stmt = stmt.where(Strategy.is_active.is_(True))
+            stmt = stmt.where(PyhronStrategy.is_active.is_(True))
         result = await session.execute(stmt)
         strategies = result.scalars().all()
     return [_to_response(s) for s in strategies]
@@ -105,7 +105,7 @@ async def create_strategy(
 ) -> StrategyResponse:
     """Register a new trading strategy."""
     async with get_session() as session:
-        strategy = Strategy(
+        strategy = PyhronStrategy(
             user_id=UUID(user.sub),
             name=body.name,
             strategy_type=body.strategy_type,
@@ -136,7 +136,7 @@ async def get_strategy(
     """Get strategy details by ID."""
     async with get_session() as session:
         result = await session.execute(
-            select(Strategy).where(Strategy.id == strategy_id),
+            select(PyhronStrategy).where(PyhronStrategy.id == strategy_id),
         )
         strategy = result.scalar_one_or_none()
     if not strategy:
@@ -153,7 +153,7 @@ async def update_strategy(
     """Update strategy configuration."""
     async with get_session() as session:
         result = await session.execute(
-            select(Strategy).where(Strategy.id == strategy_id),
+            select(PyhronStrategy).where(PyhronStrategy.id == strategy_id),
         )
         strategy = result.scalar_one_or_none()
         if not strategy:
@@ -182,7 +182,7 @@ async def delete_strategy(
     """Delete a trading strategy."""
     async with get_session() as session:
         result = await session.execute(
-            select(Strategy).where(Strategy.id == strategy_id),
+            select(PyhronStrategy).where(PyhronStrategy.id == strategy_id),
         )
         strategy = result.scalar_one_or_none()
         if not strategy:
@@ -200,7 +200,7 @@ async def enable_strategy(
     """Enable live trading for a strategy."""
     async with get_session() as session:
         result = await session.execute(
-            select(Strategy).where(Strategy.id == strategy_id),
+            select(PyhronStrategy).where(PyhronStrategy.id == strategy_id),
         )
         strategy = result.scalar_one_or_none()
         if not strategy:
@@ -222,7 +222,7 @@ async def disable_strategy(
     """Disable live trading and cancel open orders."""
     async with get_session() as session:
         result = await session.execute(
-            select(Strategy).where(Strategy.id == strategy_id),
+            select(PyhronStrategy).where(PyhronStrategy.id == strategy_id),
         )
         strategy = result.scalar_one_or_none()
         if not strategy:
@@ -246,7 +246,7 @@ async def get_strategy_performance(
     async with get_session() as session:
         # Get strategy name
         strat_result = await session.execute(
-            select(Strategy).where(Strategy.id == strategy_id),
+            select(PyhronStrategy).where(PyhronStrategy.id == strategy_id),
         )
         strategy = strat_result.scalar_one_or_none()
         if not strategy:
@@ -254,12 +254,12 @@ async def get_strategy_performance(
 
         # Get latest completed backtest
         bt_result = await session.execute(
-            select(BacktestRun)
+            select(PyhronBacktestRun)
             .where(
-                BacktestRun.strategy_id == strategy_id,
-                BacktestRun.status == BacktestStatus.COMPLETED,
+                PyhronBacktestRun.strategy_id == strategy_id,
+                PyhronBacktestRun.status == BacktestStatus.COMPLETED,
             )
-            .order_by(BacktestRun.completed_at.desc())
+            .order_by(PyhronBacktestRun.completed_at.desc())
             .limit(1),
         )
         backtest = bt_result.scalar_one_or_none()

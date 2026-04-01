@@ -24,7 +24,7 @@ class UserRole(enum.StrEnum):
     READONLY = "readonly"
 
 
-class User(Base):
+class PyhronUser(Base):
     """Platform user account.
 
     Attributes:
@@ -41,7 +41,7 @@ class User(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "users"
+    __tablename__ = "pyhron_user"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
@@ -59,4 +59,4 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    strategies = relationship("Strategy", back_populates="user", lazy="selectin")
+    strategies = relationship("PyhronStrategy", back_populates="user", lazy="selectin")

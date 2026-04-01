@@ -18,7 +18,7 @@ depends_on = None
 def upgrade() -> None:
     # Paper trading session
     op.create_table(
-        "paper_trading_sessions",
+        "pyhron_paper_trading_session",
         sa.Column(
             "id",
             sa.dialects.postgresql.UUID(),
@@ -118,24 +118,24 @@ def upgrade() -> None:
 
     op.create_index(
         "ix_paper_trading_session_status",
-        "paper_trading_sessions",
+        "pyhron_paper_trading_session",
         ["status"],
         postgresql_where=sa.text("status IN ('RUNNING', 'PAUSED')"),
     )
 
     op.create_index(
         "ix_paper_trading_session_strategy",
-        "paper_trading_sessions",
+        "pyhron_paper_trading_session",
         ["strategy_id", sa.text("created_at DESC")],
     )
 
     # Paper NAV snapshot
     op.create_table(
-        "paper_nav_snapshots",
+        "pyhron_paper_nav_snapshot",
         sa.Column(
             "session_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("paper_trading_sessions.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_paper_trading_session.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("timestamp", sa.DateTime(timezone=True), nullable=False),
@@ -153,7 +153,7 @@ def upgrade() -> None:
         nested = conn.begin_nested()
         conn.execute(
             text(
-                "SELECT create_hypertable('paper_nav_snapshots', 'timestamp', chunk_time_interval => INTERVAL '1 day')"
+                "SELECT create_hypertable('pyhron_paper_nav_snapshot', 'timestamp', chunk_time_interval => INTERVAL '1 day')"
             )
         )
         nested.commit()
@@ -162,13 +162,13 @@ def upgrade() -> None:
 
     op.create_index(
         "ix_paper_nav_snapshot_session",
-        "paper_nav_snapshots",
+        "pyhron_paper_nav_snapshot",
         ["session_id", sa.text("timestamp DESC")],
     )
 
     # Paper P&L attribution
     op.create_table(
-        "paper_pnl_attributions",
+        "pyhron_paper_pnl_attribution",
         sa.Column(
             "id",
             sa.dialects.postgresql.UUID(),
@@ -178,7 +178,7 @@ def upgrade() -> None:
         sa.Column(
             "session_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("paper_trading_sessions.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_paper_trading_session.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("symbol", sa.String(20), nullable=False),
@@ -226,16 +226,16 @@ def upgrade() -> None:
 
     op.create_index(
         "ix_paper_pnl_attribution_session_date",
-        "paper_pnl_attributions",
+        "pyhron_paper_pnl_attribution",
         ["session_id", sa.text("date DESC")],
     )
 
 
 def downgrade() -> None:
-    op.drop_index("ix_paper_pnl_attribution_session_date", table_name="paper_pnl_attributions")
-    op.drop_table("paper_pnl_attributions")
-    op.drop_index("ix_paper_nav_snapshot_session", table_name="paper_nav_snapshots")
-    op.drop_table("paper_nav_snapshots")
-    op.drop_index("ix_paper_trading_session_status", table_name="paper_trading_sessions")
-    op.drop_index("ix_paper_trading_session_strategy", table_name="paper_trading_sessions")
-    op.drop_table("paper_trading_sessions")
+    op.drop_index("ix_paper_pnl_attribution_session_date", table_name="pyhron_paper_pnl_attribution")
+    op.drop_table("pyhron_paper_pnl_attribution")
+    op.drop_index("ix_paper_nav_snapshot_session", table_name="pyhron_paper_nav_snapshot")
+    op.drop_table("pyhron_paper_nav_snapshot")
+    op.drop_index("ix_paper_trading_session_status", table_name="pyhron_paper_trading_session")
+    op.drop_index("ix_paper_trading_session_strategy", table_name="pyhron_paper_trading_session")
+    op.drop_table("pyhron_paper_trading_session")

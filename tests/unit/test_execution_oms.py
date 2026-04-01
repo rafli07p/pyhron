@@ -12,11 +12,11 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 try:
-    from data_platform.database_models.order_lifecycle_record import (
-        OrderLifecycleRecord,
+    from data_platform.database_models.pyhron_order_lifecycle_record import (
         OrderSideEnum,
         OrderStatusEnum,
         OrderTypeEnum,
+        PyhronOrderLifecycleRecord,
     )
 except (ImportError, SyntaxError):
     pytest.skip(
@@ -71,10 +71,10 @@ class TestIDXOrderValidator:
 
 
 # Order Lifecycle Record Tests
-class TestOrderLifecycleRecord:
+class TestPyhronOrderLifecycleRecord:
     def test_order_model_fields(self) -> None:
         """Verify the ORM model has all expected columns."""
-        columns = {c.name for c in OrderLifecycleRecord.__table__.columns}
+        columns = {c.name for c in PyhronOrderLifecycleRecord.__table__.columns}
         expected = {
             "client_order_id",
             "broker_order_id",
@@ -121,11 +121,11 @@ class TestOrderLifecycleRecord:
 
     def test_check_constraint_exists(self) -> None:
         """Verify filled_quantity <= quantity constraint is defined."""
-        constraints = [c.name for c in OrderLifecycleRecord.__table__.constraints if hasattr(c, "name")]
+        constraints = [c.name for c in PyhronOrderLifecycleRecord.__table__.constraints if hasattr(c, "name")]
         assert any("filled_lte_quantity" in (n or "") for n in constraints)
 
     def test_indexes_defined(self) -> None:
-        index_names = {idx.name for idx in OrderLifecycleRecord.__table__.indexes}
+        index_names = {idx.name for idx in PyhronOrderLifecycleRecord.__table__.indexes}
         assert "ix_order_lifecycle_records_strategy_created" in index_names
         assert "ix_order_lifecycle_records_symbol_status" in index_names
         assert "ix_order_lifecycle_records_broker_id" in index_names
@@ -225,11 +225,11 @@ class TestCircuitBreakerStateManager:
 
 
 # Position Snapshot Tests
-class TestStrategyPositionSnapshot:
+class TestPyhronStrategyPositionSnapshot:
     def test_position_model_fields(self) -> None:
-        from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+        from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 
-        columns = {c.name for c in StrategyPositionSnapshot.__table__.columns}
+        columns = {c.name for c in PyhronStrategyPositionSnapshot.__table__.columns}
         expected = {
             "id",
             "strategy_id",
@@ -246,15 +246,15 @@ class TestStrategyPositionSnapshot:
         assert expected.issubset(columns)
 
     def test_unique_constraint(self) -> None:
-        from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+        from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 
-        constraints = StrategyPositionSnapshot.__table__.constraints
+        constraints = PyhronStrategyPositionSnapshot.__table__.constraints
         unique_names = [c.name for c in constraints if hasattr(c, "columns") and len(c.columns) > 1]
         # Should have a unique constraint on (strategy_id, symbol, exchange)
         assert len(unique_names) > 0
 
     def test_check_constraint_quantity_non_negative(self) -> None:
-        from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+        from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 
-        constraint_names = [c.name for c in StrategyPositionSnapshot.__table__.constraints if hasattr(c, "name")]
+        constraint_names = [c.name for c in PyhronStrategyPositionSnapshot.__table__.constraints if hasattr(c, "name")]
         assert any("quantity_non_negative" in (n or "") for n in constraint_names)

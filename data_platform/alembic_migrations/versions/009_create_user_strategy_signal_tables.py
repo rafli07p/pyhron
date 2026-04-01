@@ -30,7 +30,7 @@ def upgrade() -> None:
 
     # users
     op.create_table(
-        "users",
+        "pyhron_user",
         sa.Column(
             "id",
             UUID(as_uuid=True),
@@ -54,11 +54,11 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
     )
     # Expression index for case-insensitive email lookup
-    op.execute("CREATE UNIQUE INDEX ix_users_email_lower ON users (lower(email))")
+    op.execute("CREATE UNIQUE INDEX ix_users_email_lower ON pyhron_user (lower(email))")
 
     # strategies
     op.create_table(
-        "strategies",
+        "pyhron_strategy",
         sa.Column(
             "id",
             UUID(as_uuid=True),
@@ -68,7 +68,7 @@ def upgrade() -> None:
         sa.Column(
             "user_id",
             UUID(as_uuid=True),
-            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_user.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("name", sa.String(100), nullable=False),
@@ -83,13 +83,13 @@ def upgrade() -> None:
     )
     op.create_index(
         "ix_strategies_user_created",
-        "strategies",
+        "pyhron_strategy",
         ["user_id", sa.text("created_at DESC")],
     )
 
     # backtest_runs
     op.create_table(
-        "backtest_runs",
+        "pyhron_backtest_run",
         sa.Column(
             "id",
             UUID(as_uuid=True),
@@ -99,13 +99,13 @@ def upgrade() -> None:
         sa.Column(
             "strategy_id",
             UUID(as_uuid=True),
-            sa.ForeignKey("strategies.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
             "user_id",
             UUID(as_uuid=True),
-            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_user.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
@@ -135,12 +135,12 @@ def upgrade() -> None:
         sa.Column("completed_at", sa.TIMESTAMP(timezone=True)),
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("NOW()")),
     )
-    op.create_index("ix_backtest_runs_strategy", "backtest_runs", ["strategy_id"])
-    op.create_index("ix_backtest_runs_user", "backtest_runs", ["user_id"])
+    op.create_index("ix_backtest_runs_strategy", "pyhron_backtest_run", ["strategy_id"])
+    op.create_index("ix_backtest_runs_user", "pyhron_backtest_run", ["user_id"])
 
     # signals (TimescaleDB hypertable)
     op.create_table(
-        "signals",
+        "pyhron_signal",
         sa.Column(
             "id",
             UUID(as_uuid=True),
@@ -150,7 +150,7 @@ def upgrade() -> None:
         sa.Column(
             "strategy_id",
             UUID(as_uuid=True),
-            sa.ForeignKey("strategies.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("instrument_symbol", sa.String(20), nullable=False),
@@ -182,17 +182,19 @@ def upgrade() -> None:
     )
     op.create_index(
         "ix_signals_strategy_bar_ts",
-        "signals",
+        "pyhron_signal",
         ["strategy_id", sa.text("bar_timestamp DESC")],
     )
     op.create_index(
         "ix_signals_instrument_generated",
-        "signals",
+        "pyhron_signal",
         ["instrument_symbol", "generated_at"],
     )
 
     # CHECK constraints
-    op.execute("ALTER TABLE signals ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)")
+    op.execute(
+        "ALTER TABLE pyhron_signal ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)"
+    )
 
     # Convert signals to TimescaleDB hypertable (optional — plain postgres in CI)
     try:
@@ -201,7 +203,7 @@ def upgrade() -> None:
         conn.execute(
             text("""
             SELECT create_hypertable(
-                'signals',
+                'pyhron_signal',
                 'generated_at',
                 chunk_time_interval => INTERVAL '7 days',
                 if_not_exists => TRUE,
@@ -216,11 +218,11 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop tables in reverse dependency order, then enum types."""
-    op.drop_table("signals")
-    op.drop_table("backtest_runs")
-    op.drop_table("strategies")
+    op.drop_table("pyhron_signal")
+    op.drop_table("pyhron_backtest_run")
+    op.drop_table("pyhron_strategy")
     op.execute("DROP INDEX IF EXISTS ix_users_email_lower")
-    op.drop_table("users")
+    op.drop_table("pyhron_user")
     op.execute("DROP TYPE IF EXISTS signal_type")
     op.execute("DROP TYPE IF EXISTS backtest_status")
     op.execute("DROP TYPE IF EXISTS user_role")

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
 
-from data_platform.database_models.commodity_company_profile import CommodityCompanyProfile
+from data_platform.database_models.idn_commodity_company_profile import IdnCommodityCompanyProfile
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +35,7 @@ async def load_profiles_by_type(
         shares_outstanding, trailing_revenue_idr, net_margin, plus
         all commodity-specific fields from profile_data.
     """
-    stmt = select(CommodityCompanyProfile).where(CommodityCompanyProfile.commodity_type == commodity_type)
+    stmt = select(IdnCommodityCompanyProfile).where(IdnCommodityCompanyProfile.commodity_type == commodity_type)
     result = await session.execute(stmt)
     rows = result.scalars().all()
 

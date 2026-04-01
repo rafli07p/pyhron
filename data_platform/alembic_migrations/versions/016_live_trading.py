@@ -44,7 +44,7 @@ def upgrade() -> None:
         sa.Column(
             "promoted_from_session_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("paper_trading_sessions.id"),
+            sa.ForeignKey("pyhron_paper_trading_session.id"),
             nullable=True,
         ),
         sa.Column("promoted_at", sa.DateTime(timezone=True), nullable=True),
@@ -90,7 +90,7 @@ def upgrade() -> None:
         sa.Column(
             "session_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("paper_trading_sessions.id"),
+            sa.ForeignKey("pyhron_paper_trading_session.id"),
             nullable=False,
         ),
         sa.Column(

@@ -15,14 +15,14 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
 
-from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 from services.paper_trading.idx_cost_model import IDXTransactionCostModel
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from data_platform.database_models.paper_trading_session import PaperTradingSession
+    from data_platform.database_models.pyhron_paper_trading_session import PyhronPaperTradingSession
 
 logger = get_logger(__name__)
 
@@ -137,7 +137,7 @@ class PaperStrategyExecutor:
 
     async def process_rebalance_signal(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         signals: list[dict[str, Any]],
         last_prices: dict[str, Decimal],
         db_session: AsyncSession,
@@ -164,9 +164,9 @@ class PaperStrategyExecutor:
 
         # Get current positions
         positions_result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             )
         )
         positions = positions_result.scalars().all()
@@ -265,7 +265,7 @@ class PaperStrategyExecutor:
 
     async def _submit_order(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         instruction: TradeInstruction,
         db_session: AsyncSession,
     ) -> bool:

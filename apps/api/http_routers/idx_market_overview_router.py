@@ -6,6 +6,7 @@ for the Indonesia Stock Exchange.
 
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -59,7 +60,7 @@ class OHLCVBar(BaseModel):
 
 
 # Helper: build LQ45 subquery for a given symbol column
-def _lq45_exists_subquery(symbol_col):
+def _lq45_exists_subquery(symbol_col: Any) -> Any:
     """Return an exists() clause checking LQ45 membership (active, no removal)."""
     return exists(
         select(IdxEquityIndexConstituent.symbol).where(

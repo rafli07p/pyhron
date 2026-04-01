@@ -19,7 +19,7 @@ from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import KafkaError
 from sqlalchemy import select
 
-from data_platform.database_models.paper_trading_session import PaperTradingSession
+from data_platform.database_models.pyhron_paper_trading_session import PyhronPaperTradingSession
 from services.paper_trading.strategy_executor import PaperStrategyExecutor, RebalanceResult
 from shared.async_database_session import get_session
 from shared.configuration_settings import get_config
@@ -235,9 +235,9 @@ class StrategySignalKafkaConsumer:
         async with get_session() as db_session:
             # Load the paper trading session
             result = await db_session.execute(
-                select(PaperTradingSession).where(
-                    PaperTradingSession.id == session_id,
-                    PaperTradingSession.status == "RUNNING",
+                select(PyhronPaperTradingSession).where(
+                    PyhronPaperTradingSession.id == session_id,
+                    PyhronPaperTradingSession.status == "RUNNING",
                 )
             )
             session = result.scalar_one_or_none()

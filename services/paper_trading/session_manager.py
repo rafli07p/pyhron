@@ -15,12 +15,12 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
 
-from data_platform.database_models.paper_trading_session import (
-    PaperNavSnapshot,
-    PaperTradingSession,
+from data_platform.database_models.pyhron_paper_trading_session import (
+    PyhronPaperNavSnapshot,
+    PyhronPaperTradingSession,
 )
-from data_platform.database_models.strategy import Strategy
-from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+from data_platform.database_models.pyhron_strategy import PyhronStrategy
+from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 from shared.kafka_topics import KafkaTopic
 from shared.metrics import (
     paper_session_daily_pnl_idr,
@@ -81,7 +81,7 @@ class PaperTradingSessionManager:
         mode: str,
         created_by: str,
         db_session: AsyncSession,
-    ) -> PaperTradingSession:
+    ) -> PyhronPaperTradingSession:
         """Create a new session in INITIALIZING status."""
         if initial_capital_idr < MIN_CAPITAL_IDR:
             msg = f"Initial capital IDR {initial_capital_idr} below minimum IDR {MIN_CAPITAL_IDR}"
@@ -92,7 +92,7 @@ class PaperTradingSessionManager:
             raise ValueError(msg)
 
         # Validate strategy exists and is active
-        result = await db_session.execute(select(Strategy).where(Strategy.id == strategy_id))
+        result = await db_session.execute(select(PyhronStrategy).where(PyhronStrategy.id == strategy_id))
         strategy = result.scalar_one_or_none()
         if strategy is None:
             msg = f"Strategy {strategy_id} not found"
@@ -103,16 +103,16 @@ class PaperTradingSessionManager:
 
         # Check no other session for this strategy is RUNNING or PAUSED
         existing = await db_session.execute(
-            select(PaperTradingSession).where(
-                PaperTradingSession.strategy_id == strategy_id,
-                PaperTradingSession.status.in_(["RUNNING", "PAUSED"]),
+            select(PyhronPaperTradingSession).where(
+                PyhronPaperTradingSession.strategy_id == strategy_id,
+                PyhronPaperTradingSession.status.in_(["RUNNING", "PAUSED"]),
             )
         )
         if existing.scalar_one_or_none() is not None:
             msg = f"Strategy {strategy_id} already has a running or paused session"
             raise ValueError(msg)
 
-        session = PaperTradingSession(
+        session = PyhronPaperTradingSession(
             name=name,
             strategy_id=strategy_id,
             status="INITIALIZING",
@@ -251,15 +251,15 @@ class PaperTradingSessionManager:
         self,
         session_id: str,
         db_session: AsyncSession,
-    ) -> PaperNavSnapshot:
+    ) -> PyhronPaperNavSnapshot:
         """Compute current NAV and write snapshot row."""
         session = await self._get_session(session_id, db_session)
 
         # Fetch positions for this session's strategy
         positions_result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             )
         )
         positions = positions_result.scalars().all()
@@ -285,9 +285,9 @@ class PaperTradingSessionManager:
 
         # Get previous NAV for daily P&L
         prev_result = await db_session.execute(
-            select(PaperNavSnapshot)
-            .where(PaperNavSnapshot.session_id == session.id)
-            .order_by(PaperNavSnapshot.timestamp.desc())
+            select(PyhronPaperNavSnapshot)
+            .where(PyhronPaperNavSnapshot.session_id == session.id)
+            .order_by(PyhronPaperNavSnapshot.timestamp.desc())
             .limit(1)
         )
         prev_snap = prev_result.scalar_one_or_none()
@@ -299,7 +299,7 @@ class PaperTradingSessionManager:
             daily_return_pct = (daily_pnl / prev_nav * 100).quantize(Decimal("0.000001"))
 
         now = datetime.now(UTC)
-        snapshot = PaperNavSnapshot(
+        snapshot = PyhronPaperNavSnapshot(
             session_id=session.id,
             timestamp=now,
             nav_idr=nav,
@@ -342,8 +342,10 @@ class PaperTradingSessionManager:
         self,
         session_id: str,
         db_session: AsyncSession,
-    ) -> PaperTradingSession:
-        result = await db_session.execute(select(PaperTradingSession).where(PaperTradingSession.id == session_id))
+    ) -> PyhronPaperTradingSession:
+        result = await db_session.execute(
+            select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id)
+        )
         session = result.scalar_one_or_none()
         if session is None:
             msg = f"Paper trading session {session_id} not found"
@@ -352,7 +354,7 @@ class PaperTradingSessionManager:
 
     async def _compute_summary(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         db_session: AsyncSession,
     ) -> PaperSessionSummary:
         initial = session.initial_capital_idr
@@ -393,14 +395,14 @@ class PaperTradingSessionManager:
 
     async def _compute_risk_metrics(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         db_session: AsyncSession,
     ) -> tuple[float | None, float | None, float | None]:
         """Compute Sharpe, Sortino, Calmar from daily NAV returns."""
         result = await db_session.execute(
-            select(PaperNavSnapshot.daily_return_pct)
-            .where(PaperNavSnapshot.session_id == session.id)
-            .order_by(PaperNavSnapshot.timestamp.asc())
+            select(PyhronPaperNavSnapshot.daily_return_pct)
+            .where(PyhronPaperNavSnapshot.session_id == session.id)
+            .order_by(PyhronPaperNavSnapshot.timestamp.asc())
         )
         returns = [float(r[0]) for r in result.all()]
 

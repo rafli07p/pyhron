@@ -14,12 +14,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from data_platform.database_models.order_lifecycle_record import (
-    OrderLifecycleRecord,
+from data_platform.database_models.pyhron_order_lifecycle_record import (
     OrderStatusEnum,
+    PyhronOrderLifecycleRecord,
 )
-from data_platform.database_models.strategy_position_snapshot import (
-    StrategyPositionSnapshot,
+from data_platform.database_models.pyhron_strategy_position_snapshot import (
+    PyhronStrategyPositionSnapshot,
 )
 from services.order_management_system.order_submission_handler import (
     OrderSubmissionHandler,
@@ -179,13 +179,13 @@ async def get_positions(
 ) -> list[PositionResponse]:
     """Get all open positions, optionally filtered by strategy or symbol."""
     async with get_session() as session:
-        stmt = select(StrategyPositionSnapshot).where(
-            StrategyPositionSnapshot.quantity > 0,
+        stmt = select(PyhronStrategyPositionSnapshot).where(
+            PyhronStrategyPositionSnapshot.quantity > 0,
         )
         if strategy_id:
-            stmt = stmt.where(StrategyPositionSnapshot.strategy_id == strategy_id)
+            stmt = stmt.where(PyhronStrategyPositionSnapshot.strategy_id == strategy_id)
         if symbol:
-            stmt = stmt.where(StrategyPositionSnapshot.symbol == symbol)
+            stmt = stmt.where(PyhronStrategyPositionSnapshot.symbol == symbol)
 
         result = await session.execute(stmt)
         positions = result.scalars().all()
@@ -220,13 +220,13 @@ async def get_orders(
 ) -> list[OrderResponse]:
     """Get order history with filters."""
     async with get_session() as session:
-        stmt = select(OrderLifecycleRecord).order_by(
-            OrderLifecycleRecord.created_at.desc(),
+        stmt = select(PyhronOrderLifecycleRecord).order_by(
+            PyhronOrderLifecycleRecord.created_at.desc(),
         )
         if strategy_id:
-            stmt = stmt.where(OrderLifecycleRecord.strategy_id == strategy_id)
+            stmt = stmt.where(PyhronOrderLifecycleRecord.strategy_id == strategy_id)
         if symbol:
-            stmt = stmt.where(OrderLifecycleRecord.symbol == symbol)
+            stmt = stmt.where(PyhronOrderLifecycleRecord.symbol == symbol)
         if status_filter:
             try:
                 status_enum = OrderStatusEnum(status_filter.lower())
@@ -236,7 +236,7 @@ async def get_orders(
                     detail=f"Invalid status filter: {status_filter}. "
                     f"Valid values: {[s.value for s in OrderStatusEnum]}",
                 )
-            stmt = stmt.where(OrderLifecycleRecord.status == status_enum)
+            stmt = stmt.where(PyhronOrderLifecycleRecord.status == status_enum)
         stmt = stmt.limit(limit)
 
         result = await session.execute(stmt)
@@ -272,12 +272,12 @@ async def get_daily_pnl(
     async with get_session() as session:
         # Aggregate positions for current snapshot
         pos_stmt = select(
-            func.sum(StrategyPositionSnapshot.market_value).label("total_equity"),
-            func.sum(StrategyPositionSnapshot.realized_pnl).label("realized_pnl"),
-            func.sum(StrategyPositionSnapshot.unrealized_pnl).label("unrealized_pnl"),
+            func.sum(PyhronStrategyPositionSnapshot.market_value).label("total_equity"),
+            func.sum(PyhronStrategyPositionSnapshot.realized_pnl).label("realized_pnl"),
+            func.sum(PyhronStrategyPositionSnapshot.unrealized_pnl).label("unrealized_pnl"),
         )
         if strategy_id:
-            pos_stmt = pos_stmt.where(StrategyPositionSnapshot.strategy_id == strategy_id)
+            pos_stmt = pos_stmt.where(PyhronStrategyPositionSnapshot.strategy_id == strategy_id)
         pos_result = await session.execute(pos_stmt)
         pos_row = pos_result.one_or_none()
 
@@ -287,14 +287,14 @@ async def get_daily_pnl(
 
         # Get daily fill aggregates for recent history
         fill_stmt = select(
-            func.date_trunc("day", OrderLifecycleRecord.filled_at).label("fill_date"),
+            func.date_trunc("day", PyhronOrderLifecycleRecord.filled_at).label("fill_date"),
             func.count().label("fills"),
         ).where(
-            OrderLifecycleRecord.filled_at >= cutoff,
-            OrderLifecycleRecord.status.in_([OrderStatusEnum.FILLED, OrderStatusEnum.PARTIAL_FILL]),
+            PyhronOrderLifecycleRecord.filled_at >= cutoff,
+            PyhronOrderLifecycleRecord.status.in_([OrderStatusEnum.FILLED, OrderStatusEnum.PARTIAL_FILL]),
         )
         if strategy_id:
-            fill_stmt = fill_stmt.where(OrderLifecycleRecord.strategy_id == strategy_id)
+            fill_stmt = fill_stmt.where(PyhronOrderLifecycleRecord.strategy_id == strategy_id)
         fill_stmt = fill_stmt.group_by("fill_date").order_by("fill_date")
 
         fill_result = await session.execute(fill_stmt)
@@ -341,7 +341,7 @@ async def get_circuit_breaker_status(
 ) -> list[CircuitBreakerStatus]:
     """Get circuit breaker status for all active strategies."""
     async with get_session() as session:
-        stmt = select(StrategyPositionSnapshot.strategy_id).distinct()
+        stmt = select(PyhronStrategyPositionSnapshot.strategy_id).distinct()
         result = await session.execute(stmt)
         strategy_ids = [row[0] for row in result.all()]
 

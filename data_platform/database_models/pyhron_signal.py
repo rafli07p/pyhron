@@ -28,7 +28,7 @@ class SignalType(enum.StrEnum):
     REBALANCE = "rebalance"
 
 
-class Signal(Base):
+class PyhronSignal(Base):
     """Strategy-generated trading signal.
 
     Attributes:
@@ -44,7 +44,7 @@ class Signal(Base):
         metadata_json: Raw feature values, model scores, etc.
     """
 
-    __tablename__ = "signals"
+    __tablename__ = "pyhron_signal"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -53,7 +53,7 @@ class Signal(Base):
     )
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("strategies.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
         nullable=False,
     )
     instrument_symbol: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -68,7 +68,7 @@ class Signal(Base):
     resulting_order_id: Mapped[str | None] = mapped_column(String(36))
     metadata_json: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
-    strategy = relationship("Strategy", back_populates="signals", lazy="selectin")
+    strategy = relationship("PyhronStrategy", back_populates="signals", lazy="selectin")
 
     __table_args__ = (
         PrimaryKeyConstraint("id", "generated_at", name="pk_signals"),

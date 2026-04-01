@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class IndonesiaWeatherRainfall(Base):
+class IdnWeatherRainfall(Base):
     """Daily rainfall observation from a BMKG weather station.
 
     Attributes:
@@ -30,7 +30,7 @@ class IndonesiaWeatherRainfall(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "weather_rainfall"
+    __tablename__ = "idn_weather_rainfall"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     province: Mapped[str] = mapped_column(String(100), nullable=False)

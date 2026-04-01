@@ -16,17 +16,17 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
-from data_platform.database_models.order_lifecycle_record import (
-    OrderLifecycleRecord as Order,
-)
-from data_platform.database_models.order_lifecycle_record import (
+from data_platform.database_models.pyhron_order_lifecycle_record import (
     OrderStatusEnum,
 )
-from data_platform.database_models.strategy_position_snapshot import (
-    StrategyPositionSnapshot,
+from data_platform.database_models.pyhron_order_lifecycle_record import (
+    PyhronOrderLifecycleRecord as Order,
 )
-from data_platform.database_models.strategy_trade_execution_log import (
-    StrategyTradeExecutionLog,
+from data_platform.database_models.pyhron_strategy_position_snapshot import (
+    PyhronStrategyPositionSnapshot,
+)
+from data_platform.database_models.pyhron_strategy_trade_execution_log import (
+    PyhronStrategyTradeExecutionLog,
     TradeSideEnum,
 )
 from services.order_management_system.order_state_machine import OrderStateMachine
@@ -102,12 +102,12 @@ class OrderFillEventProcessor:
 
     Handles both partial and complete fills by:
       1. Looking up the order in the database (SELECT FOR UPDATE).
-      2. Checking fill_id dedup in StrategyTradeExecutionLog.
+      2. Checking fill_id dedup in PyhronStrategyTradeExecutionLog.
       3. Computing cumulative filled quantity and VWAP.
       4. Determining the target status (PARTIAL_FILL or FILLED).
       5. Executing the state transition via the OrderStateMachine.
-      6. Writing StrategyTradeExecutionLog (immutable).
-      7. Updating StrategyPositionSnapshot via upsert.
+      6. Writing PyhronStrategyTradeExecutionLog (immutable).
+      7. Updating PyhronStrategyPositionSnapshot via upsert.
       8. Calculating T+2 settlement date.
     """
 
@@ -166,7 +166,9 @@ class OrderFillEventProcessor:
             fill_id = fill.fill_id or str(uuid.uuid4())
             if fill.fill_id:
                 existing_trade = await session.execute(
-                    select(StrategyTradeExecutionLog).where(StrategyTradeExecutionLog.broker_trade_id == fill.fill_id)
+                    select(PyhronStrategyTradeExecutionLog).where(
+                        PyhronStrategyTradeExecutionLog.broker_trade_id == fill.fill_id
+                    )
                 )
                 if existing_trade.scalar_one_or_none() is not None:
                     logger.warning(
@@ -222,10 +224,10 @@ class OrderFillEventProcessor:
             source="broker_fill",
         )
 
-        # Step 7: Write StrategyTradeExecutionLog (immutable, idempotent via fill_id)
+        # Step 7: Write PyhronStrategyTradeExecutionLog (immutable, idempotent via fill_id)
         trade_side = TradeSideEnum.BUY if order.side == "buy" else TradeSideEnum.SELL
         async with get_session() as session:
-            trade_log = StrategyTradeExecutionLog(
+            trade_log = PyhronStrategyTradeExecutionLog(
                 id=uuid.uuid4(),
                 client_order_id=fill.client_order_id,
                 broker_trade_id=fill_id,
@@ -287,10 +289,10 @@ class OrderFillEventProcessor:
         async with get_session() as session:
             # Fetch current position for VWAP / realized PnL calculation
             result = await session.execute(
-                select(StrategyPositionSnapshot)
+                select(PyhronStrategyPositionSnapshot)
                 .where(
-                    StrategyPositionSnapshot.strategy_id == strategy_id,
-                    StrategyPositionSnapshot.symbol == symbol,
+                    PyhronStrategyPositionSnapshot.strategy_id == strategy_id,
+                    PyhronStrategyPositionSnapshot.symbol == symbol,
                 )
                 .with_for_update()
             )
@@ -298,7 +300,7 @@ class OrderFillEventProcessor:
 
             if existing is None:
                 # No position yet — insert
-                new_pos = StrategyPositionSnapshot(
+                new_pos = PyhronStrategyPositionSnapshot(
                     id=uuid.uuid4(),
                     strategy_id=strategy_id,
                     symbol=symbol,

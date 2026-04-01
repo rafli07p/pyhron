@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from shared.async_database_session import Base
 
 
-class Strategy(Base):
+class PyhronStrategy(Base):
     """Trading strategy configuration record.
 
     Attributes:
@@ -32,12 +32,12 @@ class Strategy(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "strategies"
+    __tablename__ = "pyhron_strategy"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_user.id", ondelete="CASCADE"),
         nullable=False,
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -50,9 +50,9 @@ class Strategy(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    user = relationship("User", back_populates="strategies", lazy="selectin")
-    signals = relationship("Signal", back_populates="strategy", lazy="selectin")
-    backtest_runs = relationship("BacktestRun", back_populates="strategy", lazy="selectin")
-    paper_sessions = relationship("PaperTradingSession", back_populates="strategy", lazy="selectin")
+    user = relationship("PyhronUser", back_populates="strategies", lazy="selectin")
+    signals = relationship("PyhronSignal", back_populates="strategy", lazy="selectin")
+    backtest_runs = relationship("PyhronBacktestRun", back_populates="strategy", lazy="selectin")
+    paper_sessions = relationship("PyhronPaperTradingSession", back_populates="strategy", lazy="selectin")
 
     __table_args__ = (Index("ix_strategies_user_created", "user_id", created_at.desc()),)

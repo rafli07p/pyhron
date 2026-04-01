@@ -11,7 +11,7 @@ import pytest
 # Transitive import to shared.kafka_producer_consumer uses Python 3.12+
 # generic class syntax (PEP 695).  Skip on older runtimes.
 try:
-    from data_platform.database_models.order_lifecycle_record import OrderStatusEnum
+    from data_platform.database_models.pyhron_order_lifecycle_record import OrderStatusEnum
     from services.order_management_system.order_state_machine import (
         TERMINAL_STATES,
         VALID_TRANSITIONS,

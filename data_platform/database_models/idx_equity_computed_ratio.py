@@ -41,12 +41,12 @@ class IdxEquityComputedRatio(Base):
         computed_at: Timestamp when the ratios were computed.
     """
 
-    __tablename__ = "computed_ratios"
+    __tablename__ = "idx_equity_computed_ratio"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("instruments.symbol"),
+        ForeignKey("idx_equity_instrument.symbol"),
         nullable=False,
         index=True,
     )

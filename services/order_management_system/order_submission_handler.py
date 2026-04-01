@@ -18,17 +18,17 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
-from data_platform.database_models.order_lifecycle_record import (
-    OrderLifecycleRecord,
+from data_platform.database_models.pyhron_order_lifecycle_record import (
     OrderSideEnum,
     OrderStatusEnum,
     OrderTypeEnum,
+    PyhronOrderLifecycleRecord,
 )
-from data_platform.database_models.strategy_position_snapshot import (
-    StrategyPositionSnapshot,
+from data_platform.database_models.pyhron_strategy_position_snapshot import (
+    PyhronStrategyPositionSnapshot,
 )
 
-Order = OrderLifecycleRecord
+Order = PyhronOrderLifecycleRecord
 from services.order_management_system.order_state_machine import OrderStateMachine
 from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
     CIRCUIT_BREAKER_KEY,
@@ -454,7 +454,7 @@ class OrderSubmissionHandler:
         quantity_lots: int,
         limit_price: Decimal | None,
         idempotency_key: str,
-    ) -> OrderLifecycleRecord:
+    ) -> PyhronOrderLifecycleRecord:
         """Submit an order via the direct API path.
 
         Performs IDX validation, pre-trade risk checks, persists the order,
@@ -471,7 +471,7 @@ class OrderSubmissionHandler:
             idempotency_key: Client-generated dedup key.
 
         Returns:
-            The persisted OrderLifecycleRecord.
+            The persisted PyhronOrderLifecycleRecord.
 
         Raises:
             CircuitBreakerOpenError: If circuit breaker is OPEN.
@@ -514,7 +514,7 @@ class OrderSubmissionHandler:
         # Step 1: Idempotency — check DB for existing order with this client_order_id
         async with self._db_session_factory() as session:
             existing = await session.execute(
-                select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == idempotency_key)
+                select(PyhronOrderLifecycleRecord).where(PyhronOrderLifecycleRecord.client_order_id == idempotency_key)
             )
             existing_record = existing.scalar_one_or_none()
 
@@ -532,9 +532,9 @@ class OrderSubmissionHandler:
         current_position_lots = 0
         async with self._db_session_factory() as session:
             pos_result = await session.execute(
-                select(StrategyPositionSnapshot).where(
-                    StrategyPositionSnapshot.strategy_id == (strategy_id or user_id),
-                    StrategyPositionSnapshot.symbol == symbol,
+                select(PyhronStrategyPositionSnapshot).where(
+                    PyhronStrategyPositionSnapshot.strategy_id == (strategy_id or user_id),
+                    PyhronStrategyPositionSnapshot.symbol == symbol,
                 )
             )
             position = pos_result.scalar_one_or_none()
@@ -580,14 +580,14 @@ class OrderSubmissionHandler:
         for warning in validation.warnings:
             logger.warning("idx_validation_warning", symbol=symbol, warning=warning)
 
-        # Step 5: Create OrderLifecycleRecord with PENDING_RISK, persist to DB
+        # Step 5: Create PyhronOrderLifecycleRecord with PENDING_RISK, persist to DB
         from services.order_management_system.idx_order_validator import IDX_LOT_SIZE
 
         quantity_shares = quantity_lots * IDX_LOT_SIZE
         client_order_id = idempotency_key
         now = datetime.now(tz=UTC)
 
-        record = OrderLifecycleRecord(
+        record = PyhronOrderLifecycleRecord(
             client_order_id=client_order_id,
             user_id=user_id,
             strategy_id=strategy_id or user_id,
@@ -626,7 +626,9 @@ class OrderSubmissionHandler:
         if state_machine is not None:
             async with self._db_session_factory() as session:
                 order_result = await session.execute(
-                    select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                    select(PyhronOrderLifecycleRecord).where(
+                        PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                    )
                 )
                 order_obj = order_result.scalar_one()
 
@@ -639,7 +641,9 @@ class OrderSubmissionHandler:
         else:
             async with self._db_session_factory() as session:
                 order_result = await session.execute(
-                    select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                    select(PyhronOrderLifecycleRecord).where(
+                        PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                    )
                 )
                 rec = order_result.scalar_one()
                 rec.status = OrderStatusEnum.RISK_APPROVED
@@ -666,7 +670,9 @@ class OrderSubmissionHandler:
             if state_machine is not None:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
-                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                        select(PyhronOrderLifecycleRecord).where(
+                            PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                        )
                     )
                     order_obj = order_result.scalar_one()
 
@@ -679,7 +685,9 @@ class OrderSubmissionHandler:
             else:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
-                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                        select(PyhronOrderLifecycleRecord).where(
+                            PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                        )
                     )
                     rec = order_result.scalar_one()
                     rec.broker_order_id = broker_order_id
@@ -701,7 +709,9 @@ class OrderSubmissionHandler:
             if state_machine is not None:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
-                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                        select(PyhronOrderLifecycleRecord).where(
+                            PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                        )
                     )
                     order_obj = order_result.scalar_one()
 
@@ -717,7 +727,9 @@ class OrderSubmissionHandler:
             else:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
-                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                        select(PyhronOrderLifecycleRecord).where(
+                            PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                        )
                     )
                     rec = order_result.scalar_one()
                     rec.status = OrderStatusEnum.REJECTED
@@ -756,7 +768,9 @@ class OrderSubmissionHandler:
             if state_machine is not None:
                 async with self._db_session_factory() as session:
                     order_result = await session.execute(
-                        select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                        select(PyhronOrderLifecycleRecord).where(
+                            PyhronOrderLifecycleRecord.client_order_id == client_order_id
+                        )
                     )
                     order_obj = order_result.scalar_one()
 
@@ -801,6 +815,6 @@ class OrderSubmissionHandler:
         # Step 9: Return the persisted record
         async with self._db_session_factory() as session:
             order_result = await session.execute(
-                select(OrderLifecycleRecord).where(OrderLifecycleRecord.client_order_id == client_order_id)
+                select(PyhronOrderLifecycleRecord).where(PyhronOrderLifecycleRecord.client_order_id == client_order_id)
             )
             return order_result.scalar_one()

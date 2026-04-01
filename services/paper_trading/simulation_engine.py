@@ -14,12 +14,12 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy import select
 
 from data_platform.database_models.idx_equity_ohlcv_tick import IdxEquityOhlcvTick
-from data_platform.database_models.paper_trading_session import (
-    PaperNavSnapshot,
-    PaperTradingSession,
+from data_platform.database_models.pyhron_paper_trading_session import (
+    PyhronPaperNavSnapshot,
+    PyhronPaperTradingSession,
 )
-from data_platform.database_models.signal import Signal
-from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+from data_platform.database_models.pyhron_signal import PyhronSignal
+from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 from services.paper_trading.idx_cost_model import IDXTransactionCostModel
 from services.paper_trading.pnl_attribution import PnLAttributionEngine
 from services.paper_trading.session_manager import PaperSessionSummary, PaperTradingSessionManager
@@ -72,7 +72,7 @@ class PaperSimulationEngine:
 
     async def run(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         date_from: date,
         date_to: date,
         slippage_bps: Decimal | None = None,
@@ -106,7 +106,7 @@ class PaperSimulationEngine:
 
     async def simulate_day(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         trade_date: date,
         slippage_bps: Decimal,
         db_session: AsyncSession,
@@ -116,10 +116,10 @@ class PaperSimulationEngine:
 
         # 1. Load signals generated on trade_date
         signals_result = await db_session.execute(
-            select(Signal).where(
-                Signal.strategy_id == session.strategy_id,
-                Signal.bar_timestamp >= datetime.combine(trade_date, time.min),
-                Signal.bar_timestamp < datetime.combine(trade_date + timedelta(days=1), time.min),
+            select(PyhronSignal).where(
+                PyhronSignal.strategy_id == session.strategy_id,
+                PyhronSignal.bar_timestamp >= datetime.combine(trade_date, time.min),
+                PyhronSignal.bar_timestamp < datetime.combine(trade_date + timedelta(days=1), time.min),
             )
         )
         signals = signals_result.scalars().all()
@@ -174,9 +174,9 @@ class PaperSimulationEngine:
 
         # 5. Get current positions
         positions_result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             )
         )
         current_positions_list = positions_result.scalars().all()
@@ -299,9 +299,9 @@ class PaperSimulationEngine:
 
         # 8. Snapshot NAV
         prev_result = await db_session.execute(
-            select(PaperNavSnapshot)
-            .where(PaperNavSnapshot.session_id == session.id)
-            .order_by(PaperNavSnapshot.timestamp.desc())
+            select(PyhronPaperNavSnapshot)
+            .where(PyhronPaperNavSnapshot.session_id == session.id)
+            .order_by(PyhronPaperNavSnapshot.timestamp.desc())
             .limit(1)
         )
         prev_snap = prev_result.scalar_one_or_none()
@@ -322,14 +322,14 @@ class PaperSimulationEngine:
 
         # Compute gross exposure
         pos_result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             )
         )
         gross_exposure = sum(pos.market_value or Decimal("0") for pos in pos_result.scalars().all())
 
-        snapshot = PaperNavSnapshot(
+        snapshot = PyhronPaperNavSnapshot(
             session_id=session.id,
             timestamp=datetime.combine(trade_date, time(16, 0)),
             nav_idr=nav,
@@ -388,7 +388,7 @@ class PaperSimulationEngine:
 
     async def _mark_to_market(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         trade_date: date,
         db_session: AsyncSession,
     ) -> Decimal:
@@ -408,9 +408,9 @@ class PaperSimulationEngine:
 
         # Update positions
         pos_result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             )
         )
         gross_exposure = Decimal("0")
@@ -429,7 +429,7 @@ class PaperSimulationEngine:
 
     async def _update_position(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         symbol: str,
         qty_change: int,
         fill_price: Decimal,
@@ -438,16 +438,16 @@ class PaperSimulationEngine:
         """Update or create position after a simulated fill."""
 
         result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.symbol == symbol,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.symbol == symbol,
             )
         )
         pos = result.scalar_one_or_none()
 
         if pos is None:
             if qty_change > 0:
-                new_pos = StrategyPositionSnapshot(
+                new_pos = PyhronStrategyPositionSnapshot(
                     strategy_id=str(session.strategy_id),
                     symbol=symbol,
                     quantity=qty_change,
@@ -486,7 +486,7 @@ class PaperSimulationEngine:
 
     async def _settle_cash(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         current_date: date,
         db_session: AsyncSession,
     ) -> None:
