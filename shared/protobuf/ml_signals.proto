@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package pyhron.ml;
+
+message MLSignal {
+  string symbol = 1;
+  double score = 2;
+  string regime = 3;
+  double vol_forecast = 4;
+  map<string, double> features = 5;
+  string as_of = 6;  // ISO 8601
+}
+
+message SignalBatch {
+  repeated MLSignal signals = 1;
+  string generated_at = 2;
+  string model_version = 3;
+}
+
+message RegimeUpdate {
+  string regime = 1;
+  double confidence = 2;
+  string as_of = 3;
+}

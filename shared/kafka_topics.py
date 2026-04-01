@@ -47,6 +47,16 @@ class KafkaTopic:
     RAW_INTRADAY_BARS = "pyhron.raw.intraday_bars"
     VALIDATED_INTRADAY_BARS = "pyhron.validated.intraday_bars"
 
+    # Execution algorithms
+    EXECUTION_CHILD_ORDERS = "pyhron.execution.child_orders"
+
+    # ML pipeline
+    ML_SIGNALS_BATCH = "pyhron.ml.signals"
+    ML_REGIME_UPDATE = "pyhron.ml.regime"
+
+    # Portfolio rebalance
+    PORTFOLIO_REBALANCE = "pyhron.portfolio.rebalance"
+
     # Dead-letter queues
     DLQ_EOD_OHLCV = "pyhron.dlq.eod_ohlcv"
     DLQ_FUNDAMENTALS = "pyhron.dlq.fundamentals"

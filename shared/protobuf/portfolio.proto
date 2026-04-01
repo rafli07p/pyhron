@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pyhron.portfolio;
+
+message WeightVector {
+  map<string, double> weights = 1;
+}
+
+message RebalanceRequest {
+  string method = 1;
+  repeated string universe = 2;
+  double max_weight = 3;
+  double target_vol = 4;
+  string requested_at = 5;
+}
+
+message RebalanceResult {
+  map<string, double> weights = 1;
+  double expected_return = 2;
+  double expected_vol = 3;
+  double turnover = 4;
+  double estimated_cost_bps = 5;
+  string method = 6;
+  string completed_at = 7;
+}

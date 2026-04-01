@@ -413,6 +413,9 @@ def create_rest_app() -> FastAPI:
     # Pyhron domain routers (IDX equity, macro, commodity, etc.)
     from apps.api.http_routers.backtest_execution_router import router as backtest_router
     from apps.api.http_routers.commodity_stock_impact_router import router as commodity_impact_router
+
+    # New routers: execution algorithms, portfolio optimizer, ML signals
+    from apps.api.http_routers.execution_algos_router import router as execution_algos_router
     from apps.api.http_routers.governance_intelligence_router import router as governance_router
     from apps.api.http_routers.idx_equity_screener_router import router as screener_router
     from apps.api.http_routers.idx_equity_stock_detail_router import router as stock_detail_router
@@ -423,7 +426,9 @@ def create_rest_app() -> FastAPI:
     from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
     from apps.api.http_routers.live_trading_position_router import router as live_trading_router
     from apps.api.http_routers.live_trading_risk_router import router as live_trading_risk_router
+    from apps.api.http_routers.ml_signals_router import router as ml_signals_router
     from apps.api.http_routers.paper_trading_router import router as paper_trading_router
+    from apps.api.http_routers.portfolio_optimizer_router import router as portfolio_optimizer_router
     from apps.api.http_routers.strategy_management_router import router as strategy_router
     from apps.api.http_routers.user_authentication_router import router as auth_router
 
@@ -442,6 +447,9 @@ def create_rest_app() -> FastAPI:
     app.include_router(live_trading_risk_router)
     app.include_router(auth_router)
     app.include_router(paper_trading_router)
+    app.include_router(execution_algos_router)
+    app.include_router(portfolio_optimizer_router)
+    app.include_router(ml_signals_router)
 
     # Health / Readiness
 

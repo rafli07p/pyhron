@@ -14,6 +14,7 @@ packages = [
     { include = "commodity_linkage_engine" },
     { include = "macro_intelligence" },
     { include = "governance_intelligence" },
+    { include = "pyhron" },
 ]
 
 [tool.poetry.dependencies]
@@ -87,6 +88,14 @@ mlflow = "~=2.19.0"
 dask = { version = "~=2024.12.0", extras = ["distributed"] }
 lightgbm = "~=4.5.0"
 shap = "~=0.46.0"
+xgboost = "~=2.1.0"
+optuna = "~=3.6.0"
+hmmlearn = "~=0.3.0"
+filterpy = "~=1.4.0"
+arch = "~=7.0.0"
+onnx = "~=1.16.0"
+onnxruntime = "~=1.18.0"
+statsmodels = "~=0.14.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "~=0.8.0"
@@ -204,6 +213,21 @@ module = [
     "celery.*",
     "google.protobuf.*",
     "prometheus_client.*",
+    "xgboost.*",
+    "optuna.*",
+    "hmmlearn.*",
+    "filterpy.*",
+    "arch.*",
+    "onnx.*",
+    "onnxruntime.*",
+    "statsmodels.*",
+    "mlflow.*",
+    "torch.*",
+    "sklearn.*",
+    "lightgbm.*",
+    "shap.*",
+    "matplotlib.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true
 
@@ -224,6 +248,7 @@ addopts = [
     "--cov=commodity_linkage_engine",
     "--cov=macro_intelligence",
     "--cov=governance_intelligence",
+    "--cov=pyhron",
     "--cov-report=term-missing",
     "--cov-fail-under=20",
 ]
