@@ -22,7 +22,9 @@ class IdxEquityInstrument(Base):
 
     __tablename__ = "instruments"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
     symbol: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     company_name: Mapped[str] = mapped_column(String(500), nullable=False)
     sector: Mapped[str | None] = mapped_column(String(100))
@@ -32,18 +34,36 @@ class IdxEquityInstrument(Base):
     shares_outstanding: Mapped[int | None] = mapped_column(BigInteger)
     market_cap_idr: Mapped[int | None] = mapped_column("market_cap_idr", BigInteger)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), server_default="now()"
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default="now()", onupdate=lambda: datetime.now(UTC)
+        TIMESTAMP(timezone=True),
+        server_default="now()",
+        onupdate=lambda: datetime.now(UTC),
     )
 
     # Relationships - use noload to avoid eager loading column-mismatched tables
-    financial_statements = relationship("IdxEquityFinancialStatement", back_populates="instrument", lazy="noload")
-    corporate_actions = relationship("IdxEquityCorporateAction", back_populates="instrument", lazy="noload")
-    computed_ratios = relationship("IdxEquityComputedRatio", back_populates="instrument", lazy="noload")
-    governance_flags = relationship("IdxEquityGovernanceFlag", back_populates="instrument", lazy="noload")
-    index_memberships = relationship("IdxEquityIndexConstituent", back_populates="instrument", lazy="noload")
+    financial_statements = relationship(
+        "IdxEquityFinancialStatement", back_populates="instrument", lazy="noload"
+    )
+    corporate_actions = relationship(
+        "IdxEquityCorporateAction", back_populates="instrument", lazy="noload"
+    )
+    computed_ratios = relationship(
+        "IdxEquityComputedRatio", back_populates="instrument", lazy="noload"
+    )
+    governance_flags = relationship(
+        "IdxEquityGovernanceFlag", back_populates="instrument", lazy="noload"
+    )
+    index_memberships = relationship(
+        "IdxEquityIndexConstituent", back_populates="instrument", lazy="noload"
+    )
 
     __table_args__ = (
-        Index("ix_instruments_active_symbol", "symbol", postgresql_where="is_active = true"),
+        Index(
+            "ix_instruments_active_symbol",
+            "symbol",
+            postgresql_where="is_active = true",
+        ),
     )
