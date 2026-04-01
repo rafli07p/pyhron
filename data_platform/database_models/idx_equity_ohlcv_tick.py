@@ -35,6 +35,4 @@ class IdxEquityOhlcvTick(Base):
     vwap: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
     ingested_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    __table_args__ = (
-        Index("ix_ohlcv_symbol_time", "symbol", time.desc()),
-    )
+    __table_args__ = (Index("ix_ohlcv_symbol_time", "symbol", time.desc()),)
