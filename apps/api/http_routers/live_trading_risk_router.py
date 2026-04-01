@@ -4,8 +4,6 @@ Kill switch administration, strategy promotion/demotion,
 real-time risk snapshots, and capital allocation.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from enum import StrEnum, unique
 

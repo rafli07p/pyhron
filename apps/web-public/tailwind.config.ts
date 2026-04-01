@@ -14,8 +14,8 @@ export default {
           900: '#060c17',
         },
         accent: { 500: '#00d4aa', 600: '#00b894', 700: '#009b7d' },
-        positive: '#10b981',
-        negative: '#ef4444',
+        positive: '#047857',
+        negative: '#dc2626',
         warning: '#f59e0b',
       },
       fontFamily: {

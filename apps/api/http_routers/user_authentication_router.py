@@ -5,8 +5,6 @@ user registration, and profile management.
 Uses database-backed user storage with brute-force lockout protection.
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -84,12 +82,12 @@ class UserProfileResponse(BaseModel):
 # Endpoints
 @router.post("/login", response_model=TokenResponse)
 @_limiter.limit("5/minute")
-async def login(request: Request, body: LoginRequest) -> TokenResponse:
+async def login(request: Request, payload: LoginRequest) -> TokenResponse:
     """Authenticate user and return JWT access + refresh tokens."""
-    logger.info("login_attempt", email=body.email)
+    logger.info("login_attempt", email=payload.email)
 
     async with get_session() as session:
-        result = await session.execute(select(PyhronUser).where(PyhronUser.email == body.email))
+        result = await session.execute(select(PyhronUser).where(PyhronUser.email == payload.email))
         user = result.scalar_one_or_none()
 
         if user is None:
@@ -101,7 +99,7 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
 
         # Check lockout
         if user.locked_until and user.locked_until > datetime.now(tz=UTC):
-            logger.warning("login_locked_out", email=body.email)
+            logger.warning("login_locked_out", email=payload.email)
             raise HTTPException(
                 status_code=status.HTTP_423_LOCKED,
                 detail="Account temporarily locked due to too many failed attempts",
@@ -115,11 +113,11 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
             )
 
         # Verify password
-        if not verify_password(body.password, user.hashed_password):
+        if not verify_password(payload.password, user.hashed_password):
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= MAX_FAILED_ATTEMPTS:
                 user.locked_until = datetime.now(tz=UTC) + timedelta(minutes=LOCKOUT_DURATION_MINUTES)
-                logger.warning("account_locked", email=body.email, attempts=user.failed_login_attempts)
+                logger.warning("account_locked", email=payload.email, attempts=user.failed_login_attempts)
             await session.commit()
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -144,7 +142,7 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
         tenant_id="default",
     )
 
-    logger.info("login_success", email=body.email, user_id=str(user.id))
+    logger.info("login_success", email=payload.email, user_id=str(user.id))
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_tok,
@@ -153,11 +151,11 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
 
 @router.post("/register", response_model=UserProfileResponse, status_code=201)
 @_limiter.limit("3/minute")
-async def register(request: Request, body: RegisterRequest) -> UserProfileResponse:
+async def register(request: Request, payload: RegisterRequest) -> UserProfileResponse:
     """Register a new user account."""
     async with get_session() as session:
         # Check if email already exists
-        existing = await session.execute(select(PyhronUser).where(PyhronUser.email == body.email))
+        existing = await session.execute(select(PyhronUser).where(PyhronUser.email == payload.email))
         if existing.scalar_one_or_none() is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -165,8 +163,8 @@ async def register(request: Request, body: RegisterRequest) -> UserProfileRespon
             )
 
         user = PyhronUser(
-            email=body.email,
-            hashed_password=hash_password(body.password),
+            email=payload.email,
+            hashed_password=hash_password(payload.password),
             role=UserRole.READONLY,
             is_active=True,
             is_verified=False,
@@ -175,12 +173,12 @@ async def register(request: Request, body: RegisterRequest) -> UserProfileRespon
         await session.commit()
         await session.refresh(user)
 
-    logger.info("user_registered", email=body.email, user_id=str(user.id))
+    logger.info("user_registered", email=payload.email, user_id=str(user.id))
     return UserProfileResponse(
         id=user.id,
         email=user.email,
-        full_name=body.full_name,
-        tenant_id=body.tenant_id,
+        full_name=payload.full_name,
+        tenant_id=payload.tenant_id,
         is_active=user.is_active,
         role=_ROLE_MAP.get(user.role, Role.VIEWER.value),
         created_at=user.created_at,
@@ -189,10 +187,10 @@ async def register(request: Request, body: RegisterRequest) -> UserProfileRespon
 
 @router.post("/refresh", response_model=TokenResponse)
 @_limiter.limit("10/minute")
-async def refresh_token(request: Request, body: RefreshRequest) -> TokenResponse:
+async def refresh_token(request: Request, payload: RefreshRequest) -> TokenResponse:
     """Refresh an expired access token using a valid refresh token."""
     try:
-        payload = verify_token(body.refresh_token)
+        payload = verify_token(payload.refresh_token)
     except TokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

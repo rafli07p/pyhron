@@ -46,7 +46,7 @@ export function ScreenerView() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'pyhron-screener.csv';
+    a.download = `pyhron-screener-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -83,10 +83,10 @@ export function ScreenerView() {
           <thead>
             <tr className="border-b border-border bg-bg-secondary">
               {columns.map((col) => (
-                <th key={col.key} className={`px-3 py-2.5 font-medium text-text-muted whitespace-nowrap cursor-pointer hover:text-text-primary ${col.align === 'right' ? 'text-right' : 'text-left'}`} onClick={() => handleSort(col.key)}>
+                <th key={col.key} className={`px-3 py-2.5 font-medium text-text-muted whitespace-nowrap cursor-pointer hover:text-text-primary ${col.align === 'right' ? 'text-right' : 'text-left'}`} onClick={() => handleSort(col.key)} aria-sort={sortBy === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} role="columnheader">
                   <span className="inline-flex items-center gap-1">
                     {col.label}
-                    <ArrowUpDown className="h-3 w-3" />
+                    <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
                   </span>
                 </th>
               ))}

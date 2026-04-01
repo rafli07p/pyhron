@@ -112,7 +112,7 @@ export function StockChart({ data, height = 400 }: StockChartProps) {
           </button>
         ))}
       </div>
-      <div ref={containerRef} className="w-full rounded-lg border border-border overflow-hidden" />
+      <div ref={containerRef} className="w-full rounded-lg border border-border overflow-hidden" aria-label="Stock price chart" />
     </div>
   );
 }
