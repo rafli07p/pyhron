@@ -28,7 +28,7 @@ def upgrade() -> None:
         sa.Column(
             "strategy_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("strategies.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("mode", sa.String(10), nullable=False),
@@ -44,14 +44,14 @@ def upgrade() -> None:
         sa.Column(
             "promoted_from_session_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("paper_trading_sessions.id"),
+            sa.ForeignKey("pyhron_paper_trading_session.id"),
             nullable=True,
         ),
         sa.Column("promoted_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "promoted_by",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("users.id"),
+            sa.ForeignKey("pyhron_user.id"),
             nullable=True,
         ),
         sa.Column(
@@ -90,7 +90,7 @@ def upgrade() -> None:
         sa.Column(
             "session_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("paper_trading_sessions.id"),
+            sa.ForeignKey("pyhron_paper_trading_session.id"),
             nullable=False,
         ),
         sa.Column(
@@ -102,7 +102,7 @@ def upgrade() -> None:
         sa.Column(
             "checked_by",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("users.id"),
+            sa.ForeignKey("pyhron_user.id"),
             nullable=True,
         ),
         sa.Column("min_trading_days_met", sa.Boolean(), nullable=False),
@@ -138,7 +138,7 @@ def upgrade() -> None:
         sa.Column(
             "strategy_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("strategies.id", ondelete="CASCADE"),
+            sa.ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("timestamp", sa.DateTime(timezone=True), nullable=False),

@@ -18,30 +18,30 @@ depends_on = None
 # (old_schema, old_table, new_table)
 TABLE_MOVES = [
     # market_data schema
-    ("market_data", "idx_equity_instrument", "instruments"),
-    ("market_data", "idx_equity_ohlcv_tick", "ohlcv"),
-    ("market_data", "idx_equity_financial_statement", "financial_statements"),
-    ("market_data", "idx_equity_computed_ratio", "computed_ratios"),
-    ("market_data", "idx_equity_corporate_action", "corporate_actions"),
-    ("market_data", "idx_equity_index_constituent", "index_constituents"),
-    ("market_data", "idx_equity_news_article", "news_articles"),
+    ("market_data", "idx_equity_instrument", "idx_equity_instrument"),
+    ("market_data", "idx_equity_ohlcv_tick", "idx_equity_ohlcv_tick"),
+    ("market_data", "idx_equity_financial_statement", "idx_equity_financial_statement"),
+    ("market_data", "idx_equity_computed_ratio", "idx_equity_computed_ratio"),
+    ("market_data", "idx_equity_corporate_action", "idx_equity_corporate_action"),
+    ("market_data", "idx_equity_index_constituent", "idx_equity_index_constituent"),
+    ("market_data", "idx_equity_news_article", "idx_equity_news_article"),
     # trading schema
-    ("trading", "strategy_order_lifecycle_record", "orders"),
-    ("trading", "strategy_position_current_snapshot", "positions"),
-    ("trading", "strategy_trade_execution_log", "trade_executions"),
+    ("trading", "strategy_order_lifecycle_record", "pyhron_order_lifecycle_record"),
+    ("trading", "strategy_position_current_snapshot", "pyhron_strategy_position_snapshot"),
+    ("trading", "strategy_trade_execution_log", "pyhron_strategy_trade_execution_log"),
     # macro schema
-    ("macro", "indonesia_macro_indicator", "macro_indicators"),
+    ("macro", "indonesia_macro_indicator", "idn_macro_indicator"),
     # commodity schema
-    ("commodity", "indonesia_commodity_daily_price", "commodity_prices"),
+    ("commodity", "indonesia_commodity_daily_price", "idn_commodity_price"),
     # alternative_data schema
-    ("alternative_data", "indonesia_fire_hotspot_event", "fire_hotspot_events"),
-    ("alternative_data", "indonesia_weather_rainfall", "weather_rainfall"),
+    ("alternative_data", "indonesia_fire_hotspot_event", "idn_fire_hotspot_event"),
+    ("alternative_data", "indonesia_weather_rainfall", "idn_weather_rainfall"),
     # fixed_income schema
-    ("fixed_income", "indonesia_government_bond_sbn", "government_bonds"),
+    ("fixed_income", "indonesia_government_bond_sbn", "idn_government_bond"),
     ("fixed_income", "indonesia_government_bond_yield_curve", "government_bond_yield_curve"),
-    ("fixed_income", "indonesia_corporate_bond", "corporate_bonds"),
+    ("fixed_income", "indonesia_corporate_bond", "idn_corporate_bond"),
     # governance schema
-    ("governance", "idx_equity_governance_flag", "governance_flags"),
+    ("governance", "idx_equity_governance_flag", "idx_equity_governance_flag"),
 ]
 
 

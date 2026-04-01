@@ -26,7 +26,7 @@ class BacktestStatus(enum.StrEnum):
     FAILED = "failed"
 
 
-class BacktestRun(Base):
+class PyhronBacktestRun(Base):
     """Backtest execution record with performance metrics.
 
     Attributes:
@@ -56,17 +56,17 @@ class BacktestRun(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "backtest_runs"
+    __tablename__ = "pyhron_backtest_run"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("strategies.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
         nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_user.id", ondelete="CASCADE"),
         nullable=False,
     )
     status: Mapped[BacktestStatus] = mapped_column(
@@ -95,5 +95,5 @@ class BacktestRun(Base):
     completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    strategy = relationship("Strategy", back_populates="backtest_runs", lazy="selectin")
-    user = relationship("User", lazy="selectin")
+    strategy = relationship("PyhronStrategy", back_populates="backtest_runs", lazy="selectin")
+    user = relationship("PyhronUser", lazy="selectin")

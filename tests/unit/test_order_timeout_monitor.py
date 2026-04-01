@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 try:
-    from data_platform.database_models.order_lifecycle_record import OrderStatusEnum
+    from data_platform.database_models.pyhron_order_lifecycle_record import OrderStatusEnum
     from services.order_management_system.order_timeout_monitor import (
         DEFAULT_LIMIT_ORDER_TTL_SECONDS,
         DEFAULT_ORDER_TTL_SECONDS,

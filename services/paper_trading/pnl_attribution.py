@@ -15,12 +15,12 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from data_platform.database_models.paper_trading_session import (
-    PaperNavSnapshot,
-    PaperPnlAttribution,
-    PaperTradingSession,
+from data_platform.database_models.pyhron_paper_trading_session import (
+    PyhronPaperNavSnapshot,
+    PyhronPaperPnlAttribution,
+    PyhronPaperTradingSession,
 )
-from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ class PnLAttributionEngine:
 
         # Upsert attribution record
         stmt = (
-            pg_insert(PaperPnlAttribution)
+            pg_insert(PyhronPaperPnlAttribution)
             .values(
                 session_id=session_id,
                 symbol=symbol,
@@ -107,10 +107,10 @@ class PnLAttributionEngine:
             .on_conflict_do_update(
                 constraint="uq_paper_pnl_session_symbol_date",
                 set_={
-                    "realized_pnl_idr": PaperPnlAttribution.realized_pnl_idr + realized_pnl,
-                    "commission_idr": PaperPnlAttribution.commission_idr + commission,
-                    "turnover_idr": PaperPnlAttribution.turnover_idr + trade_value,
-                    "trades_count": PaperPnlAttribution.trades_count + 1,
+                    "realized_pnl_idr": PyhronPaperPnlAttribution.realized_pnl_idr + realized_pnl,
+                    "commission_idr": PyhronPaperPnlAttribution.commission_idr + commission,
+                    "turnover_idr": PyhronPaperPnlAttribution.turnover_idr + trade_value,
+                    "trades_count": PyhronPaperPnlAttribution.trades_count + 1,
                 },
             )
         )
@@ -118,7 +118,7 @@ class PnLAttributionEngine:
 
         # Update session totals
         session_result = await db_session.execute(
-            select(PaperTradingSession).where(PaperTradingSession.id == session_id)
+            select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id)
         )
         session = session_result.scalar_one_or_none()
         if session:
@@ -138,16 +138,16 @@ class PnLAttributionEngine:
     ) -> dict[str, Decimal]:
         """Compute unrealized P&L for all open positions."""
         session_result = await db_session.execute(
-            select(PaperTradingSession).where(PaperTradingSession.id == session_id)
+            select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id)
         )
         session = session_result.scalar_one_or_none()
         if session is None:
             return {}
 
         positions_result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             )
         )
         positions = positions_result.scalars().all()
@@ -168,9 +168,9 @@ class PnLAttributionEngine:
     ) -> PaperSessionMetrics:
         """Compute Sharpe, Sortino, Calmar from NAV snapshot series."""
         result = await db_session.execute(
-            select(PaperNavSnapshot.timestamp, PaperNavSnapshot.nav_idr, PaperNavSnapshot.daily_return_pct)
-            .where(PaperNavSnapshot.session_id == session_id)
-            .order_by(PaperNavSnapshot.timestamp.asc())
+            select(PyhronPaperNavSnapshot.timestamp, PyhronPaperNavSnapshot.nav_idr, PyhronPaperNavSnapshot.daily_return_pct)
+            .where(PyhronPaperNavSnapshot.session_id == session_id)
+            .order_by(PyhronPaperNavSnapshot.timestamp.asc())
         )
         rows = result.all()
 
@@ -179,7 +179,7 @@ class PnLAttributionEngine:
 
         # Get session for max drawdown
         session_result = await db_session.execute(
-            select(PaperTradingSession).where(PaperTradingSession.id == session_id)
+            select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id)
         )
         session = session_result.scalar_one_or_none()
         max_dd = float(session.max_drawdown_pct) if session else 0.0
@@ -228,10 +228,10 @@ class PnLAttributionEngine:
     ) -> AttributionReport:
         """Aggregate daily attribution records into a report."""
         result = await db_session.execute(
-            select(PaperPnlAttribution).where(
-                PaperPnlAttribution.session_id == session_id,
-                PaperPnlAttribution.date >= date_from,
-                PaperPnlAttribution.date <= date_to,
+            select(PyhronPaperPnlAttribution).where(
+                PyhronPaperPnlAttribution.session_id == session_id,
+                PyhronPaperPnlAttribution.date >= date_from,
+                PyhronPaperPnlAttribution.date <= date_to,
             )
         )
         records = result.scalars().all()

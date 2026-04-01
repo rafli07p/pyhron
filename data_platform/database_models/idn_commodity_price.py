@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class IndonesiaCommodityPrice(Base):
+class IdnCommodityPrice(Base):
     """Daily commodity price observation.
 
     Attributes:
@@ -30,7 +30,7 @@ class IndonesiaCommodityPrice(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "commodity_prices"
+    __tablename__ = "idn_commodity_price"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     commodity_code: Mapped[str] = mapped_column(String(30), nullable=False)

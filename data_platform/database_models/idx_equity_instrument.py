@@ -35,7 +35,7 @@ class IdxEquityInstrument(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "instruments"
+    __tablename__ = "idx_equity_instrument"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)

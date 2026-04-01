@@ -25,7 +25,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from shared.async_database_session import Base
 
 
-class PaperTradingSession(Base):
+class PyhronPaperTradingSession(Base):
     """A single paper trading run for a strategy.
 
     Attributes:
@@ -50,13 +50,13 @@ class PaperTradingSession(Base):
         created_by: FK to user who created the session.
     """
 
-    __tablename__ = "paper_trading_sessions"
+    __tablename__ = "pyhron_paper_trading_session"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("strategies.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
         nullable=False,
     )
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="INITIALIZING")
@@ -78,13 +78,13 @@ class PaperTradingSession(Base):
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id"),
+        ForeignKey("pyhron_user.id"),
     )
 
-    strategy = relationship("Strategy", back_populates="paper_sessions", lazy="selectin")
-    creator = relationship("User", lazy="selectin")
-    nav_snapshots = relationship("PaperNavSnapshot", back_populates="session", lazy="selectin")
-    pnl_attributions = relationship("PaperPnlAttribution", back_populates="session", lazy="selectin")
+    strategy = relationship("PyhronStrategy", back_populates="paper_sessions", lazy="selectin")
+    creator = relationship("PyhronUser", lazy="selectin")
+    nav_snapshots = relationship("PyhronPaperNavSnapshot", back_populates="session", lazy="selectin")
+    pnl_attributions = relationship("PyhronPaperPnlAttribution", back_populates="session", lazy="selectin")
 
     __table_args__ = (
         CheckConstraint("initial_capital_idr > 0", name="ck_paper_session_capital_positive"),
@@ -100,20 +100,20 @@ class PaperTradingSession(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<PaperTradingSession {self.name!r} status={self.status}>"
+        return f"<PyhronPaperTradingSession {self.name!r} status={self.status}>"
 
 
-class PaperNavSnapshot(Base):
+class PyhronPaperNavSnapshot(Base):
     """NAV snapshot for equity curve plotting.
 
     Converted to a TimescaleDB hypertable on ``timestamp``.
     """
 
-    __tablename__ = "paper_nav_snapshots"
+    __tablename__ = "pyhron_paper_nav_snapshot"
 
     session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("paper_trading_sessions.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_paper_trading_session.id", ondelete="CASCADE"),
         nullable=False,
     )
     timestamp: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
@@ -124,7 +124,7 @@ class PaperNavSnapshot(Base):
     daily_pnl_idr: Mapped[Decimal] = mapped_column(Numeric(20, 2), nullable=False)
     daily_return_pct: Mapped[Decimal] = mapped_column(Numeric(10, 6), nullable=False)
 
-    session = relationship("PaperTradingSession", back_populates="nav_snapshots", lazy="selectin")
+    session = relationship("PyhronPaperTradingSession", back_populates="nav_snapshots", lazy="selectin")
 
     __table_args__ = (
         PrimaryKeyConstraint("session_id", "timestamp"),
@@ -132,18 +132,18 @@ class PaperNavSnapshot(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<PaperNavSnapshot session={self.session_id} nav={self.nav_idr}>"
+        return f"<PyhronPaperNavSnapshot session={self.session_id} nav={self.nav_idr}>"
 
 
-class PaperPnlAttribution(Base):
+class PyhronPaperPnlAttribution(Base):
     """Per-symbol daily P&L attribution for a paper trading session."""
 
-    __tablename__ = "paper_pnl_attributions"
+    __tablename__ = "pyhron_paper_pnl_attribution"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("paper_trading_sessions.id", ondelete="CASCADE"),
+        ForeignKey("pyhron_paper_trading_session.id", ondelete="CASCADE"),
         nullable=False,
     )
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -157,7 +157,7 @@ class PaperPnlAttribution(Base):
     alpha_score: Mapped[Decimal | None] = mapped_column(Numeric(10, 6))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
 
-    session = relationship("PaperTradingSession", back_populates="pnl_attributions", lazy="selectin")
+    session = relationship("PyhronPaperTradingSession", back_populates="pnl_attributions", lazy="selectin")
 
     __table_args__ = (
         UniqueConstraint("session_id", "symbol", "date", name="uq_paper_pnl_session_symbol_date"),
@@ -165,4 +165,4 @@ class PaperPnlAttribution(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<PaperPnlAttribution {self.symbol} {self.date}>"
+        return f"<PyhronPaperPnlAttribution {self.symbol} {self.date}>"

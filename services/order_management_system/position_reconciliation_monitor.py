@@ -18,10 +18,10 @@ from typing import TYPE_CHECKING, cast
 from google.protobuf.timestamp_pb2 import Timestamp
 from sqlalchemy import select
 
-from data_platform.database_models.order_lifecycle_record import (
-    OrderLifecycleRecord,
+from data_platform.database_models.pyhron_order_lifecycle_record import (
     OrderSideEnum,
     OrderStatusEnum,
+    PyhronOrderLifecycleRecord,
 )
 from shared.async_database_session import get_session
 from shared.configuration_settings import get_config
@@ -218,9 +218,9 @@ class PositionReconciliationMonitor:
         """
         async with get_session() as session:
             result = await session.execute(
-                select(OrderLifecycleRecord).where(
-                    OrderLifecycleRecord.exchange == exchange,
-                    OrderLifecycleRecord.status.in_(
+                select(PyhronOrderLifecycleRecord).where(
+                    PyhronOrderLifecycleRecord.exchange == exchange,
+                    PyhronOrderLifecycleRecord.status.in_(
                         [
                             OrderStatusEnum.FILLED,
                             OrderStatusEnum.PARTIAL_FILL,

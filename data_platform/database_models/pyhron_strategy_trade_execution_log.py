@@ -23,7 +23,7 @@ class TradeSideEnum(enum.StrEnum):
     SELL = "sell"
 
 
-class StrategyTradeExecutionLog(Base):
+class PyhronStrategyTradeExecutionLog(Base):
     """Immutable fill record. TimescaleDB hypertable on ``trade_time``.
 
     Attributes:
@@ -41,7 +41,7 @@ class StrategyTradeExecutionLog(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "trade_executions"
+    __tablename__ = "pyhron_strategy_trade_execution_log"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     client_order_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)

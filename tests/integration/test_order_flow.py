@@ -17,7 +17,7 @@ import pytest
 # uses Python 3.12+ generic class syntax (PEP 695).  On Python < 3.12 this
 # causes a SyntaxError at import time.  Skip the entire module gracefully.
 try:
-    from data_platform.database_models.order_lifecycle_record import (
+    from data_platform.database_models.pyhron_order_lifecycle_record import (
         OrderStatusEnum,
     )
     from services.order_management_system.idx_order_validator import (

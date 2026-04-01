@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import text
 
-from data_platform.database_models.backtest_run import BacktestRun, BacktestStatus
+from data_platform.database_models.pyhron_backtest_run import BacktestStatus, PyhronBacktestRun
 from shared.structured_json_logger import get_logger
 from strategy_engine.backtesting.idx_transaction_cost_model import IDXTransactionCostModel
 from strategy_engine.backtesting.idx_vectorbt_backtest_engine import (
@@ -228,11 +228,11 @@ async def persist_backtest_result(
     strategy_id: str,
     user_id: str,
     db_session: AsyncSession,
-) -> BacktestRun:
+) -> PyhronBacktestRun:
     """Save a backtest result to the database."""
     final_capital = result.initial_capital_idr * Decimal(str(1 + result.total_return_pct / 100))
 
-    run = BacktestRun(
+    run = PyhronBacktestRun(
         strategy_id=uuid.UUID(strategy_id),
         user_id=uuid.UUID(user_id),
         status=BacktestStatus.COMPLETED,

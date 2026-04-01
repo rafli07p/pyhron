@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class IndonesiaMacroIndicator(Base):
+class IdnMacroIndicator(Base):
     """Macroeconomic indicator observation.
 
     Attributes:
@@ -33,7 +33,7 @@ class IndonesiaMacroIndicator(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "macro_indicators"
+    __tablename__ = "idn_macro_indicator"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     indicator_code: Mapped[str] = mapped_column(String(100), nullable=False)

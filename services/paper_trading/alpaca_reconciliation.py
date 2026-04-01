@@ -15,14 +15,14 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select, update
 
-from data_platform.database_models.order_lifecycle_record import OrderLifecycleRecord, OrderStatusEnum
-from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+from data_platform.database_models.pyhron_order_lifecycle_record import OrderStatusEnum, PyhronOrderLifecycleRecord
+from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 from shared.structured_json_logger import get_logger
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from data_platform.database_models.paper_trading_session import PaperTradingSession
+    from data_platform.database_models.pyhron_paper_trading_session import PyhronPaperTradingSession
 
 logger = get_logger(__name__)
 
@@ -78,7 +78,7 @@ class AlpacaPaperReconciliation:
 
     async def run_reconciliation_loop(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         db_session: AsyncSession,
     ) -> None:
         """Polling reconciliation loop, runs as background task."""
@@ -94,7 +94,7 @@ class AlpacaPaperReconciliation:
 
     async def reconcile_positions(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         db_session: AsyncSession,
     ) -> ReconciliationReport:
         """Compare Pyhron positions against Alpaca positions."""
@@ -123,8 +123,8 @@ class AlpacaPaperReconciliation:
 
         # Fetch Pyhron positions
         result = await db_session.execute(
-            select(StrategyPositionSnapshot).where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+            select(PyhronStrategyPositionSnapshot).where(
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
             )
         )
         pyhron_positions = result.scalars().all()
@@ -152,10 +152,10 @@ class AlpacaPaperReconciliation:
 
                 # Update Pyhron to match Alpaca
                 await db_session.execute(
-                    update(StrategyPositionSnapshot)
+                    update(PyhronStrategyPositionSnapshot)
                     .where(
-                        StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                        StrategyPositionSnapshot.symbol == symbol,
+                        PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                        PyhronStrategyPositionSnapshot.symbol == symbol,
                     )
                     .values(quantity=alpaca_qty, last_updated=now)
                 )
@@ -172,7 +172,7 @@ class AlpacaPaperReconciliation:
 
     async def reconcile_orders(
         self,
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         db_session: AsyncSession,
     ) -> ReconciliationReport:
         """Compare recent orders against Alpaca order state."""
@@ -189,9 +189,9 @@ class AlpacaPaperReconciliation:
 
         # Find orders in SUBMITTED state that might be stale
         result = await db_session.execute(
-            select(OrderLifecycleRecord).where(
-                OrderLifecycleRecord.strategy_id == str(session.strategy_id),
-                OrderLifecycleRecord.status == OrderStatusEnum.SUBMITTED,
+            select(PyhronOrderLifecycleRecord).where(
+                PyhronOrderLifecycleRecord.strategy_id == str(session.strategy_id),
+                PyhronOrderLifecycleRecord.status == OrderStatusEnum.SUBMITTED,
             )
         )
         submitted_orders = result.scalars().all()
@@ -250,7 +250,7 @@ class AlpacaPaperReconciliation:
     async def apply_synthetic_fill(
         self,
         alpaca_order: dict[str, Any],
-        session: PaperTradingSession,
+        session: PyhronPaperTradingSession,
         db_session: AsyncSession,
     ) -> None:
         """Process a fill event from Alpaca data that was missed via Kafka."""

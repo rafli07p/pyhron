@@ -14,7 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class IndonesiaFireHotspotEvent(Base):
+class IdnFireHotspotEvent(Base):
     """Satellite-detected fire hotspot observation.
 
     Attributes:
@@ -33,7 +33,7 @@ class IndonesiaFireHotspotEvent(Base):
         ingested_at: Timestamp when the data was ingested.
     """
 
-    __tablename__ = "fire_hotspot_events"
+    __tablename__ = "idn_fire_hotspot_event"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)

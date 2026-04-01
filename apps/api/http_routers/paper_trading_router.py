@@ -15,12 +15,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from data_platform.database_models.paper_trading_session import (
-    PaperNavSnapshot,
-    PaperPnlAttribution,
-    PaperTradingSession,
+from data_platform.database_models.pyhron_paper_trading_session import (
+    PyhronPaperNavSnapshot,
+    PyhronPaperPnlAttribution,
+    PyhronPaperTradingSession,
 )
-from services.paper_trading.session_manager import PaperTradingSessionManager
+from services.paper_trading.session_manager import PyhronPaperTradingSessionManager
 from shared.async_database_session import get_session
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
@@ -29,7 +29,7 @@ from shared.structured_json_logger import get_logger
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/paper-trading", tags=["paper-trading"])
 
-_session_manager = PaperTradingSessionManager()
+_session_manager = PyhronPaperTradingSessionManager()
 
 
 # Request/Response Models
@@ -61,7 +61,7 @@ class PaperSessionResponse(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(tz=UTC))
 
 
-class PaperNavSnapshotResponse(BaseModel):
+class PyhronPaperNavSnapshotResponse(BaseModel):
     timestamp: datetime
     nav_idr: Decimal
     cash_idr: Decimal
@@ -120,7 +120,7 @@ class ReconciliationReportResponse(BaseModel):
 
 
 # Helpers
-def _session_to_response(s: PaperTradingSession) -> PaperSessionResponse:
+def _session_to_response(s: PyhronPaperTradingSession) -> PaperSessionResponse:
     return PaperSessionResponse(
         id=s.id,
         name=s.name,
@@ -143,10 +143,10 @@ def _session_to_response(s: PaperTradingSession) -> PaperSessionResponse:
     )
 
 
-async def _get_session_or_404(session_id: UUID) -> PaperTradingSession:
+async def _get_session_or_404(session_id: UUID) -> PyhronPaperTradingSession:
     async with get_session() as db:
         result = await db.execute(
-            select(PaperTradingSession).where(PaperTradingSession.id == session_id),
+            select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id),
         )
         session = result.scalar_one_or_none()
     if not session:
@@ -271,29 +271,29 @@ async def stop_paper_session(
     )
 
 
-@router.get("/sessions/{session_id}/nav", response_model=list[PaperNavSnapshotResponse])
+@router.get("/sessions/{session_id}/nav", response_model=list[PyhronPaperNavSnapshotResponse])
 async def get_nav_history(
     session_id: UUID,
     lookback_hours: int = Query(default=8, ge=1, le=720),
     user: TokenPayload = Depends(require_role(Role.TRADER)),
-) -> list[PaperNavSnapshotResponse]:
+) -> list[PyhronPaperNavSnapshotResponse]:
     """Get NAV snapshot history."""
     await _get_session_or_404(session_id)
     cutoff = datetime.now(tz=UTC) - timedelta(hours=lookback_hours)
 
     async with get_session() as db:
         result = await db.execute(
-            select(PaperNavSnapshot)
+            select(PyhronPaperNavSnapshot)
             .where(
-                PaperNavSnapshot.session_id == session_id,
-                PaperNavSnapshot.timestamp >= cutoff,
+                PyhronPaperNavSnapshot.session_id == session_id,
+                PyhronPaperNavSnapshot.timestamp >= cutoff,
             )
-            .order_by(PaperNavSnapshot.timestamp.asc()),
+            .order_by(PyhronPaperNavSnapshot.timestamp.asc()),
         )
         snapshots = result.scalars().all()
 
     return [
-        PaperNavSnapshotResponse(
+        PyhronPaperNavSnapshotResponse(
             timestamp=s.timestamp,
             nav_idr=s.nav_idr,
             cash_idr=s.cash_idr,
@@ -318,10 +318,10 @@ async def get_pnl_attribution(
 
     async with get_session() as db:
         result = await db.execute(
-            select(PaperPnlAttribution).where(
-                PaperPnlAttribution.session_id == session_id,
-                PaperPnlAttribution.date >= date_from,
-                PaperPnlAttribution.date <= date_to,
+            select(PyhronPaperPnlAttribution).where(
+                PyhronPaperPnlAttribution.session_id == session_id,
+                PyhronPaperPnlAttribution.date >= date_from,
+                PyhronPaperPnlAttribution.date <= date_to,
             ),
         )
         attributions = result.scalars().all()
@@ -401,7 +401,7 @@ async def run_simulation(
         engine = PaperSimulationEngine()
         async with get_session() as db:
             # Reload session inside this db context
-            result = await db.execute(select(PaperTradingSession).where(PaperTradingSession.id == session_id))
+            result = await db.execute(select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id))
             db_session_obj = result.scalar_one()
             await engine.run(
                 session=db_session_obj,
@@ -446,20 +446,20 @@ async def get_reconciliation_report(
     """Get latest reconciliation report by comparing session positions."""
     session = await _get_session_or_404(session_id)
 
-    from data_platform.database_models.order_lifecycle_record import (
-        OrderLifecycleRecord,
+    from data_platform.database_models.pyhron_order_lifecycle_record import (
         OrderStatusEnum,
+        PyhronOrderLifecycleRecord,
     )
-    from data_platform.database_models.strategy_position_snapshot import StrategyPositionSnapshot
+    from data_platform.database_models.pyhron_strategy_position_snapshot import PyhronStrategyPositionSnapshot
 
     async with get_session() as db:
         # Count positions for this strategy
         pos_result = await db.execute(
             select(func.count())
-            .select_from(StrategyPositionSnapshot)
+            .select_from(PyhronStrategyPositionSnapshot)
             .where(
-                StrategyPositionSnapshot.strategy_id == str(session.strategy_id),
-                StrategyPositionSnapshot.quantity > 0,
+                PyhronStrategyPositionSnapshot.strategy_id == str(session.strategy_id),
+                PyhronStrategyPositionSnapshot.quantity > 0,
             ),
         )
         positions_checked = pos_result.scalar() or 0
@@ -467,10 +467,10 @@ async def get_reconciliation_report(
         # Count open/active orders
         orders_result = await db.execute(
             select(func.count())
-            .select_from(OrderLifecycleRecord)
+            .select_from(PyhronOrderLifecycleRecord)
             .where(
-                OrderLifecycleRecord.strategy_id == str(session.strategy_id),
-                OrderLifecycleRecord.status.in_(
+                PyhronOrderLifecycleRecord.strategy_id == str(session.strategy_id),
+                PyhronOrderLifecycleRecord.status.in_(
                     [
                         OrderStatusEnum.SUBMITTED,
                         OrderStatusEnum.ACKNOWLEDGED,

@@ -55,7 +55,7 @@ class OrderStatusEnum(enum.StrEnum):
     EXPIRED = "expired"
 
 
-class OrderLifecycleRecord(Base):
+class PyhronOrderLifecycleRecord(Base):
     """Persistent order state (source of truth alongside Kafka events).
 
     Attributes:
@@ -84,7 +84,7 @@ class OrderLifecycleRecord(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "orders"
+    __tablename__ = "pyhron_order_lifecycle_record"
 
     client_order_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     broker_order_id: Mapped[str | None] = mapped_column(String(100))

@@ -16,7 +16,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy import select
 
-from data_platform.database_models.user import User, UserRole
+from data_platform.database_models.pyhron_user import PyhronUser, UserRole
 from shared.async_database_session import get_session
 from shared.security.auth import (
     TokenError,
@@ -89,7 +89,7 @@ async def login(request: Request, body: LoginRequest) -> TokenResponse:
     logger.info("login_attempt", email=body.email)
 
     async with get_session() as session:
-        result = await session.execute(select(User).where(User.email == body.email))
+        result = await session.execute(select(PyhronUser).where(PyhronUser.email == body.email))
         user = result.scalar_one_or_none()
 
         if user is None:
@@ -157,14 +157,14 @@ async def register(request: Request, body: RegisterRequest) -> UserProfileRespon
     """Register a new user account."""
     async with get_session() as session:
         # Check if email already exists
-        existing = await session.execute(select(User).where(User.email == body.email))
+        existing = await session.execute(select(PyhronUser).where(PyhronUser.email == body.email))
         if existing.scalar_one_or_none() is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered",
             )
 
-        user = User(
+        user = PyhronUser(
             email=body.email,
             hashed_password=hash_password(body.password),
             role=UserRole.READONLY,
@@ -208,7 +208,7 @@ async def refresh_token(request: Request, body: RefreshRequest) -> TokenResponse
 
     # Look up user in DB for current role
     async with get_session() as session:
-        result = await session.execute(select(User).where(User.id == UUID(payload.sub)))
+        result = await session.execute(select(PyhronUser).where(PyhronUser.id == UUID(payload.sub)))
         user = result.scalar_one_or_none()
 
     if user is None or not user.is_active:
@@ -241,7 +241,7 @@ async def get_current_user(
 ) -> UserProfileResponse:
     """Get the authenticated user's profile."""
     async with get_session() as session:
-        result = await session.execute(select(User).where(User.id == UUID(user.sub)))
+        result = await session.execute(select(PyhronUser).where(PyhronUser.id == UUID(user.sub)))
         db_user = result.scalar_one_or_none()
 
     if db_user is None:

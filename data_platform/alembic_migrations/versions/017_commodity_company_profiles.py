@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade() -> None:
     op.create_table(
-        "commodity_company_profiles",
+        "idn_commodity_company_profile",
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("ticker", sa.String(10), nullable=False),
         sa.Column("commodity_type", sa.String(20), nullable=False),
@@ -30,11 +30,11 @@ def upgrade() -> None:
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), server_default=sa.text("now()")),
         sa.UniqueConstraint("ticker", "commodity_type", name="uq_commodity_profile_ticker_type"),
     )
-    op.create_index("ix_commodity_profiles_type", "commodity_company_profiles", ["commodity_type"])
+    op.create_index("ix_commodity_profiles_type", "idn_commodity_company_profile", ["commodity_type"])
 
     # Seed initial profiles from previously hardcoded data
     profiles = sa.table(
-        "commodity_company_profiles",
+        "idn_commodity_company_profile",
         sa.column("ticker", sa.String),
         sa.column("commodity_type", sa.String),
         sa.column("profile_data", JSONB),
@@ -330,5 +330,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("ix_commodity_profiles_type", table_name="commodity_company_profiles")
-    op.drop_table("commodity_company_profiles")
+    op.drop_index("ix_commodity_profiles_type", table_name="idn_commodity_company_profile")
+    op.drop_table("idn_commodity_company_profile")

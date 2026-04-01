@@ -156,9 +156,9 @@ async def run_simulation(args: argparse.Namespace) -> None:
 
     async with session_factory() as db_session:
         # Create a temporary session for simulation
-        from data_platform.database_models.paper_trading_session import PaperTradingSession
+        from data_platform.database_models.pyhron_paper_trading_session import PyhronPaperTradingSession
 
-        session = PaperTradingSession(
+        session = PyhronPaperTradingSession(
             name=f"sim-{args.strategy}-{args.start}-{args.end}",
             strategy_id=args.strategy_id,
             user_id=args.user_id,

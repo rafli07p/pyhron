@@ -65,7 +65,7 @@ class IdxEquityFinancialStatement(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "financial_statements"
+    __tablename__ = "idx_equity_financial_statement"
 
     # Relationships
     instrument = relationship("IdxEquityInstrument", back_populates="financial_statements", lazy="selectin")
@@ -73,7 +73,7 @@ class IdxEquityFinancialStatement(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("instruments.symbol"),
+        ForeignKey("idx_equity_instrument.symbol"),
         nullable=False,
         index=True,
     )

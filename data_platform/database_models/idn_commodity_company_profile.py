@@ -14,7 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from shared.async_database_session import Base
 
 
-class CommodityCompanyProfile(Base):
+class IdnCommodityCompanyProfile(Base):
     """Company profile for commodity price sensitivity analysis.
 
     Stores production data, cost structure, and financial metrics
@@ -32,7 +32,7 @@ class CommodityCompanyProfile(Base):
         created_at: Record creation timestamp.
     """
 
-    __tablename__ = "commodity_company_profiles"
+    __tablename__ = "idn_commodity_company_profile"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ticker: Mapped[str] = mapped_column(String(10), nullable=False)
