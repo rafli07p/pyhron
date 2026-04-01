@@ -47,7 +47,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        ENUM(UserRole, name="user_role", create_type=False),
+        ENUM(UserRole, name="user_role", create_type=False, values_callable=lambda e: [x.value for x in e]),
         nullable=False,
         default=UserRole.READONLY,
     )
