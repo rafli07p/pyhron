@@ -4,9 +4,6 @@ Session lifecycle management, NAV history, P&L attribution,
 simulation execution, and reconciliation reporting.
 """
 
-
-
-
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
