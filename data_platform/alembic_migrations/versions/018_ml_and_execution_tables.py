@@ -1,7 +1,7 @@
 """018 - ML model runs, execution schedules, portfolio snapshots.
 
 Revision ID: 018_ml_exec_portfolio
-Revises: 017_commodity_company_profiles
+Revises: 017
 Create Date: 2024-12-01
 """
 
@@ -12,7 +12,7 @@ from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 revision = "018_ml_exec_portfolio"
-down_revision = "017_commodity_company_profiles"
+down_revision = "017"
 branch_labels = None
 depends_on = None
 
