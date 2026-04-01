@@ -4,9 +4,6 @@ CRUD operations for trading strategies, enable/disable controls,
 and strategy performance reporting.
 """
 
-
-
-
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
