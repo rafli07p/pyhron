@@ -5,10 +5,9 @@ realistic synthetic data based on actual IDX market characteristics.
 """
 
 import asyncio
-import math
 import random
 import sys
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from uuid import uuid4
 
 from sqlalchemy import text
@@ -135,10 +134,9 @@ def generate_ohlcv(symbol: str, base_price: float, start: date, end: date) -> li
         reversion = (base_price - price) / base_price * 0.002
         daily_return += reversion
 
-        price *= (1 + daily_return)
+        price *= 1 + daily_return
         price = max(price, 50)  # Floor at 50 IDR
 
-        # Round to lot tick (IDX ticks: multiples of 1 for < 200, 2 for < 500, 5 for < 2000, 10 for < 5000, 25 otherwise)
         if price < 200:
             price = round(price)
         elif price < 500:
@@ -153,21 +151,23 @@ def generate_ohlcv(symbol: str, base_price: float, start: date, end: date) -> li
         intraday_vol = random.uniform(0.005, 0.025)
         high = price * (1 + random.uniform(0, intraday_vol))
         low = price * (1 - random.uniform(0, intraday_vol))
-        open_price = price * (1 + random.uniform(-intraday_vol/2, intraday_vol/2))
+        open_price = price * (1 + random.uniform(-intraday_vol / 2, intraday_vol / 2))
 
         volume = int(random.gauss(15_000_000, 8_000_000))
         volume = max(volume, 500_000)
 
-        records.append({
-            "time": datetime.combine(current, datetime.min.time(), tzinfo=timezone.utc),
-            "symbol": symbol,
-            "open": round(open_price, 2),
-            "high": round(high, 2),
-            "low": round(low, 2),
-            "close": round(price, 2),
-            "volume": volume,
-            "adj_close": round(price, 2),
-        })
+        records.append(
+            {
+                "time": datetime.combine(current, datetime.min.time(), tzinfo=UTC),
+                "symbol": symbol,
+                "open": round(open_price, 2),
+                "high": round(high, 2),
+                "low": round(low, 2),
+                "close": round(price, 2),
+                "volume": volume,
+                "adj_close": round(price, 2),
+            }
+        )
         current += timedelta(days=1)
 
     return records
@@ -196,7 +196,6 @@ async def seed_index_constituents():
     print("\n=== Seeding Index Constituents ===")
     lq45 = [s for s, _, _, _, is_lq45 in INSTRUMENTS if is_lq45]
     async with get_session() as session:
-        # Clear existing
         await session.execute(text("DELETE FROM index_constituents WHERE index_name = 'LQ45'"))
         weight = round(100.0 / len(lq45), 2)
         for symbol in lq45:
@@ -223,9 +222,8 @@ async def seed_ohlcv():
             base = BASE_PRICES.get(symbol, 1000)
             records = generate_ohlcv(symbol, base, start, end)
 
-            # Insert in batches
             for j in range(0, len(records), 200):
-                batch = records[j:j+200]
+                batch = records[j : j + 200]
                 for rec in batch:
                     await session.execute(
                         text("""
