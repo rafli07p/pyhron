@@ -33,6 +33,7 @@ COPY strategy_engine/ ./strategy_engine/
 COPY commodity_linkage_engine/ ./commodity_linkage_engine/
 COPY macro_intelligence/ ./macro_intelligence/
 COPY governance_intelligence/ ./governance_intelligence/
+COPY pyhron/ ./pyhron/
 RUN poetry install --only main
 
 # ---------------------------------------------------------------------------
@@ -61,6 +62,7 @@ COPY --from=builder /app/strategy_engine ./strategy_engine
 COPY --from=builder /app/commodity_linkage_engine ./commodity_linkage_engine
 COPY --from=builder /app/macro_intelligence ./macro_intelligence
 COPY --from=builder /app/governance_intelligence ./governance_intelligence
+COPY --from=builder /app/pyhron ./pyhron
 COPY --from=builder /app/pyproject.toml ./
 
 RUN mkdir -p /app/logs && chown -R appuser:appuser /app
