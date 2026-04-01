@@ -29,7 +29,7 @@ def upgrade() -> None:
         sa.Column(
             "strategy_id",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
+            sa.ForeignKey("strategies.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
@@ -102,7 +102,7 @@ def upgrade() -> None:
         sa.Column(
             "created_by",
             sa.dialects.postgresql.UUID(),
-            sa.ForeignKey("pyhron_user.id"),
+            sa.ForeignKey("users.id"),
             nullable=True,
         ),
         sa.CheckConstraint("initial_capital_idr > 0", name="ck_paper_session_capital_positive"),
