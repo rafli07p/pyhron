@@ -4,9 +4,6 @@ Open positions, order management, P&L tracking,
 and circuit breaker administration.
 """
 
-
-
-
 import contextlib
 import time
 from datetime import UTC, datetime, timedelta
@@ -24,6 +21,9 @@ from data_platform.database_models.order_lifecycle_record import (
 from data_platform.database_models.strategy_position_snapshot import (
     StrategyPositionSnapshot,
 )
+from services.order_management_system.order_submission_handler import (
+    OrderSubmissionHandler,
+)
 from services.pre_trade_risk_engine.circuit_breaker_state_manager import (
     CircuitBreakerStateManager,
 )
@@ -36,10 +36,6 @@ from shared.platform_exception_hierarchy import (
 from shared.security.auth import TokenPayload
 from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
-
-from services.order_management_system.order_submission_handler import (
-    OrderSubmissionHandler,
-)
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/trading", tags=["trading"])
