@@ -13,12 +13,10 @@ Steps:
 
 import asyncio
 import sys
-from datetime import date, datetime, timezone
-from decimal import Decimal, InvalidOperation
+from datetime import UTC, date, datetime
 from uuid import uuid4
 
-from sqlalchemy import select, text
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy import text
 
 # Add project root to path
 sys.path.insert(0, ".")
@@ -122,7 +120,7 @@ async def backfill_ohlcv(symbols: list[str], date_from: date, date_to: date, wor
                 async with get_session() as session:
                     batch_size = 500
                     for i in range(0, len(records), batch_size):
-                        batch = records[i:i + batch_size]
+                        batch = records[i : i + batch_size]
                         for rec in batch:
                             await session.execute(
                                 text("""
@@ -131,7 +129,7 @@ async def backfill_ohlcv(symbols: list[str], date_from: date, date_to: date, wor
                                     ON CONFLICT DO NOTHING
                                 """),
                                 {
-                                    "time": datetime.combine(rec.date, datetime.min.time(), tzinfo=timezone.utc),
+                                    "time": datetime.combine(rec.date, datetime.min.time(), tzinfo=UTC),
                                     "symbol": rec.symbol,
                                     "open": float(rec.open),
                                     "high": float(rec.high),
@@ -210,7 +208,6 @@ async def seed_computed_ratios():
 
 async def seed_macro_indicators():
     """Seed macro indicators: IHSG, USD/IDR from yfinance + hardcoded BI rate, GDP, CPI."""
-    adapter = YFinanceAdapter()
     print("\n=== Seeding Macro Indicators ===")
 
     indicators = [
