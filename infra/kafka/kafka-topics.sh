@@ -111,4 +111,15 @@ create_topic "pyhron.dlq.intraday"           1   2592000000  # 30 days
 create_topic "pyhron.data.ingestion-status" 2  86400000   # 24 hours
 create_topic "pyhron.data.quality-alerts"   2  604800000  # 7 days
 
+# Execution Algorithms
+create_topic "pyhron.execution.child_orders"  3  3600000     # 1 hour
+create_topic "pyhron.dlq.strategy_signals"    1  2592000000  # 30 days
+
+# ML Signals
+create_topic "pyhron.ml.signals"              3  3600000     # 1 hour
+create_topic "pyhron.ml.regime"               1  604800000   # 7 days
+
+# Portfolio Rebalance
+create_topic "pyhron.portfolio.rebalance"     2  604800000   # 7 days
+
 echo "All Kafka topics created successfully"

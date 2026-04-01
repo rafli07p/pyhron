@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pyhron.execution;
+
+message ChildOrder {
+  string parent_order_id = 1;
+  string symbol = 2;
+  int32 quantity = 3;
+  string limit_price = 4;  // Decimal as string
+  string scheduled_time = 5;  // ISO 8601
+  string algo_tag = 6;
+}
+
+message ChildOrderBatch {
+  string parent_order_id = 1;
+  string algorithm = 2;
+  repeated ChildOrder child_orders = 3;
+  string created_at = 4;
+}
