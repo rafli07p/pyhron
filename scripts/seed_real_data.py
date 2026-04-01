@@ -25,24 +25,109 @@ from data_platform.adapters.yfinance_adapter import YFinanceAdapter
 from shared.async_database_session import get_session
 
 CORE_SYMBOLS = [
-    "BBCA", "BBRI", "BMRI", "TLKM", "ASII", "UNVR", "BBNI", "BRIS", "INDF", "ICBP",
-    "KLBF", "HMSP", "GGRM", "ADRO", "ITMG", "PTBA", "ANTM", "INCO", "MDKA", "EXCL",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "BBNI",
+    "BRIS",
+    "INDF",
+    "ICBP",
+    "KLBF",
+    "HMSP",
+    "GGRM",
+    "ADRO",
+    "ITMG",
+    "PTBA",
+    "ANTM",
+    "INCO",
+    "MDKA",
+    "EXCL",
 ]
 
 EXTRA_SYMBOLS = [
-    "SIDO", "MAPI", "ACES", "CPIN", "JPFA", "MEDC", "PGAS", "ESSA", "TOWR", "TBIG",
-    "SMGR", "INKP", "BRPT", "AMRT", "ERAA", "MNCN", "SCMA", "AKRA", "UNTR", "BBTN",
-    "BSDE", "CTRA", "SMRA", "PWON", "JSMR", "WIKA", "WSKT", "PTPP", "TPIA", "EMTK",
+    "SIDO",
+    "MAPI",
+    "ACES",
+    "CPIN",
+    "JPFA",
+    "MEDC",
+    "PGAS",
+    "ESSA",
+    "TOWR",
+    "TBIG",
+    "SMGR",
+    "INKP",
+    "BRPT",
+    "AMRT",
+    "ERAA",
+    "MNCN",
+    "SCMA",
+    "AKRA",
+    "UNTR",
+    "BBTN",
+    "BSDE",
+    "CTRA",
+    "SMRA",
+    "PWON",
+    "JSMR",
+    "WIKA",
+    "WSKT",
+    "PTPP",
+    "TPIA",
+    "EMTK",
 ]
 
 ALL_SYMBOLS = CORE_SYMBOLS + EXTRA_SYMBOLS
 
 LQ45_SYMBOLS = {
-    "BBCA", "BBRI", "BMRI", "TLKM", "ASII", "UNVR", "BBNI", "INDF", "ICBP",
-    "KLBF", "HMSP", "GGRM", "ADRO", "ITMG", "PTBA", "ANTM", "INCO", "MDKA", "EXCL",
-    "CPIN", "PGAS", "TBIG", "SMGR", "INKP", "BRPT", "AMRT", "AKRA", "UNTR",
-    "BBTN", "BSDE", "CTRA", "JSMR", "TPIA", "EMTK", "TOWR", "MEDC",
-    "MAPI", "ACES", "SIDO", "JPFA", "ESSA", "ERAA", "PWON", "SMRA", "BRIS",
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "TLKM",
+    "ASII",
+    "UNVR",
+    "BBNI",
+    "INDF",
+    "ICBP",
+    "KLBF",
+    "HMSP",
+    "GGRM",
+    "ADRO",
+    "ITMG",
+    "PTBA",
+    "ANTM",
+    "INCO",
+    "MDKA",
+    "EXCL",
+    "CPIN",
+    "PGAS",
+    "TBIG",
+    "SMGR",
+    "INKP",
+    "BRPT",
+    "AMRT",
+    "AKRA",
+    "UNTR",
+    "BBTN",
+    "BSDE",
+    "CTRA",
+    "JSMR",
+    "TPIA",
+    "EMTK",
+    "TOWR",
+    "MEDC",
+    "MAPI",
+    "ACES",
+    "SIDO",
+    "JPFA",
+    "ESSA",
+    "ERAA",
+    "PWON",
+    "SMRA",
+    "BRIS",
 }
 
 
@@ -211,48 +296,81 @@ async def seed_macro_indicators():
     print("\n=== Seeding Macro Indicators ===")
 
     indicators = [
-        {"code": "BI_RATE", "name": "BI 7-Day Reverse Repo Rate", "value": 5.75, "unit": "%", "period": "2026-03", "source": "Bank Indonesia"},
-        {"code": "GDP_GROWTH", "name": "GDP Growth YoY", "value": 5.05, "unit": "%", "period": "2025-Q4", "source": "BPS"},
-        {"code": "CPI_YOY", "name": "CPI Year-on-Year", "value": 1.65, "unit": "%", "period": "2026-02", "source": "BPS"},
+        {
+            "code": "BI_RATE",
+            "name": "BI 7-Day Reverse Repo Rate",
+            "value": 5.75,
+            "unit": "%",
+            "period": "2026-03",
+            "source": "Bank Indonesia",
+        },
+        {
+            "code": "GDP_GROWTH",
+            "name": "GDP Growth YoY",
+            "value": 5.05,
+            "unit": "%",
+            "period": "2025-Q4",
+            "source": "BPS",
+        },
+        {
+            "code": "CPI_YOY",
+            "name": "CPI Year-on-Year",
+            "value": 1.65,
+            "unit": "%",
+            "period": "2026-02",
+            "source": "BPS",
+        },
     ]
 
     # Fetch USD/IDR from yfinance
     try:
         import yfinance as yf
+
         ticker = yf.Ticker("USDIDR=X")
         hist = ticker.history(period="1d")
         if not hist.empty:
             idr_rate = float(hist["Close"].iloc[-1])
-            indicators.append({
-                "code": "USDIDR",
-                "name": "USD/IDR Exchange Rate",
-                "value": round(idr_rate, 2),
-                "unit": "IDR",
-                "period": date.today().isoformat()[:7],
-                "source": "yfinance",
-            })
+            indicators.append(
+                {
+                    "code": "USDIDR",
+                    "name": "USD/IDR Exchange Rate",
+                    "value": round(idr_rate, 2),
+                    "unit": "IDR",
+                    "period": date.today().isoformat()[:7],
+                    "source": "yfinance",
+                }
+            )
     except Exception as e:
         print(f"  Could not fetch USD/IDR: {e}")
-        indicators.append({
-            "code": "USDIDR", "name": "USD/IDR Exchange Rate",
-            "value": 16250.0, "unit": "IDR", "period": "2026-03", "source": "manual",
-        })
+        indicators.append(
+            {
+                "code": "USDIDR",
+                "name": "USD/IDR Exchange Rate",
+                "value": 16250.0,
+                "unit": "IDR",
+                "period": "2026-03",
+                "source": "manual",
+            }
+        )
 
     # Fetch IHSG
     try:
         import yfinance as yf
+
         ticker = yf.Ticker("^JKSE")
         hist = ticker.history(period="5d")
         if not hist.empty:
             last = hist.iloc[-1]
-            indicators.append({
-                "code": "IHSG",
-                "name": "Jakarta Composite Index",
-                "value": round(float(last["Close"]), 2),
-                "unit": "points",
-                "period": date.today().isoformat()[:7],
-                "source": "yfinance",
-            })
+            indicators.append(
+                {
+                    "code": "IHSG",
+                    "name": "Jakarta Composite Index",
+                    "value": round(float(last["Close"]), 2),
+                    "unit": "points",
+                    "period": date.today().isoformat()[:7],
+                    "source": "yfinance",
+                }
+            )
     except Exception as e:
         print(f"  Could not fetch IHSG: {e}")
 
@@ -300,6 +418,7 @@ async def seed_commodity_prices():
         if comm.get("ticker"):
             try:
                 import yfinance as yf
+
                 ticker = yf.Ticker(comm["ticker"])
                 hist = ticker.history(period="5d")
                 if not hist.empty:

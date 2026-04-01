@@ -343,7 +343,9 @@ class PaperTradingSessionManager:
         session_id: str,
         db_session: AsyncSession,
     ) -> PyhronPaperTradingSession:
-        result = await db_session.execute(select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id))
+        result = await db_session.execute(
+            select(PyhronPaperTradingSession).where(PyhronPaperTradingSession.id == session_id)
+        )
         session = result.scalar_one_or_none()
         if session is None:
             msg = f"Paper trading session {session_id} not found"

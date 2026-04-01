@@ -166,7 +166,9 @@ class OrderFillEventProcessor:
             fill_id = fill.fill_id or str(uuid.uuid4())
             if fill.fill_id:
                 existing_trade = await session.execute(
-                    select(PyhronStrategyTradeExecutionLog).where(PyhronStrategyTradeExecutionLog.broker_trade_id == fill.fill_id)
+                    select(PyhronStrategyTradeExecutionLog).where(
+                        PyhronStrategyTradeExecutionLog.broker_trade_id == fill.fill_id
+                    )
                 )
                 if existing_trade.scalar_one_or_none() is not None:
                     logger.warning(

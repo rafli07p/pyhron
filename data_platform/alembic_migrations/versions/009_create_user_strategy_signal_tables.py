@@ -192,7 +192,9 @@ def upgrade() -> None:
     )
 
     # CHECK constraints
-    op.execute("ALTER TABLE pyhron_signal ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)")
+    op.execute(
+        "ALTER TABLE pyhron_signal ADD CONSTRAINT ck_signals_strength_range CHECK (strength BETWEEN -1.0 AND 1.0)"
+    )
 
     # Convert signals to TimescaleDB hypertable (optional — plain postgres in CI)
     try:

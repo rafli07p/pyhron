@@ -168,7 +168,11 @@ class PnLAttributionEngine:
     ) -> PaperSessionMetrics:
         """Compute Sharpe, Sortino, Calmar from NAV snapshot series."""
         result = await db_session.execute(
-            select(PyhronPaperNavSnapshot.timestamp, PyhronPaperNavSnapshot.nav_idr, PyhronPaperNavSnapshot.daily_return_pct)
+            select(
+                PyhronPaperNavSnapshot.timestamp,
+                PyhronPaperNavSnapshot.nav_idr,
+                PyhronPaperNavSnapshot.daily_return_pct,
+            )
             .where(PyhronPaperNavSnapshot.session_id == session_id)
             .order_by(PyhronPaperNavSnapshot.timestamp.asc())
         )
