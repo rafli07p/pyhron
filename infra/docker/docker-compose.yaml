@@ -157,7 +157,7 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
     healthcheck:
-      test: ["CMD", "celery", "-A", "shared.celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      test: ["CMD", "celery", "-A", "data_platform.tasks.celery_tasks:celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -179,7 +179,7 @@ services:
         --loglevel=info
         --scheduler celery.beat:PersistentScheduler
     healthcheck:
-      test: ["CMD", "celery", "-A", "shared.celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      test: ["CMD", "celery", "-A", "data_platform.tasks.celery_tasks:celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -187,7 +187,7 @@ services:
 
   # MLflow — ML experiment tracking
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.9.2
+    image: mlflow/mlflow:v2.9.2
     container_name: pyhron-mlflow
     restart: unless-stopped
     command: >
@@ -251,21 +251,31 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
-  web-public:
+  web-app:
     build:
-      context: ../../apps/web-public
+      context: ../../apps/web-app
       dockerfile: Dockerfile
-    container_name: pyhron-web-public
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000}
+        NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION:-0.1.0}
+    container_name: pyhron-web-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
-      FASTAPI_URL: http://api:8000
-      NEXTAUTH_URL: http://localhost:3000
-      NEXTAUTH_SECRET: ${APP_SECRET_KEY}
-      NEXT_PUBLIC_USE_MSW: "false"
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-${APP_SECRET_KEY}}
+      AUTH_SECRET: ${AUTH_SECRET:-${APP_SECRET_KEY}}
+      AUTH_TRUST_HOST: "true"
+      BACKEND_URL: http://api:8000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3001}
+      NEXT_PUBLIC_ENVIRONMENT: ${ENVIRONMENT:-development}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   pgdata:
