@@ -33,6 +33,7 @@ COPY strategy_engine/ ./strategy_engine/
 COPY commodity_linkage_engine/ ./commodity_linkage_engine/
 COPY macro_intelligence/ ./macro_intelligence/
 COPY governance_intelligence/ ./governance_intelligence/
+COPY pyhron/ ./pyhron/
 RUN poetry install --only main
 
 # ---------------------------------------------------------------------------
