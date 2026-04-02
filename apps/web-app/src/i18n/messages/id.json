@@ -1,0 +1,106 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "markets": "Pasar",
+    "research": "Riset",
+    "strategies": "Strategi",
+    "portfolio": "Portofolio",
+    "execution": "Eksekusi",
+    "data": "Data",
+    "ml": "ML Pipeline",
+    "settings": "Pengaturan",
+    "admin": "Admin"
+  },
+  "dashboard": {
+    "greeting": "Selamat {timeOfDay}, {name}",
+    "portfolioValue": "Nilai Portofolio",
+    "dayPnl": "P&L Harian",
+    "totalReturn": "Return Total",
+    "recentOrders": "Order Terbaru",
+    "activeSignals": "Sinyal Aktif",
+    "strategyStatus": "Status Strategi",
+    "systemHealth": "Kesehatan Sistem",
+    "topMovers": "Penggerak Utama",
+    "marketStatus": {
+      "open": "Pasar Buka",
+      "closed": "Pasar Tutup",
+      "preOpen": "Pra-Pembukaan",
+      "lunchBreak": "Istirahat Siang"
+    }
+  },
+  "orders": {
+    "buy": "Beli",
+    "sell": "Jual",
+    "placingOrder": "Menempatkan order {side} untuk {symbol}...",
+    "orderPlaced": "Order berhasil: {side} {symbol}",
+    "cancelOrder": "Batalkan Order",
+    "confirmCancel": "Apakah Anda yakin ingin membatalkan order ini?",
+    "validation": {
+      "lotSize": "Kuantitas harus kelipatan {lotSize} (ukuran lot IDX)",
+      "tickSize": "Harga harus kelipatan {tickSize} pada level harga ini",
+      "priceRequired": "Harga diperlukan untuk order limit",
+      "stopPriceRequired": "Harga stop diperlukan untuk order stop"
+    }
+  },
+  "markets": {
+    "overview": "Ringkasan Pasar",
+    "screener": "Penyaring Saham",
+    "watchlists": "Daftar Pantau",
+    "calendar": "Kalender",
+    "sectors": "Sektor",
+    "fundamentals": "Fundamental",
+    "orderbook": "Buku Order",
+    "timeAndSales": "Waktu & Penjualan"
+  },
+  "portfolio": {
+    "positions": "Posisi",
+    "orders": "Order",
+    "history": "Riwayat",
+    "risk": "Risiko",
+    "performance": "Kinerja",
+    "unrealizedPnl": "P&L Belum Terealisasi",
+    "realizedPnl": "P&L Terealisasi"
+  },
+  "risk": {
+    "overview": "Ringkasan Risiko",
+    "var": "Value at Risk",
+    "cvar": "Conditional VaR",
+    "maxDrawdown": "Drawdown Maksimum",
+    "sharpe": "Sharpe Ratio",
+    "sectorExposure": "Eksposur Sektor",
+    "correlation": "Korelasi",
+    "stressTest": "Skenario Stres"
+  },
+  "auth": {
+    "login": "Masuk",
+    "register": "Daftar",
+    "logout": "Keluar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "forgotPassword": "Lupa Kata Sandi?",
+    "createAccount": "Buat Akun",
+    "fullName": "Nama Lengkap",
+    "loginFailed": "Login gagal. Periksa email dan kata sandi Anda.",
+    "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali."
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "retry": "Coba lagi",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "delete": "Hapus",
+    "search": "Cari...",
+    "noData": "Tidak ada data",
+    "viewAll": "Lihat Semua",
+    "back": "Kembali",
+    "close": "Tutup",
+    "actions": "Aksi",
+    "status": "Status",
+    "connected": "Terhubung",
+    "disconnected": "Terputus",
+    "reconnecting": "Menghubungkan Ulang..."
+  },
+  "disclaimer": "Pyhron adalah platform riset kuantitatif dan trading algoritmik. Semua data pasar disediakan hanya untuk tujuan informasi dan bukan merupakan saran investasi. Kinerja masa lalu tidak menjamin hasil di masa depan. Pyhron TIDAK terdaftar di OJK atau IDX."
+}
