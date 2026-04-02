@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "studio": "Studio",
     "markets": "Markets",
     "research": "Research",
     "strategies": "Strategies",
@@ -8,24 +9,40 @@
     "execution": "Execution",
     "data": "Data",
     "ml": "ML Pipeline",
+    "alerts": "Alerts",
     "settings": "Settings",
     "admin": "Admin"
+  },
+  "studio": {
+    "title": "Studio",
+    "description": "Your analytical workspace for IDX research",
+    "workbench": "Workbench",
+    "workbenchDescription": "Build custom charts with overlays and transforms",
+    "dashboards": "Dashboards",
+    "dashboardsDescription": "Create custom dashboards with drag-and-drop tiles",
+    "screener": "Stock Screener",
+    "screenerDescription": "Multi-factor stock screening for IDX instruments",
+    "backtests": "Backtests",
+    "backtestsDescription": "Run and analyze strategy backtests",
+    "factors": "Factor Analysis",
+    "factorsDescription": "Analyze factor exposures and loadings"
   },
   "dashboard": {
     "greeting": "Good {timeOfDay}, {name}",
     "portfolioValue": "Portfolio Value",
     "dayPnl": "Day P&L",
     "totalReturn": "Total Return",
-    "recentOrders": "Recent Orders",
+    "sharpeRatio": "Sharpe Ratio",
+    "equityCurve": "Equity Curve",
+    "topMovers": "Top Movers",
     "activeSignals": "Active Signals",
+    "recentOrders": "Recent Orders",
     "strategyStatus": "Strategy Status",
     "systemHealth": "System Health",
-    "topMovers": "Top Movers",
     "marketStatus": {
       "open": "Market Open",
       "closed": "Market Closed",
-      "preOpen": "Pre-Opening",
-      "lunchBreak": "Lunch Break"
+      "preOpen": "Pre-Opening"
     }
   },
   "orders": {
@@ -33,74 +50,119 @@
     "sell": "Sell",
     "placingOrder": "Placing {side} order for {symbol}...",
     "orderPlaced": "Order placed: {side} {symbol}",
+    "newOrder": "New Order",
     "cancelOrder": "Cancel Order",
-    "confirmCancel": "Are you sure you want to cancel this order?",
     "validation": {
       "lotSize": "Quantity must be a multiple of {lotSize} (IDX lot size)",
-      "tickSize": "Price must be a multiple of {tickSize} (IDX tick size at this level)",
-      "priceRequired": "Price is required for limit orders",
-      "stopPriceRequired": "Stop price is required for stop orders"
+      "tickSize": "Price must be a multiple of {tickSize} at this price level"
+    },
+    "status": {
+      "pending": "Pending",
+      "new": "New",
+      "partially_filled": "Partial",
+      "filled": "Filled",
+      "cancelled": "Cancelled",
+      "rejected": "Rejected",
+      "expired": "Expired"
     }
   },
   "markets": {
     "overview": "Market Overview",
-    "screener": "Stock Screener",
+    "screener": "Screener",
     "watchlists": "Watchlists",
     "calendar": "Calendar",
-    "sectors": "Sectors",
+    "instruments": "Instruments",
+    "sector": "Sector",
     "fundamentals": "Fundamentals",
     "orderbook": "Order Book",
-    "timeAndSales": "Time & Sales"
+    "recentTrades": "Recent Trades",
+    "addToWatchlist": "Add to Watchlist"
   },
   "portfolio": {
     "positions": "Positions",
     "orders": "Orders",
-    "history": "History",
     "risk": "Risk",
     "performance": "Performance",
-    "unrealizedPnl": "Unrealized P&L",
-    "realizedPnl": "Realized P&L"
+    "history": "Trade History",
+    "noPositions": "No open positions",
+    "noOrders": "No recent orders"
   },
   "risk": {
     "overview": "Risk Overview",
-    "var": "Value at Risk",
-    "cvar": "Conditional VaR",
+    "var95": "VaR (95%, 1d)",
+    "cvar95": "CVaR (95%)",
     "maxDrawdown": "Max Drawdown",
-    "sharpe": "Sharpe Ratio",
+    "sharpeRatio": "Sharpe Ratio",
     "sectorExposure": "Sector Exposure",
-    "correlation": "Correlation",
-    "stressTest": "Stress Scenarios"
+    "correlationMatrix": "Correlation Matrix",
+    "drawdownHistory": "Drawdown History",
+    "stressScenarios": "Stress Scenarios"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "createAlert": "Create Alert",
+    "active": "Active",
+    "triggered": "Triggered",
+    "paused": "Paused",
+    "noAlerts": "No alerts configured",
+    "noAlertsDescription": "Create alerts to get notified about price changes, signals, and risk events"
+  },
+  "execution": {
+    "title": "Execution",
+    "paperTrading": "Paper Trading",
+    "liveTrading": "Live Trading",
+    "requestAccess": "Request Live Access",
+    "guardrails": "Risk Guardrails",
+    "killSwitch": "Kill Switch",
+    "qualification": "Qualification Progress"
+  },
+  "data": {
+    "title": "Data",
+    "catalog": "Metric Catalog",
+    "explorer": "Data Explorer",
+    "sources": "Data Sources",
+    "pipelines": "Pipelines",
+    "api": "Data API"
+  },
+  "tiers": {
+    "explorer": "Explorer",
+    "strategist": "Strategist",
+    "operator": "Operator",
+    "upgradeTitle": "Upgrade to {tier}",
+    "upgradeDescription": "{feature} requires the {tier} plan."
   },
   "auth": {
     "login": "Sign In",
-    "register": "Sign Up",
+    "register": "Create Account",
     "logout": "Sign Out",
+    "forgotPassword": "Forgot Password",
     "email": "Email",
     "password": "Password",
-    "forgotPassword": "Forgot Password?",
-    "createAccount": "Create Account",
     "fullName": "Full Name",
-    "loginFailed": "Login failed. Check your email and password.",
+    "confirmPassword": "Confirm Password",
+    "invalidCredentials": "Invalid email or password",
     "sessionExpired": "Your session has expired. Please sign in again."
   },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
-    "retry": "Retry",
+    "retry": "Try again",
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
     "search": "Search...",
-    "noData": "No data available",
+    "noData": "No data",
     "viewAll": "View All",
-    "back": "Back",
-    "close": "Close",
-    "actions": "Actions",
-    "status": "Status",
-    "connected": "Connected",
-    "disconnected": "Disconnected",
-    "reconnecting": "Reconnecting..."
+    "comingSoon": "Coming soon",
+    "beta": "Beta",
+    "new": "New",
+    "pro": "Pro"
   },
-  "disclaimer": "Pyhron is a quantitative research and algorithmic trading platform. All market data is provided for informational purposes only and does not constitute investment advice. Past performance is not indicative of future results. Pyhron is NOT registered with OJK or IDX."
+  "disclaimer": {
+    "investment": "Disclaimer: Pyhron is a quantitative research and algorithmic trading platform. All market data is provided for informational purposes only and does not constitute investment advice, recommendation, or solicitation. Past performance is not indicative of future results. Trading in securities involves substantial risk of loss. Pyhron is NOT registered as a broker-dealer, investment adviser, or securities intermediary with the Indonesian Financial Services Authority (OJK) or the Indonesia Stock Exchange (IDX). Users are solely responsible for their trading decisions and compliance with applicable regulations including IDX trading rules, Indonesian tax law (UU PPh), and OJK guidelines. This platform operates in paper trading mode unless explicitly configured otherwise.",
+    "paper": "Paper trading uses real market data but execution is simulated. Paper trading results do not account for real slippage, market impact, or the possibility of failed order execution. Paper trading performance may differ significantly from live trading."
+  }
 }
