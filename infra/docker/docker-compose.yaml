@@ -187,7 +187,7 @@ services:
 
   # MLflow — ML experiment tracking
   mlflow:
-    image: mlflow/mlflow:v2.9.2
+    image: ghcr.io/mlflow/mlflow:v2.19.0
     container_name: pyhron-mlflow
     restart: unless-stopped
     command: >
