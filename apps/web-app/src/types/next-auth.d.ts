@@ -9,6 +9,7 @@ declare module 'next-auth' {
       email: string;
       name: string;
       role: string;
+      tier: 'explorer' | 'strategist' | 'operator';
     };
   }
 
@@ -17,6 +18,7 @@ declare module 'next-auth' {
     email: string;
     name: string;
     role: string;
+    tier: 'explorer' | 'strategist' | 'operator';
     accessToken: string;
     refreshToken: string;
     accessTokenExpires: number;
@@ -27,6 +29,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     role: string;
+    tier: 'explorer' | 'strategist' | 'operator';
     accessToken: string;
     refreshToken: string;
     accessTokenExpires: number;

@@ -44,6 +44,7 @@ export const authHandlers = [
       full_name: 'Demo User',
       is_active: true,
       role: 'TRADER',
+      tier: 'strategist',
       tenant_id: 'default',
       created_at: '2024-01-01T00:00:00Z',
     });

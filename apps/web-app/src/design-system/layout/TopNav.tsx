@@ -11,9 +11,9 @@ import { useSidebarStore } from '@/stores/sidebar';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
+  { href: '/studio', label: 'Studio' },
   { href: '/markets', label: 'Markets' },
-  { href: '/research/dashboard', label: 'Research' },
-  { href: '/strategies', label: 'Strategies' },
+  { href: '/research', label: 'Research' },
   { href: '/portfolio', label: 'Portfolio' },
 ];
 
