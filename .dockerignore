@@ -1,0 +1,22 @@
+# Node.js artifacts (web apps have their own Dockerfiles)
+**/node_modules/
+**/.next/
+
+# Python build artifacts
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.idea/
+
+# Playwright artifacts
+**/playwright-report/
+**/test-results/

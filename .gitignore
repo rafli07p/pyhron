@@ -59,6 +59,15 @@ logs/
 *_pb2.pyi
 *_pb2_grpc.py
 
+# Node.js
+node_modules/
+.next/
+.turbo/
+*.tsbuildinfo
+package-lock.json
+playwright-report/
+test-results/
+
 # Misc
 .cache/
 secrets/

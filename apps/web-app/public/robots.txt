@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /markets
+Disallow: /research
+Disallow: /strategies
+Disallow: /portfolio
+Disallow: /execution
+Disallow: /data
+Disallow: /ml
+Disallow: /settings
+Disallow: /admin
+Disallow: /api
+
+Sitemap: https://pyhron.com/sitemap.xml

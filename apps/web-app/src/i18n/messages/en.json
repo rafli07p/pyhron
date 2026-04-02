@@ -1,0 +1,106 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "markets": "Markets",
+    "research": "Research",
+    "strategies": "Strategies",
+    "portfolio": "Portfolio",
+    "execution": "Execution",
+    "data": "Data",
+    "ml": "ML Pipeline",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "dashboard": {
+    "greeting": "Good {timeOfDay}, {name}",
+    "portfolioValue": "Portfolio Value",
+    "dayPnl": "Day P&L",
+    "totalReturn": "Total Return",
+    "recentOrders": "Recent Orders",
+    "activeSignals": "Active Signals",
+    "strategyStatus": "Strategy Status",
+    "systemHealth": "System Health",
+    "topMovers": "Top Movers",
+    "marketStatus": {
+      "open": "Market Open",
+      "closed": "Market Closed",
+      "preOpen": "Pre-Opening",
+      "lunchBreak": "Lunch Break"
+    }
+  },
+  "orders": {
+    "buy": "Buy",
+    "sell": "Sell",
+    "placingOrder": "Placing {side} order for {symbol}...",
+    "orderPlaced": "Order placed: {side} {symbol}",
+    "cancelOrder": "Cancel Order",
+    "confirmCancel": "Are you sure you want to cancel this order?",
+    "validation": {
+      "lotSize": "Quantity must be a multiple of {lotSize} (IDX lot size)",
+      "tickSize": "Price must be a multiple of {tickSize} (IDX tick size at this level)",
+      "priceRequired": "Price is required for limit orders",
+      "stopPriceRequired": "Stop price is required for stop orders"
+    }
+  },
+  "markets": {
+    "overview": "Market Overview",
+    "screener": "Stock Screener",
+    "watchlists": "Watchlists",
+    "calendar": "Calendar",
+    "sectors": "Sectors",
+    "fundamentals": "Fundamentals",
+    "orderbook": "Order Book",
+    "timeAndSales": "Time & Sales"
+  },
+  "portfolio": {
+    "positions": "Positions",
+    "orders": "Orders",
+    "history": "History",
+    "risk": "Risk",
+    "performance": "Performance",
+    "unrealizedPnl": "Unrealized P&L",
+    "realizedPnl": "Realized P&L"
+  },
+  "risk": {
+    "overview": "Risk Overview",
+    "var": "Value at Risk",
+    "cvar": "Conditional VaR",
+    "maxDrawdown": "Max Drawdown",
+    "sharpe": "Sharpe Ratio",
+    "sectorExposure": "Sector Exposure",
+    "correlation": "Correlation",
+    "stressTest": "Stress Scenarios"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Sign Up",
+    "logout": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "createAccount": "Create Account",
+    "fullName": "Full Name",
+    "loginFailed": "Login failed. Check your email and password.",
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "search": "Search...",
+    "noData": "No data available",
+    "viewAll": "View All",
+    "back": "Back",
+    "close": "Close",
+    "actions": "Actions",
+    "status": "Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "reconnecting": "Reconnecting..."
+  },
+  "disclaimer": "Pyhron is a quantitative research and algorithmic trading platform. All market data is provided for informational purposes only and does not constitute investment advice. Past performance is not indicative of future results. Pyhron is NOT registered with OJK or IDX."
+}
