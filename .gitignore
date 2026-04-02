@@ -65,6 +65,8 @@ node_modules/
 .turbo/
 *.tsbuildinfo
 package-lock.json
+playwright-report/
+test-results/
 
 # Misc
 .cache/
