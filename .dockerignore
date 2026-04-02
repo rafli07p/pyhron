@@ -1,0 +1,54 @@
+# Node.js artifacts (web apps have their own Dockerfiles)
+**/node_modules/
+**/.next/
+**/package-lock.json
+
+# Python artifacts
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+**/htmlcov/
+**/.coverage
+
+# Git
+.git/
+.github/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment files (secrets)
+.env
+.env.*
+!.env.example
+
+# Docker volumes
+pgdata/
+redisdata/
+
+# ML artifacts
+mlruns/
+
+# Data files
+*.csv
+*.parquet
+*.h5
+
+# Docs and logs
+docs/
+*.log
+logs/
+AUDIT_REPORT.md
+
+# Tests (not needed in production images)
+tests/
+**/tests/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/playwright-report/
+**/coverage/
