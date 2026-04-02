@@ -1,5 +1,5 @@
 import { PageHeader } from '@/design-system/layout/PageHeader';
-import { Card, CardContent } from '@/design-system/primitives/Card';
+import { Card } from '@/design-system/primitives/Card';
 import { Badge } from '@/design-system/primitives/Badge';
 import { Button } from '@/design-system/primitives/Button';
 import Link from 'next/link';

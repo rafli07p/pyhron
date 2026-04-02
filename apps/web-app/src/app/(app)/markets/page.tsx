@@ -1,6 +1,5 @@
 import { PageHeader } from '@/design-system/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
-import { Badge } from '@/design-system/primitives/Badge';
 import { FinancialDisclaimer } from '@/components/common/FinancialDisclaimer';
 import Link from 'next/link';
 

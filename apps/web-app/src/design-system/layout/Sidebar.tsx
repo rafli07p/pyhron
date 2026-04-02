@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, X } from 'lucide-react';
 import { useSidebarStore } from '@/stores/sidebar';
-import { ROUTES, SIDEBAR_GROUPS } from '@/constants/routes';
+import { ROUTES } from '@/constants/routes';
 import { Badge } from '@/design-system/primitives/Badge';
 import { cn } from '@/lib/utils';
 

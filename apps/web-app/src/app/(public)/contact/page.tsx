@@ -1,6 +1,6 @@
 import { Button } from '@/design-system/primitives/Button';
 import { Input } from '@/design-system/primitives/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
+import { Card, CardContent } from '@/design-system/primitives/Card';
 
 export const metadata = { title: 'Contact' };
 

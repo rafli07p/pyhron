@@ -11,7 +11,6 @@ import {
   LineChart,
   Target,
   Zap,
-  BookOpen,
   PieChart,
   TrendingUp,
   Activity,
@@ -22,7 +21,6 @@ import {
   CreditCard,
   Palette,
   Server,
-  FileText,
   ScrollText,
 } from 'lucide-react';
 

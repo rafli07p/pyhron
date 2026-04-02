@@ -3,7 +3,6 @@ import { PageHeader } from '@/design-system/layout/PageHeader';
 import { StatCard, StatCardSkeleton } from '@/design-system/data-display/StatCard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
 import { Badge } from '@/design-system/primitives/Badge';
-import { Skeleton } from '@/design-system/primitives/Skeleton';
 import { FinancialDisclaimer } from '@/components/common/FinancialDisclaimer';
 import { Wallet, TrendingUp, BarChart3, Activity } from 'lucide-react';
 import Link from 'next/link';

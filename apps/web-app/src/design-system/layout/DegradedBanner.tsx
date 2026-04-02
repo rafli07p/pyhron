@@ -10,7 +10,6 @@ export function DegradedBanner() {
   if (api === 'online' && ws !== 'disconnected') return null;
 
   const isOffline = api === 'offline';
-  const isWsDown = ws === 'disconnected' || ws === 'reconnecting';
 
   return (
     <div

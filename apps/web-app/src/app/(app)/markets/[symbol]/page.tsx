@@ -34,7 +34,7 @@ function ChartPlaceholder() {
   );
 }
 
-function Fundamentals({ symbol }: { symbol: string }) {
+function Fundamentals({ symbol: _symbol }: { symbol: string }) {
   const data = {
     marketCap: 'IDR 1.200T',
     pe: '18.5x',
