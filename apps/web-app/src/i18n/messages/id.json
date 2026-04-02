@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "studio": "Studio",
     "markets": "Pasar",
     "research": "Riset",
     "strategies": "Strategi",
@@ -8,24 +9,40 @@
     "execution": "Eksekusi",
     "data": "Data",
     "ml": "ML Pipeline",
+    "alerts": "Notifikasi",
     "settings": "Pengaturan",
     "admin": "Admin"
+  },
+  "studio": {
+    "title": "Studio",
+    "description": "Ruang kerja analitik untuk riset IDX",
+    "workbench": "Workbench",
+    "workbenchDescription": "Buat grafik kustom dengan overlay dan transformasi",
+    "dashboards": "Dashboard",
+    "dashboardsDescription": "Buat dashboard kustom dengan drag-and-drop",
+    "screener": "Screener Saham",
+    "screenerDescription": "Screening saham multi-faktor untuk instrumen IDX",
+    "backtests": "Backtests",
+    "backtestsDescription": "Jalankan dan analisis backtest strategi",
+    "factors": "Analisis Faktor",
+    "factorsDescription": "Analisis eksposur dan loading faktor"
   },
   "dashboard": {
     "greeting": "Selamat {timeOfDay}, {name}",
     "portfolioValue": "Nilai Portofolio",
     "dayPnl": "P&L Harian",
     "totalReturn": "Return Total",
-    "recentOrders": "Order Terbaru",
+    "sharpeRatio": "Sharpe Ratio",
+    "equityCurve": "Kurva Ekuitas",
+    "topMovers": "Penggerak Utama",
     "activeSignals": "Sinyal Aktif",
+    "recentOrders": "Order Terbaru",
     "strategyStatus": "Status Strategi",
     "systemHealth": "Kesehatan Sistem",
-    "topMovers": "Penggerak Utama",
     "marketStatus": {
       "open": "Pasar Buka",
       "closed": "Pasar Tutup",
-      "preOpen": "Pra-Pembukaan",
-      "lunchBreak": "Istirahat Siang"
+      "preOpen": "Pra-Pembukaan"
     }
   },
   "orders": {
@@ -33,54 +50,97 @@
     "sell": "Jual",
     "placingOrder": "Menempatkan order {side} untuk {symbol}...",
     "orderPlaced": "Order berhasil: {side} {symbol}",
+    "newOrder": "Order Baru",
     "cancelOrder": "Batalkan Order",
-    "confirmCancel": "Apakah Anda yakin ingin membatalkan order ini?",
     "validation": {
       "lotSize": "Kuantitas harus kelipatan {lotSize} (ukuran lot IDX)",
-      "tickSize": "Harga harus kelipatan {tickSize} pada level harga ini",
-      "priceRequired": "Harga diperlukan untuk order limit",
-      "stopPriceRequired": "Harga stop diperlukan untuk order stop"
+      "tickSize": "Harga harus kelipatan {tickSize} pada level harga ini"
+    },
+    "status": {
+      "pending": "Menunggu",
+      "new": "Baru",
+      "partially_filled": "Sebagian",
+      "filled": "Terisi",
+      "cancelled": "Dibatalkan",
+      "rejected": "Ditolak",
+      "expired": "Kedaluwarsa"
     }
   },
   "markets": {
     "overview": "Ringkasan Pasar",
-    "screener": "Penyaring Saham",
-    "watchlists": "Daftar Pantau",
+    "screener": "Screener",
+    "watchlists": "Watchlist",
     "calendar": "Kalender",
-    "sectors": "Sektor",
+    "instruments": "Instrumen",
+    "sector": "Sektor",
     "fundamentals": "Fundamental",
-    "orderbook": "Buku Order",
-    "timeAndSales": "Waktu & Penjualan"
+    "orderbook": "Order Book",
+    "recentTrades": "Transaksi Terbaru",
+    "addToWatchlist": "Tambah ke Watchlist"
   },
   "portfolio": {
     "positions": "Posisi",
     "orders": "Order",
-    "history": "Riwayat",
     "risk": "Risiko",
-    "performance": "Kinerja",
-    "unrealizedPnl": "P&L Belum Terealisasi",
-    "realizedPnl": "P&L Terealisasi"
+    "performance": "Performa",
+    "history": "Riwayat Trading",
+    "noPositions": "Tidak ada posisi terbuka",
+    "noOrders": "Tidak ada order terbaru"
   },
   "risk": {
     "overview": "Ringkasan Risiko",
-    "var": "Value at Risk",
-    "cvar": "Conditional VaR",
-    "maxDrawdown": "Drawdown Maksimum",
-    "sharpe": "Sharpe Ratio",
+    "var95": "VaR (95%, 1h)",
+    "cvar95": "CVaR (95%)",
+    "maxDrawdown": "Max Drawdown",
+    "sharpeRatio": "Sharpe Ratio",
     "sectorExposure": "Eksposur Sektor",
-    "correlation": "Korelasi",
-    "stressTest": "Skenario Stres"
+    "correlationMatrix": "Matriks Korelasi",
+    "drawdownHistory": "Riwayat Drawdown",
+    "stressScenarios": "Skenario Stress"
+  },
+  "alerts": {
+    "title": "Notifikasi",
+    "createAlert": "Buat Notifikasi",
+    "active": "Aktif",
+    "triggered": "Terpicu",
+    "paused": "Dijeda",
+    "noAlerts": "Belum ada notifikasi",
+    "noAlertsDescription": "Buat notifikasi untuk mendapat pemberitahuan tentang perubahan harga, sinyal, dan event risiko"
+  },
+  "execution": {
+    "title": "Eksekusi",
+    "paperTrading": "Paper Trading",
+    "liveTrading": "Live Trading",
+    "requestAccess": "Ajukan Akses Live",
+    "guardrails": "Guardrails Risiko",
+    "killSwitch": "Kill Switch",
+    "qualification": "Progres Kualifikasi"
+  },
+  "data": {
+    "title": "Data",
+    "catalog": "Katalog Metrik",
+    "explorer": "Data Explorer",
+    "sources": "Sumber Data",
+    "pipelines": "Pipeline",
+    "api": "Data API"
+  },
+  "tiers": {
+    "explorer": "Explorer",
+    "strategist": "Strategist",
+    "operator": "Operator",
+    "upgradeTitle": "Upgrade ke {tier}",
+    "upgradeDescription": "{feature} membutuhkan paket {tier}."
   },
   "auth": {
     "login": "Masuk",
-    "register": "Daftar",
+    "register": "Buat Akun",
     "logout": "Keluar",
+    "forgotPassword": "Lupa Password",
     "email": "Email",
-    "password": "Kata Sandi",
-    "forgotPassword": "Lupa Kata Sandi?",
-    "createAccount": "Buat Akun",
+    "password": "Password",
     "fullName": "Nama Lengkap",
-    "loginFailed": "Login gagal. Periksa email dan kata sandi Anda.",
+    "confirmPassword": "Konfirmasi Password",
+    "invalidCredentials": "Email atau password salah",
     "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali."
   },
   "common": {
@@ -91,16 +151,18 @@
     "cancel": "Batal",
     "confirm": "Konfirmasi",
     "delete": "Hapus",
+    "edit": "Edit",
+    "create": "Buat",
     "search": "Cari...",
     "noData": "Tidak ada data",
     "viewAll": "Lihat Semua",
-    "back": "Kembali",
-    "close": "Tutup",
-    "actions": "Aksi",
-    "status": "Status",
-    "connected": "Terhubung",
-    "disconnected": "Terputus",
-    "reconnecting": "Menghubungkan Ulang..."
+    "comingSoon": "Segera hadir",
+    "beta": "Beta",
+    "new": "Baru",
+    "pro": "Pro"
   },
-  "disclaimer": "Pyhron adalah platform riset kuantitatif dan trading algoritmik. Semua data pasar disediakan hanya untuk tujuan informasi dan bukan merupakan saran investasi. Kinerja masa lalu tidak menjamin hasil di masa depan. Pyhron TIDAK terdaftar di OJK atau IDX."
+  "disclaimer": {
+    "investment": "Disclaimer: Pyhron adalah platform riset kuantitatif dan trading algoritmik. Semua data pasar disediakan hanya untuk tujuan informasi dan bukan merupakan saran investasi, rekomendasi, atau ajakan. Kinerja masa lalu bukan indikasi hasil di masa depan. Trading efek melibatkan risiko kerugian substansial. Pyhron TIDAK terdaftar sebagai perantara pedagang efek, penasihat investasi, atau perantara efek di Otoritas Jasa Keuangan (OJK) atau Bursa Efek Indonesia (IDX). Pengguna sepenuhnya bertanggung jawab atas keputusan trading dan kepatuhan terhadap regulasi yang berlaku termasuk aturan trading IDX, hukum pajak Indonesia (UU PPh), dan pedoman OJK. Platform ini beroperasi dalam mode paper trading kecuali dikonfigurasi secara eksplisit.",
+    "paper": "Paper trading menggunakan data pasar nyata tetapi eksekusi bersifat simulasi. Hasil paper trading tidak memperhitungkan slippage nyata, market impact, atau kemungkinan order gagal tereksekusi. Performa paper trading mungkin berbeda secara signifikan dari trading live."
+  }
 }

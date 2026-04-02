@@ -22,6 +22,11 @@ import {
   Palette,
   Server,
   ScrollText,
+  Layers,
+  Gauge,
+  BookOpen,
+  FileText,
+  AlertTriangle,
 } from 'lucide-react';
 
 export interface RouteConfig {
@@ -44,6 +49,7 @@ export interface RouteConfig {
 }
 
 export const ROUTES: Record<string, RouteConfig> = {
+  // ─── DASHBOARD ───
   dashboard: {
     path: '/dashboard',
     label: 'nav.dashboard',
@@ -56,15 +62,78 @@ export const ROUTES: Record<string, RouteConfig> = {
     shortcut: 'g d',
     meta: { title: 'Dashboard — Pyhron', description: 'Portfolio overview and command center' },
   },
-  dashboardOverview: {
-    path: '/dashboard/overview',
-    label: 'nav.dashboard',
-    labelEn: 'Overview',
-    parent: '/dashboard',
+
+  // ─── STUDIO ───
+  studio: {
+    path: '/studio',
+    label: 'nav.studio',
+    labelEn: 'Studio',
+    icon: Layers,
     requiresAuth: true,
-    showInSidebar: false,
-    meta: { title: 'Portfolio Overview — Pyhron', description: 'Detailed portfolio overview' },
+    requiredRole: 'user',
+    showInSidebar: true,
+    sidebarGroup: 'main',
+    shortcut: 'g w',
+    meta: { title: 'Studio — Pyhron', description: 'Analytical workspace' },
   },
+  studioWorkbench: {
+    path: '/studio/workbench',
+    label: 'studio.workbench',
+    labelEn: 'Workbench',
+    icon: LineChart,
+    parent: '/studio',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'studio',
+    meta: { title: 'Workbench — Pyhron', description: 'No-code chart builder' },
+  },
+  studioDashboards: {
+    path: '/studio/dashboards',
+    label: 'studio.dashboards',
+    labelEn: 'Dashboards',
+    icon: LayoutDashboard,
+    parent: '/studio',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'studio',
+    meta: { title: 'Dashboards — Pyhron', description: 'Custom dashboard gallery' },
+  },
+  studioScreener: {
+    path: '/studio/screener',
+    label: 'studio.screener',
+    labelEn: 'Screener',
+    icon: Target,
+    parent: '/studio',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'studio',
+    meta: { title: 'Stock Screener — Pyhron', description: 'Multi-factor stock screening' },
+  },
+  studioBacktests: {
+    path: '/studio/backtests',
+    label: 'studio.backtests',
+    labelEn: 'Backtests',
+    icon: FlaskConical,
+    parent: '/studio',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'studio',
+    meta: { title: 'Backtests — Pyhron', description: 'Backtest results browser' },
+  },
+  studioFactors: {
+    path: '/studio/factors',
+    label: 'studio.factors',
+    labelEn: 'Factors',
+    icon: PieChart,
+    parent: '/studio',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'studio',
+    badge: 'pro',
+    meta: { title: 'Factor Analysis — Pyhron', description: 'Factor analysis dashboard' },
+  },
+
+  // ─── MARKETS ───
   markets: {
     path: '/markets',
     label: 'nav.markets',
@@ -76,17 +145,6 @@ export const ROUTES: Record<string, RouteConfig> = {
     sidebarGroup: 'main',
     shortcut: 'g m',
     meta: { title: 'Markets — Pyhron', description: 'IDX market overview and instrument data' },
-  },
-  marketsScreener: {
-    path: '/markets/screener',
-    label: 'markets.screener',
-    labelEn: 'Screener',
-    icon: Target,
-    parent: '/markets',
-    requiresAuth: true,
-    showInSidebar: true,
-    sidebarGroup: 'markets',
-    meta: { title: 'Stock Screener — Pyhron', description: 'Multi-factor stock screening' },
   },
   marketsWatchlists: {
     path: '/markets/watchlists',
@@ -108,11 +166,13 @@ export const ROUTES: Record<string, RouteConfig> = {
     sidebarGroup: 'markets',
     meta: { title: 'Calendar — Pyhron', description: 'Economic and earnings calendar' },
   },
+
+  // ─── RESEARCH ───
   research: {
-    path: '/research/dashboard',
+    path: '/research',
     label: 'nav.research',
     labelEn: 'Research',
-    icon: FlaskConical,
+    icon: BookOpen,
     requiresAuth: true,
     requiredRole: 'user',
     showInSidebar: true,
@@ -125,35 +185,25 @@ export const ROUTES: Record<string, RouteConfig> = {
     label: 'research.signals',
     labelEn: 'Signals',
     icon: Zap,
-    parent: '/research/dashboard',
+    parent: '/research',
     requiresAuth: true,
     showInSidebar: true,
     sidebarGroup: 'research',
     meta: { title: 'Signals — Pyhron', description: 'ML-generated trading signals' },
   },
-  researchBacktests: {
-    path: '/research/backtests',
-    label: 'research.backtests',
-    labelEn: 'Backtests',
-    icon: LineChart,
-    parent: '/research/dashboard',
+  researchArticles: {
+    path: '/research/articles',
+    label: 'research.articles',
+    labelEn: 'Articles',
+    icon: FileText,
+    parent: '/research',
     requiresAuth: true,
     showInSidebar: true,
     sidebarGroup: 'research',
-    meta: { title: 'Backtests — Pyhron', description: 'Backtest results browser' },
+    meta: { title: 'Research Articles — Pyhron', description: 'Research article archive' },
   },
-  researchFactors: {
-    path: '/research/factors',
-    label: 'research.factors',
-    labelEn: 'Factors',
-    icon: PieChart,
-    parent: '/research/dashboard',
-    requiresAuth: true,
-    showInSidebar: true,
-    sidebarGroup: 'research',
-    badge: 'pro',
-    meta: { title: 'Factor Analysis — Pyhron', description: 'Factor analysis dashboard' },
-  },
+
+  // ─── STRATEGIES ───
   strategies: {
     path: '/strategies',
     label: 'nav.strategies',
@@ -177,6 +227,8 @@ export const ROUTES: Record<string, RouteConfig> = {
     badge: 'beta',
     meta: { title: 'Strategy Builder — Pyhron', description: 'Visual strategy builder' },
   },
+
+  // ─── PORTFOLIO ───
   portfolio: {
     path: '/portfolio',
     label: 'nav.portfolio',
@@ -241,41 +293,94 @@ export const ROUTES: Record<string, RouteConfig> = {
     sidebarGroup: 'portfolio',
     meta: { title: 'Trade History — Pyhron', description: 'Trade history' },
   },
+
+  // ─── EXECUTION ───
   execution: {
     path: '/execution',
     label: 'nav.execution',
     labelEn: 'Execution',
     icon: Activity,
     requiresAuth: true,
-    requiredRole: 'analyst',
+    requiredRole: 'user',
     showInSidebar: true,
     sidebarGroup: 'advanced',
     badge: 'pro',
     meta: { title: 'Execution — Pyhron', description: 'Execution management' },
   },
+  executionGuardrails: {
+    path: '/execution/guardrails',
+    label: 'execution.guardrails',
+    labelEn: 'Guardrails',
+    icon: Gauge,
+    parent: '/execution',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'execution',
+    meta: { title: 'Risk Guardrails — Pyhron', description: 'Risk guardrails dashboard' },
+  },
+
+  // ─── DATA ───
   data: {
     path: '/data',
     label: 'nav.data',
     labelEn: 'Data',
     icon: Database,
     requiresAuth: true,
-    requiredRole: 'analyst',
+    requiredRole: 'user',
     showInSidebar: true,
     sidebarGroup: 'advanced',
     meta: { title: 'Data — Pyhron', description: 'Data management' },
   },
+  dataCatalog: {
+    path: '/data/catalog',
+    label: 'data.catalog',
+    labelEn: 'Metric Catalog',
+    parent: '/data',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'data',
+    meta: { title: 'Metric Catalog — Pyhron', description: 'Browse all available metrics' },
+  },
+  dataExplorer: {
+    path: '/data/explorer',
+    label: 'data.explorer',
+    labelEn: 'Explorer',
+    parent: '/data',
+    requiresAuth: true,
+    showInSidebar: true,
+    sidebarGroup: 'data',
+    badge: 'pro',
+    meta: { title: 'Data Explorer — Pyhron', description: 'SQL-like data explorer' },
+  },
+
+  // ─── ML ───
   ml: {
     path: '/ml',
     label: 'nav.ml',
     labelEn: 'ML Pipeline',
     icon: Brain,
     requiresAuth: true,
-    requiredRole: 'analyst',
+    requiredRole: 'user',
     showInSidebar: true,
     sidebarGroup: 'advanced',
     badge: 'pro',
     meta: { title: 'ML Pipeline — Pyhron', description: 'Machine learning pipeline' },
   },
+
+  // ─── ALERTS ───
+  alerts: {
+    path: '/alerts',
+    label: 'nav.alerts',
+    labelEn: 'Alerts',
+    icon: AlertTriangle,
+    requiresAuth: true,
+    requiredRole: 'user',
+    showInSidebar: true,
+    sidebarGroup: 'system',
+    meta: { title: 'Alerts — Pyhron', description: 'Alert management' },
+  },
+
+  // ─── SETTINGS ───
   settings: {
     path: '/settings',
     label: 'nav.settings',
@@ -345,8 +450,10 @@ export const ROUTES: Record<string, RouteConfig> = {
     parent: '/settings',
     requiresAuth: true,
     showInSidebar: false,
-    meta: { title: 'Appearance — Pyhron', description: 'Theme and display preferences', noIndex: true },
+    meta: { title: 'Appearance — Pyhron', description: 'Theme and display', noIndex: true },
   },
+
+  // ─── ADMIN ───
   admin: {
     path: '/admin',
     label: 'nav.admin',
@@ -405,13 +512,15 @@ export function getBreadcrumbs(path: string): RouteConfig[] {
   return crumbs;
 }
 
-// Sidebar navigation groups
 export const SIDEBAR_GROUPS = [
   { id: 'main', label: 'Main' },
+  { id: 'studio', label: 'Studio', parent: '/studio' },
   { id: 'markets', label: 'Markets', parent: '/markets' },
-  { id: 'research', label: 'Research', parent: '/research/dashboard' },
+  { id: 'research', label: 'Research', parent: '/research' },
   { id: 'strategies', label: 'Strategies', parent: '/strategies' },
   { id: 'portfolio', label: 'Portfolio', parent: '/portfolio' },
+  { id: 'execution', label: 'Execution', parent: '/execution' },
+  { id: 'data', label: 'Data', parent: '/data' },
   { id: 'advanced', label: 'Advanced' },
   { id: 'system', label: 'System' },
 ] as const;

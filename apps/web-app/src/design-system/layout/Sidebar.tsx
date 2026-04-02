@@ -12,7 +12,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { collapsed, mobileOpen, toggle, setMobileOpen } = useSidebarStore();
 
-  const sidebarRoutes = Object.values(ROUTES).filter((r) => r.showInSidebar);
+  const sidebarRoutes = Object.values(ROUTES).filter((r) => r.showInSidebar && r.icon);
   const mainRoutes = sidebarRoutes.filter((r) => r.sidebarGroup === 'main');
   const advancedRoutes = sidebarRoutes.filter((r) => r.sidebarGroup === 'advanced');
   const systemRoutes = sidebarRoutes.filter((r) => r.sidebarGroup === 'system');

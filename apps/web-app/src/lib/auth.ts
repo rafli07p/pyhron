@@ -42,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: profile.email,
           name: profile.full_name || profile.email.split('@')[0],
           role: profile.role,
+          tier: profile.tier ?? 'explorer',
           accessToken: data.access_token,
           refreshToken: data.refresh_token,
           accessTokenExpires: Date.now() + data.expires_in * 1000,
@@ -61,6 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       session.user.id = token.id as string;
       session.user.role = token.role as string;
+      session.user.tier = (token.tier as 'explorer' | 'strategist' | 'operator') ?? 'explorer';
       session.accessToken = token.accessToken as string;
       session.error = token.error as string | undefined;
       return session;
