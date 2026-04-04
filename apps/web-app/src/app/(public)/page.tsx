@@ -32,8 +32,10 @@ const articles = [
 export default function LandingPage() {
   return (
     <>
-      {/* Hero with 3D ribbon */}
-      <HeroSection />
+      {/* Hero — pulled up behind the fixed header */}
+      <div className="-mt-[88px]">
+        <HeroSection />
+      </div>
 
       {/* Trust Metrics */}
       <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-24">

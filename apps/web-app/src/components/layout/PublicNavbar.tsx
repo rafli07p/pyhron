@@ -256,15 +256,32 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 
 /* ---------- PublicNavbar ---------- */
 export function PublicNavbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [solid, setSolid] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const lastScrollY = useRef(0);
 
+  // MSCI-style scroll: hide on scroll down, show on scroll up
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 20);
+      const y = window.scrollY;
+      const delta = y - lastScrollY.current;
+
+      // Always show at very top
+      if (y < 60) {
+        setVisible(true);
+        setSolid(false);
+      } else {
+        // Scrolling down → hide, scrolling up → show
+        if (delta > 5) setVisible(false);
+        else if (delta < -5) setVisible(true);
+        setSolid(true);
+      }
+
+      lastScrollY.current = y;
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -290,15 +307,20 @@ export function PublicNavbar() {
     closeTimer.current = setTimeout(() => setActiveDropdown(null), 200);
   }, []);
 
-  const solid = scrolled || !!activeDropdown;
+  const hasBg = solid || !!activeDropdown;
+
+  // Keep visible when dropdown is open
+  const isVisible = visible || !!activeDropdown;
 
   return (
     <>
       <header
         ref={navRef}
-        className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-          solid
-            ? 'border-b border-[var(--border-default)] bg-[rgba(9,9,11,0.95)] backdrop-blur-xl backdrop-saturate-150'
+        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
+          isVisible ? 'top-0' : '-top-full'
+        } ${
+          hasBg
+            ? 'border-b border-[var(--border-default)] bg-[rgba(9,9,11,0.95)] backdrop-blur-xl backdrop-saturate-150 shadow-lg shadow-black/10'
             : 'bg-transparent'
         }`}
       >
@@ -401,8 +423,7 @@ export function PublicNavbar() {
         </div>
       </header>
 
-      {/* Spacer for fixed header */}
-      <div className="h-[88px] lg:h-[88px]" />
+      {/* No spacer — content starts at top, header overlays it */}
 
       {/* Mobile menu */}
       {mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}
