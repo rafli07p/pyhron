@@ -35,6 +35,18 @@ export class NetworkError extends Error {
 
 class ApiClient {
   private inflightRequests = new Map<string, Promise<unknown>>();
+  private requestTimestamps: number[] = [];
+  private readonly MAX_REQUESTS_PER_SECOND = 10;
+
+  private async throttle(): Promise<void> {
+    const now = Date.now();
+    this.requestTimestamps = this.requestTimestamps.filter((t) => now - t < 1000);
+    if (this.requestTimestamps.length >= this.MAX_REQUESTS_PER_SECOND) {
+      const wait = 1000 - (now - (this.requestTimestamps[0] ?? now));
+      await new Promise((r) => setTimeout(r, wait));
+    }
+    this.requestTimestamps.push(Date.now());
+  }
 
   async request<T>(
     endpoint: string,
@@ -49,6 +61,8 @@ class ApiClient {
     if (dedupe && this.inflightRequests.has(dedupe)) {
       return this.inflightRequests.get(dedupe) as Promise<T>;
     }
+
+    await this.throttle();
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort('Timeout'), timeout);
