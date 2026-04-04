@@ -1,107 +1,264 @@
-import { PageHeader } from '@/design-system/layout/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
-import { BarChart3, LayoutDashboard, Search, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+'use client';
 
-export const metadata = { title: 'Studio' };
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { CandlestickChart, type OHLCV } from '@/design-system/charts/CandlestickChart';
+import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
+import { generateOHLCV, generateScreenerData } from '@/mocks/terminal-data';
 
-const quickStart = [
-  {
-    title: 'Workbench',
-    description: 'Build custom charts and explore metrics interactively',
-    href: '/studio/workbench',
-    icon: BarChart3,
-  },
-  {
-    title: 'Dashboards',
-    description: 'Create and manage multi-tile analytical dashboards',
-    href: '/studio/dashboards',
-    icon: LayoutDashboard,
-  },
-  {
-    title: 'Screener',
-    description: 'Filter and rank IDX stocks by fundamental and technical criteria',
-    href: '/studio/screener',
-    icon: Search,
-  },
+// ── Tabs ──
+const TABS = ['Workbench', 'Dashboards', 'Screener'] as const;
+type Tab = (typeof TABS)[number];
+
+// ── Sidebar metric sections ──
+const METRIC_SECTIONS: { label: string; items: string[] }[] = [
+  { label: 'Price & Volume', items: ['OHLCV', 'Volume', 'VWAP'] },
+  { label: 'Technical', items: ['RSI(14)', 'SMA(20)', 'SMA(50)', 'SMA(200)', 'EMA', 'MACD', 'Bollinger', 'ATR'] },
+  { label: 'Fundamentals', items: ['P/E', 'P/B', 'Div Yield', 'EPS', 'ROE'] },
+  { label: 'Factor Scores', items: ['Momentum', 'Value', 'Quality', 'Size'] },
 ];
 
-const curatedPresets = [
-  { name: 'IDX Sector Rotation', description: 'Sector performance heatmap with relative strength', id: 'sector-rotation' },
-  { name: 'LQ45 Valuation', description: 'P/E, P/B, and dividend yield across LQ45 constituents', id: 'lq45-valuation' },
-  { name: 'Macro Dashboard', description: 'BI rate, inflation, rupiah, and bond yields', id: 'macro-dashboard' },
-  { name: 'Momentum Scanner', description: 'Top momentum stocks ranked by 3M return and volume surge', id: 'momentum-scanner' },
-];
+const TIME_RANGES = ['1D', '1W', '1M', '3M', '1Y'] as const;
+
+const SCREENER_COLS = [
+  { key: 'symbol', label: 'Symbol' },
+  { key: 'name', label: 'Name' },
+  { key: 'price', label: 'Price' },
+  { key: 'change', label: 'Chg%' },
+  { key: 'volume', label: 'Volume' },
+  { key: 'marketCap', label: 'MCap' },
+  { key: 'pe', label: 'P/E' },
+  { key: 'pb', label: 'P/B' },
+  { key: 'divYield', label: 'DivYld' },
+  { key: 'sector', label: 'Sector' },
+] as const;
+
+type SortDir = 'asc' | 'desc';
 
 export default function StudioPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Studio"
-        description="Build charts, dashboards, and screeners for the Indonesian market"
-      />
+  const router = useRouter();
+  const [tab, setTab] = useState<Tab>('Workbench');
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {quickStart.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link key={item.href} href={item.href}>
-              <Card className="group h-full cursor-pointer transition-colors hover:border-[var(--accent-500)]">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-md bg-[var(--accent-50)] p-2">
-                      <Icon className="h-4 w-4 text-[var(--accent-500)]" />
-                    </div>
-                    <CardTitle className="group-hover:text-[var(--accent-500)]">{item.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-[var(--text-secondary)]">{item.description}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
+  // Workbench state
+  const [search, setSearch] = useState('');
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
+    Object.fromEntries(METRIC_SECTIONS.map((s) => [s.label, true])),
+  );
+  const [timeRange, setTimeRange] = useState('1M');
+  const [indicators, setIndicators] = useState(['SMA 20', 'RSI 14', 'Volume']);
+
+  // Screener state
+  const [sortCol, setSortCol] = useState<string>('symbol');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [sectorFilter, setSectorFilter] = useState('All');
+
+  // Chart data
+  const chartData: OHLCV[] = useMemo(() => {
+    const raw = generateOHLCV(9875, 120);
+    return raw.map((d) => ({
+      timestamp: new Date(d.date).getTime() / 1000,
+      open: d.open,
+      high: d.high,
+      low: d.low,
+      close: d.close,
+      volume: d.volume,
+    }));
+  }, []);
+
+  // Screener data
+  const screenerRaw = useMemo(() => generateScreenerData(40), []);
+  const sectors = useMemo(() => ['All', ...Array.from(new Set(screenerRaw.map((r) => r.sector)))], [screenerRaw]);
+
+  const screenerData = useMemo(() => {
+    let rows = sectorFilter === 'All' ? screenerRaw : screenerRaw.filter((r) => r.sector === sectorFilter);
+    rows = [...rows].sort((a, b) => {
+      const av = a[sortCol as keyof typeof a];
+      const bv = b[sortCol as keyof typeof b];
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av;
+      return sortDir === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+    });
+    return rows;
+  }, [screenerRaw, sectorFilter, sortCol, sortDir]);
+
+  const toggleSection = (label: string) =>
+    setOpenSections((p) => ({ ...p, [label]: !p[label] }));
+
+  const handleSort = (key: string) => {
+    if (sortCol === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortCol(key); setSortDir('asc'); }
+  };
+
+  const fmtNum = (n: number) => n >= 1e12 ? `${(n / 1e12).toFixed(1)}T` : n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n.toLocaleString();
+
+  return (
+    <div className="flex min-h-full flex-col p-4">
+      {/* Header + Tabs */}
+      <div className="mb-2 flex items-center gap-6 border-b border-[#1e1e22]">
+        <span className="pb-2 text-sm font-medium text-white/70">Studio</span>
+        {TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`pb-2 text-xs transition-colors ${
+              tab === t
+                ? 'border-b-2 border-[var(--accent-500)] text-white'
+                : 'text-white/40 hover:text-white/60'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Charts</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex h-32 items-center justify-center rounded-md bg-[var(--surface-2)] text-xs text-[var(--text-tertiary)]"
-              >
-                No recent chart
+      {/* ── WORKBENCH ── */}
+      {tab === 'Workbench' && (
+        <div className="flex flex-1 gap-2 overflow-hidden" style={{ minHeight: 0 }}>
+          {/* Sidebar */}
+          <div className="w-[200px] shrink-0 overflow-y-auto rounded border border-[#1e1e22] bg-[#0a0a0c]">
+            <input
+              type="text"
+              placeholder="Search metrics..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full border-b border-[#1e1e22] bg-[#0a0a0c] px-2 py-1.5 text-xs text-white/70 outline-none placeholder:text-white/20"
+            />
+            {METRIC_SECTIONS.map((sec) => {
+              const filtered = sec.items.filter((it) => it.toLowerCase().includes(search.toLowerCase()));
+              if (search && filtered.length === 0) return null;
+              const open = openSections[sec.label];
+              return (
+                <div key={sec.label}>
+                  <button
+                    onClick={() => toggleSection(sec.label)}
+                    className="flex w-full items-center gap-1 px-2 py-1.5 text-[10px] font-medium uppercase tracking-wider text-white/30 hover:text-white/50"
+                  >
+                    <span className="w-3 text-[8px]">{open ? '▾' : '▸'}</span>
+                    {sec.label}
+                  </button>
+                  {open && filtered.map((item) => (
+                    <div key={item} className="cursor-pointer px-2 py-1.5 text-xs text-white/50 hover:bg-white/[0.03]">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Chart area */}
+          <div className="flex flex-1 flex-col gap-2 overflow-hidden">
+            <div className="flex items-baseline gap-2 font-mono text-sm text-white/80">
+              <span className="font-medium text-white">BBCA</span>
+              <span className="text-white/40">Bank Central Asia</span>
+              <span>9,875</span>
+              <span className="text-green-500">+125 (+1.28%)</span>
+            </div>
+            <div className="flex-1" style={{ minHeight: 350 }}>
+              <CandlestickChart data={chartData} height={350} />
+            </div>
+            <div className="flex items-center gap-2">
+              {TIME_RANGES.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setTimeRange(r)}
+                  className={`rounded px-2 py-0.5 text-[10px] font-medium ${
+                    timeRange === r ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/50'
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+              <div className="ml-auto flex items-center gap-1">
+                {indicators.map((ind) => (
+                  <span key={ind} className="flex items-center gap-1 rounded bg-white/[0.06] px-2 py-0.5 text-[10px] text-white/50">
+                    {ind}
+                    <button onClick={() => setIndicators((p) => p.filter((x) => x !== ind))} className="ml-0.5 text-white/30 hover:text-white/60">&times;</button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DASHBOARDS ── */}
+      {tab === 'Dashboards' && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <p className="text-sm text-white/30">Create your first dashboard</p>
+          <button className="rounded border border-[var(--accent-500)] px-3 py-1.5 text-xs text-[var(--accent-500)] hover:bg-[var(--accent-500)]/10">
+            + New Dashboard
+          </button>
+          <div className="mt-4 grid w-full max-w-md grid-cols-2 gap-2">
+            {['IDX Sector Overview', 'LQ45 Heatmap'].map((name) => (
+              <div key={name} className="rounded border border-[#1e1e22] bg-[#0a0a0c] p-3">
+                <p className="text-xs font-medium text-white/60">{name}</p>
+                <p className="mt-1 text-[10px] text-white/20">4 tiles</p>
+                <p className="text-[10px] text-white/20">Last modified 2d ago</p>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[var(--accent-500)]" />
-            Curated Presets
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {curatedPresets.map((preset) => (
-              <Link key={preset.id} href={`/studio/workbench/${preset.id}`}>
-                <div className="rounded-md border border-[var(--border-default)] p-3 transition-colors hover:bg-[var(--surface-2)]">
-                  <p className="text-sm font-medium text-[var(--text-primary)]">{preset.name}</p>
-                  <p className="mt-1 text-xs text-[var(--text-tertiary)]">{preset.description}</p>
-                </div>
-              </Link>
-            ))}
+      {/* ── SCREENER ── */}
+      {tab === 'Screener' && (
+        <div className="flex flex-1 flex-col gap-2 overflow-hidden">
+          <div className="flex items-center gap-2">
+            <select
+              value={sectorFilter}
+              onChange={(e) => setSectorFilter(e.target.value)}
+              className="rounded border border-[#1e1e22] bg-[#0a0a0c] px-2 py-1 text-xs text-white/60 outline-none"
+            >
+              {sectors.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <span className="text-[10px] text-white/20">{screenerData.length} results</span>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#1e1e22]">
+                  {SCREENER_COLS.map((col) => (
+                    <th
+                      key={col.key}
+                      onClick={() => handleSort(col.key)}
+                      className="cursor-pointer whitespace-nowrap px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-white/30 hover:text-white/50"
+                    >
+                      {col.label}
+                      {sortCol === col.key && <span className="ml-0.5">{sortDir === 'asc' ? '↑' : '↓'}</span>}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {screenerData.map((row) => (
+                  <tr
+                    key={row.symbol}
+                    onClick={() => router.push(`/markets/${row.symbol}`)}
+                    className="cursor-pointer border-b border-[#1e1e22] transition-colors hover:bg-white/[0.02]"
+                  >
+                    <td className="px-3 py-2 font-mono text-xs font-medium text-white/70">{row.symbol}</td>
+                    <td className="px-3 py-2 text-xs text-white/40">{row.name}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-white/60">{row.price.toLocaleString()}</td>
+                    <td className={`px-3 py-2 font-mono text-xs ${row.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {row.change >= 0 ? '+' : ''}{row.change.toFixed(2)}%
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs text-white/40">{fmtNum(row.volume)}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-white/40">{fmtNum(row.marketCap)}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-white/40">{row.pe.toFixed(1)}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-white/40">{row.pb.toFixed(1)}</td>
+                    <td className="px-3 py-2 font-mono text-xs text-white/40">{row.divYield.toFixed(1)}%</td>
+                    <td className="px-3 py-2 text-xs text-white/30">{row.sector}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <TerminalDisclaimer />
     </div>
   );
 }

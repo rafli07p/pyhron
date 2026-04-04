@@ -1,151 +1,165 @@
-import { PageHeader } from '@/design-system/layout/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
-import { FinancialDisclaimer } from '@/components/common/FinancialDisclaimer';
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { MiniChart } from '@/design-system/charts/MiniChart';
+import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
+import { INDICES, SECTORS, MARKET_BREADTH, generateSparkline } from '@/mocks/terminal-data';
 
-export const metadata = { title: 'Markets' };
+const GAINERS = [
+  { symbol: 'BREN', name: 'Barito Renewables', price: 8250, change: 4.8, volume: '125.3M' },
+  { symbol: 'BBCA', name: 'Bank Central Asia', price: 9875, change: 2.3, volume: '45.2M' },
+  { symbol: 'PANI', name: 'Pantai Indah Kapuk', price: 14250, change: 1.9, volume: '32.1M' },
+  { symbol: 'BMRI', name: 'Bank Mandiri', price: 6225, change: 0.8, volume: '34.5M' },
+  { symbol: 'BBRI', name: 'Bank Rakyat Indonesia', price: 4850, change: 0.6, volume: '52.7M' },
+  { symbol: 'AMRT', name: 'Sumber Alfaria', price: 2780, change: 0.3, volume: '18.4M' },
+];
 
-function MarketStatus() {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-[var(--positive)]" />
-        <span className="text-sm font-medium text-[var(--positive)]">Market Open</span>
-      </span>
-      <span className="text-sm text-[var(--text-tertiary)]">Session II — Closes 15:00 WIB</span>
-    </div>
-  );
-}
+const LOSERS = [
+  { symbol: 'GOTO', name: 'GoTo Gojek Tokopedia', price: 82, change: -3.5, volume: '892.1M' },
+  { symbol: 'TLKM', name: 'Telkom Indonesia', price: 3850, change: -1.1, volume: '67.8M' },
+  { symbol: 'UNVR', name: 'Unilever Indonesia', price: 4150, change: -0.7, volume: '22.3M' },
+  { symbol: 'ASII', name: 'Astra International', price: 4750, change: -0.5, volume: '28.9M' },
+  { symbol: 'ICBP', name: 'Indofood CBP', price: 11200, change: -0.4, volume: '15.6M' },
+  { symbol: 'INDF', name: 'Indofood Sukses', price: 6850, change: -0.3, volume: '12.8M' },
+];
 
-function IndexCard({ name, value, change, changePercent }: { name: string; value: string; change: string; changePercent: number }) {
-  const isPositive = changePercent > 0;
-  return (
-    <Card className="p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">{name}</p>
-      <p className="mt-1 tabular-nums text-xl font-semibold text-[var(--text-primary)]">{value}</p>
-      <p className={`tabular-nums text-sm font-medium ${isPositive ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
-        {isPositive ? '+' : ''}{change} ({isPositive ? '+' : ''}{changePercent.toFixed(2)}%)
-      </p>
-    </Card>
-  );
-}
-
-function SectorHeatmap() {
-  const sectors = [
-    { name: 'Financials', change: 1.2, weight: 35 },
-    { name: 'Consumer', change: -0.5, weight: 15 },
-    { name: 'Energy', change: 2.1, weight: 12 },
-    { name: 'Industrials', change: 0.3, weight: 10 },
-    { name: 'Technology', change: -1.8, weight: 8 },
-    { name: 'Healthcare', change: 0.7, weight: 7 },
-    { name: 'Materials', change: -0.2, weight: 6 },
-    { name: 'Infra', change: 1.5, weight: 4 },
-    { name: 'Property', change: -0.8, weight: 3 },
-  ];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Sector Performance</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-3 gap-1">
-          {sectors.map((s) => (
-            <div
-              key={s.name}
-              className={`flex flex-col items-center justify-center rounded-md p-3 ${
-                s.change > 0 ? 'bg-[var(--positive-muted)]' : 'bg-[var(--negative-muted)]'
-              }`}
-              style={{ gridColumn: s.weight > 20 ? 'span 2' : undefined }}
-            >
-              <span className="text-xs font-medium text-[var(--text-primary)]">{s.name}</span>
-              <span className={`tabular-nums text-sm font-semibold ${s.change > 0 ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
-                {s.change > 0 ? '+' : ''}{s.change.toFixed(1)}%
-              </span>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function TopMoversTable() {
-  const stocks = [
-    { symbol: 'BREN', name: 'Barito Renewables', price: 8250, change: 4.8, volume: '125.3M' },
-    { symbol: 'BBCA', name: 'Bank Central Asia', price: 9875, change: 2.3, volume: '45.2M' },
-    { symbol: 'GOTO', name: 'GoTo Gojek Tokopedia', price: 82, change: -3.5, volume: '892.1M' },
-    { symbol: 'TLKM', name: 'Telkom Indonesia', price: 3850, change: -1.1, volume: '67.8M' },
-    { symbol: 'BMRI', name: 'Bank Mandiri', price: 6225, change: 0.8, volume: '34.5M' },
-    { symbol: 'ASII', name: 'Astra International', price: 4750, change: -0.5, volume: '28.9M' },
-  ];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Top Movers</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[var(--border-default)]">
-                <th className="pb-2 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Symbol</th>
-                <th className="pb-2 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Price</th>
-                <th className="pb-2 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Change</th>
-                <th className="hidden pb-2 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)] sm:table-cell">Volume</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border-default)]">
-              {stocks.map((s) => (
-                <tr key={s.symbol} className="hover:bg-[var(--surface-3)]">
-                  <td className="py-2">
-                    <Link href={`/markets/${s.symbol}`} className="hover:underline">
-                      <span className="font-medium text-[var(--text-primary)]">{s.symbol}</span>
-                      <span className="ml-2 hidden text-[var(--text-tertiary)] md:inline">{s.name}</span>
-                    </Link>
-                  </td>
-                  <td className="tabular-nums py-2 text-right text-[var(--text-primary)]">
-                    {s.price.toLocaleString('id-ID')}
-                  </td>
-                  <td className={`tabular-nums py-2 text-right font-medium ${s.change > 0 ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
-                    {s.change > 0 ? '+' : ''}{s.change.toFixed(1)}%
-                  </td>
-                  <td className="hidden tabular-nums py-2 text-right text-[var(--text-secondary)] sm:table-cell">
-                    {s.volume}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  );
+function fmt(n: number) {
+  return n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export default function MarketsPage() {
+  const [tab, setTab] = useState<'gainers' | 'losers'>('gainers');
+  const movers = tab === 'gainers' ? GAINERS : LOSERS;
+  const total = MARKET_BREADTH.advancing + MARKET_BREADTH.declining + MARKET_BREADTH.unchanged;
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Markets"
-        description="IDX market overview"
-        actions={<MarketStatus />}
-      />
+    <div className="p-4 space-y-3">
+      <h1 className="text-lg font-medium text-white">Markets</h1>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <IndexCard name="IHSG" value="7.234,56" change="32,45" changePercent={0.45} />
-        <IndexCard name="LQ45" value="985,23" change="-5,12" changePercent={-0.52} />
-        <IndexCard name="IDX30" value="482,18" change="2,78" changePercent={0.58} />
-        <IndexCard name="JII" value="548,92" change="-3,21" changePercent={-0.58} />
+      {/* Index cards */}
+      <div className="grid grid-cols-6 gap-3">
+        {INDICES.map((idx) => {
+          const positive = idx.changePct >= 0;
+          const spark = generateSparkline(20, idx.value, 50);
+          return (
+            <div key={idx.symbol} className="p-3 rounded-lg bg-[#111113] border border-[#1e1e22]">
+              <div className="text-[10px] uppercase text-white/30">{idx.symbol}</div>
+              <div className="font-mono text-lg text-white">{fmt(idx.value)}</div>
+              <div className="flex items-center justify-between">
+                <span className={`font-mono text-xs ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+                  {positive ? '+' : ''}{idx.changePct.toFixed(2)}%
+                </span>
+                <MiniChart data={spark} width={60} height={20} positive={positive} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SectorHeatmap />
-        <TopMoversTable />
+      {/* Market Breadth */}
+      <div className="p-3 rounded-lg bg-[#111113] border border-[#1e1e22]">
+        <div className="flex items-center justify-between text-xs text-white/50 mb-2">
+          <span>Market Breadth</span>
+          <span className="font-mono">
+            <span className="text-[#22c55e]">Advancing {MARKET_BREADTH.advancing}</span>
+            {' | '}
+            <span className="text-[#ef4444]">Declining {MARKET_BREADTH.declining}</span>
+            {' | '}
+            <span className="text-white/40">Unchanged {MARKET_BREADTH.unchanged}</span>
+          </span>
+        </div>
+        <div className="flex h-2 w-full overflow-hidden rounded-full">
+          <div className="bg-[#22c55e]" style={{ width: `${(MARKET_BREADTH.advancing / total) * 100}%` }} />
+          <div className="bg-[#ef4444]" style={{ width: `${(MARKET_BREADTH.declining / total) * 100}%` }} />
+          <div className="bg-white/20" style={{ width: `${(MARKET_BREADTH.unchanged / total) * 100}%` }} />
+        </div>
       </div>
 
-      <FinancialDisclaimer className="mt-8" />
+      {/* Sector Heatmap */}
+      <div>
+        <div className="text-xs text-white/50 mb-2">Sector Heatmap</div>
+        <div className="grid grid-cols-3 gap-1">
+          {SECTORS.map((s) => {
+            const positive = s.change >= 0;
+            const mag = Math.min(Math.abs(s.change) / 3, 1);
+            const bg = positive
+              ? `rgba(34,197,94,${0.08 + mag * 0.22})`
+              : `rgba(239,68,68,${0.08 + mag * 0.22})`;
+            return (
+              <div
+                key={s.name}
+                className="flex flex-col items-center justify-center rounded-md p-2"
+                style={{ minHeight: 50, backgroundColor: bg }}
+              >
+                <span className="text-xs text-white/70">{s.name}</span>
+                <span className={`font-mono text-sm ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+                  {positive ? '+' : ''}{s.change.toFixed(1)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Top Movers */}
+      <div>
+        <div className="flex items-center gap-1 mb-2">
+          <button
+            onClick={() => setTab('gainers')}
+            className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
+              tab === 'gainers' ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'text-white/40 hover:text-white/60'
+            }`}
+          >
+            Gainers
+          </button>
+          <button
+            onClick={() => setTab('losers')}
+            className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
+              tab === 'losers' ? 'bg-[#ef4444]/20 text-[#ef4444]' : 'text-white/40 hover:text-white/60'
+            }`}
+          >
+            Losers
+          </button>
+        </div>
+        <div className="rounded-lg bg-[#111113] border border-[#1e1e22] overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#1e1e22]">
+                <th className="px-3 py-2 text-left text-[10px] uppercase text-white/30 font-medium">Symbol</th>
+                <th className="px-3 py-2 text-left text-[10px] uppercase text-white/30 font-medium">Name</th>
+                <th className="px-3 py-2 text-right text-[10px] uppercase text-white/30 font-medium">Price</th>
+                <th className="px-3 py-2 text-right text-[10px] uppercase text-white/30 font-medium">Change%</th>
+                <th className="px-3 py-2 text-right text-[10px] uppercase text-white/30 font-medium">Volume</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1e1e22]">
+              {movers.map((s) => {
+                const positive = s.change >= 0;
+                return (
+                  <tr key={s.symbol} className="hover:bg-white/[0.02]">
+                    <td className="px-3 py-2">
+                      <Link href={`/markets/${s.symbol}`} className="font-mono text-sm text-white hover:underline">
+                        {s.symbol}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2 text-white/50 text-xs">{s.name}</td>
+                    <td className="px-3 py-2 text-right font-mono text-white">
+                      {s.price.toLocaleString('id-ID')}
+                    </td>
+                    <td className={`px-3 py-2 text-right font-mono font-medium ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
+                      {positive ? '+' : ''}{s.change.toFixed(1)}%
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono text-white/40">{s.volume}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <TerminalDisclaimer />
     </div>
   );
 }
