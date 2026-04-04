@@ -1,0 +1,56 @@
+'use client';
+
+import { Canvas, useThree } from '@react-three/fiber';
+import { useRef, useEffect, useSyncExternalStore } from 'react';
+import * as THREE from 'three';
+import { RibbonMesh } from './RibbonMesh';
+
+function subscribeMobile(cb: () => void) {
+  window.addEventListener('resize', cb);
+  return () => window.removeEventListener('resize', cb);
+}
+function getMobile() { return window.innerWidth < 768; }
+function getMobileServer() { return false; }
+
+function MouseTracker({ mouseRef }: { mouseRef: React.MutableRefObject<THREE.Vector2> }) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    function onMove(e: MouseEvent) {
+      const rect = parent!.getBoundingClientRect();
+      mouseRef.current.set(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+    }
+
+    window.addEventListener('mousemove', onMove, { passive: true });
+    return () => window.removeEventListener('mousemove', onMove);
+  }, [gl, mouseRef]);
+
+  return null;
+}
+
+export function RibbonScene() {
+  const mouseRef = useRef(new THREE.Vector2(0, 0));
+  const mobile = useSyncExternalStore(subscribeMobile, getMobile, getMobileServer);
+
+  return (
+    <Canvas
+      gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+      camera={{ fov: 50, position: [0, 0, 8] }}
+      dpr={mobile ? [1, 1] : [1, 1.5]}
+      frameloop="always"
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+    >
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[5, 5, 5]} intensity={1.0} />
+      <RibbonMesh mouseRef={mouseRef} mobile={mobile} />
+      <MouseTracker mouseRef={mouseRef} />
+    </Canvas>
+  );
+}

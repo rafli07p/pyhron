@@ -1,104 +1,94 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Search, User, Menu, X } from 'lucide-react';
-import { Footer } from '@/components/landing/footer';
-import { FinancialDisclaimer } from '@/components/common/FinancialDisclaimer';
+import { PublicNavbar } from '@/components/layout/PublicNavbar';
+import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
 
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const isLanding = pathname === '/';
-
-  useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 10);
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+function PublicFooter() {
+  const groups = [
+    {
+      title: 'Platform',
+      links: [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Markets', href: '/markets' },
+        { label: 'Studio', href: '/studio' },
+        { label: 'Portfolio', href: '/portfolio' },
+      ],
+    },
+    {
+      title: 'Research',
+      links: [
+        { label: 'Insights', href: '/research/articles' },
+        { label: 'Signals', href: '/research/signals' },
+        { label: 'Methodology', href: '/methodology' },
+      ],
+    },
+    {
+      title: 'Company',
+      links: [
+        { label: 'About', href: '/about' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Contact', href: '/contact' },
+      ],
+    },
+    {
+      title: 'Legal',
+      links: [
+        { label: 'Terms', href: '/legal/terms' },
+        { label: 'Privacy', href: '/legal/privacy' },
+        { label: 'Disclaimer', href: '/legal/disclaimer' },
+      ],
+    },
+  ];
 
   return (
-    <header
-      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-        scrolled
-          ? 'bg-white/95 shadow-sm backdrop-blur-sm'
-          : isLanding
-            ? 'bg-transparent'
-            : 'bg-white'
-      }`}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
-        {/* Logo */}
-        <Link href="/" className="text-lg font-light tracking-[0.2em] text-[#0A1628]">
-          PYHRON
-        </Link>
-
-        {/* Right icons */}
-        <div className="flex items-center gap-5">
-          <button aria-label="Search" className="text-[#0A1628]/60 transition-colors hover:text-[#0A1628]">
-            <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
-          </button>
-          <Link href="/login" aria-label="Sign in" className="text-[#0A1628]/60 transition-colors hover:text-[#0A1628]">
-            <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
-          </Link>
-          <button
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="text-[#0A1628]/60 transition-colors hover:text-[#0A1628]"
-          >
-            {menuOpen ? (
-              <X className="h-[18px] w-[18px]" strokeWidth={1.5} />
-            ) : (
-              <Menu className="h-[18px] w-[18px]" strokeWidth={1.5} />
-            )}
-          </button>
+    <footer className="border-t border-[var(--border-default)] bg-[var(--surface-1)]">
+      <div className="mx-auto max-w-7xl px-6 py-12">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
+          <div className="col-span-2 md:col-span-1">
+            <p className="text-sm font-light tracking-[0.2em] text-[var(--text-primary)]">PYHRON</p>
+            <p className="mt-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
+              Quantitative research and algorithmic trading infrastructure for Indonesian capital markets.
+            </p>
+          </div>
+          {groups.map((group) => (
+            <div key={group.title}>
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                {group.title}
+              </h3>
+              <ul className="mt-3 space-y-2">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 border-t border-[var(--border-default)] pt-8">
+          <p className="text-xs text-[var(--text-tertiary)]">
+            &copy; 2025 Pyhron. All rights reserved. Not registered with OJK.
+          </p>
         </div>
       </div>
-
-      {/* Slide-down menu */}
-      {menuOpen && (
-        <div className="border-t border-[#E5E7EB] bg-white">
-          <nav className="mx-auto max-w-7xl px-6 py-8 lg:px-12">
-            <div className="grid grid-cols-2 gap-x-12 gap-y-4 md:grid-cols-4">
-              {[
-                { label: 'Research', href: '/research' },
-                { label: 'Pricing', href: '/pricing' },
-                { label: 'Methodology', href: '/methodology' },
-                { label: 'About', href: '/about' },
-                { label: 'Contact', href: '/contact' },
-                { label: 'Sign In', href: '/login' },
-                { label: 'Create Account', href: '/register' },
-              ].map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="text-sm text-[#6B7280] transition-colors hover:text-[#0A1628]"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        </div>
-      )}
-    </header>
+    </footer>
   );
 }
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="light flex min-h-screen flex-col bg-white text-[#1A1A2E]">
-      <Navbar />
-      <main id="main-content" className="flex-1">{children}</main>
-      <Footer />
-      <div className="border-t border-white/5 bg-[#0A1628] px-6 py-4">
-        <FinancialDisclaimer className="mx-auto max-w-6xl text-white/30" />
+    <SmoothScrollProvider>
+      <div className="flex min-h-screen flex-col">
+        <PublicNavbar />
+        <main id="main-content" className="flex-1">{children}</main>
+        <PublicFooter />
       </div>
-    </div>
+    </SmoothScrollProvider>
   );
 }
