@@ -1,244 +1,144 @@
 'use client';
 
-import Link from 'next/link';
-import { PageHeader } from '@/design-system/layout/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
-import { Badge } from '@/design-system/primitives/Badge';
-import { Button } from '@/design-system/primitives/Button';
-import { StatCard } from '@/design-system/data-display/StatCard';
-import { useTierGate } from '@/hooks/useTierGate';
-import type { QualificationStatus } from '@/types/tier';
-import {
-  Wifi,
-  Play,
-  TrendingUp,
-  Shield,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ArrowRight,
-} from 'lucide-react';
+import { PAPER_TRADING, GUARDRAILS, RECENT_ORDERS } from '@/mocks/terminal-data';
+import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
 
-const SAMPLE_QUALIFICATION: QualificationStatus = {
-  accountAgeDays: 45,
-  paperTradingDays: 37,
-  paperTradesCount: 84,
-  strategiesDeployed: 2,
-  emailVerified: true,
-  kycCompleted: false,
-  onboardingCallCompleted: false,
-  guardrailsConfigured: false,
-  progressPercent: 0,
-  meetsAutoRequirements: false,
-};
-
-// Compute progress
-function computeProgress(q: QualificationStatus): number {
-  const checks = [
-    q.accountAgeDays >= 30,
-    q.paperTradingDays >= 30,
-    q.paperTradesCount >= 50,
-    q.strategiesDeployed >= 1,
-    q.emailVerified,
-    q.kycCompleted,
-    q.onboardingCallCompleted,
-    q.guardrailsConfigured,
-  ];
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+function fmt(n: number, decimals = 0) {
+  return n.toLocaleString('en-US', { maximumFractionDigits: decimals });
+}
+function fmtM(n: number) {
+  if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  return fmt(n);
 }
 
-function QualificationCheckItem({
-  label,
-  met,
-  detail,
-}: {
-  label: string;
-  met: boolean;
-  detail: string;
-}) {
+function StatCard({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="flex items-center justify-between rounded-md px-3 py-2 hover:bg-[var(--surface-3)]">
-      <div className="flex items-center gap-2">
-        {met ? (
-          <CheckCircle2 className="h-4 w-4 text-[var(--positive)]" />
-        ) : (
-          <XCircle className="h-4 w-4 text-[var(--text-tertiary)]" />
-        )}
-        <span className="text-sm text-[var(--text-primary)]">{label}</span>
+    <div className="rounded-lg border border-[#1e1e22] bg-white/[0.02] p-3">
+      <div className="text-[10px] uppercase tracking-wider text-white/30">{label}</div>
+      <div className={`mt-1 font-mono text-sm font-semibold ${color ?? 'text-white/90'}`}>{value}</div>
+    </div>
+  );
+}
+
+function GuardrailBar({ label, current, limit, unit }: { label: string; current: number; limit: number; unit?: string }) {
+  const pct = Math.round((Math.abs(current) / Math.abs(limit)) * 100);
+  const color = pct >= 80 ? 'bg-red-500' : pct >= 50 ? 'bg-amber-500' : 'bg-emerald-500';
+  const c = unit === 'M' ? fmtM(Math.abs(current)) : fmt(Math.abs(current));
+  const l = unit === 'M' ? fmtM(Math.abs(limit)) : fmt(Math.abs(limit));
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-white/50">{label}</span>
+        <span className="font-mono text-white/60">{c} / {l} ({pct}%)</span>
       </div>
-      <span className="text-xs text-[var(--text-tertiary)]">{detail}</span>
+      <div className="h-1.5 w-full rounded bg-white/[0.06]">
+        <div className={`h-full rounded ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+      </div>
     </div>
   );
 }
 
 export default function ExecutionPage() {
-  const { hasAccess: hasOperatorAccess } = useTierGate('execution.live');
-  const qual = { ...SAMPLE_QUALIFICATION, progressPercent: computeProgress(SAMPLE_QUALIFICATION) };
+  const pt = PAPER_TRADING;
+  const g = GUARDRAILS;
+
+  const statsRows = [
+    [
+      { label: 'Connection', value: pt.connection, color: 'text-emerald-400' },
+      { label: 'Active Strategies', value: String(pt.activeStrategies) },
+      { label: 'Paper P&L MTD', value: `+${fmtM(pt.pnlMtd)} (${pt.pnlMtdPct}%)`, color: 'text-emerald-400' },
+      { label: 'Total Trades', value: String(pt.totalTrades) },
+    ],
+    [
+      { label: 'Avg Trades/Day', value: String(pt.avgTradesDay) },
+      { label: 'Avg Hold Time', value: `${pt.avgHoldMin}m` },
+      { label: 'Largest Win', value: `+${fmtM(pt.largestWin)}`, color: 'text-emerald-400' },
+      { label: 'Largest Loss', value: fmtM(pt.largestLoss), color: 'text-red-400' },
+    ],
+    [
+      { label: 'Profit Factor', value: String(pt.profitFactor) },
+      { label: 'Sharpe', value: String(pt.sharpe) },
+      { label: 'Win Rate', value: `${pt.winRate}%` },
+      { label: 'Days Active', value: String(pt.daysActive) },
+    ],
+  ];
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Execution"
-        description="Paper trading, live trading, and execution management"
-      />
+    <div className="flex min-h-full flex-col gap-3 p-4">
+      <h1 className="text-sm font-semibold text-white/90">Execution</h1>
 
-      {/* Paper Trading Section */}
-      <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-          Paper Trading
-        </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Connection"
-            value="Connected"
-            delta="Alpaca Paper"
-            deltaType="positive"
-            icon={Wifi}
-          />
-          <StatCard
-            label="Active Strategies"
-            value="2"
-            delta="MomentumIDX, PairsTrade"
-            deltaType="neutral"
-            icon={Play}
-          />
-          <StatCard
-            label="Paper P&L (MTD)"
-            value="+IDR 3.456.789"
-            delta="+2.8%"
-            deltaType="positive"
-            icon={TrendingUp}
-          />
-          <StatCard
-            label="Paper Trades"
-            value="84"
-            delta="37 days active"
-            deltaType="neutral"
-            icon={Clock}
-          />
+      {/* Paper Trading Stats */}
+      <div className="flex flex-col gap-2">
+        {statsRows.map((row, i) => (
+          <div key={i} className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {row.map((s) => (
+              <StatCard key={s.label} label={s.label} value={s.value} color={s.color} />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Paper Trades Table */}
+      <div className="overflow-x-auto rounded-lg border border-[#1e1e22]">
+        <div className="border-b border-[#1e1e22] bg-white/[0.02] px-3 py-2 text-[10px] uppercase tracking-wider text-white/30">
+          Paper Trades
+        </div>
+        <table className="w-full text-xs text-white/70">
+          <thead className="border-b border-[#1e1e22] bg-white/[0.02]">
+            <tr>
+              {['ID', 'Time', 'Side', 'Symbol', 'Qty', 'Price', 'Status', 'Strategy'].map((h) => (
+                <th key={h} className="px-3 py-2 text-left text-[10px] uppercase tracking-wider text-white/30">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {RECENT_ORDERS.map((o) => (
+              <tr key={o.id} className="border-b border-[#1e1e22] hover:bg-white/[0.02]">
+                <td className="px-3 py-2.5 font-mono text-white/40">{o.id}</td>
+                <td className="px-3 py-2.5 font-mono">{o.time}</td>
+                <td className={`px-3 py-2.5 font-mono font-medium ${o.side === 'BUY' ? 'text-blue-400' : 'text-red-400'}`}>
+                  {o.side}
+                </td>
+                <td className="px-3 py-2.5 font-medium text-white/90">{o.symbol}</td>
+                <td className="px-3 py-2.5 font-mono">{fmt(o.qty)}</td>
+                <td className="px-3 py-2.5 font-mono">{fmt(o.price)}</td>
+                <td className="px-3 py-2.5">
+                  <span className={`text-[10px] ${o.status === 'filled' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {o.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5 text-white/40">{o.strategy}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Guardrails */}
+      <div className="rounded-lg border border-[#1e1e22] bg-white/[0.02] p-3">
+        <div className="mb-3 text-[10px] uppercase tracking-wider text-white/30">Guardrails</div>
+        <div className="flex flex-col gap-3">
+          <GuardrailBar label="Max Position" current={g.maxPosition.current} limit={g.maxPosition.limit} unit="M" />
+          <GuardrailBar label="Daily Loss" current={g.dailyLoss.current} limit={g.dailyLoss.limit} unit="M" />
+          <GuardrailBar label="Open Orders" current={g.openOrders.current} limit={g.openOrders.limit} />
+          <GuardrailBar label="Max Order Value" current={g.maxOrderValue.current} limit={g.maxOrderValue.limit} unit="M" />
+          <div className="mt-1 flex gap-6 text-xs">
+            <span>
+              <span className="text-emerald-400">●</span>{' '}
+              <span className="text-white/50">Circuit Breaker:</span>{' '}
+              <span className="text-emerald-400">Armed</span>
+            </span>
+            <span>
+              <span className="text-white/20">○</span>{' '}
+              <span className="text-white/50">Kill Switch:</span>{' '}
+              <span className="text-white/30">Inactive</span>
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Live Trading Section */}
-      <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-          Live Trading
-        </h2>
-
-        {hasOperatorAccess ? (
-          /* Operator live dashboard */
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              label="Live Connection"
-              value="Connected"
-              delta="Broker: Active"
-              deltaType="positive"
-              icon={Wifi}
-            />
-            <StatCard
-              label="Live Strategies"
-              value="1"
-              delta="MomentumIDX"
-              deltaType="neutral"
-              icon={Play}
-            />
-            <StatCard
-              label="Live P&L (MTD)"
-              value="+IDR 8.765.432"
-              delta="+4.1%"
-              deltaType="positive"
-              icon={TrendingUp}
-            />
-            <StatCard
-              label="Risk Status"
-              value="Normal"
-              delta="All guardrails OK"
-              deltaType="positive"
-              icon={Shield}
-            />
-          </div>
-        ) : (
-          /* Non-operator: qualification progress */
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Qualification Progress</CardTitle>
-                <Badge variant={qual.progressPercent === 100 ? 'positive' : 'warning'}>
-                  {qual.progressPercent}% complete
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-3)]">
-                  <div
-                    className="h-full rounded-full bg-[var(--accent-500)] transition-all"
-                    style={{ width: `${qual.progressPercent}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <QualificationCheckItem
-                  label="Account Age"
-                  met={qual.accountAgeDays >= 30}
-                  detail={`${qual.accountAgeDays} / 30 days`}
-                />
-                <QualificationCheckItem
-                  label="Paper Trading Days"
-                  met={qual.paperTradingDays >= 30}
-                  detail={`${qual.paperTradingDays} / 30 days`}
-                />
-                <QualificationCheckItem
-                  label="Paper Trades"
-                  met={qual.paperTradesCount >= 50}
-                  detail={`${qual.paperTradesCount} / 50 trades`}
-                />
-                <QualificationCheckItem
-                  label="Strategies Deployed"
-                  met={qual.strategiesDeployed >= 1}
-                  detail={`${qual.strategiesDeployed} deployed`}
-                />
-                <QualificationCheckItem
-                  label="Email Verified"
-                  met={qual.emailVerified}
-                  detail={qual.emailVerified ? 'Verified' : 'Not verified'}
-                />
-                <QualificationCheckItem
-                  label="KYC Completed"
-                  met={qual.kycCompleted}
-                  detail={qual.kycCompleted ? 'Completed' : 'Not completed'}
-                />
-                <QualificationCheckItem
-                  label="Onboarding Call"
-                  met={qual.onboardingCallCompleted}
-                  detail={qual.onboardingCallCompleted ? 'Completed' : 'Not scheduled'}
-                />
-                <QualificationCheckItem
-                  label="Guardrails Configured"
-                  met={qual.guardrailsConfigured}
-                  detail={qual.guardrailsConfigured ? 'Configured' : 'Not configured'}
-                />
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <Link href="/execution/request-access">
-                  <Button size="sm">
-                    Request Live Access
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/execution/guardrails">
-                  <Button variant="outline" size="sm">
-                    <Shield className="h-4 w-4" />
-                    View Guardrails
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <TerminalDisclaimer />
     </div>
   );
 }
