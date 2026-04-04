@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { useWebGLSupport } from '@/hooks/useWebGLSupport';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useHeroAnimation } from '@/hooks/useHeroAnimation';
@@ -89,20 +90,23 @@ export function HeroSection() {
             execution into a single coherent platform.
           </p>
 
-          <div className="hero-cta mt-10 flex gap-4">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 bg-[var(--accent-500)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-600)]"
-            >
-              Start Research
-              <span aria-hidden="true">&rarr;</span>
-            </Link>
-            <Link
-              href="/methodology"
-              className="inline-flex items-center gap-2 border border-[var(--border-default)] px-6 py-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            >
-              View Methodology
-            </Link>
+          <div className="hero-cta mt-10 flex flex-col items-start gap-4">
+            <div className="flex gap-4">
+              <Link
+                href="/register"
+                className="group inline-flex items-center gap-2 rounded-lg bg-[var(--accent-500)] px-8 py-4 text-base font-medium text-white transition-colors hover:bg-[var(--accent-600)]"
+              >
+                Get Started Free
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-8 py-4 text-base font-medium text-[var(--text-secondary)] transition-colors hover:border-white/30 hover:text-[var(--text-primary)]"
+              >
+                Launch Terminal
+              </Link>
+            </div>
+            <p className="text-sm text-white/30">Free Explorer tier — no credit card required</p>
           </div>
         </div>
 
