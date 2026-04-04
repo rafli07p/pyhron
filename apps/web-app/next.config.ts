@@ -16,6 +16,11 @@ const config: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
 
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24,
+  },
+
   async rewrites() {
     return [
       { source: '/api/v1/:path*', destination: `${BACKEND_URL}/v1/:path*` },
@@ -25,11 +30,24 @@ const config: NextConfig = {
   async headers() {
     return [
       {
+        source: '/fonts/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: securityHeaders,
       },
     ];
   },
+
 };
 
 export default config;

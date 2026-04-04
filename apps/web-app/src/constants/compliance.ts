@@ -82,4 +82,23 @@ export const COMPLIANCE = {
     'Paper trading uses real market data but execution is simulated. Paper trading results ' +
     'do not account for real slippage, market impact, or the possibility of failed order ' +
     'execution. Paper trading performance may differ significantly from live trading.',
+  dataPrivacy: {
+    applicableLaw: 'UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi',
+    userRights: [
+      'right_to_access',
+      'right_to_rectification',
+      'right_to_deletion',
+      'right_to_restriction',
+      'right_to_portability',
+      'right_to_object',
+      'right_to_withdraw_consent',
+    ],
+    retention: {
+      accountData: 'Active account + 30 days after deletion request',
+      tradingHistory: '7 years (Indonesian tax requirement)',
+      auditLogs: '7 years',
+      analyticsData: '24 months (anonymized after 6 months)',
+    },
+    exportFormats: ['json', 'csv'] as const,
+  },
 } as const;

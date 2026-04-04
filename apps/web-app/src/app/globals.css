@@ -53,7 +53,7 @@
   --surface-4: #3f3f46;
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  --text-tertiary: #8b8b96;
   --text-inverse: #09090b;
   --accent-50: rgba(37, 99, 235, 0.08);
   --accent-100: rgba(37, 99, 235, 0.15);
@@ -85,7 +85,7 @@
   --surface-4: #d4d4d8;
   --text-primary: #09090b;
   --text-secondary: #52525b;
-  --text-tertiary: #a1a1aa;
+  --text-tertiary: #70707b;
   --text-inverse: #fafafa;
   --accent-50: rgba(37, 99, 235, 0.05);
   --accent-100: rgba(37, 99, 235, 0.10);
@@ -200,4 +200,35 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
+}
+
+/* Forced colors mode (Windows High Contrast) */
+@media (forced-colors: active) {
+  * {
+    border-color: ButtonText !important;
+  }
+  .hero-line,
+  .hero-subtext,
+  .hero-cta,
+  .hero-scroll-indicator,
+  [class*="opacity-0"] {
+    opacity: 1 !important;
+  }
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

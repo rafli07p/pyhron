@@ -61,4 +61,24 @@ export const IDX = {
     const tax = side === 'sell' ? value * this.FEES.sellTax : 0;
     return { value, commission, tax, total: value + commission };
   },
+
+  AUTO_REJECTION: {
+    regular: { upperLimit: 0.25, lowerLimit: -0.25 },
+    acceleration: { upperLimit: 0.35, lowerLimit: -0.35 },
+    development: { upperLimit: 0.35, lowerLimit: -0.35 },
+  } as const,
+
+  getAutoRejectLimits(board: 'regular' | 'development' | 'acceleration', previousClose: number) {
+    const limits = this.AUTO_REJECTION[board];
+    return {
+      upperLimit: Math.round(previousClose * (1 + limits.upperLimit)),
+      lowerLimit: Math.round(previousClose * (1 + limits.lowerLimit)),
+    };
+  },
+
+  CIRCUIT_BREAKER: {
+    level1: { dropPct: -5, haltMinutes: 30, label: 'Level 1 Halt' },
+    level2: { dropPct: -8, haltMinutes: 30, label: 'Level 2 Halt' },
+    level3: { dropPct: -15, haltMinutes: 0, label: 'Trading Suspended' },
+  } as const,
 } as const;
