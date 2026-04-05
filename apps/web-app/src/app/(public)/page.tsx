@@ -39,7 +39,7 @@ export default function LandingPage() {
       </div>
 
       {/* Trust Metrics */}
-      <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-24">
+      <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-16">
         <ScrollReveal preset="fadeUp" stagger={0.15} className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 lg:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="text-center">

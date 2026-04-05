@@ -405,13 +405,15 @@ export function PublicNavbar() {
             >
               <Search className="h-4 w-4" strokeWidth={1.5} />
             </button>
-            <Link
+            <a
               href="/dashboard"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden rounded-full bg-[var(--accent-500)] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--accent-600)] lg:inline-flex lg:items-center lg:gap-1"
             >
               Launch Terminal
               <span aria-hidden="true" className="ml-0.5">&rarr;</span>
-            </Link>
+            </a>
             <button
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
