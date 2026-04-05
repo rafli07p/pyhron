@@ -69,7 +69,7 @@ export default function FactorsPage() {
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="Factor Analysis" description="Explore systematic risk factors in the IDX market" />
         <TierGate requiredTier="strategist" featureName="Factor Analysis" />
       </div>
@@ -77,7 +77,7 @@ export default function FactorsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="Factor Analysis"
         description="Explore systematic risk factors in the IDX market"

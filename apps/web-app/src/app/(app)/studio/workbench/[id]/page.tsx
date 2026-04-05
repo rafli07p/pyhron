@@ -6,7 +6,7 @@ export const metadata = { title: 'Workbench Preset' };
 
 export default function WorkbenchPresetPage({ params }: { params: { id: string } }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="Loading preset..."
         description={`Preset ID: ${params.id}`}

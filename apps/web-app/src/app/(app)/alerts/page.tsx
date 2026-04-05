@@ -83,7 +83,7 @@ export default function AlertsPage() {
 
   return (
     <TierGate requiredTier="strategist" featureName="Alerts">
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader
           title="Alerts"
           description="Monitor market conditions and get notified"

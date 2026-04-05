@@ -7,12 +7,12 @@ export const metadata = { title: 'Research' };
 
 export default function ResearchDashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Research Hub" description="Quantitative research and analysis" />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Link href="/research/signals">
-          <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+          <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">Signals</h3>
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">ML-generated trading signals with confidence scores</p>
             <p className="mt-3 tabular-nums text-2xl font-bold text-[var(--accent-500)]">12</p>
@@ -20,7 +20,7 @@ export default function ResearchDashboardPage() {
           </Card>
         </Link>
         <Link href="/research/backtests">
-          <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+          <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">Backtests</h3>
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">Strategy backtest results and performance metrics</p>
             <p className="mt-3 tabular-nums text-2xl font-bold text-[var(--accent-500)]">28</p>
@@ -28,7 +28,7 @@ export default function ResearchDashboardPage() {
           </Card>
         </Link>
         <Link href="/research/factors">
-          <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+          <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Factor Analysis</h3>
               <Badge variant="accent">PRO</Badge>

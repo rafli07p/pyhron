@@ -40,7 +40,7 @@ export default function MLPage() {
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="ML Pipeline" description="Machine learning model management" />
         <TierGate requiredTier="strategist" featureName="ML Pipeline" />
       </div>
@@ -48,7 +48,7 @@ export default function MLPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="ML Pipeline" description="Machine learning experiments, models, and training" />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -56,7 +56,7 @@ export default function MLPage() {
           const Icon = section.icon;
           return (
             <Link key={section.href} href={section.href}>
-              <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+              <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
                 <div className="flex items-center gap-2">
                   <Icon className="h-4 w-4 text-[var(--accent-500)]" />
                   <h3 className="text-sm font-semibold text-[var(--text-primary)]">{section.title}</h3>
@@ -70,7 +70,7 @@ export default function MLPage() {
         })}
       </div>
 
-      <Card className="p-6">
+      <Card className="p-4">
         <h3 className="text-sm font-semibold text-[var(--text-primary)]">Recent Models</h3>
         <div className="mt-4 space-y-3">
           {[

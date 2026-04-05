@@ -160,7 +160,7 @@ export default function ScreenerPage() {
     sortKey !== col ? null : sortDir === 'asc' ? <ChevronUp className="inline h-3 w-3" /> : <ChevronDown className="inline h-3 w-3" />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Stock Screener" description="Filter and rank IDX stocks by fundamental and technical criteria" />
 
       {/* Mobile filter toggle */}

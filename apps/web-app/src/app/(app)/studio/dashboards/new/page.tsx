@@ -31,7 +31,7 @@ export default function NewDashboardPage() {
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="New Dashboard" description="Build a custom analytical dashboard" />
         <TierGate requiredTier="strategist" featureName="Custom Dashboards" />
       </div>

@@ -27,7 +27,7 @@ export default function MetricDetailPage() {
   const metric = SAMPLE_METRIC;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title={metric.name}
         description={metric.category}

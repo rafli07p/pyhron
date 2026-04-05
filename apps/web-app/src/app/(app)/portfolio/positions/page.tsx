@@ -15,7 +15,7 @@ export default function PositionsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Positions" description="Current positions with real-time P&L" />
       <Card>
         <CardContent className="p-0">

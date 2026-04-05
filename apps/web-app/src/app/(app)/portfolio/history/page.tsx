@@ -21,7 +21,7 @@ function formatIDR(value: number) {
 
 export default function TradeHistoryPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Trade History" description="Complete trade execution history" />
 
       <Card>

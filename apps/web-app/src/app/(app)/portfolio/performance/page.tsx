@@ -7,7 +7,7 @@ export const metadata = { title: 'Performance' };
 
 export default function PerformancePage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Performance Attribution" description="Portfolio performance analysis and attribution" />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

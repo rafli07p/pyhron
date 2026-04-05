@@ -7,7 +7,7 @@ export const metadata = { title: 'Profile' };
 
 export default function ProfilePage() {
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-3">
       <PageHeader title="Profile" description="Manage your account settings" />
       <Card>
         <CardHeader><CardTitle>Personal Information</CardTitle></CardHeader>

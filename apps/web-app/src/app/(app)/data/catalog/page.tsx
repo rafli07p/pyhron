@@ -67,7 +67,7 @@ export default function MetricCatalogPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="Metric Catalog"
         description={`${TOTAL_METRICS} metrics available across ${CATEGORIES.length} categories`}
@@ -81,7 +81,7 @@ export default function MetricCatalogPage() {
         }
       />
 
-      <div className="flex gap-6">
+      <div className="flex gap-3">
         {/* Sidebar */}
         <aside className="hidden w-56 shrink-0 lg:block">
           <div className="space-y-1">

@@ -46,7 +46,7 @@ export const metadata = { title: 'Data' };
 
 export default function DataPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="Data"
         description="Explore, query, and manage market data"

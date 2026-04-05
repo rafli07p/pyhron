@@ -49,7 +49,7 @@ export default function DataApiPage() {
 
   return (
     <TierGate requiredTier="strategist" featureName="Data API">
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader
           title="Data API"
           description="Manage API keys and explore available endpoints"
