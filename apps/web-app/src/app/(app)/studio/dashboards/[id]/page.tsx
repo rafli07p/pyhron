@@ -9,7 +9,7 @@ export const metadata = { title: 'Dashboard' };
 
 export default function DashboardViewPage({ params }: { params: { id: string } }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title={`Dashboard: ${params.id}`}
         description="Viewing saved dashboard"

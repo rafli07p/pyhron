@@ -26,7 +26,7 @@ export default function NewBacktestPage() {
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="New Backtest" description="Configure and launch a strategy backtest" />
         <TierGate requiredTier="strategist" featureName="Backtesting" />
       </div>
@@ -34,7 +34,7 @@ export default function NewBacktestPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="New Backtest"
         description="Configure and launch a strategy backtest"

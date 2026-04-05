@@ -26,7 +26,7 @@ export default function SignalsPage() {
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="Signal Dashboard" description="ML-generated trading signals" />
         <TierGate requiredTier="strategist" featureName="ML Signals" />
       </div>
@@ -34,7 +34,7 @@ export default function SignalsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Signal Dashboard" description="ML-generated trading signals with confidence scores" />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

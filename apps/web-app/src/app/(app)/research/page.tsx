@@ -7,7 +7,7 @@ export const metadata = { title: 'Research' };
 
 export default function ResearchPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="Research Hub"
         description="Quantitative research, ML signals, and published analysis"
@@ -15,7 +15,7 @@ export default function ResearchPage() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Link href="/research/signals">
-          <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+          <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">Signals</h3>
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
               ML-generated trading signals with confidence scores
@@ -25,7 +25,7 @@ export default function ResearchPage() {
           </Card>
         </Link>
         <Link href="/research/articles">
-          <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+          <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">Articles</h3>
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
               Published research and analysis
@@ -35,7 +35,7 @@ export default function ResearchPage() {
           </Card>
         </Link>
         <Link href="/studio/backtests">
-          <Card className="p-6 transition-colors hover:border-[var(--accent-500)]">
+          <Card className="p-4 transition-colors hover:border-[var(--accent-500)]">
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">Backtests</h3>
             <p className="mt-1 text-xs text-[var(--text-tertiary)]">
               Strategy backtest results and performance metrics

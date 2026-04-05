@@ -28,7 +28,7 @@ const COOLDOWNS = [
 export default function NewAlertPage() {
   return (
     <TierGate requiredTier="strategist" featureName="Alerts">
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader
           title="Create Alert"
           description="Set up a new market condition alert"
@@ -47,7 +47,7 @@ export default function NewAlertPage() {
             <CardTitle>Alert Configuration</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               <Input label="Alert Name" placeholder="e.g. BBCA Price Drop" />
 
               <div className="space-y-1.5">

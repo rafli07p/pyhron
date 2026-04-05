@@ -12,7 +12,7 @@ export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-3">
       <Link
         href="/research/articles"
         className="inline-flex items-center gap-1 text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
@@ -35,7 +35,7 @@ export default async function ArticleDetailPage({ params }: Props) {
       </div>
 
       <Card>
-        <CardContent className="prose prose-invert max-w-none p-6">
+        <CardContent className="prose prose-invert max-w-none p-4">
           <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
             This research article analyzes the performance of momentum-based strategies
             in the Indonesian stock market (IDX) during Q1 2025. Our findings indicate

@@ -32,7 +32,7 @@ export default function EditDashboardPage({ params }: { params: { id: string } }
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="Edit Dashboard" description={`Editing dashboard: ${params.id}`} />
         <TierGate requiredTier="strategist" featureName="Custom Dashboards" />
       </div>

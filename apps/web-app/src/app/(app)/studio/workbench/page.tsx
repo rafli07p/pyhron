@@ -107,7 +107,7 @@ export default function WorkbenchPage() {
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="Workbench" description="Interactive charting and metric exploration" />
         <TierGate requiredTier="strategist" featureName="Workbench" />
       </div>

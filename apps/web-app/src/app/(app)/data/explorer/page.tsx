@@ -32,7 +32,7 @@ export default function DataExplorerPage() {
 
   return (
     <TierGate requiredTier="strategist" featureName="Data Explorer">
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader
           title="Data Explorer"
           description="Query and explore datasets with a SQL-like interface"

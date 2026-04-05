@@ -27,7 +27,7 @@ export default function DashboardsPage() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>('My Dashboards');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title="Dashboards"
         description="Create and manage analytical dashboards"

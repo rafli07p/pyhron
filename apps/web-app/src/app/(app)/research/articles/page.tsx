@@ -55,13 +55,13 @@ const MOCK_ARTICLES = [
 
 export default function ArticlesPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader title="Research Articles" description="Published quantitative research and analysis" />
 
       <div className="space-y-4">
         {MOCK_ARTICLES.map((article) => (
           <Link key={article.slug} href={`/research/articles/${article.slug}`}>
-            <Card className="p-5 transition-colors hover:border-[var(--accent-500)]">
+            <Card className="p-3 transition-colors hover:border-[var(--accent-500)]">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-semibold text-[var(--text-primary)]">

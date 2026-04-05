@@ -6,6 +6,7 @@ import { HeroSection } from '@/components/hero/HeroSection';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 import { CountUp } from '@/components/motion/CountUp';
 import { FinancialDisclaimer } from '@/components/common/FinancialDisclaimer';
+import { TrustedBy } from '@/components/landing/TrustedBy';
 
 const stats = [
   { end: 15.2, prefix: 'IDR ', suffix: 'T', decimals: 1, label: 'Data Points' },
@@ -54,6 +55,9 @@ export default function LandingPage() {
           ))}
         </ScrollReveal>
       </section>
+
+      {/* Trusted By / Data Partners */}
+      <TrustedBy />
 
       {/* Platform Capabilities */}
       <section className="bg-[var(--surface-0)] py-24">

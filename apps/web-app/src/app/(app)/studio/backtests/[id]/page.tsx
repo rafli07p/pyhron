@@ -40,7 +40,7 @@ export default function BacktestDetailPage({ params }: { params: { id: string } 
 
   if (!hasAccess) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <PageHeader title="Backtest Detail" description={`Backtest: ${params.id}`} />
         <TierGate requiredTier="strategist" featureName="Backtesting" />
       </div>
@@ -48,7 +48,7 @@ export default function BacktestDetailPage({ params }: { params: { id: string } 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <PageHeader
         title={`Backtest: ${params.id}`}
         description="MomentumIDX | 2024-01-01 to 2025-12-31"
