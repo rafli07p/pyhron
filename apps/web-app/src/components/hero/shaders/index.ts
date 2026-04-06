@@ -24,8 +24,9 @@ vec3 displace(vec3 pos) {
   p.y = newY;
   p.z = newZ;
 
-  p.x += uMouse.x * 0.2;
-  p.y += uMouse.y * 0.15;
+  // Mouse influence disabled — ribbon flows autonomously
+  // p.x += uMouse.x * 0.2;
+  // p.y += uMouse.y * 0.15;
   return p;
 }
 

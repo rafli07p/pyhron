@@ -51,7 +51,7 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex h-dvh items-center overflow-hidden bg-[var(--surface-0)]"
+      className="relative flex min-h-dvh items-center overflow-hidden bg-[var(--surface-0)]"
       aria-label="Pyhron — Institutional-grade quantitative research platform for Indonesian capital markets"
     >
       {/* Background layers with crossfade */}
@@ -76,7 +76,7 @@ export function HeroSection() {
       </div>
 
       {/* Content layer */}
-      <div className="relative z-[2] flex h-full w-full flex-col justify-center px-6 lg:px-20" role="banner">
+      <div className="relative z-[2] flex h-full w-full flex-col justify-center px-6 pb-24 lg:px-20" role="banner">
         <div className="max-w-4xl">
           <h1 className="text-5xl font-light leading-[1.05] tracking-tight text-[var(--text-primary)] md:text-7xl lg:text-[5.5rem]">
             <span className="hero-line block">Institutional-Grade</span>
@@ -99,12 +99,14 @@ export function HeroSection() {
                 Get Started Free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link
+              <a
                 href="/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-8 py-4 text-base font-medium text-[var(--text-secondary)] transition-colors hover:border-white/30 hover:text-[var(--text-primary)]"
               >
                 Launch Terminal
-              </Link>
+              </a>
             </div>
             <p className="text-sm text-white/30">Free Explorer tier — no credit card required</p>
           </div>
