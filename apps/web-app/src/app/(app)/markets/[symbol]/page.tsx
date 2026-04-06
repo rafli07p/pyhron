@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { CandlestickChart, type OHLCV } from '@/design-system/charts/CandlestickChart';
 import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
 import { IDX } from '@/constants/idx';
+import { useQuote, useOHLCV } from '@/hooks/use-market-data';
 import { getInstrumentDetail, generateOHLCV } from '@/mocks/terminal-data';
 import { formatIDR, formatNumber, formatVolume } from '@/lib/format';
 
@@ -20,7 +21,37 @@ function Val({ children }: { children: React.ReactNode }) {
 
 export default function InstrumentPage({ params }: { params: Promise<{ symbol: string }> }) {
   const { symbol } = React.use(params);
-  const inst = getInstrumentDetail(symbol);
+  const { data: quote } = useQuote(symbol);
+  const { data: rawOhlcv } = useOHLCV(symbol, '3mo');
+
+  // Fallback to mock
+  const mockInst = getInstrumentDetail(symbol);
+  const inst = {
+    symbol,
+    name: quote?.name ?? mockInst.name,
+    currentPrice: quote?.price ?? mockInst.currentPrice,
+    prevClose: quote?.price ? (quote.price - quote.change) : mockInst.prevClose,
+    change: quote?.change ?? mockInst.change,
+    changePct: quote?.changePct ?? mockInst.changePct,
+    open: quote?.open ?? mockInst.open,
+    dayHigh: quote?.dayHigh ?? mockInst.dayHigh,
+    dayLow: quote?.dayLow ?? mockInst.dayLow,
+    volume: quote?.volume ?? mockInst.volume,
+    marketCap: quote?.marketCap ?? mockInst.marketCap,
+    peRatio: quote?.peRatio ?? mockInst.peRatio,
+    pbRatio: quote?.pbRatio ?? mockInst.pbRatio,
+    divYield: quote?.divYield ?? mockInst.divYield,
+    high52w: quote?.high52w ?? mockInst.high52w,
+    low52w: quote?.low52w ?? mockInst.low52w,
+    avgVolume30d: mockInst.avgVolume30d,
+    // Keep mock-only fields
+    sector: mockInst.sector,
+    board: mockInst.board,
+    lotSize: mockInst.lotSize,
+    tickSize: mockInst.tickSize,
+    description: mockInst.description,
+    roe: mockInst.roe,
+  };
 
   const [tab, setTab] = useState<(typeof TABS)[number]>('Overview');
   const [timeRange, setTimeRange] = useState('1Y');
@@ -29,15 +60,17 @@ export default function InstrumentPage({ params }: { params: Promise<{ symbol: s
   const [price, setPrice] = useState(inst.currentPrice);
   const [errors, setErrors] = useState<{ lots?: string; price?: string }>({});
 
-  const ohlcvRaw = generateOHLCV(inst.currentPrice, 120);
-  const chartData: OHLCV[] = ohlcvRaw.map((d) => ({
-    timestamp: Math.floor(new Date(d.date).getTime() / 1000),
-    open: d.open,
-    high: d.high,
-    low: d.low,
-    close: d.close,
-    volume: d.volume,
-  }));
+  const chartData: OHLCV[] = useMemo(() => {
+    const raw = rawOhlcv ?? generateOHLCV(inst.currentPrice, 120);
+    return raw.map((d) => ({
+      timestamp: Math.floor(new Date(d.date).getTime() / 1000),
+      open: d.open,
+      high: d.high,
+      low: d.low,
+      close: d.close,
+      volume: d.volume,
+    }));
+  }, [rawOhlcv, inst.currentPrice]);
 
   const positive = inst.changePct >= 0;
   const tick = inst.tickSize;
