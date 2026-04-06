@@ -31,14 +31,14 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 space-y-3">
-      <h1 className="text-lg font-medium text-white">Dashboard</h1>
+      <h1 className="terminal-page-title">Dashboard</h1>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
         {stats.map((s) => (
           <div key={s.label} className="rounded-lg bg-[#111113] border border-[#1e1e22] p-3">
-            <div className="text-[10px] uppercase tracking-wider text-white/30">{s.label}</div>
-            <div className="text-lg font-mono font-medium text-white mt-1">{s.value}</div>
+            <div className="stat-label">{s.label}</div>
+            <div className="stat-value text-lg">{s.value}</div>
             {s.delta && (
               <div className={`text-xs mt-0.5 ${s.positive ? 'text-emerald-400' : 'text-red-400'}`}>{s.delta}</div>
             )}
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         {/* Equity Curve */}
         <div className="lg:col-span-3 rounded-lg bg-[#111113] border border-[#1e1e22] p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Equity Curve</span>
+            <span className="terminal-heading mb-2">Equity Curve</span>
             <div className="flex gap-1">
               {periods.map((p) => (
                 <button key={p} onClick={() => setActivePeriod(p)}
@@ -78,7 +78,7 @@ export default function DashboardPage() {
 
         {/* Strategy Status */}
         <div className="lg:col-span-2 rounded-lg bg-[#111113] border border-[#1e1e22] p-3">
-          <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Strategies</span>
+          <span className="terminal-heading mb-2">Strategies</span>
           <div className="mt-2 space-y-0">
             {STRATEGIES.map((s) => (
               <Link key={s.id} href={`/strategies/${s.id}`}
@@ -101,16 +101,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[55%_1fr] gap-3">
         {/* Positions Table */}
         <div className="rounded-lg bg-[#111113] border border-[#1e1e22] p-3 overflow-x-auto">
-          <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Positions</span>
+          <span className="terminal-heading mb-2">Positions</span>
           <table className="w-full mt-2">
             <thead>
-              <tr className="text-[10px] uppercase tracking-wider text-white/30">
-                <th className="text-left py-1 px-3">SYM</th>
-                <th className="text-right py-1 px-3">QTY</th>
-                <th className="text-right py-1 px-3">AVG</th>
-                <th className="text-right py-1 px-3">CUR</th>
-                <th className="text-right py-1 px-3">P&L</th>
-                <th className="text-right py-1 px-3">P&L%</th>
+              <tr>
+                <th className="table-header text-left py-1 px-3">SYM</th>
+                <th className="table-header text-right py-1 px-3">QTY</th>
+                <th className="table-header text-right py-1 px-3">AVG</th>
+                <th className="table-header text-right py-1 px-3">CUR</th>
+                <th className="table-header text-right py-1 px-3">P&L</th>
+                <th className="table-header text-right py-1 px-3">P&L%</th>
               </tr>
             </thead>
             <tbody>
@@ -141,15 +141,15 @@ export default function DashboardPage() {
 
         {/* Recent Orders */}
         <div className="rounded-lg bg-[#111113] border border-[#1e1e22] p-3 overflow-x-auto">
-          <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Recent Orders</span>
+          <span className="terminal-heading mb-2">Recent Orders</span>
           <table className="w-full mt-2">
             <thead>
-              <tr className="text-[10px] uppercase tracking-wider text-white/30">
-                <th className="text-left py-1 px-3">TIME</th>
-                <th className="text-left py-1 px-3">SIDE</th>
-                <th className="text-left py-1 px-3">SYM</th>
-                <th className="text-right py-1 px-3">QTY</th>
-                <th className="text-left py-1 px-3">STATUS</th>
+              <tr>
+                <th className="table-header text-left py-1 px-3">TIME</th>
+                <th className="table-header text-left py-1 px-3">SIDE</th>
+                <th className="table-header text-left py-1 px-3">SYM</th>
+                <th className="table-header text-right py-1 px-3">QTY</th>
+                <th className="table-header text-left py-1 px-3">STATUS</th>
               </tr>
             </thead>
             <tbody>

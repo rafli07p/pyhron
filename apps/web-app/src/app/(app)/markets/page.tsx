@@ -38,7 +38,7 @@ export default function MarketsPage() {
 
   return (
     <div className="p-4 space-y-3">
-      <h1 className="text-lg font-medium text-white">Markets</h1>
+      <h1 className="terminal-page-title">Markets</h1>
 
       {/* Index cards */}
       <div className="grid grid-cols-6 gap-3">
@@ -47,8 +47,8 @@ export default function MarketsPage() {
           const spark = generateSparkline(20, idx.value, 50);
           return (
             <div key={idx.symbol} className="p-3 rounded-lg bg-[#111113] border border-[#1e1e22]">
-              <div className="text-[10px] uppercase text-white/30">{idx.symbol}</div>
-              <div className="font-mono text-lg text-white">{fmt(idx.value)}</div>
+              <div className="stat-label">{idx.symbol}</div>
+              <div className="stat-value text-lg">{fmt(idx.value)}</div>
               <div className="flex items-center justify-between">
                 <span className={`font-mono text-xs ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
                   {positive ? '+' : ''}{idx.changePct.toFixed(2)}%
@@ -81,7 +81,7 @@ export default function MarketsPage() {
 
       {/* Sector Heatmap */}
       <div>
-        <div className="text-xs text-white/50 mb-2">Sector Heatmap</div>
+        <div className="terminal-heading mb-2">Sector Heatmap</div>
         <div className="grid grid-cols-3 gap-1">
           {SECTORS.map((s) => {
             const positive = s.change >= 0;
@@ -129,11 +129,11 @@ export default function MarketsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#1e1e22]">
-                <th className="px-3 py-2 text-left text-[10px] uppercase text-white/30 font-medium">Symbol</th>
-                <th className="px-3 py-2 text-left text-[10px] uppercase text-white/30 font-medium">Name</th>
-                <th className="px-3 py-2 text-right text-[10px] uppercase text-white/30 font-medium">Price</th>
-                <th className="px-3 py-2 text-right text-[10px] uppercase text-white/30 font-medium">Change%</th>
-                <th className="px-3 py-2 text-right text-[10px] uppercase text-white/30 font-medium">Volume</th>
+                <th className="table-header px-3 py-2 text-left">Symbol</th>
+                <th className="table-header px-3 py-2 text-left">Name</th>
+                <th className="table-header px-3 py-2 text-right">Price</th>
+                <th className="table-header px-3 py-2 text-right">Change%</th>
+                <th className="table-header px-3 py-2 text-right">Volume</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1e1e22]">
