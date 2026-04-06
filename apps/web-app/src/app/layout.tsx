@@ -6,11 +6,11 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'),
   title: {
-    default: 'Pyhron — Quantitative Research for Indonesia\'s Capital Markets',
+    default: 'Pyhron',
     template: '%s — Pyhron',
   },
   description:
-    'Institutional-grade quantitative research and algorithmic trading platform for the Indonesia Stock Exchange (IDX).',
+    'Bringing Clarity to Investment Decisions',
   keywords: [
     'quantitative trading', 'algorithmic trading', 'IDX', 'Indonesia Stock Exchange',
     'quant research', 'backtesting', 'risk management', 'IHSG',
