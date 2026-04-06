@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { CandlestickChart, type OHLCV } from '@/design-system/charts/CandlestickChart';
+import { CandlestickChart, CandlestickChartSkeleton, type OHLCV } from '@/design-system/charts/CandlestickChart';
 import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
 import { generateOHLCV, generateScreenerData } from '@/mocks/terminal-data';
+import { useQuote, useOHLCV, useScreener } from '@/hooks/use-market-data';
 
 // ── Tabs ──
 const TABS = ['Workbench', 'Dashboards', 'Screener'] as const;
@@ -39,6 +40,9 @@ export default function StudioPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('Workbench');
 
+  // Selected symbol for workbench
+  const selectedSymbol = 'BBCA.JK'; // TODO: make dynamic when sidebar instrument selection is wired
+
   // Workbench state
   const [search, setSearch] = useState('');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
@@ -52,21 +56,47 @@ export default function StudioPage() {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [sectorFilter, setSectorFilter] = useState('All');
 
-  // Chart data
+  // Real data hooks
+  const { data: quote } = useQuote(selectedSymbol);
+  const { data: rawOhlcv, isLoading: chartLoading } = useOHLCV(selectedSymbol, '3mo');
+
+  // Convert API OHLCV (date string) to CandlestickChart format (epoch seconds)
   const chartData: OHLCV[] = useMemo(() => {
-    const raw = generateOHLCV(9875, 120);
+    const raw = rawOhlcv ?? generateOHLCV(9875, 120);
     return raw.map((d) => ({
-      timestamp: new Date(d.date).getTime() / 1000,
+      timestamp: Math.floor(new Date(d.date).getTime() / 1000),
       open: d.open,
       high: d.high,
       low: d.low,
       close: d.close,
       volume: d.volume,
     }));
-  }, []);
+  }, [rawOhlcv]);
+
+  // Chart header: use real quote with fallback
+  const displayPrice = quote?.price ?? 9875;
+  const displayChange = quote?.change ?? 0;
+  const displayChangePct = quote?.changePct ?? 0;
+  const displayName = quote?.name ?? 'Bank Central Asia';
+  const displaySymbol = quote?.symbol?.replace('.JK', '') ?? selectedSymbol.replace('.JK', '');
 
   // Screener data
-  const screenerRaw = useMemo(() => generateScreenerData(40), []);
+  const { data: realStocks } = useScreener();
+  const screenerRaw = useMemo(() => {
+    if (!realStocks) return generateScreenerData(40);
+    return realStocks.map((s) => ({
+      symbol: s.symbol,
+      name: s.name,
+      price: s.price,
+      change: s.changePct,
+      volume: s.volume,
+      marketCap: s.marketCap,
+      pe: s.peRatio ?? 0,
+      pb: s.pbRatio ?? 0,
+      divYield: s.divYield ?? 0,
+      sector: 'N/A',
+    }));
+  }, [realStocks]);
   const sectors = useMemo(() => ['All', ...Array.from(new Set(screenerRaw.map((r) => r.sector)))], [screenerRaw]);
 
   const screenerData = useMemo(() => {
@@ -148,13 +178,19 @@ export default function StudioPage() {
           {/* Chart area */}
           <div className="flex flex-1 flex-col gap-2 overflow-hidden">
             <div className="flex items-baseline gap-2 font-mono text-sm text-white/80">
-              <span className="font-medium text-white">BBCA</span>
-              <span className="text-white/40">Bank Central Asia</span>
-              <span>9,875</span>
-              <span className="text-green-500">+125 (+1.28%)</span>
+              <span className="font-medium text-white">{displaySymbol}</span>
+              <span className="text-white/40">{displayName}</span>
+              <span>{displayPrice.toLocaleString()}</span>
+              <span className={displayChange >= 0 ? 'text-green-500' : 'text-red-500'}>
+                {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(0)} ({displayChange >= 0 ? '+' : ''}{displayChangePct.toFixed(2)}%)
+              </span>
             </div>
             <div className="flex-1" style={{ minHeight: 350 }}>
-              <CandlestickChart data={chartData} height={350} />
+              {chartLoading ? (
+                <CandlestickChartSkeleton height={350} />
+              ) : (
+                <CandlestickChart data={chartData} height={350} />
+              )}
             </div>
             <div className="flex items-center gap-2">
               {TIME_RANGES.map((r) => (

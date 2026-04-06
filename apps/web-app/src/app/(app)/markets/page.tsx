@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { MiniChart } from '@/design-system/charts/MiniChart';
 import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
+import { useIndices } from '@/hooks/use-market-data';
 import { INDICES, SECTORS, MARKET_BREADTH, generateSparkline } from '@/mocks/terminal-data';
 
 const GAINERS = [
@@ -29,6 +30,8 @@ function fmt(n: number) {
 }
 
 export default function MarketsPage() {
+  const { data: realIndices } = useIndices();
+  const indices = realIndices ?? INDICES;
   const [tab, setTab] = useState<'gainers' | 'losers'>('gainers');
   const movers = tab === 'gainers' ? GAINERS : LOSERS;
   const total = MARKET_BREADTH.advancing + MARKET_BREADTH.declining + MARKET_BREADTH.unchanged;
@@ -39,7 +42,7 @@ export default function MarketsPage() {
 
       {/* Index cards */}
       <div className="grid grid-cols-6 gap-3">
-        {INDICES.map((idx) => {
+        {indices.map((idx) => {
           const positive = idx.changePct >= 0;
           const spark = generateSparkline(20, idx.value, 50);
           return (
