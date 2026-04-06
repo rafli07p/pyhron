@@ -49,7 +49,7 @@ export default function StudioPage() {
     Object.fromEntries(METRIC_SECTIONS.map((s) => [s.label, true])),
   );
   const [timeRange, setTimeRange] = useState('1M');
-  const [indicators, setIndicators] = useState(['SMA 20', 'RSI 14', 'Volume']);
+  const [activeIndicators, setActiveIndicators] = useState<string[]>(['SMA 20', 'Volume']);
 
   // Screener state
   const [sortCol, setSortCol] = useState<string>('symbol');
@@ -110,6 +110,10 @@ export default function StudioPage() {
     return rows;
   }, [screenerRaw, sectorFilter, sortCol, sortDir]);
 
+  function toggleIndicator(name: string) {
+    setActiveIndicators(prev => prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]);
+  }
+
   const toggleSection = (label: string) =>
     setOpenSections((p) => ({ ...p, [label]: !p[label] }));
 
@@ -166,9 +170,17 @@ export default function StudioPage() {
                     {sec.label}
                   </button>
                   {open && filtered.map((item) => (
-                    <div key={item} className="cursor-pointer px-2 py-1.5 text-xs text-white/50 hover:bg-white/[0.03]">
+                    <button
+                      key={item}
+                      onClick={() => toggleIndicator(item)}
+                      className={`block w-full text-left px-2 py-1.5 text-xs ${
+                        activeIndicators.includes(item)
+                          ? 'text-[#2563eb] bg-[#2563eb]/5'
+                          : 'text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
+                      }`}
+                    >
                       {item}
-                    </div>
+                    </button>
                   ))}
                 </div>
               );
@@ -177,12 +189,12 @@ export default function StudioPage() {
 
           {/* Chart area */}
           <div className="flex flex-1 flex-col gap-2 overflow-hidden">
-            <div className="flex items-baseline gap-2 font-mono text-sm text-white/80">
-              <span className="font-medium text-white">{displaySymbol}</span>
-              <span className="text-white/40">{displayName}</span>
-              <span>{displayPrice.toLocaleString()}</span>
-              <span className={displayChange >= 0 ? 'text-green-500' : 'text-red-500'}>
-                {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(0)} ({displayChange >= 0 ? '+' : ''}{displayChangePct.toFixed(2)}%)
+            <div className="flex items-baseline gap-3 px-4 py-2 border-b border-[#1e1e22]">
+              <span className="font-mono font-bold text-sm text-white">{displaySymbol}</span>
+              <span className="text-sm text-white/35">{displayName}</span>
+              <span className="price-display">{displayPrice.toLocaleString('id-ID')}</span>
+              <span className={`font-mono text-sm font-medium ${displayChange >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
+                {displayChange >= 0 ? '+' : ''}{displayChange} ({displayChangePct >= 0 ? '+' : ''}{displayChangePct.toFixed(2)}%)
               </span>
             </div>
             <div className="flex-1" style={{ minHeight: 350 }}>
@@ -205,10 +217,10 @@ export default function StudioPage() {
                 </button>
               ))}
               <div className="ml-auto flex items-center gap-1">
-                {indicators.map((ind) => (
-                  <span key={ind} className="flex items-center gap-1 rounded bg-white/[0.06] px-2 py-0.5 text-[10px] text-white/50">
+                {activeIndicators.map((ind) => (
+                  <span key={ind} className="flex items-center gap-1 rounded border border-[#1e1e22] px-2 py-0.5 text-[10px] text-white/40">
                     {ind}
-                    <button onClick={() => setIndicators((p) => p.filter((x) => x !== ind))} className="ml-0.5 text-white/30 hover:text-white/60">&times;</button>
+                    <button onClick={() => toggleIndicator(ind)} className="text-white/20 hover:text-white/50">&times;</button>
                   </span>
                 ))}
               </div>

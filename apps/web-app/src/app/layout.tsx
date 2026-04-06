@@ -31,7 +31,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SkipToContent />
         <AppProviders>
           {children}
-          {/* Screen reader announcer — status updates after animations */}
           <div id="sr-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
         </AppProviders>
       </body>
