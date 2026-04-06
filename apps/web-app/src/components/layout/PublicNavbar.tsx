@@ -96,7 +96,7 @@ const NAV_ITEMS: NavItem[] = [
 /* ---------- MegaDropdown ---------- */
 function MegaDropdown({ item }: { item: NavItem }) {
   return (
-    <div className="absolute left-0 top-full w-screen border-b border-[var(--border-default)] bg-[rgba(9,9,11,0.97)] backdrop-blur-xl">
+    <div className="absolute left-0 top-full w-screen border-b border-white/[0.08] bg-[#0a1628] shadow-2xl shadow-black/30">
       <div className="mx-auto grid max-w-7xl grid-cols-12 gap-8 px-8 py-8">
         {/* Columns */}
         <div className="col-span-8 grid grid-cols-2 gap-8">
@@ -257,7 +257,6 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 /* ---------- PublicNavbar ---------- */
 export function PublicNavbar() {
   const [visible, setVisible] = useState(true);
-  const [solid, setSolid] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -270,15 +269,11 @@ export function PublicNavbar() {
       const y = window.scrollY;
       const delta = y - lastScrollY.current;
 
-      // Always show at very top
       if (y < 60) {
         setVisible(true);
-        setSolid(false);
       } else {
-        // Scrolling down → hide, scrolling up → show
         if (delta > 5) setVisible(false);
         else if (delta < -5) setVisible(true);
-        setSolid(true);
       }
 
       lastScrollY.current = y;
@@ -307,8 +302,6 @@ export function PublicNavbar() {
     closeTimer.current = setTimeout(() => setActiveDropdown(null), 200);
   }, []);
 
-  const hasBg = solid || !!activeDropdown;
-
   // Keep visible when dropdown is open
   const isVisible = visible || !!activeDropdown;
 
@@ -318,53 +311,53 @@ export function PublicNavbar() {
         ref={navRef}
         className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
           isVisible ? 'top-0' : '-top-full'
-        } ${
-          hasBg
-            ? 'border-b border-[var(--border-default)] bg-[rgba(9,9,11,0.95)] backdrop-blur-xl backdrop-saturate-150 shadow-lg shadow-black/10'
-            : 'bg-transparent'
-        }`}
+        } bg-gradient-to-r from-[#0a1628] via-[#0d1e3a] to-[#0f2040] shadow-lg shadow-black/20`}
       >
-        {/* Utility bar */}
-        <div className="hidden border-b border-white/[0.06] lg:block">
-          <div className="mx-auto flex h-8 max-w-7xl items-center justify-end gap-4 px-8 text-[11px] text-[var(--text-tertiary)]">
-            <Link href="/contact" className="transition-colors hover:text-[var(--text-secondary)]">
+        {/* Utility bar — MSCI style: right-aligned links, gold accent */}
+        <div className="hidden border-b border-white/[0.08] lg:block">
+          <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-end gap-5 px-8 text-[12px]">
+            <Link href="/" className="text-[#c9a84c] transition-colors hover:text-[#e8c97a]">
+              Global
+            </Link>
+            <span className="text-white/15">|</span>
+            <Link href="/contact" className="text-white/50 transition-colors hover:text-white/80">
               Support
             </Link>
-            <span className="text-white/10">|</span>
-            <Link href="/login" className="transition-colors hover:text-[var(--text-secondary)]">
+            <span className="text-white/15">|</span>
+            <Link href="/login" className="text-white/50 transition-colors hover:text-white/80">
               Client Log In
             </Link>
           </div>
         </div>
 
-        {/* Main nav */}
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6 lg:px-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+        {/* Main nav — taller, bigger text, MSCI proportions */}
+        <div className="mx-auto flex h-[60px] max-w-[1400px] items-center justify-between px-6 lg:px-8">
+          {/* Logo — bigger */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <svg
               viewBox="0 0 24 24"
-              className="h-5 w-5 text-[var(--accent-400)]"
+              className="h-6 w-6 text-white/50"
               fill="none"
               stroke="currentColor"
-              strokeWidth={1.5}
+              strokeWidth={1.2}
             >
               <circle cx="12" cy="12" r="10" />
               <ellipse cx="12" cy="12" rx="4" ry="10" />
               <path d="M2 12h20" />
             </svg>
-            <span className="text-sm font-light tracking-[0.25em] text-[var(--text-primary)]">
+            <span className="text-[17px] font-semibold tracking-[0.18em] text-white">
               PYHRON
             </span>
           </Link>
 
-          {/* Desktop nav items */}
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
+          {/* Desktop nav items — bigger text, more spacing */}
+          <nav className="hidden items-center gap-0.5 lg:flex ml-10" aria-label="Main navigation">
             {NAV_ITEMS.map((item) =>
               item.href ? (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                  className="rounded-md px-4 py-2 text-[14px] font-normal text-white/70 transition-colors hover:text-white"
                 >
                   {item.label}
                 </Link>
@@ -375,10 +368,10 @@ export function PublicNavbar() {
                   onMouseLeave={scheduleClose}
                 >
                   <button
-                    className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                    className={`inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-[14px] font-normal transition-colors ${
                       activeDropdown === item.label
-                        ? 'text-[var(--text-primary)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        ? 'text-white'
+                        : 'text-white/70 hover:text-white'
                     }`}
                     onClick={() =>
                       setActiveDropdown(activeDropdown === item.label ? null : item.label)
@@ -386,7 +379,7 @@ export function PublicNavbar() {
                   >
                     {item.label}
                     <ChevronDown
-                      className={`h-3 w-3 transition-transform ${
+                      className={`h-3.5 w-3.5 transition-transform ${
                         activeDropdown === item.label ? 'rotate-180' : ''
                       }`}
                     />
@@ -397,23 +390,30 @@ export function PublicNavbar() {
             )}
           </nav>
 
-          {/* Right side */}
+          {/* Right side — MSCI style: search pill + CTA button */}
           <div className="flex items-center gap-3">
-            <button
-              aria-label="Search"
-              className="text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
-            >
-              <Search className="h-4 w-4" strokeWidth={1.5} />
-            </button>
+            {/* Search input pill — MSCI style */}
+            <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 py-1.5 w-[180px]">
+              <Search className="h-3.5 w-3.5 text-white/40" strokeWidth={1.5} />
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full bg-transparent text-[13px] text-white placeholder-white/40 outline-none"
+                aria-label="Search"
+              />
+            </div>
+
+            {/* CTA button — MSCI "Get in touch" style */}
             <a
               href="/dashboard"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden rounded-full bg-[var(--accent-500)] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[var(--accent-600)] lg:inline-flex lg:items-center lg:gap-1"
+              className="hidden rounded-full bg-[#2563eb] px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex lg:items-center lg:gap-1"
             >
-              Launch Terminal
-              <span aria-hidden="true" className="ml-0.5">&rarr;</span>
+              Get in touch
             </a>
+
+            {/* Mobile hamburger */}
             <button
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
