@@ -36,7 +36,7 @@ export default function LandingPage() {
       <HeroSection />
 
       {/* Trust Metrics */}
-      <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-16">
+      <section className="border-t border-black/[0.06] bg-white py-16">
         <ScrollReveal preset="fadeUp" stagger={0.15} className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 lg:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="text-center">
@@ -45,9 +45,9 @@ export default function LandingPage() {
                 prefix={s.prefix}
                 suffix={s.suffix}
                 decimals={s.decimals}
-                className="text-4xl font-mono font-semibold text-[var(--text-primary)]"
+                className="text-4xl font-mono font-semibold text-black"
               />
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">{s.label}</p>
+              <p className="mt-2 text-sm text-black/50">{s.label}</p>
             </div>
           ))}
         </ScrollReveal>
@@ -56,23 +56,23 @@ export default function LandingPage() {
       {/* Trusted By / Data Partners */}
 
       {/* Platform Capabilities */}
-      <section className="bg-[var(--surface-0)] py-24">
+      <section className="bg-white py-24">
         <div className="mx-auto max-w-6xl px-6">
           <ScrollReveal>
-            <h2 className="text-2xl font-normal tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-2xl font-normal tracking-tight text-black">
               Platform Capabilities
             </h2>
-            <p className="mt-2 max-w-lg text-sm text-[var(--text-secondary)]">
+            <p className="mt-2 max-w-lg text-sm text-black/50">
               Everything you need for systematic investing in Indonesian markets
             </p>
           </ScrollReveal>
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {capabilities.map((cap, i) => (
               <ScrollReveal key={cap.title} preset="fadeUp" delay={i * 0.1}>
-                <div className="group rounded-lg border border-[var(--border-default)] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--accent-500)] hover:shadow-lg hover:shadow-[var(--accent-500)]/5">
-                  <cap.icon className="h-7 w-7 text-[var(--accent-500)]" strokeWidth={1.5} />
-                  <h3 className="mt-4 text-sm font-semibold text-[var(--text-primary)]">{cap.title}</h3>
-                  <p className="mt-2 text-sm text-[var(--text-tertiary)]">{cap.desc}</p>
+                <div className="group rounded-lg border border-black/[0.06] bg-white p-6 transition-all duration-200 hover:-translate-y-1 hover:border-[#2563eb]/30 hover:shadow-md">
+                  <cap.icon className="h-7 w-7 text-[#2563eb]" strokeWidth={1.5} />
+                  <h3 className="mt-4 text-sm font-semibold text-black">{cap.title}</h3>
+                  <p className="mt-2 text-sm text-black/50">{cap.desc}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -81,10 +81,10 @@ export default function LandingPage() {
       </section>
 
       {/* Research Previews */}
-      <section className="border-t border-[var(--border-default)] bg-[var(--surface-1)] py-24">
+      <section className="border-t border-black/[0.06] bg-[#f9f9f9] py-24">
         <div className="mx-auto max-w-6xl px-6">
           <ScrollReveal>
-            <h2 className="text-2xl font-normal tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-2xl font-normal tracking-tight text-black">
               Latest Research
             </h2>
           </ScrollReveal>
@@ -93,15 +93,15 @@ export default function LandingPage() {
               <Link
                 key={article.title}
                 href={article.href}
-                className="group rounded-lg border border-[var(--border-default)] p-5 transition-colors hover:border-[var(--accent-500)]"
+                className="group rounded-lg border border-black/[0.06] bg-white p-5 transition-all hover:border-[#2563eb]/30 hover:shadow-md"
               >
-                <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--accent-500)]">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#2563eb]">
                   {article.tag}
                 </span>
-                <h3 className="mt-2 text-sm font-medium leading-snug text-[var(--text-primary)] group-hover:text-[var(--accent-500)]">
+                <h3 className="mt-2 text-sm font-medium leading-snug text-black group-hover:text-[#2563eb]">
                   {article.title}
                 </h3>
-                <span className="mt-3 block text-xs text-[var(--text-tertiary)]">Read More &rarr;</span>
+                <span className="mt-3 block text-xs text-black/40">Read More &rarr;</span>
               </Link>
             ))}
           </ScrollReveal>
@@ -109,21 +109,21 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[var(--surface-0)] py-20 text-center">
+      <section className="bg-white py-20 text-center">
         <ScrollReveal>
-          <h2 className="text-2xl font-normal text-[var(--text-primary)]">
+          <h2 className="text-2xl font-normal text-black">
             Ready to elevate your research?
           </h2>
           <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 bg-[var(--accent-500)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-600)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[#2563eb] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1d4ed8]"
             >
               Create Free Account &rarr;
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 border border-[var(--border-default)] px-6 py-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+              className="inline-flex items-center gap-2 rounded-full border border-black/15 px-6 py-3 text-sm font-medium text-black/60 transition-colors hover:text-black"
             >
               Schedule Demo &rarr;
             </Link>
@@ -131,7 +131,7 @@ export default function LandingPage() {
         </ScrollReveal>
       </section>
 
-      <FinancialDisclaimer className="border-t border-[var(--border-default)] bg-[var(--surface-0)] px-6 py-6" />
+      <FinancialDisclaimer className="border-t border-black/[0.06] bg-[#f5f5f5] px-6 py-6" />
     </>
   );
 }
