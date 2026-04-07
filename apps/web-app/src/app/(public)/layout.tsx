@@ -42,18 +42,18 @@ function PublicFooter() {
   ];
 
   return (
-    <footer className="border-t border-[var(--border-default)] bg-[var(--surface-1)]">
+    <footer className="border-t border-black/[0.06] bg-[#f5f5f5]">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
-            <p className="text-sm font-normal tracking-[0.2em] text-[var(--text-primary)]">PYHRON</p>
-            <p className="mt-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
+            <p className="text-sm font-semibold tracking-[0.2em] text-black">PYHRON</p>
+            <p className="mt-2 text-xs leading-relaxed text-black/40">
               Quantitative research and algorithmic trading infrastructure for Indonesian capital markets.
             </p>
           </div>
           {groups.map((group) => (
             <div key={group.title}>
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-black/30">
                 {group.title}
               </h3>
               <ul className="mt-3 space-y-2">
@@ -61,7 +61,7 @@ function PublicFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                      className="text-sm text-black/50 transition-colors hover:text-black"
                     >
                       {link.label}
                     </Link>
@@ -71,8 +71,8 @@ function PublicFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-8 border-t border-[var(--border-default)] pt-8">
-          <p className="text-xs text-[var(--text-tertiary)]">
+        <div className="mt-8 border-t border-black/[0.06] pt-8">
+          <p className="text-xs text-black/30">
             &copy; 2025 Pyhron. All rights reserved. Not registered with OJK.
           </p>
         </div>
