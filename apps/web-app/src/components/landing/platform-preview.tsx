@@ -31,7 +31,7 @@ export function PlatformPreview() {
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#6B7280]">
               The Terminal
             </p>
-            <h2 className="mt-4 text-3xl font-light tracking-tight text-[#1A1A2E] lg:text-4xl">
+            <h2 className="mt-4 text-3xl font-normal tracking-tight text-[#1A1A2E] lg:text-4xl">
               Bloomberg-grade analytics, built for Indonesia
             </h2>
             <ul className="mt-8 space-y-4">

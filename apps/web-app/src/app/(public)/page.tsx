@@ -6,7 +6,6 @@ import { HeroSection } from '@/components/hero/HeroSection';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 import { CountUp } from '@/components/motion/CountUp';
 import { FinancialDisclaimer } from '@/components/common/FinancialDisclaimer';
-import { TrustedBy } from '@/components/landing/TrustedBy';
 
 const stats = [
   { end: 15.2, prefix: 'IDR ', suffix: 'T', decimals: 1, label: 'Data Points' },
@@ -33,10 +32,8 @@ const articles = [
 export default function LandingPage() {
   return (
     <>
-      {/* Hero — pulled up behind the fixed header */}
-      <div className="-mt-[88px]">
-        <HeroSection />
-      </div>
+      {/* Hero — full viewport, header overlays on top */}
+      <HeroSection />
 
       {/* Trust Metrics */}
       <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-16">
@@ -57,13 +54,12 @@ export default function LandingPage() {
       </section>
 
       {/* Trusted By / Data Partners */}
-      <TrustedBy />
 
       {/* Platform Capabilities */}
       <section className="bg-[var(--surface-0)] py-24">
         <div className="mx-auto max-w-6xl px-6">
           <ScrollReveal>
-            <h2 className="text-2xl font-light tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-2xl font-normal tracking-tight text-[var(--text-primary)]">
               Platform Capabilities
             </h2>
             <p className="mt-2 max-w-lg text-sm text-[var(--text-secondary)]">
@@ -88,7 +84,7 @@ export default function LandingPage() {
       <section className="border-t border-[var(--border-default)] bg-[var(--surface-1)] py-24">
         <div className="mx-auto max-w-6xl px-6">
           <ScrollReveal>
-            <h2 className="text-2xl font-light tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-2xl font-normal tracking-tight text-[var(--text-primary)]">
               Latest Research
             </h2>
           </ScrollReveal>
@@ -112,24 +108,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Tech Stack */}
-      <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-12">
-        <div className="mx-auto max-w-5xl px-6">
-          <p className="text-center text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
-            Built with
-          </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-6 text-sm text-[var(--text-tertiary)]">
-            {['Python', 'FastAPI', 'PostgreSQL', 'Kafka', 'PyTorch', 'Next.js', 'TypeScript', 'Redis'].map((tech) => (
-              <span key={tech} className="font-mono">{tech}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="bg-[var(--surface-0)] py-20 text-center">
         <ScrollReveal>
-          <h2 className="text-2xl font-light text-[var(--text-primary)]">
+          <h2 className="text-2xl font-normal text-[var(--text-primary)]">
             Ready to elevate your research?
           </h2>
           <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

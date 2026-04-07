@@ -43,7 +43,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <p className="text-lg font-light tracking-[0.15em] text-white">PYHRON</p>
+            <p className="text-lg font-normal tracking-[0.15em] text-white">PYHRON</p>
             <p className="mt-2 text-xs leading-relaxed text-white/40">
               Quantitative research and algorithmic trading infrastructure for Indonesian capital markets.
             </p>

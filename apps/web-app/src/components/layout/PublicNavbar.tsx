@@ -175,7 +175,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--surface-0)]">
       <div className="flex h-14 items-center justify-between px-6">
-        <Link href="/" onClick={onClose} className="text-sm font-light tracking-[0.25em] text-[var(--text-primary)]">
+        <Link href="/" onClick={onClose} className="text-sm font-normal tracking-[0.25em] text-[var(--text-primary)]">
           PYHRON
         </Link>
         <button onClick={onClose} aria-label="Close menu" className="text-[var(--text-secondary)]">
@@ -257,23 +257,25 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 /* ---------- PublicNavbar ---------- */
 export function PublicNavbar() {
   const [visible, setVisible] = useState(true);
+  const [isTop, setIsTop] = useState(true);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const lastScrollY = useRef(0);
 
-  // MSCI-style scroll: hide on scroll down, show on scroll up
+  // MSCI-style: transparent at top, hide on scroll down, solid on scroll up
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
-      const delta = y - lastScrollY.current;
+      setIsTop(y < 10);
 
-      if (y < 60) {
-        setVisible(true);
+      if (Math.abs(y - lastScrollY.current) < 5) return;
+
+      if (y > lastScrollY.current && y > 100) {
+        setVisible(false);
       } else {
-        if (delta > 5) setVisible(false);
-        else if (delta < -5) setVisible(true);
+        setVisible(true);
       }
 
       lastScrollY.current = y;
@@ -309,9 +311,13 @@ export function PublicNavbar() {
     <>
       <header
         ref={navRef}
-        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
-          isVisible ? 'top-0' : '-top-full'
-        } bg-gradient-to-r from-[#0a1628] via-[#0d1e3a] to-[#0f2040] shadow-lg shadow-black/20`}
+        className={`fixed left-0 right-0 z-50 transition-transform duration-300 ${
+          isVisible ? 'translate-y-0' : '-translate-y-full'
+        } ${
+          isTop && !activeDropdown
+            ? 'bg-transparent'
+            : 'bg-gradient-to-r from-[#0a1628] via-[#0d1e3a] to-[#0f2040] shadow-lg shadow-black/20 border-b border-white/[0.06]'
+        }`}
       >
         {/* Utility bar — MSCI style: right-aligned links, gold accent */}
         <div className="hidden border-b border-white/[0.08] lg:block">
