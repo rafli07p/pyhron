@@ -72,7 +72,7 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-[420px] rounded-xl border border-white/[0.06] bg-[#18181b]/90 p-8 shadow-2xl">
-        <h1 className="text-2xl font-light text-white">Login</h1>
+        <h1 className="text-2xl font-normal text-white">Login</h1>
         <p className="mt-1 text-sm text-white/40">Secure access to Pyhron quantitative research platform</p>
 
         {reason === 'session_expired' && (

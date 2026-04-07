@@ -16,7 +16,7 @@ export function Hero() {
           </p>
 
           {/* Headline */}
-          <h1 className="mt-6 text-[clamp(2.5rem,6vw,5.5rem)] font-light leading-[1.05] tracking-tight text-[#0A1628]">
+          <h1 className="mt-6 text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[1.05] tracking-tight text-[#0A1628]">
             Where Indonesian
             <br />
             Markets Meet

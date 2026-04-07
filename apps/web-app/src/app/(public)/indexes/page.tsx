@@ -40,7 +40,7 @@ export default function IndexesPage() {
       {/* Hero */}
       <section className="bg-[var(--surface-0)] py-24">
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <h1 className="text-3xl font-light text-[var(--text-primary)]">
+          <h1 className="text-3xl font-normal text-[var(--text-primary)]">
             IDX Market Indexes and Benchmarks
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)]">

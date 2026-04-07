@@ -32,7 +32,7 @@ export function Features() {
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#6B7280]">
           What We Do
         </p>
-        <h2 className="mt-4 text-3xl font-light tracking-tight text-[#1A1A2E] lg:text-4xl">
+        <h2 className="mt-4 text-3xl font-normal tracking-tight text-[#1A1A2E] lg:text-4xl">
           Infrastructure for systematic investing
         </h2>
 
