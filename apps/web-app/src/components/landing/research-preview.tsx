@@ -36,7 +36,7 @@ export function ResearchPreview() {
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#C9A84C]">
               Research & Insights
             </p>
-            <h2 className="mt-4 text-3xl font-light tracking-tight text-white lg:text-4xl">
+            <h2 className="mt-4 text-3xl font-normal tracking-tight text-white lg:text-4xl">
               Latest publications
             </h2>
           </div>

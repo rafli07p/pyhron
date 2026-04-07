@@ -15,7 +15,7 @@ export function CtaBanner() {
   return (
     <section className="bg-[#C9A84C] py-20">
       <div className="mx-auto max-w-2xl px-6 text-center">
-        <h2 className="text-3xl font-light tracking-tight text-[#0A1628] lg:text-4xl">
+        <h2 className="text-3xl font-normal tracking-tight text-[#0A1628] lg:text-4xl">
           Ready to trade with institutional precision?
         </h2>
         <p className="mt-4 text-sm text-[#0A1628]/70">

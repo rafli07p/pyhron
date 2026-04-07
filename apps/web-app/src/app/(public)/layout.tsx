@@ -46,7 +46,7 @@ function PublicFooter() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
-            <p className="text-sm font-light tracking-[0.2em] text-[var(--text-primary)]">PYHRON</p>
+            <p className="text-sm font-normal tracking-[0.2em] text-[var(--text-primary)]">PYHRON</p>
             <p className="mt-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
               Quantitative research and algorithmic trading infrastructure for Indonesian capital markets.
             </p>
@@ -86,7 +86,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     <SmoothScrollProvider>
       <div className="flex min-h-screen flex-col">
         <PublicNavbar />
-        <main id="main-content" className="flex-1 pt-[88px]">{children}</main>
+        <main id="main-content" className="flex-1">{children}</main>
         <PublicFooter />
       </div>
     </SmoothScrollProvider>

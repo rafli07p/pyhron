@@ -78,7 +78,7 @@ export function HeroSection() {
       {/* Content layer */}
       <div className="relative z-[2] flex h-full w-full flex-col justify-center px-6 pb-24 lg:px-20" role="banner">
         <div className="max-w-4xl">
-          <h1 className="text-5xl font-light leading-[1.05] tracking-tight text-[var(--text-primary)] md:text-7xl lg:text-[5.5rem]">
+          <h1 className="text-5xl font-normal leading-[1.05] tracking-tight text-[var(--text-primary)] md:text-7xl lg:text-[5.5rem]">
             <span className="hero-line block">Institutional-Grade</span>
             <span className="hero-line block">Quantitative Research</span>
             <span className="hero-line block">for Indonesia&apos;s</span>
