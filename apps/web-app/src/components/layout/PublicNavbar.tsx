@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, X, Menu, ChevronDown } from 'lucide-react';
-
-/* ═══ NAV DATA ═══ */
+import { Search, X, Menu, ChevronDown } from 'lucide-react';/* ═══ NAV DATA ═══ */
 interface NavColumn { title?: string; items: { label: string; href: string }[] }
 interface NavItem {
   label: string;
@@ -208,6 +206,78 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
   );
 }
 
+/* ═══ EXPANDABLE SEARCH (MSCI-style) ═══ */
+function ExpandableSearch() {
+  const [expanded, setExpanded] = useState(false);
+  const [query, setQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (expanded && inputRef.current) inputRef.current.focus();
+  }, [expanded]);
+
+  useEffect(() => {
+    if (!expanded) return;
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [expanded]);
+
+  const popular = ['BBCA', 'IHSG', 'momentum', 'factor', 'screener'];
+
+  if (!expanded) {
+    return (
+      <button onClick={() => setExpanded(true)} className="hidden h-9 w-[160px] items-center gap-2 rounded-full border border-black/15 px-4 text-[13px] text-black/40 transition-colors hover:border-black/25 lg:flex">
+        <Search className="h-4 w-4 shrink-0" />
+        <span>Search</span>
+      </button>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="absolute inset-x-0 top-0 z-50 hidden h-[60px] items-center justify-center bg-white px-8 lg:flex">
+      <div className="relative w-full max-w-[700px]">
+        <div className="flex h-10 items-center gap-2 rounded-full border-2 border-[#2563eb] bg-white px-4">
+          <Search className="h-4 w-4 shrink-0 text-black/30" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
+              if (e.key === 'Escape') { setExpanded(false); setQuery(''); }
+            }}
+            placeholder="Search"
+            className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
+          />
+          {query && <button onClick={() => setQuery('')} className="text-[12px] text-black/30 hover:text-black/60">Clear</button>}
+          <button onClick={() => { setExpanded(false); setQuery(''); }} className="text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="absolute left-0 right-0 top-12 rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
+          {!query ? (
+            <>
+              <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
+              {popular.map((s) => (
+                <button key={s} onClick={() => { setQuery(s); }} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
+                  <Search className="h-3.5 w-3.5 text-black/20" />
+                  {s}
+                </button>
+              ))}
+            </>
+          ) : (
+            <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ═══ PUBLIC NAVBAR ═══ */
 export function PublicNavbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -285,19 +355,7 @@ export function PublicNavbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden h-9 w-[200px] items-center gap-2 rounded-full border border-black/15 px-4 text-[13px] text-black/40 lg:flex">
-              <Search className="h-4 w-4 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black/40"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value) {
-                    window.location.href = `/search?q=${encodeURIComponent(e.currentTarget.value)}`;
-                  }
-                }}
-              />
-            </div>
+            <ExpandableSearch />
             <Link href="/contact" className="hidden h-9 items-center rounded-full bg-[#2563eb] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
               Get in touch
             </Link>
