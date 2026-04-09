@@ -9,13 +9,18 @@ export const metadata: Metadata = {
     default: 'Pyhron',
     template: '%s — Pyhron',
   },
-  description:
-    'Bringing Clarity to Investment Decisions',
+  description: 'Bringing Clarity to Investment Decisions',
   keywords: [
     'quantitative trading', 'algorithmic trading', 'IDX', 'Indonesia Stock Exchange',
     'quant research', 'backtesting', 'risk management', 'IHSG',
   ],
+  icons: {
+    icon: '/logos/favicon.ico',
+    shortcut: '/logos/favicon-32x32.png',
+    apple: '/logos/apple-touch-icon.png',
+  },
   openGraph: {
+    images: [{ url: '/logos/og-image.png', width: 1200, height: 630 }],
     type: 'website',
     locale: 'id_ID',
     alternateLocale: 'en_US',
@@ -26,14 +31,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" suppressHydrationWarning>
+      <html lang="id" suppressHydrationWarning>
       <body className="min-h-screen font-sans antialiased">
-        <SkipToContent />
-        <AppProviders>
-          {children}
-          <div id="sr-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
-        </AppProviders>
+      <SkipToContent />
+      <AppProviders>
+        {children}
+        <div id="sr-announcer" aria-live="polite" aria-atomic="true" className="sr-only" role="status" />
+      </AppProviders>
       </body>
-    </html>
+      </html>
   );
 }
