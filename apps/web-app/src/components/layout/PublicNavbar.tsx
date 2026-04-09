@@ -19,31 +19,31 @@ const NAV: NavItem[] = [
     label: 'Data & Analytics',
     columns: [
       { title: 'By topic', items: [
-        { label: 'Market Data', href: '/data/catalog' },
-        { label: 'Factor Analysis', href: '/studio/factors' },
-        { label: 'Fundamental Data', href: '/data/catalog' },
-        { label: 'Technical Signals', href: '/research/signals' },
-        { label: 'ML-Driven Signals', href: '/research/signals' },
-        { label: 'Macro & Economic', href: '/data/catalog' },
+        { label: 'Market Data', href: '/data/market-data' },
+        { label: 'Factor Analysis', href: '/data/factors' },
+        { label: 'Fundamental Data', href: '/data/fundamentals' },
+        { label: 'Technical Signals', href: '/data/technicals' },
+        { label: 'ML-Driven Signals', href: '/data/ml-signals' },
+        { label: 'Macro & Economic', href: '/data/macro' },
       ] },
       { title: 'By asset class', items: [
-        { label: 'Equities', href: '/markets' },
-        { label: 'Fixed Income', href: '/data/catalog' },
-        { label: 'Money Market', href: '/data/catalog' },
-        { label: 'Sukuk', href: '/data/catalog' },
+        { label: 'Equities', href: '/data/equities' },
+        { label: 'Fixed Income', href: '/data/fixed-income' },
+        { label: 'Money Market', href: '/data' },
+        { label: 'Sukuk', href: '/data' },
       ] },
     ],
-    featured: { type: 'Featured product', title: 'IDX Market Screener', desc: 'Filter and rank 800+ IDX instruments by fundamental and technical criteria.', cta: 'Explore now', ctaHref: '/markets' },
+    featured: { type: 'Featured product', title: 'IDX Market Screener', desc: 'Filter and rank 800+ IDX instruments by fundamental and technical criteria.', cta: 'Explore now', ctaHref: '/data/equities' },
     footer: { label: 'View all data products', href: '/data' },
   },
   {
     label: 'Indexes',
     columns: [
       { title: 'Index categories', items: [
-        { label: 'Market Cap', href: '/indexes' },
-        { label: 'Factors', href: '/indexes' },
-        { label: 'Sector', href: '/indexes' },
-        { label: 'Shariah-Compliant', href: '/indexes' },
+        { label: 'Market Cap', href: '/indexes/market-cap' },
+        { label: 'Factors', href: '/indexes/factors' },
+        { label: 'Sector', href: '/indexes/sector' },
+        { label: 'Shariah-Compliant', href: '/indexes/shariah' },
         { label: 'Custom', href: '/indexes' },
       ] },
       { title: 'Index resources', items: [
@@ -59,11 +59,11 @@ const NAV: NavItem[] = [
     label: 'Research & Insights',
     columns: [
       { title: 'By theme', items: [
-        { label: 'Quantitative Strategies', href: '/research' },
-        { label: 'Machine Learning', href: '/research' },
-        { label: 'Risk Management', href: '/research' },
+        { label: 'Quantitative Strategies', href: '/research/quant' },
+        { label: 'Machine Learning', href: '/research/ml' },
+        { label: 'Risk Management', href: '/research/risk' },
         { label: 'Market Microstructure', href: '/research' },
-        { label: 'Macro & Rates', href: '/research' },
+        { label: 'Macro & Rates', href: '/research/macro' },
       ] },
       { title: 'By asset class', items: [
         { label: 'Equities', href: '/research' },
@@ -87,7 +87,7 @@ const NAV: NavItem[] = [
         { label: 'Status', href: '/status' },
       ] },
       { title: 'Resources', items: [
-        { label: 'API Documentation', href: '/data/api' },
+        { label: 'API Documentation', href: '/methodology' },
         { label: 'Help Center', href: '/contact' },
       ] },
     ],
@@ -177,7 +177,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           </div>
         ))}
         <div className="mt-6 space-y-3">
-          <a href="/dashboard" target="_blank" rel="noopener noreferrer" onClick={onClose} className="block w-full rounded-lg bg-[#2563eb] py-3 text-center text-sm font-medium text-white">Launch Terminal</a>
+          <a href="/login" target="_blank" rel="noopener noreferrer" onClick={onClose} className="block w-full rounded-lg bg-[#2563eb] py-3 text-center text-sm font-medium text-white">Launch Terminal</a>
           <Link href="/contact" onClick={onClose} className="block w-full rounded-lg border border-black/10 py-3 text-center text-sm text-black/60">Get in touch</Link>
         </div>
       </nav>
@@ -285,9 +285,18 @@ export function PublicNavbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden h-9 w-[160px] items-center gap-2 rounded-full border border-black/15 px-4 text-[13px] text-black/40 lg:flex">
-              <Search className="h-4 w-4" />
-              <span>Search</span>
+            <div className="hidden h-9 w-[200px] items-center gap-2 rounded-full border border-black/15 px-4 text-[13px] text-black/40 lg:flex">
+              <Search className="h-4 w-4 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black/40"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.currentTarget.value) {
+                    window.location.href = `/search?q=${encodeURIComponent(e.currentTarget.value)}`;
+                  }
+                }}
+              />
             </div>
             <Link href="/contact" className="hidden h-9 items-center rounded-full bg-[#2563eb] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
               Get in touch
