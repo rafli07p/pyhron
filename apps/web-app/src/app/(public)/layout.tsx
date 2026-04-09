@@ -84,9 +84,9 @@ function PublicFooter() {
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <SmoothScrollProvider>
-      <div className="flex min-h-screen flex-col">
+      <div className="light flex min-h-screen flex-col bg-white text-black">
         <PublicNavbar />
-        <main id="main-content" className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1 pt-[88px]">{children}</main>
         <PublicFooter />
       </div>
     </SmoothScrollProvider>

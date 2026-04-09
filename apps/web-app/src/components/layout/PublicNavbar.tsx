@@ -210,25 +210,10 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
 
 /* ═══ PUBLIC NAVBAR ═══ */
 export function PublicNavbar() {
-  const [scrollState, setScrollState] = useState<'top' | 'hidden' | 'visible'>('top');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
-    function onScroll() {
-      const y = window.scrollY;
-      const down = y > lastScrollY.current;
-      if (y < 10) setScrollState('top');
-      else if (down && y > 100) setScrollState('hidden');
-      else if (!down) setScrollState('visible');
-      lastScrollY.current = y;
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -243,45 +228,39 @@ export function PublicNavbar() {
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  // Dark text on hero (transparent bg), light text when scrolled (white bg)
-  const dark = scrollState === 'top' && !activeDropdown;
   const closeDropdown = () => setActiveDropdown(null);
 
   return (
     <>
       <header
         ref={navRef}
-        className={`fixed left-0 right-0 z-50 transition-transform duration-300 ${
-          scrollState === 'hidden' && !activeDropdown ? '-translate-y-full' : 'translate-y-0'
-        } ${
-          dark ? 'bg-transparent' : 'bg-white shadow-sm'
-        }`}
+        className="fixed left-0 right-0 z-50 bg-white shadow-sm"
       >
-        {/* Utility bar — NO border */}
+        {/* Utility bar */}
         <div className="hidden lg:block">
           <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
-            <Link href="/contact" className={`px-3 text-[12px] transition-colors ${dark ? 'text-white/50 hover:text-white/80' : 'text-black/40 hover:text-black/70'}`}>
+            <Link href="/contact" className="px-3 text-[12px] text-black/40 transition-colors hover:text-black/70">
               Support
             </Link>
-            <span className={dark ? 'text-white/15' : 'text-black/15'}>|</span>
-            <ClientLoginDropdown dark={dark} />
+            <span className="text-black/15">|</span>
+            <ClientLoginDropdown dark={false} />
           </div>
         </div>
 
         {/* Main nav */}
         <div className="relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between px-6 lg:px-8">
           <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <svg viewBox="0 0 24 24" className={`h-6 w-6 ${dark ? 'text-white/50' : 'text-black/30'}`} fill="none" stroke="currentColor" strokeWidth={1.2}>
+            <svg viewBox="0 0 24 24" className="h-6 w-6 text-black/30" fill="none" stroke="currentColor" strokeWidth={1.2}>
               <circle cx="12" cy="12" r="10" /><ellipse cx="12" cy="12" rx="4" ry="10" /><path d="M2 12h20" />
             </svg>
-            <span className={`text-[17px] font-semibold tracking-[0.18em] ${dark ? 'text-white' : 'text-black'}`}>PYHRON</span>
+            <span className="text-[17px] font-semibold tracking-[0.18em] text-black">PYHRON</span>
           </Link>
 
           {/* Desktop nav — CLICK to open dropdown */}
           <nav className="ml-10 hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
             {NAV.map((item) =>
               item.href ? (
-                <Link key={item.label} href={item.href} className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${dark ? 'text-white/70 hover:text-white' : 'text-black/60 hover:text-black'}`}>
+                <Link key={item.label} href={item.href} className="flex h-[60px] items-center px-4 text-[14px] text-black/60 transition-colors hover:text-black">
                   {item.label}
                 </Link>
               ) : (
@@ -290,8 +269,8 @@ export function PublicNavbar() {
                     onClick={() => setActiveDropdown(activeDropdown === item.label ? null : item.label)}
                     className={`flex h-[60px] items-center gap-1.5 px-4 text-[14px] transition-colors ${
                       activeDropdown === item.label
-                        ? (dark ? 'text-white' : 'text-black')
-                        : (dark ? 'text-white/70 hover:text-white/90' : 'text-black/60 hover:text-black/80')
+                        ? 'text-black'
+                        : 'text-black/60 hover:text-black/80'
                     }`}
                   >
                     {item.label}
@@ -306,14 +285,14 @@ export function PublicNavbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className={`hidden h-9 w-[160px] items-center gap-2 rounded-full border px-4 text-[13px] lg:flex ${dark ? 'border-white/15 text-white/40' : 'border-black/15 text-black/40'}`}>
+            <div className="hidden h-9 w-[160px] items-center gap-2 rounded-full border border-black/15 px-4 text-[13px] text-black/40 lg:flex">
               <Search className="h-4 w-4" />
               <span>Search</span>
             </div>
             <Link href="/contact" className="hidden h-9 items-center rounded-full bg-[#2563eb] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
               Get in touch
             </Link>
-            <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className={`lg:hidden ${dark ? 'text-white/60' : 'text-black/60'}`}><Menu className="h-5 w-5" /></button>
+            <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="text-black/60 lg:hidden"><Menu className="h-5 w-5" /></button>
           </div>
         </div>
       </header>
