@@ -32,8 +32,10 @@ const articles = [
 export default function LandingPage() {
   return (
     <>
-      {/* Hero — full viewport, header overlays on top */}
-      <HeroSection />
+      {/* Hero — full viewport, pulled up behind fixed header */}
+      <div className="-mt-[88px]">
+        <HeroSection />
+      </div>
 
       {/* Trust Metrics */}
       <section className="border-t border-black/[0.06] bg-white py-16">
