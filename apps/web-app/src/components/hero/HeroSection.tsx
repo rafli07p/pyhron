@@ -76,7 +76,7 @@ export function HeroSection() {
       </div>
 
       {/* Content layer */}
-      <div className="relative z-[2] flex h-full w-full flex-col justify-center px-6 pb-24 lg:px-20" role="banner">
+      <div className="relative z-[2] flex h-full w-full flex-col justify-center px-6 pb-24 pt-32 lg:px-20" role="banner">
         <div className="max-w-4xl">
           <h1 className="text-5xl font-normal leading-[1.05] tracking-tight text-[var(--text-primary)] md:text-7xl lg:text-[5.5rem]">
             <span className="hero-line block">Institutional-Grade</span>
@@ -110,10 +110,6 @@ export function HeroSection() {
             </div>
             <p className="text-sm text-white/30">Free Explorer tier — no credit card required</p>
           </div>
-        </div>
-
-        <div className="hero-scroll-indicator absolute bottom-8 left-1/2 -translate-x-1/2">
-          <div className="h-12 w-px animate-pulse bg-[var(--text-tertiary)]" />
         </div>
       </div>
     </section>

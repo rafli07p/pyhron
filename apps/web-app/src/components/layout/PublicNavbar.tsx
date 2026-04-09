@@ -16,18 +16,6 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   {
-    label: 'Platform',
-    columns: [{ items: [
-      { label: 'Pyhron ONE Terminal', href: '/platform/studio' },
-      { label: 'Quantitative Workbench', href: '/platform/studio' },
-      { label: 'Algo Execution Engine', href: '/platform/studio' },
-      { label: 'Portfolio Analytics', href: '/solutions/portfolio' },
-      { label: 'Paper Trading', href: '/platform/studio' },
-    ] }],
-    featured: { type: 'Featured product', title: 'Pyhron ONE Terminal', desc: 'Institutional-grade research and execution for Indonesia\'s capital markets.', cta: 'Launch Terminal', ctaHref: '/dashboard' },
-    footer: { label: 'View all platform features', href: '/platform/studio' },
-  },
-  {
     label: 'Data & Analytics',
     columns: [
       { title: 'By topic', items: [
@@ -210,7 +198,7 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-8 z-50 w-[260px] rounded-lg border border-black/10 bg-white py-3 shadow-2xl">
             <p className="px-4 pb-2 text-[11px] font-medium text-black/30">Select a site</p>
-            <a href="/dashboard" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)} className="flex items-center border-l-4 border-transparent px-4 py-3 text-[14px] font-medium text-black/80 transition-colors hover:border-[#2563eb] hover:bg-black/[0.03]">
+            <a href="/login" onClick={() => setOpen(false)} className="flex items-center border-l-4 border-transparent px-4 py-3 text-[14px] font-medium text-black/80 transition-colors hover:border-[#2563eb] hover:bg-black/[0.03]">
               Pyhron ONE
             </a>
           </div>
@@ -226,6 +214,7 @@ export function PublicNavbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -243,7 +232,12 @@ export function PublicNavbar() {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) setActiveDropdown(null);
+      if (
+        navRef.current && !navRef.current.contains(e.target as Node) &&
+        (!dropdownRef.current || !dropdownRef.current.contains(e.target as Node))
+      ) {
+        setActiveDropdown(null);
+      }
     }
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
@@ -312,10 +306,10 @@ export function PublicNavbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button className={`hidden h-9 w-[160px] items-center gap-2 rounded-full border px-4 text-[13px] transition-colors lg:flex ${dark ? 'border-white/15 text-white/40 hover:border-white/25' : 'border-black/15 text-black/40 hover:border-black/25'}`}>
+            <div className={`hidden h-9 w-[160px] items-center gap-2 rounded-full border px-4 text-[13px] lg:flex ${dark ? 'border-white/15 text-white/40' : 'border-black/15 text-black/40'}`}>
               <Search className="h-4 w-4" />
               <span>Search</span>
-            </button>
+            </div>
             <Link href="/contact" className="hidden h-9 items-center rounded-full bg-[#2563eb] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
               Get in touch
             </Link>
@@ -325,9 +319,11 @@ export function PublicNavbar() {
       </header>
 
       {/* Full-width mega dropdown rendered OUTSIDE the header to use fixed positioning */}
-      {activeDropdown && NAV.find((n) => n.label === activeDropdown && n.columns) && (
-        <MegaDropdown item={NAV.find((n) => n.label === activeDropdown)!} onClose={closeDropdown} />
-      )}
+      <div ref={dropdownRef}>
+        {activeDropdown && NAV.find((n) => n.label === activeDropdown && n.columns) && (
+          <MegaDropdown item={NAV.find((n) => n.label === activeDropdown)!} onClose={closeDropdown} />
+        )}
+      </div>
 
       {mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}
     </>
