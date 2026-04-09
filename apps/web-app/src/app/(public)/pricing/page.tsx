@@ -1,7 +1,3 @@
-import { Card } from '@/design-system/primitives/Card';
-import { Badge } from '@/design-system/primitives/Badge';
-import { Button } from '@/design-system/primitives/Button';
-import { Check, Minus } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = { title: 'Pricing' };
@@ -11,7 +7,7 @@ const tiers = [
     name: 'Explorer',
     tagline: 'Watch & Learn',
     price: 'Free',
-    period: 'forever',
+    period: '',
     description: 'Market observation and discovery',
     cta: 'Get Started',
     ctaHref: '/register',
@@ -93,36 +89,37 @@ const tiers = [
   },
 ];
 
-const comparisonFeatures = [
-  { name: 'Market data', explorer: 'Delayed', strategist: 'Real-time', operator: 'Real-time' },
-  { name: 'Stock screener', explorer: 'Basic', strategist: 'Full', operator: 'Full' },
-  { name: 'Watchlists', explorer: '1', strategist: 'Unlimited', operator: 'Unlimited' },
-  { name: 'Research articles', explorer: 'Preview', strategist: 'Full', operator: 'Full' },
-  { name: 'Workbench charts', explorer: '3 (read)', strategist: 'Unlimited', operator: 'Unlimited' },
-  { name: 'Custom dashboards', explorer: '\u2014', strategist: 'Unlimited', operator: 'Unlimited' },
-  { name: 'Backtesting', explorer: '\u2014', strategist: '\u2713', operator: '\u2713' },
-  { name: 'ML signals', explorer: '\u2014', strategist: '\u2713', operator: '\u2713' },
-  { name: 'Factor analysis', explorer: '\u2014', strategist: '\u2713', operator: '\u2713' },
-  { name: 'Risk analytics', explorer: '\u2014', strategist: '\u2713', operator: '\u2713' },
-  { name: 'Alerts', explorer: '\u2014', strategist: '50', operator: 'Unlimited' },
-  { name: 'Paper trading', explorer: '\u2014', strategist: '\u2713', operator: '\u2713' },
-  { name: 'Live trading', explorer: '\u2014', strategist: '\u2014', operator: '\u2713' },
-  { name: 'Algo execution', explorer: '\u2014', strategist: '\u2014', operator: 'VWAP/TWAP/POV/IS' },
-  { name: 'Kill switch', explorer: '\u2014', strategist: '\u2014', operator: '\u2713' },
-  { name: 'Data API', explorer: '\u2014', strategist: '1K req/day', operator: 'Unlimited' },
-  { name: 'Data export', explorer: '\u2014', strategist: 'CSV', operator: 'CSV + Parquet' },
-  { name: 'Team seats', explorer: '\u2014', strategist: '\u2014', operator: 'Up to 10' },
-  { name: 'Support', explorer: 'Community', strategist: 'Email', operator: 'Priority (SLA)' },
+const faqs = [
+  {
+    q: 'Can I upgrade or downgrade anytime?',
+    a: 'Yes. Upgrades take effect immediately. Downgrades take effect at the end of your billing cycle. Your data is never deleted.',
+  },
+  {
+    q: 'How does paper trading work?',
+    a: 'Paper trading uses real market data with simulated execution. It applies IDX lot sizes, tick sizes, and commission/tax rules. No real capital is at risk.',
+  },
+  {
+    q: 'What are the requirements for Operator access?',
+    a: 'Operator requires minimum 30 days of paper trading history, 50+ paper trades, a KYC review, and an onboarding call to configure risk guardrails.',
+  },
+  {
+    q: 'Do you offer annual pricing?',
+    a: 'Yes. Annual plans receive a 20% discount. Contact us for enterprise and institutional pricing.',
+  },
+  {
+    q: 'Is there a student discount?',
+    a: 'We offer 50% off Strategist for verified students and academic researchers. Contact us with your .ac.id email.',
+  },
 ];
 
 export default function PricingPage() {
   return (
-    <div className="py-20">
+    <div className="bg-white py-20">
       <div className="mx-auto max-w-6xl px-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-text-primary text-3xl font-bold">Choose Your Edge</h1>
-          <p className="text-text-secondary mt-2 text-sm">
+          <h1 className="text-3xl font-bold text-black">Choose Your Edge</h1>
+          <p className="mt-2 text-sm text-black/50">
             From market observation to live execution.
           </p>
         </div>
@@ -130,123 +127,75 @@ export default function PricingPage() {
         {/* Tier Cards */}
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
           {tiers.map((tier) => (
-            <Card
+            <div
               key={tier.name}
-              className={`flex flex-col p-6 ${tier.highlighted ? 'border-[var(--accent-500)] ring-1 ring-[var(--accent-500)]' : ''}`}
+              className={`flex flex-col rounded-xl bg-white p-8 ${
+                tier.highlighted
+                  ? 'border-2 border-[#2563eb]'
+                  : 'border border-black/[0.08]'
+              }`}
             >
               {tier.highlighted && (
                 <div className="mb-4">
-                  <Badge variant="accent">Popular</Badge>
+                  <span className="inline-block rounded-full bg-[#2563eb]/10 px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                    Popular
+                  </span>
                 </div>
               )}
-              <h3 className="text-text-primary text-lg font-semibold">{tier.name}</h3>
-              <p className="text-text-tertiary text-xs font-medium uppercase tracking-wider">
+              <h3 className="text-lg font-bold text-black">{tier.name}</h3>
+              <p className="text-xs font-medium uppercase tracking-wider text-black/40">
                 {tier.tagline}
               </p>
-              <p className="text-text-tertiary mt-1 text-sm">{tier.description}</p>
+              <p className="mt-1 text-sm text-black/50">{tier.description}</p>
               <p className="mt-4">
-                <span className="text-text-primary text-3xl font-bold">{tier.price}</span>
+                <span className="text-4xl font-bold text-black">{tier.price}</span>
                 {tier.period && (
-                  <span className="text-text-tertiary text-sm"> {tier.period}</span>
+                  <span className="text-sm text-black/40"> {tier.period}</span>
                 )}
               </p>
-              <Button
-                className="mt-6 w-full"
-                variant={tier.highlighted ? 'primary' : 'outline'}
-                asChild
+              <Link
+                href={tier.ctaHref}
+                className={`mt-6 block w-full rounded-full py-3 text-center text-sm font-medium transition-colors ${
+                  tier.highlighted
+                    ? 'bg-[#2563eb] text-white hover:bg-[#1d4ed8]'
+                    : 'border border-black/[0.08] text-black hover:bg-black/[0.03]'
+                }`}
               >
-                <Link href={tier.ctaHref}>{tier.cta}</Link>
-              </Button>
+                {tier.cta}
+              </Link>
               <ul className="mt-6 space-y-2">
                 {tier.features.map((f) => (
                   <li
                     key={f}
-                    className="text-text-secondary flex items-start gap-2 text-sm"
+                    className="flex items-start gap-2 text-sm text-black/60"
                   >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--positive)]" />
+                    <span className="mt-0.5 shrink-0 text-green-600">&#10003;</span>
                     {f}
                   </li>
                 ))}
                 {tier.excluded.map((f) => (
                   <li
                     key={f}
-                    className="text-text-tertiary flex items-start gap-2 text-sm"
+                    className="flex items-start gap-2 text-sm text-black/40"
                   >
-                    <Minus className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span className="mt-0.5 shrink-0">&mdash;</span>
                     {f}
                   </li>
                 ))}
               </ul>
-            </Card>
+            </div>
           ))}
         </div>
 
-        {/* Feature Comparison */}
-        <div className="mt-20">
-          <h2 className="text-text-primary text-center text-2xl font-bold">
-            Feature Comparison
-          </h2>
-          <div className="mt-8 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border-default)]">
-                  <th className="text-text-secondary py-3 text-left font-medium">Feature</th>
-                  <th className="text-text-secondary py-3 text-center font-medium">Explorer</th>
-                  <th className="text-text-secondary py-3 text-center font-medium">Strategist</th>
-                  <th className="text-text-secondary py-3 text-center font-medium">Operator</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonFeatures.map((row) => (
-                  <tr
-                    key={row.name}
-                    className="border-b border-[var(--border-default)]"
-                  >
-                    <td className="text-text-primary py-3">{row.name}</td>
-                    <td className="text-text-secondary py-3 text-center">{row.explorer}</td>
-                    <td className="text-text-secondary py-3 text-center">{row.strategist}</td>
-                    <td className="text-text-secondary py-3 text-center">{row.operator}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
         {/* FAQ */}
-        <div className="mt-20">
-          <h2 className="text-text-primary text-center text-2xl font-bold">
-            Frequently Asked Questions
-          </h2>
-          <div className="mx-auto mt-8 max-w-3xl space-y-4">
-            {[
-              {
-                q: 'Can I upgrade or downgrade anytime?',
-                a: 'Yes. Upgrades take effect immediately. Downgrades take effect at the end of your billing cycle. Your data is never deleted.',
-              },
-              {
-                q: 'How does paper trading work?',
-                a: 'Paper trading uses real market data with simulated execution. It applies IDX lot sizes, tick sizes, and commission/tax rules. No real capital is at risk.',
-              },
-              {
-                q: 'What are the requirements for Operator access?',
-                a: 'Operator requires minimum 30 days of paper trading history, 50+ paper trades, a KYC review, and an onboarding call to configure risk guardrails.',
-              },
-              {
-                q: 'Do you offer annual pricing?',
-                a: 'Yes. Annual plans receive a 20% discount. Contact us for enterprise and institutional pricing.',
-              },
-              {
-                q: 'Is there a student discount?',
-                a: 'We offer 50% off Strategist for verified students and academic researchers. Contact us with your .ac.id email.',
-              },
-            ].map((faq) => (
-              <Card key={faq.q} className="p-4">
-                <h3 className="text-text-primary text-sm font-semibold">{faq.q}</h3>
-                <p className="text-text-secondary mt-1 text-sm">{faq.a}</p>
-              </Card>
-            ))}
-          </div>
+        <div className="mx-auto mt-20 max-w-2xl">
+          <h2 className="text-center text-2xl font-semibold text-black">FAQ</h2>
+          {faqs.map((faq) => (
+            <div key={faq.q} className="mt-6 border-b border-black/[0.06] pb-6">
+              <h3 className="text-sm font-semibold text-black">{faq.q}</h3>
+              <p className="mt-2 text-sm text-black/50">{faq.a}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
