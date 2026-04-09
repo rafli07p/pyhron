@@ -9,17 +9,16 @@ function PublicFooter() {
     {
       title: 'Platform',
       links: [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Markets', href: '/markets' },
-        { label: 'Studio', href: '/studio' },
-        { label: 'Portfolio', href: '/portfolio' },
+        { label: 'Data & Analytics', href: '/data' },
+        { label: 'Indexes', href: '/indexes' },
+        { label: 'Research', href: '/research' },
+        { label: 'Pricing', href: '/pricing' },
       ],
     },
     {
       title: 'Research',
       links: [
-        { label: 'Insights', href: '/research/articles' },
-        { label: 'Signals', href: '/research/signals' },
+        { label: 'Insights', href: '/research' },
         { label: 'Methodology', href: '/methodology' },
       ],
     },
