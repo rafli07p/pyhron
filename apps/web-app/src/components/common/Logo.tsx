@@ -6,13 +6,7 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function Logo({ className, size = 'md' }: LogoProps) {
-  const sizeClasses = {
-    sm: 'text-base',
-    md: 'text-xl',
-    lg: 'text-2xl',
-  };
-
+export function Logo({ className, size: _size = 'md' }: LogoProps) {
   return (
       <Image
           src="/logos/logo.svg"
