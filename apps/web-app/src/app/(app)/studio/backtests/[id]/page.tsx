@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { PageHeader } from '@/design-system/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
 import { StatCard } from '@/design-system/data-display/StatCard';
@@ -35,13 +36,14 @@ const sampleTrades = [
   { date: '2025-04-01', symbol: 'TLKM', side: 'SELL', qty: 2000, price: 3850, pnl: '-IDR 500,000' },
 ];
 
-export default function BacktestDetailPage({ params }: { params: { id: string } }) {
+export default function BacktestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { hasAccess } = useTierGate('studio.backtests');
 
   if (!hasAccess) {
     return (
       <div className="space-y-3">
-        <PageHeader title="Backtest Detail" description={`Backtest: ${params.id}`} />
+        <PageHeader title="Backtest Detail" description={`Backtest: ${id}`} />
         <TierGate requiredTier="strategist" featureName="Backtesting" />
       </div>
     );
@@ -50,7 +52,7 @@ export default function BacktestDetailPage({ params }: { params: { id: string } 
   return (
     <div className="space-y-3">
       <PageHeader
-        title={`Backtest: ${params.id}`}
+        title={`Backtest: ${id}`}
         description="MomentumIDX | 2024-01-01 to 2025-12-31"
         actions={
           <Button variant="outline" size="sm">

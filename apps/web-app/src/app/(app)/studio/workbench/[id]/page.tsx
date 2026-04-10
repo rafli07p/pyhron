@@ -4,12 +4,13 @@ import { Skeleton } from '@/design-system/primitives/Skeleton';
 
 export const metadata = { title: 'Workbench Preset' };
 
-export default function WorkbenchPresetPage({ params }: { params: { id: string } }) {
+export default async function WorkbenchPresetPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return (
     <div className="space-y-3">
       <PageHeader
         title="Loading preset..."
-        description={`Preset ID: ${params.id}`}
+        description={`Preset ID: ${id}`}
       />
 
       <Card>

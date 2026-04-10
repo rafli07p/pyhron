@@ -49,7 +49,7 @@ function CorrelationMatrix({ symbols, matrix, height = 400, className }: Correla
       .attr('text-anchor', 'middle')
       .attr('fill', '#a1a1aa')
       .attr('font-size', Math.min(11, cellSize * 0.35) + 'px')
-      .attr('font-family', "'Geist Mono', monospace")
+      .attr('font-family', 'var(--font-mono), monospace')
       .text((d) => d);
 
     // Row labels
@@ -63,7 +63,7 @@ function CorrelationMatrix({ symbols, matrix, height = 400, className }: Correla
       .attr('dominant-baseline', 'middle')
       .attr('fill', '#a1a1aa')
       .attr('font-size', Math.min(11, cellSize * 0.35) + 'px')
-      .attr('font-family', "'Geist Mono', monospace")
+      .attr('font-family', 'var(--font-mono), monospace')
       .text((d) => d);
 
     // Cells
@@ -112,7 +112,7 @@ function CorrelationMatrix({ symbols, matrix, height = 400, className }: Correla
             .attr('dominant-baseline', 'middle')
             .attr('fill', '#fafafa')
             .attr('font-size', Math.min(10, cellSize * 0.28) + 'px')
-            .attr('font-family', "'Geist Mono', monospace")
+            .attr('font-family', 'var(--font-mono), monospace')
             .attr('pointer-events', 'none')
             .text(val.toFixed(2));
         }
@@ -162,7 +162,7 @@ function CorrelationMatrix({ symbols, matrix, height = 400, className }: Correla
       <div
         ref={tooltipRef}
         className="pointer-events-none absolute hidden rounded border border-[var(--border-default)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--text-primary)] shadow-lg"
-        style={{ fontFamily: "'Geist Mono', monospace" }}
+        style={{ fontFamily: 'var(--font-mono), monospace' }}
       />
     </div>
   );
