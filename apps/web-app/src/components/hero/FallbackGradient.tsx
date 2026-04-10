@@ -7,8 +7,10 @@
 export function FallbackGradient({ isStatic = false }: { isStatic?: boolean }) {
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#0a0e1a]" aria-hidden="true">
-      {/* Base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0f1d35] to-[#0a0e1a]" />
+      {/* Base gradient — warmer indigo/blue tones matching the Three.js ribbon
+          so the pre-Three.js frame doesn't look empty at the top of the hero. */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0c1a3a] via-[#10224a] to-[#0a0e1a]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(37,99,235,0.28),transparent_65%)]" />
 
       {/* Flowing wave layers — sharp, NOT blurry */}
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">

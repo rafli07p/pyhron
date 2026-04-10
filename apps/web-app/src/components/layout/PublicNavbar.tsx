@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Search, X, Menu, ChevronDown } from 'lucide-react';
 
 interface NavColumn { title?: string; items: { label: string; href: string }[] }
@@ -279,10 +280,27 @@ function ExpandableSearch() {
 }
 
 export function PublicNavbar() {
+    const pathname = usePathname();
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Auto-close any open dropdown / mobile menu on navigation. Without this,
+    // clicking a top-level <Link> (e.g. Pricing) while a mega-dropdown was open
+    // would leave the dropdown visible on the next page.
+    //
+    // Uses React's documented "adjusting state while rendering" pattern
+    // (https://react.dev/reference/react/useState#storing-information-from-previous-renders)
+    // so we don't trip the `set-state-in-effect` lint and don't need an extra
+    // render pass via useEffect.
+    const [prevPathname, setPrevPathname] = useState(pathname);
+    if (prevPathname !== pathname) {
+        setPrevPathname(pathname);
+        setActiveDropdown(null);
+        setMobileOpen(false);
+    }
 
     useEffect(() => {
         function onClick(e: MouseEvent) {
@@ -297,11 +315,57 @@ export function PublicNavbar() {
         return () => document.removeEventListener('mousedown', onClick);
     }, []);
 
+    // Scroll direction: hide when scrolling down past the header height,
+    // reveal when scrolling up, always show at the top of the page.
+    useEffect(() => {
+        let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
+        let ticking = false;
+        const THRESHOLD = 88; // header height — don't hide until scrolled past it
+        const DELTA = 6;       // ignore sub-pixel jitter
+
+        function update() {
+            const y = window.scrollY;
+            const dy = y - lastY;
+
+            if (y <= THRESHOLD) {
+                // At (or near) the top: always visible.
+                setHidden(false);
+            } else if (Math.abs(dy) > DELTA) {
+                if (dy > 0) {
+                    // Scrolling down — hide.
+                    setHidden(true);
+                    setActiveDropdown(null);
+                } else {
+                    // Scrolling up — reveal.
+                    setHidden(false);
+                }
+            }
+
+            lastY = y;
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(update);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     const closeDropdown = () => setActiveDropdown(null);
 
     return (
         <>
-            <header ref={navRef} className="fixed left-0 right-0 z-50 bg-white shadow-sm">
+            <header
+                ref={navRef}
+                className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-transform duration-300 ease-out ${
+                    hidden ? '-translate-y-full' : 'translate-y-0'
+                }`}
+            >
                 <div className="hidden lg:block">
                     <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
                         <Link href="/contact" className="px-3 text-[12px] text-black/40 transition-colors hover:text-black/70">
