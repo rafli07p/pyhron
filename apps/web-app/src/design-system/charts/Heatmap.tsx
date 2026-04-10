@@ -84,7 +84,7 @@ function Heatmap({ data, height = 400, onClick, className }: HeatmapProps) {
         return cellWidth < 60 ? '9px' : '11px';
       })
       .attr('font-weight', '600')
-      .attr('font-family', "'Geist Sans', system-ui, sans-serif")
+      .attr('font-family', 'var(--font-sans), system-ui, sans-serif')
       .text((d) => {
         const cellWidth = d.x1 - d.x0;
         if (cellWidth < 30) return '';
@@ -100,7 +100,7 @@ function Heatmap({ data, height = 400, onClick, className }: HeatmapProps) {
       .attr('dominant-baseline', 'middle')
       .attr('fill', 'rgba(250,250,250,0.8)')
       .attr('font-size', '10px')
-      .attr('font-family', "'Geist Mono', monospace")
+      .attr('font-family', 'var(--font-mono), monospace')
       .text((d) => {
         const cellWidth = d.x1 - d.x0;
         if (cellWidth < 40) return '';

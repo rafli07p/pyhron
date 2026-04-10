@@ -1,7 +1,22 @@
 import type { Metadata } from 'next';
+import { Noto_Sans, JetBrains_Mono } from 'next/font/google';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { SkipToContent } from '@/components/common/SkipToContent';
 import './globals.css';
+
+const notoSans = Noto_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'),
@@ -31,7 +46,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-      <html lang="id" suppressHydrationWarning>
+      <html lang="id" suppressHydrationWarning className={`${notoSans.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen font-sans antialiased">
       <SkipToContent />
       <AppProviders>

@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { PageHeader } from '@/design-system/layout/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/design-system/primitives/Card';
 import { Button } from '@/design-system/primitives/Button';
@@ -27,13 +28,14 @@ const tileTypes = [
   { name: 'Pie Chart', icon: PieChart, description: 'Proportional breakdown' },
 ];
 
-export default function EditDashboardPage({ params }: { params: { id: string } }) {
+export default function EditDashboardPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { hasAccess } = useTierGate('studio.dashboards.custom');
 
   if (!hasAccess) {
     return (
       <div className="space-y-3">
-        <PageHeader title="Edit Dashboard" description={`Editing dashboard: ${params.id}`} />
+        <PageHeader title="Edit Dashboard" description={`Editing dashboard: ${id}`} />
         <TierGate requiredTier="strategist" featureName="Custom Dashboards" />
       </div>
     );
@@ -43,10 +45,10 @@ export default function EditDashboardPage({ params }: { params: { id: string } }
     <div className="space-y-4">
       <PageHeader
         title="Edit Dashboard"
-        description={`Editing: ${params.id}`}
+        description={`Editing: ${id}`}
         actions={
           <>
-            <Link href={`/studio/dashboards/${params.id}`}>
+            <Link href={`/studio/dashboards/${id}`}>
               <Button variant="ghost" size="sm">Cancel</Button>
             </Link>
             <Button variant="outline" size="sm">

@@ -65,7 +65,7 @@ function MonthlyReturns({ data, height = 300, className }: MonthlyReturnsProps) 
       aria-label="Monthly returns heatmap"
       role="img"
     >
-      <table className="w-full border-collapse" style={{ fontFamily: "'Geist Mono', monospace" }}>
+      <table className="w-full border-collapse" style={{ fontFamily: "var(--font-mono), monospace" }}>
         <thead>
           <tr>
             <th className="px-2 py-1 text-left text-xs font-medium text-[var(--text-tertiary)]">Year</th>

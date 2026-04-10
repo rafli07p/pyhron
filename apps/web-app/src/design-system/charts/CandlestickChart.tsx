@@ -51,7 +51,7 @@ function CandlestickChart({
       layout: {
         background: { color: '#09090b' },
         textColor: '#a1a1aa',
-        fontFamily: "'Geist Sans', system-ui, -apple-system, sans-serif",
+        fontFamily: 'var(--font-sans), system-ui, -apple-system, sans-serif',
       },
       grid: {
         vertLines: { color: 'rgba(255,255,255,0.06)' },

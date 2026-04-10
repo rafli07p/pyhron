@@ -7,14 +7,15 @@ import Link from 'next/link';
 
 export const metadata = { title: 'Dashboard' };
 
-export default function DashboardViewPage({ params }: { params: { id: string } }) {
+export default async function DashboardViewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return (
     <div className="space-y-3">
       <PageHeader
-        title={`Dashboard: ${params.id}`}
+        title={`Dashboard: ${id}`}
         description="Viewing saved dashboard"
         actions={
-          <Link href={`/studio/dashboards/${params.id}/edit`}>
+          <Link href={`/studio/dashboards/${id}/edit`}>
             <Button variant="outline" size="sm">
               <Pencil className="h-3.5 w-3.5" />
               Edit

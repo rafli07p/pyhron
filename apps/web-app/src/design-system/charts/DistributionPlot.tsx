@@ -106,7 +106,7 @@ function DistributionPlot({ data, mean, stddev, height = 300, className }: Distr
               position: 'top',
               fill: '#2563eb',
               fontSize: 11,
-              fontFamily: "'Geist Mono', monospace",
+              fontFamily: "var(--font-mono), monospace",
             }}
           />
           <Bar
