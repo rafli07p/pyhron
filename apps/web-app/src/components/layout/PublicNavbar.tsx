@@ -6,6 +6,11 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Search, X, Menu, ChevronDown } from 'lucide-react';
 
+// Delay (ms) before a dropdown closes after the mouse leaves the nav area,
+// giving users time to travel diagonally into the mega panel without losing
+// their hover target. Matches MSCI's grace window.
+const HOVER_CLOSE_DELAY = 150;
+
 interface NavColumn { title?: string; items: { label: string; href: string }[] }
 interface NavItem {
     label: string;
@@ -282,10 +287,12 @@ function ExpandableSearch() {
 export function PublicNavbar() {
     const pathname = usePathname();
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const closeTimerRef = useRef<number | null>(null);
 
     // Auto-close any open dropdown / mobile menu on navigation. Without this,
     // clicking a top-level <Link> (e.g. Pricing) while a mega-dropdown was open
@@ -299,8 +306,34 @@ export function PublicNavbar() {
     if (prevPathname !== pathname) {
         setPrevPathname(pathname);
         setActiveDropdown(null);
+        setHoveredLabel(null);
         setMobileOpen(false);
     }
+
+    const clearCloseTimer = () => {
+        if (closeTimerRef.current !== null) {
+            window.clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+        }
+    };
+
+    const openDropdown = (label: string) => {
+        clearCloseTimer();
+        setHoveredLabel(label);
+        setActiveDropdown(label);
+    };
+
+    const scheduleClose = () => {
+        clearCloseTimer();
+        closeTimerRef.current = window.setTimeout(() => {
+            setActiveDropdown(null);
+            setHoveredLabel(null);
+            closeTimerRef.current = null;
+        }, HOVER_CLOSE_DELAY);
+    };
+
+    // Clean up any pending close timer on unmount.
+    useEffect(() => () => clearCloseTimer(), []);
 
     useEffect(() => {
         function onClick(e: MouseEvent) {
@@ -309,6 +342,7 @@ export function PublicNavbar() {
                 (!dropdownRef.current || !dropdownRef.current.contains(e.target as Node))
             ) {
                 setActiveDropdown(null);
+                setHoveredLabel(null);
             }
         }
         document.addEventListener('mousedown', onClick);
@@ -388,29 +422,62 @@ export function PublicNavbar() {
                         />
                     </Link>
 
-                    <nav className="ml-10 hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
-                        {NAV.map((item) =>
-                            item.href ? (
-                                <Link key={item.label} href={item.href} className="flex h-[60px] items-center px-4 text-[14px] text-black/60 transition-colors hover:text-black">
-                                    {item.label}
-                                </Link>
-                            ) : (
-                                <div key={item.label} className="relative">
+                    <nav
+                        className="ml-10 hidden items-center gap-0.5 lg:flex"
+                        aria-label="Main navigation"
+                        onMouseLeave={scheduleClose}
+                    >
+                        {NAV.map((item) => {
+                            const isActive = hoveredLabel === item.label || activeDropdown === item.label;
+                            // Single-link nav items (e.g. Pricing): still get the MSCI black underline on hover.
+                            if (item.href) {
+                                return (
+                                    <Link
+                                        key={item.label}
+                                        href={item.href}
+                                        className="group relative flex h-[60px] items-center px-4 text-[14px] text-black/70 transition-colors hover:text-black"
+                                        onMouseEnter={() => {
+                                            clearCloseTimer();
+                                            setHoveredLabel(item.label);
+                                            setActiveDropdown(null);
+                                        }}
+                                    >
+                                        {item.label}
+                                        <span
+                                            aria-hidden="true"
+                                            className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                                isActive ? 'scale-x-100' : 'scale-x-0'
+                                            }`}
+                                        />
+                                    </Link>
+                                );
+                            }
+                            // Dropdown items: hover opens the mega panel, black underline slides in.
+                            return (
+                                <div
+                                    key={item.label}
+                                    className="relative"
+                                    onMouseEnter={() => openDropdown(item.label)}
+                                >
                                     <button
-                                        onClick={() => setActiveDropdown(activeDropdown === item.label ? null : item.label)}
-                                        className={`flex h-[60px] items-center gap-1.5 px-4 text-[14px] transition-colors ${
-                                            activeDropdown === item.label ? 'text-black' : 'text-black/60 hover:text-black/80'
+                                        type="button"
+                                        aria-haspopup="true"
+                                        aria-expanded={activeDropdown === item.label}
+                                        className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
+                                            isActive ? 'text-black' : 'text-black/70 hover:text-black'
                                         }`}
                                     >
                                         {item.label}
-                                        <ChevronDown className={`h-3.5 w-3.5 opacity-50 transition-transform ${activeDropdown === item.label ? 'rotate-180' : ''}`} />
                                     </button>
-                                    {activeDropdown === item.label && (
-                                        <div className="absolute bottom-0 left-4 right-4 h-[3px] bg-[#2563eb]" />
-                                    )}
+                                    <span
+                                        aria-hidden="true"
+                                        className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                            isActive ? 'scale-x-100' : 'scale-x-0'
+                                        }`}
+                                    />
                                 </div>
-                            ),
-                        )}
+                            );
+                        })}
                     </nav>
 
                     <div className="flex items-center gap-3">
@@ -425,7 +492,11 @@ export function PublicNavbar() {
                 </div>
             </header>
 
-            <div ref={dropdownRef}>
+            <div
+                ref={dropdownRef}
+                onMouseEnter={clearCloseTimer}
+                onMouseLeave={scheduleClose}
+            >
                 {activeDropdown && NAV.find((n) => n.label === activeDropdown && n.columns) && (
                     <MegaDropdown item={NAV.find((n) => n.label === activeDropdown)!} onClose={closeDropdown} />
                 )}
