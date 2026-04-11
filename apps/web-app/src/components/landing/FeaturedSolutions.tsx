@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ScrollReveal } from '@/components/motion/ScrollReveal';
 
+// MSCI brand blue, pulled directly from their `.ms-text-brandblue-700` class.
+const MSCI_BRAND_BLUE = '#1a3fd6';
+
 /**
  * Featured Solutions — MSCI-style section that pairs a 3-column intro with
  * an asymmetric 2-column card grid of clickable deep-links.
@@ -28,19 +31,16 @@ const introColumns = [
     title: 'Data & Analytics',
     desc:
       'Integrated view of risk and return across IDX instruments to help you identify and size opportunities with confidence.',
-    href: '/data',
   },
   {
     title: 'Public & Private Indexes',
     desc:
       'A suite of indexes built to accurately represent and measure Indonesian public and private markets.',
-    href: '/indexes',
   },
   {
     title: 'Research & Insights',
     desc:
       'Explore insights and analysis on key topics across asset classes, market themes, risk and more.',
-    href: '/research',
   },
 ];
 
@@ -48,29 +48,44 @@ export function FeaturedSolutions() {
   return (
     <section className="bg-white py-20 lg:py-28">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
-        {/* Header */}
+        {/* Header — both lines styled with MSCI's `ms-headline1-sm` scale
+            (2.25rem / 1.1 / -0.04em tracking) and `ms-text-brandblue-700`. */}
         <ScrollReveal>
-          <p className="text-[13px] font-medium text-[#2563eb]">Featured solutions</p>
-          <h2 className="mt-2 text-[32px] font-normal leading-[1.15] tracking-tight text-[#2563eb] md:text-[44px] lg:text-[52px]">
-            End-to-end tools to meet your needs
+          <h2
+            className="font-semibold leading-[1.1]"
+            style={{
+              color: MSCI_BRAND_BLUE,
+              fontSize: '2.25rem',
+              letterSpacing: '-0.04em',
+            }}
+          >
+            Featured solutions
           </h2>
+          <p
+            className="mt-2 font-semibold leading-[1.1]"
+            style={{
+              color: MSCI_BRAND_BLUE,
+              fontSize: '2.25rem',
+              letterSpacing: '-0.04em',
+            }}
+          >
+            End-to-end tools to meet your needs
+          </p>
         </ScrollReveal>
 
-        {/* Intro columns */}
+        {/* Intro columns — plain text blocks (no link arrow, no hover color
+            shift). Titles use `ms-font-semibold ms-text-black`, bodies use
+            `ms-font-regular ms-body-l-sm ms-text-black`. */}
         <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3">
           {introColumns.map((col) => (
-            <Link
-              key={col.title}
-              href={col.href}
-              className="group block"
-            >
-              <h3 className="text-[17px] font-semibold text-[#0a0e1a] transition-colors group-hover:text-[#2563eb]">
+            <div key={col.title}>
+              <h3 className="font-semibold text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
                 {col.title}
               </h3>
-              <p className="mt-3 text-[14px] leading-relaxed text-black/60">
+              <p className="mt-3 font-normal text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
                 {col.desc}
               </p>
-            </Link>
+            </div>
           ))}
         </ScrollReveal>
 

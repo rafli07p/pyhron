@@ -373,7 +373,10 @@ export function PublicNavbar() {
                 }`}
             >
                 <div className="hidden lg:block">
-                    <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
+                    {/* Horizontal padding matches the footer (px-6 lg:px-12)
+                        so the logo, nav, and top-bar links line up with the
+                        footer columns below. */}
+                    <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-6 lg:px-12">
                         <Link href="/contact" className="px-3 text-[12px] text-black/40 transition-colors hover:text-black/70">
                             Support
                         </Link>
@@ -382,7 +385,7 @@ export function PublicNavbar() {
                     </div>
                 </div>
 
-                <div className="relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between px-6 lg:px-8">
+                <div className="relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between px-6 lg:px-12">
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
                             src="/logos/logo.svg"
