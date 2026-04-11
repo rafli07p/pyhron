@@ -46,8 +46,8 @@ const introColumns = [
 
 export function FeaturedSolutions() {
   return (
-    <section className="bg-white py-20 lg:py-28">
-      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+    <section className="bg-white py-16 lg:py-20">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         {/* Header — both lines styled with MSCI's `ms-headline1-sm` scale
             (2.25rem / 1.1 / -0.04em tracking) and `ms-text-brandblue-700`. */}
         <ScrollReveal>
@@ -73,16 +73,22 @@ export function FeaturedSolutions() {
           </p>
         </ScrollReveal>
 
-        {/* Intro columns — plain text blocks (no link arrow, no hover color
-            shift). Titles use `ms-font-semibold ms-text-black`, bodies use
-            `ms-font-regular ms-body-l-sm ms-text-black`. */}
+        {/* Intro columns — plain text only (not a link, does not navigate to
+            the terminal dashboard). Titles match MSCI's column header scale
+            (~1.375rem / -0.02em) and bodies use the `ms-body-l-sm` spec. */}
         <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3">
           {introColumns.map((col) => (
             <div key={col.title}>
-              <h3 className="font-semibold text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+              <h3
+                className="font-semibold text-black"
+                style={{ fontSize: '1.375rem', lineHeight: 1.2, letterSpacing: '-0.02em' }}
+              >
                 {col.title}
               </h3>
-              <p className="mt-3 font-normal text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+              <p
+                className="mt-4 font-normal text-black"
+                style={{ fontSize: '1rem', lineHeight: 1.45, letterSpacing: '-0.01em' }}
+              >
                 {col.desc}
               </p>
             </div>
@@ -90,7 +96,7 @@ export function FeaturedSolutions() {
         </ScrollReveal>
 
         {/* Card grid */}
-        <div className="mt-16 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
+        <div className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
           {/* Big hero card — spans 2 rows on lg */}
           <Card
             href="/data/ml-signals"

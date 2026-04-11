@@ -23,8 +23,10 @@ const MSCI_BRAND_BLUE = '#1a3fd6';
 
 export function ResearchInsights() {
   return (
-    <section className="bg-white py-20 lg:py-28">
-      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+    // Light-gray tint differentiates this section from the white
+    // FeaturedSolutions above it — matches MSCI's alternating section rhythm.
+    <section className="bg-[#f4f5f7] py-16 lg:py-20">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         {/* Header */}
         <ScrollReveal>
           <h2
@@ -58,11 +60,12 @@ export function ResearchInsights() {
         </ScrollReveal>
 
         {/* Card grid */}
-        <div className="mt-16 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto]">
-          {/* Gray "cover" card spanning both rows */}
+        <div className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto]">
+          {/* White "cover" card spanning both rows — sits on the gray
+              section background for clear separation. */}
           <Link
             href="/research/articles/idx-factor-stress-test"
-            className="group relative overflow-hidden rounded-2xl bg-[#f5f5f7] p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
+            className="group relative overflow-hidden rounded-2xl bg-white p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
           >
             <div className="pointer-events-none flex h-[340px] items-center justify-center lg:h-[380px]">
               <SphereVisual />
