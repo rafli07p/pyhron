@@ -50,7 +50,7 @@ export function FeaturedSolutions() {
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
         {/* Header */}
         <ScrollReveal>
-          <p className="text-[13px] font-medium text-[#2563eb]">Featured solutions</p>
+          <p className="text-[16px] font-medium text-[#2563eb]">Featured solutions</p>
           <h2 className="mt-2 text-[32px] font-normal leading-[1.15] tracking-tight text-[#2563eb] md:text-[44px] lg:text-[52px]">
             End-to-end tools to meet your needs
           </h2>
