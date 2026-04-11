@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
-import { Noto_Sans, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { SkipToContent } from '@/components/common/SkipToContent';
 import './globals.css';
 
-const notoSans = Noto_Sans({
+// Inter is the font MSCI.com uses (see the @font-face for `__Inter_f367f3`
+// shipped from their Next.js bundle). We load the same weights plus the
+// italic variant so headings and body copy match MSCI's typographic system.
+const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-sans',
@@ -46,7 +49,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-      <html lang="id" suppressHydrationWarning className={`${notoSans.variable} ${jetbrainsMono.variable}`}>
+      <html lang="id" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen font-sans antialiased">
       <SkipToContent />
       <AppProviders>

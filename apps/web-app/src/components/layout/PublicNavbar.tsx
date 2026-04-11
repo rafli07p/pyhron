@@ -6,11 +6,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Search, X, Menu, ChevronDown } from 'lucide-react';
 
-// Delay (ms) before a dropdown closes after the mouse leaves the nav area,
-// giving users time to travel diagonally into the mega panel without losing
-// their hover target. Matches MSCI's grace window.
-const HOVER_CLOSE_DELAY = 150;
-
 interface NavColumn { title?: string; items: { label: string; href: string }[] }
 interface NavItem {
     label: string;
@@ -292,7 +287,6 @@ export function PublicNavbar() {
     const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const closeTimerRef = useRef<number | null>(null);
 
     // Auto-close any open dropdown / mobile menu on navigation. Without this,
     // clicking a top-level <Link> (e.g. Pricing) while a mega-dropdown was open
@@ -310,30 +304,9 @@ export function PublicNavbar() {
         setMobileOpen(false);
     }
 
-    const clearCloseTimer = () => {
-        if (closeTimerRef.current !== null) {
-            window.clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-        }
+    const toggleDropdown = (label: string) => {
+        setActiveDropdown((prev) => (prev === label ? null : label));
     };
-
-    const openDropdown = (label: string) => {
-        clearCloseTimer();
-        setHoveredLabel(label);
-        setActiveDropdown(label);
-    };
-
-    const scheduleClose = () => {
-        clearCloseTimer();
-        closeTimerRef.current = window.setTimeout(() => {
-            setActiveDropdown(null);
-            setHoveredLabel(null);
-            closeTimerRef.current = null;
-        }, HOVER_CLOSE_DELAY);
-    };
-
-    // Clean up any pending close timer on unmount.
-    useEffect(() => () => clearCloseTimer(), []);
 
     useEffect(() => {
         function onClick(e: MouseEvent) {
@@ -342,7 +315,6 @@ export function PublicNavbar() {
                 (!dropdownRef.current || !dropdownRef.current.contains(e.target as Node))
             ) {
                 setActiveDropdown(null);
-                setHoveredLabel(null);
             }
         }
         document.addEventListener('mousedown', onClick);
@@ -425,22 +397,21 @@ export function PublicNavbar() {
                     <nav
                         className="ml-10 hidden items-center gap-0.5 lg:flex"
                         aria-label="Main navigation"
-                        onMouseLeave={scheduleClose}
+                        onMouseLeave={() => setHoveredLabel(null)}
                     >
                         {NAV.map((item) => {
+                            // Underline is visible on hover OR when this item's dropdown is currently open.
                             const isActive = hoveredLabel === item.label || activeDropdown === item.label;
-                            // Single-link nav items (e.g. Pricing): still get the MSCI black underline on hover.
+
+                            // Single-link nav items (e.g. Pricing): hover only shows the underline,
+                            // click navigates via the Link.
                             if (item.href) {
                                 return (
                                     <Link
                                         key={item.label}
                                         href={item.href}
                                         className="group relative flex h-[60px] items-center px-4 text-[14px] text-black/70 transition-colors hover:text-black"
-                                        onMouseEnter={() => {
-                                            clearCloseTimer();
-                                            setHoveredLabel(item.label);
-                                            setActiveDropdown(null);
-                                        }}
+                                        onMouseEnter={() => setHoveredLabel(item.label)}
                                     >
                                         {item.label}
                                         <span
@@ -452,17 +423,20 @@ export function PublicNavbar() {
                                     </Link>
                                 );
                             }
-                            // Dropdown items: hover opens the mega panel, black underline slides in.
+
+                            // Dropdown items: hover only shows the underline. CLICK toggles
+                            // the mega panel open/closed (click-to-open, not hover-to-open).
                             return (
                                 <div
                                     key={item.label}
                                     className="relative"
-                                    onMouseEnter={() => openDropdown(item.label)}
+                                    onMouseEnter={() => setHoveredLabel(item.label)}
                                 >
                                     <button
                                         type="button"
                                         aria-haspopup="true"
                                         aria-expanded={activeDropdown === item.label}
+                                        onClick={() => toggleDropdown(item.label)}
                                         className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
                                             isActive ? 'text-black' : 'text-black/70 hover:text-black'
                                         }`}
@@ -492,11 +466,7 @@ export function PublicNavbar() {
                 </div>
             </header>
 
-            <div
-                ref={dropdownRef}
-                onMouseEnter={clearCloseTimer}
-                onMouseLeave={scheduleClose}
-            >
+            <div ref={dropdownRef}>
                 {activeDropdown && NAV.find((n) => n.label === activeDropdown && n.columns) && (
                     <MegaDropdown item={NAV.find((n) => n.label === activeDropdown)!} onClose={closeDropdown} />
                 )}
