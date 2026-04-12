@@ -235,55 +235,61 @@ function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; 
     const popular = ['BBCA', 'IHSG', 'momentum', 'factor', 'screener'];
 
     return (
-        <div ref={containerRef} className="relative hidden lg:block">
-            {/* Single element that transitions width — expands LEFT via ml-auto */}
-            <div
-                onClick={() => !searchOpen && setSearchOpen(true)}
-                className={`ml-auto flex h-11 items-center gap-2 overflow-hidden rounded-full border bg-white px-5 transition-all duration-300 ease-out ${
-                    searchOpen
-                        ? 'w-[600px] border-black/20'
-                        : 'w-[160px] cursor-pointer border-black/15 hover:border-black/25'
-                }`}
-            >
-                <Search className="h-4 w-4 shrink-0 text-black/30" />
-                {!searchOpen && <span className="text-[14px] text-black/40">Search</span>}
-                {searchOpen && (
-                    <input
-                        ref={inputRef}
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
-                            if (e.key === 'Escape') { setSearchOpen(false); setQuery(''); }
-                        }}
-                        placeholder="Search"
-                        className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
-                    />
-                )}
-                {searchOpen && query && (
-                    <button onClick={() => setQuery('')} className="shrink-0 text-[13px] text-black/30 hover:text-black/60">Clear</button>
-                )}
-                {searchOpen && (
-                    <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="shrink-0 text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
-                )}
-            </div>
-
-            {searchOpen && (
-                <div className="absolute right-0 top-[48px] w-[600px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
-                    {!query ? (
-                        <>
-                            <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
-                            {popular.map((s) => (
-                                <button key={s} onClick={() => setQuery(s)} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
-                                    <Search className="h-3.5 w-3.5 text-black/20" />
-                                    {s}
-                                </button>
-                            ))}
-                        </>
-                    ) : (
-                        <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
-                    )}
-                </div>
+        <div ref={containerRef} className="relative hidden lg:block" style={{ width: 160 }}>
+            {/* Collapsed: normal flow pill. Expanded: absolute, grows LEFT */}
+            {!searchOpen ? (
+                <button
+                    onClick={() => setSearchOpen(true)}
+                    className="flex h-11 w-[160px] items-center gap-2 rounded-full border border-black/15 bg-white px-5 text-[14px] text-black/40 transition-colors hover:border-black/25"
+                >
+                    <Search className="h-4 w-4 shrink-0" />
+                    <span>Search</span>
+                </button>
+            ) : (
+                <>
+                    {/* Expanded bar — anchored RIGHT at 0 (same right edge as collapsed), grows LEFT */}
+                    <div
+                        className="absolute right-0 top-1/2 z-10 flex h-11 w-[600px] -translate-y-1/2 items-center gap-2 rounded-full border border-black/20 bg-white px-5"
+                        style={{ animation: 'search-expand 0.3s ease-out' }}
+                    >
+                        <Search className="h-4 w-4 shrink-0 text-black/30" />
+                        <input
+                            ref={inputRef}
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                                if (e.key === 'Escape') { setSearchOpen(false); setQuery(''); }
+                            }}
+                            placeholder="Search"
+                            className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
+                        />
+                        {query && <button onClick={() => setQuery('')} className="shrink-0 text-[13px] text-black/30 hover:text-black/60">Clear</button>}
+                        <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="shrink-0 text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
+                    </div>
+                    {/* Dropdown */}
+                    <div className="absolute right-0 top-[calc(50%+24px)] z-10 w-[600px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
+                        {!query ? (
+                            <>
+                                <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
+                                {popular.map((s) => (
+                                    <button key={s} onClick={() => setQuery(s)} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
+                                        <Search className="h-3.5 w-3.5 text-black/20" />
+                                        {s}
+                                    </button>
+                                ))}
+                            </>
+                        ) : (
+                            <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
+                        )}
+                    </div>
+                    <style>{`
+                        @keyframes search-expand {
+                            from { width: 160px; }
+                            to { width: 600px; }
+                        }
+                    `}</style>
+                </>
             )}
         </div>
     );
@@ -421,8 +427,11 @@ export function PublicNavbar() {
                             onMouseLeave={handleNavMouseLeave}
                         >
                             {NAV.map((item) => {
-                                const isActive = hoveredLabel === item.label || activeDropdown === item.label;
-                                const tc = dark ? (isActive ? 'text-white' : 'text-white/70 hover:text-white') : (isActive ? 'text-black' : 'text-black/70 hover:text-black');
+                                // Underline only when: this item's dropdown is open,
+                                // OR hovering this item while ANY dropdown is open
+                                const showUnderline = activeDropdown === item.label || (activeDropdown !== null && hoveredLabel === item.label);
+                                const tc = dark ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
+                                const tcActive = dark ? 'text-white' : 'text-black';
                                 const uc = dark ? 'bg-white' : 'bg-black';
 
                                 if (item.href) {
@@ -430,11 +439,11 @@ export function PublicNavbar() {
                                         <Link
                                             key={item.label}
                                             href={item.href}
-                                            className={`group relative flex h-[66px] items-center px-4 text-[14px] transition-colors ${tc}`}
+                                            className={`group relative flex h-[66px] items-center px-4 text-[14px] transition-colors ${showUnderline ? tcActive : tc}`}
                                             onMouseEnter={() => handleItemMouseEnter(item.label)}
                                         >
                                             {item.label}
-                                            <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0'}`} />
+                                            <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${showUnderline ? 'scale-x-100' : 'scale-x-0'}`} />
                                         </Link>
                                     );
                                 }
@@ -446,18 +455,18 @@ export function PublicNavbar() {
                                             aria-haspopup="true"
                                             aria-expanded={activeDropdown === item.label}
                                             onClick={() => toggleDropdown(item.label)}
-                                            className={`flex h-[66px] items-center px-4 text-[14px] transition-colors ${tc}`}
+                                            className={`flex h-[66px] items-center px-4 text-[14px] transition-colors ${showUnderline ? tcActive : tc}`}
                                         >
                                             {item.label}
                                         </button>
-                                        <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0'}`} />
+                                        <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${showUnderline ? 'scale-x-100' : 'scale-x-0'}`} />
                                     </div>
                                 );
                             })}
                         </nav>
                     )}
 
-                    <div className={`flex items-center gap-4 ${searchOpen ? 'flex-1 lg:ml-8' : ''}`}>
+                    <div className="flex items-center gap-4">
                         <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
                         <Link href="/contact" className="hidden h-12 shrink-0 items-center rounded-full bg-[#2563eb] px-8 text-[15px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch

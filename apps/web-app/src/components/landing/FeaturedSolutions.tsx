@@ -185,7 +185,7 @@ function Card({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-lg ${toneBg[tone]} ${heightClass} ${className}`}
+      className={`group relative overflow-hidden rounded-2xl ${toneBg[tone]} ${heightClass} ${className}`}
     >
       <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden="true">
         {visual}
