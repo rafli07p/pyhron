@@ -68,7 +68,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<string>('Equity Factor Risk');
   const [riskPeriod, setRiskPeriod] = useState('3 Months');
 
-  const topAssets = POSITIONS.slice().sort((a, b) => b.weight - a.weight);
+  const topAssets = [...POSITIONS].sort((a, b) => b.weight - a.weight);
   const totalRisk = RISK_SOURCES.reduce((s, r) => s + r.risk, 0);
 
   return (
@@ -197,13 +197,13 @@ export default function DashboardPage() {
           <SectionHeader title="Top Factors by Risk Contribution" />
           <div style={{ height: 200 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={FACTOR_RISK.sort((a, b) => b.contribution - a.contribution)} layout="vertical">
+              <BarChart data={[...FACTOR_RISK].sort((a, b) => b.contribution - a.contribution)} layout="vertical">
                 <CartesianGrid stroke="rgba(255,255,255,0.04)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickLine={false} axisLine={false} />
                 <YAxis dataKey="factor" type="category" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }} tickLine={false} axisLine={false} width={80} />
                 <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', fontSize: 11, borderRadius: 6 }} />
                 <Bar dataKey="contribution" radius={[0, 3, 3, 0]} barSize={16}>
-                  {FACTOR_RISK.sort((a, b) => b.contribution - a.contribution).map((f, i) => (
+                  {[...FACTOR_RISK].sort((a, b) => b.contribution - a.contribution).map((f, i) => (
                     <Cell key={i} fill={f.contribution >= 0 ? '#2563eb' : '#ef4444'} />
                   ))}
                 </Bar>
