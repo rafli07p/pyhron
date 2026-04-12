@@ -443,7 +443,7 @@ export function PublicNavbar() {
                                             onMouseEnter={() => handleItemMouseEnter(item.label)}
                                         >
                                             {item.label}
-                                            <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${showUnderline ? 'scale-x-100' : 'scale-x-0'}`} />
+                                            <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[3px] origin-center ${uc} transition-transform duration-300 ease-out ${showUnderline ? 'scale-x-100' : 'scale-x-0'}`} />
                                         </Link>
                                     );
                                 }
@@ -459,7 +459,7 @@ export function PublicNavbar() {
                                         >
                                             {item.label}
                                         </button>
-                                        <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${showUnderline ? 'scale-x-100' : 'scale-x-0'}`} />
+                                        <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[3px] origin-center ${uc} transition-transform duration-300 ease-out ${showUnderline ? 'scale-x-100' : 'scale-x-0'}`} />
                                     </div>
                                 );
                             })}

@@ -18,49 +18,59 @@ export function HeroSection() {
       className="relative flex min-h-dvh items-end overflow-hidden bg-white"
       aria-label="Pyhron — powering better investment decisions"
     >
-      {/* Smooth animated gradient background */}
+      {/* Background — visible flowing gradient like MSCI */}
       <div className="absolute inset-0 z-[1]" aria-hidden="true" role="presentation">
-        <div className="absolute inset-0 bg-white" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.06),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,0.04),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[#f0f4ff]" />
 
-        {/* Smooth flowing gradient blobs */}
+        {/* Large flowing blobs — clearly visible */}
         <div
-          className="absolute -right-[10%] top-[15%] h-[70%] w-[65%] rounded-full opacity-[0.12]"
+          className="absolute -right-[5%] -top-[10%] h-[80%] w-[70%] rounded-full"
           style={{
-            background: 'radial-gradient(ellipse, #3b82f6, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(59,130,246,0.18), transparent 65%)',
             animation: reduced ? 'none' : 'hero-drift-1 20s ease-in-out infinite',
           }}
         />
         <div
-          className="absolute -left-[5%] bottom-[5%] h-[50%] w-[55%] rounded-full opacity-[0.08]"
+          className="absolute -left-[10%] bottom-[0%] h-[60%] w-[60%] rounded-full"
           style={{
-            background: 'radial-gradient(ellipse, #8b5cf6, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(139,92,246,0.14), transparent 65%)',
             animation: reduced ? 'none' : 'hero-drift-2 25s ease-in-out infinite',
           }}
         />
         <div
-          className="absolute left-[30%] top-[40%] h-[40%] w-[40%] rounded-full opacity-[0.06]"
+          className="absolute left-[25%] top-[30%] h-[50%] w-[50%] rounded-full"
           style={{
-            background: 'radial-gradient(ellipse, #06b6d4, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(6,182,212,0.12), transparent 65%)',
             animation: reduced ? 'none' : 'hero-drift-3 18s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute right-[10%] bottom-[10%] h-[45%] w-[45%] rounded-full"
+          style={{
+            background: 'radial-gradient(ellipse, rgba(37,99,235,0.10), transparent 60%)',
+            animation: reduced ? 'none' : 'hero-drift-4 22s ease-in-out infinite',
           }}
         />
 
         <style>{`
           @keyframes hero-drift-1 {
             0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(-3%, 5%) scale(1.05); }
-            66% { transform: translate(2%, -3%) scale(0.95); }
+            33% { transform: translate(-4%, 6%) scale(1.08); }
+            66% { transform: translate(3%, -4%) scale(0.94); }
           }
           @keyframes hero-drift-2 {
             0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(4%, -3%) scale(1.08); }
-            66% { transform: translate(-2%, 4%) scale(0.96); }
+            33% { transform: translate(5%, -4%) scale(1.1); }
+            66% { transform: translate(-3%, 5%) scale(0.95); }
           }
           @keyframes hero-drift-3 {
             0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-5%, 3%) scale(1.1); }
+            50% { transform: translate(-6%, 4%) scale(1.12); }
+          }
+          @keyframes hero-drift-4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            40% { transform: translate(4%, 3%) scale(1.06); }
+            70% { transform: translate(-3%, -5%) scale(0.97); }
           }
         `}</style>
       </div>
