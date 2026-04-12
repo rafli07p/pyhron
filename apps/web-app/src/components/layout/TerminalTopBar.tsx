@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { Bell, HelpCircle, Search, ChevronDown } from 'lucide-react';
 import { useCommandPaletteStore } from '@/stores/command-palette';
 
 export function TerminalTopBar() {
   const openPalette = useCommandPaletteStore((s) => s.setOpen);
-  const [activeSection, setActiveSection] = useState('Portfolios');
+  const activeSection = 'Portfolios';
 
   return (
     <header className="sticky top-0 z-40 flex h-[48px] shrink-0 items-center bg-[#1b2a3d]">
