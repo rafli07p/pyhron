@@ -1,7 +1,63 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-const BACKEND_URL = process.env.BACKEND_URL!;
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
+const IS_DEV = process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
+
+// Dev-mode demo accounts (used when backend is unreachable)
+const DEV_USERS: Record<string, { password: string; id: string; name: string; role: string; tier: string }> = {
+  'demo@pyhron.com': { password: 'password123', id: '550e8400-e29b-41d4-a716-446655440000', name: 'Demo User', role: 'TRADER', tier: 'strategist' },
+  'admin@pyhron.com': { password: 'admin123', id: '550e8400-e29b-41d4-a716-446655440001', name: 'Admin User', role: 'ADMIN', tier: 'operator' },
+};
+
+async function tryBackendLogin(email: string, password: string) {
+  const res = await fetch(`${BACKEND_URL}/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: 'Login failed' }));
+    throw new Error(error.detail || 'Invalid credentials');
+  }
+
+  const data = await res.json();
+
+  const profileRes = await fetch(`${BACKEND_URL}/v1/auth/me`, {
+    headers: { Authorization: `Bearer ${data.access_token}` },
+  });
+  const profile = profileRes.ok
+    ? await profileRes.json()
+    : { id: 'unknown', email, full_name: '', role: 'VIEWER' };
+
+  return {
+    id: profile.id,
+    email: profile.email,
+    name: profile.full_name || email.split('@')[0],
+    role: profile.role,
+    tier: profile.tier ?? 'explorer',
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    accessTokenExpires: Date.now() + data.expires_in * 1000,
+  };
+}
+
+function devLogin(email: string, password: string) {
+  const user = DEV_USERS[email];
+  if (!user || user.password !== password) return null;
+
+  return {
+    id: user.id,
+    email,
+    name: user.name,
+    role: user.role,
+    tier: user.tier,
+    accessToken: `dev-token-${Date.now()}`,
+    refreshToken: `dev-refresh-${Date.now()}`,
+    accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 24h for dev
+  };
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -13,40 +69,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const res = await fetch(`${BACKEND_URL}/v1/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-        });
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
-        if (!res.ok) {
-          const error = await res.json().catch(() => ({ detail: 'Login failed' }));
-          throw new Error(error.detail || 'Invalid credentials');
+        // Try real backend first
+        try {
+          return await tryBackendLogin(email, password);
+        } catch (backendError) {
+          // In dev mode, fall back to mock users if backend is unreachable
+          if (IS_DEV) {
+            const devUser = devLogin(email, password);
+            if (devUser) return devUser;
+          }
+          throw backendError;
         }
-
-        const data = await res.json();
-
-        // Fetch user profile
-        const profileRes = await fetch(`${BACKEND_URL}/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${data.access_token}` },
-        });
-        const profile = profileRes.ok
-          ? await profileRes.json()
-          : { id: 'unknown', email: credentials.email, full_name: '', role: 'VIEWER' };
-
-        return {
-          id: profile.id,
-          email: profile.email,
-          name: profile.full_name || profile.email.split('@')[0],
-          role: profile.role,
-          tier: profile.tier ?? 'explorer',
-          accessToken: data.access_token,
-          refreshToken: data.refresh_token,
-          accessTokenExpires: Date.now() + data.expires_in * 1000,
-        };
       },
     }),
   ],
@@ -56,6 +92,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const expiresAt = token.accessTokenExpires as number;
       if (Date.now() < expiresAt - 2 * 60 * 1000) return token;
+
+      // Skip refresh for dev tokens
+      if ((token.accessToken as string)?.startsWith('dev-token-')) {
+        return { ...token, accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000 };
+      }
 
       return refreshAccessToken(token);
     },
