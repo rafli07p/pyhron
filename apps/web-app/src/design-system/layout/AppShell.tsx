@@ -6,7 +6,7 @@ import { CommandPalette } from './CommandPalette';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col bg-[#1b2a3d]">
       <TerminalTopBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
