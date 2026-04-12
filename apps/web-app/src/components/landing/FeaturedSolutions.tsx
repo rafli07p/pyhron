@@ -47,7 +47,7 @@ const introColumns = [
 export function FeaturedSolutions() {
   return (
     <section className="bg-white py-20 lg:py-28">
-      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-8">
         {/* Header — MSCI ms-headline1: 2.25rem mobile → 4rem desktop */}
         <ScrollReveal>
           <h2
@@ -184,9 +184,8 @@ function Card({
   const ctaBorder = isLight ? 'border-white/60 text-white hover:border-white' : 'border-black/60 text-black hover:border-black';
 
   return (
-    <Link
-      href={href}
-      className={`group relative overflow-hidden rounded-lg ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-1`}
+    <div
+      className={`group relative overflow-hidden rounded-lg ${toneBg[tone]} ${heightClass} ${className}`}
     >
       <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden="true">
         {visual}
@@ -207,14 +206,15 @@ function Card({
             </p>
           )}
         </div>
-        <span
+        <Link
+          href={href}
           className={`mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border px-5 text-[13px] font-medium transition-colors ${ctaBorder}`}
         >
           {cta}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-        </span>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 

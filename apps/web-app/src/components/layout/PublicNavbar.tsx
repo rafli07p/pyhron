@@ -99,7 +99,7 @@ const NAV: NavItem[] = [
 function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void }) {
     return (
         <div className="fixed inset-x-0 top-[88px] z-50 bg-white shadow-xl">
-            <div className="mx-auto flex max-w-[1200px] gap-16 px-8 py-10">
+            <div className="mx-auto flex max-w-[1400px] gap-16 px-8 py-10">
                 <div className="flex flex-1 gap-12">
                     {item.columns?.map((col, i) => (
                         <div key={i} className="min-w-[180px]">
@@ -129,7 +129,7 @@ function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void })
             </div>
             {item.footer && (
                 <div className="border-t border-black/[0.06]">
-                    <div className="mx-auto max-w-[1200px] px-8 py-5">
+                    <div className="mx-auto max-w-[1400px] px-8 py-5">
                         <Link href={item.footer.href} onClick={onClose} className="text-[13px] text-black/40 underline underline-offset-4 decoration-black/15 transition-colors hover:text-black/70 hover:decoration-black/40">
                             {item.footer.label}
                         </Link>
@@ -208,6 +208,7 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
     );
 }
 
+/** Search — expands inline like MSCI: logo stays visible, search bar grows between logo and button */
 function ExpandableSearch() {
     const [expanded, setExpanded] = useState(false);
     const [query, setQuery] = useState('');
@@ -223,6 +224,7 @@ function ExpandableSearch() {
         function handleClick(e: MouseEvent) {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
                 setExpanded(false);
+                setQuery('');
             }
         }
         document.addEventListener('mousedown', handleClick);
@@ -231,24 +233,23 @@ function ExpandableSearch() {
 
     const popular = ['BBCA', 'IHSG', 'momentum', 'factor', 'screener'];
 
-    if (!expanded) {
-        return (
-            <button onClick={() => setExpanded(true)} className="hidden h-9 w-[160px] items-center gap-2 rounded-full border border-black/15 px-4 text-[13px] text-black/40 transition-colors hover:border-black/25 lg:flex">
-                <Search className="h-4 w-4 shrink-0" />
-                <span>Search</span>
-            </button>
-        );
-    }
-
     return (
-        <div ref={containerRef} className="absolute inset-x-0 top-0 z-50 hidden h-[60px] items-center justify-center bg-white px-8 lg:flex">
-            <div className="relative w-full max-w-[700px]">
-                <div className="flex h-10 items-center gap-2 rounded-full border-2 border-[#2563eb] bg-white px-4">
-                    <Search className="h-4 w-4 shrink-0 text-black/30" />
+        <div ref={containerRef} className="relative hidden lg:block">
+            {/* Collapsed pill */}
+            <button
+                onClick={() => setExpanded(true)}
+                className={`flex h-10 items-center gap-2 rounded-full border border-black/15 px-5 text-[13px] text-black/40 transition-all duration-300 ease-out hover:border-black/25 ${
+                    expanded ? 'w-[500px] border-[#2563eb] border-2' : 'w-[140px]'
+                }`}
+            >
+                <Search className="h-4 w-4 shrink-0" />
+                {!expanded && <span>Search</span>}
+                {expanded && (
                     <input
                         ref={inputRef}
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
+                        onChange={(e) => { e.stopPropagation(); setQuery(e.target.value); }}
+                        onClick={(e) => e.stopPropagation()}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
                             if (e.key === 'Escape') { setExpanded(false); setQuery(''); }
@@ -256,9 +257,21 @@ function ExpandableSearch() {
                         placeholder="Search"
                         className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
                     />
-                    {query && <button onClick={() => setQuery('')} className="text-[12px] text-black/30 hover:text-black/60">Clear</button>}
-                    <button onClick={() => { setExpanded(false); setQuery(''); }} className="text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
-                </div>
+                )}
+                {expanded && query && (
+                    <button onClick={(e) => { e.stopPropagation(); setQuery(''); }} className="text-[12px] text-black/30 hover:text-black/60">
+                        Clear
+                    </button>
+                )}
+                {expanded && (
+                    <button onClick={(e) => { e.stopPropagation(); setExpanded(false); setQuery(''); }} className="text-black/30 hover:text-black/60">
+                        <X className="h-4 w-4" />
+                    </button>
+                )}
+            </button>
+
+            {/* Dropdown suggestions */}
+            {expanded && (
                 <div className="absolute left-0 right-0 top-12 rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
                     {!query ? (
                         <>
@@ -274,7 +287,7 @@ function ExpandableSearch() {
                         <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
                     )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }
@@ -284,18 +297,11 @@ export function PublicNavbar() {
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Auto-close any open dropdown / mobile menu on navigation. Without this,
-    // clicking a top-level <Link> (e.g. Pricing) while a mega-dropdown was open
-    // would leave the dropdown visible on the next page.
-    //
-    // Uses React's documented "adjusting state while rendering" pattern
-    // (https://react.dev/reference/react/useState#storing-information-from-previous-renders)
-    // so we don't trip the `set-state-in-effect` lint and don't need an extra
-    // render pass via useEffect.
     const [prevPathname, setPrevPathname] = useState(pathname);
     if (prevPathname !== pathname) {
         setPrevPathname(pathname);
@@ -321,28 +327,27 @@ export function PublicNavbar() {
         return () => document.removeEventListener('mousedown', onClick);
     }, []);
 
-    // Scroll direction: hide when scrolling down past the header height,
-    // reveal when scrolling up, always show at the top of the page.
+    // Scroll: transparent at top, dark bg when scrolling up from below,
+    // transparent again when back at top. Hide on scroll down.
     useEffect(() => {
         let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
         let ticking = false;
-        const THRESHOLD = 88; // header height — don't hide until scrolled past it
-        const DELTA = 6;       // ignore sub-pixel jitter
+        const THRESHOLD = 88;
+        const DELTA = 6;
 
         function update() {
             const y = window.scrollY;
             const dy = y - lastY;
 
+            setScrolled(y > THRESHOLD);
+
             if (y <= THRESHOLD) {
-                // At (or near) the top: always visible.
                 setHidden(false);
             } else if (Math.abs(dy) > DELTA) {
                 if (dy > 0) {
-                    // Scrolling down — hide.
                     setHidden(true);
                     setActiveDropdown(null);
                 } else {
-                    // Scrolling up — reveal.
                     setHidden(false);
                 }
             }
@@ -364,30 +369,37 @@ export function PublicNavbar() {
 
     const closeDropdown = () => setActiveDropdown(null);
 
+    // Text colors adapt to bg
+    const textColor = scrolled ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
+    const textActive = scrolled ? 'text-white' : 'text-black';
+    const underlineColor = scrolled ? 'bg-white' : 'bg-black';
+
     return (
         <>
             <header
                 ref={navRef}
-                className={`fixed left-0 right-0 z-50 bg-white transition-transform duration-300 ease-out ${
+                className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-out ${
                     hidden ? '-translate-y-full' : 'translate-y-0'
-                }`}
+                } ${scrolled ? 'bg-[#0a0e1a] shadow-lg' : 'bg-transparent'}`}
             >
-                {/* Utility bar — MSCI style */}
+                {/* Utility bar */}
                 <div className="hidden lg:block">
                     <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
-                        <Link href="/contact" className="px-3 text-[12px] text-black/40 transition-colors hover:text-black/70">
+                        <Link href="/contact" className={`px-3 text-[12px] transition-colors ${scrolled ? 'text-white/40 hover:text-white/70' : 'text-black/40 hover:text-black/70'}`}>
                             Support
                         </Link>
-                        <span className="text-black/15">|</span>
-                        <ClientLoginDropdown dark={false} />
+                        <span className={scrolled ? 'text-white/15' : 'text-black/15'}>|</span>
+                        <ClientLoginDropdown dark={scrolled} />
                     </div>
                 </div>
 
                 {/* Main nav bar */}
-                <div className="relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between border-b border-dashed border-black/[0.08] px-6 lg:px-8">
+                <div className={`relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
+                    scrolled ? 'border-white/10' : 'border-black/[0.08]'
+                }`}>
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
-                            src="/logos/logo.svg"
+                            src={scrolled ? '/logos/logo-dark.svg' : '/logos/logo.svg'}
                             alt="Pyhron"
                             width={130}
                             height={35}
@@ -409,13 +421,13 @@ export function PublicNavbar() {
                                     <Link
                                         key={item.label}
                                         href={item.href}
-                                        className="group relative flex h-[60px] items-center px-4 text-[14px] text-black/70 transition-colors hover:text-black"
+                                        className={`group relative flex h-[60px] items-center px-4 text-[14px] transition-colors ${isActive ? textActive : textColor}`}
                                         onMouseEnter={() => setHoveredLabel(item.label)}
                                     >
                                         {item.label}
                                         <span
                                             aria-hidden="true"
-                                            className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                            className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
                                                 isActive ? 'scale-x-100' : 'scale-x-0'
                                             }`}
                                         />
@@ -435,14 +447,14 @@ export function PublicNavbar() {
                                         aria-expanded={activeDropdown === item.label}
                                         onClick={() => toggleDropdown(item.label)}
                                         className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
-                                            isActive ? 'text-black' : 'text-black/70 hover:text-black'
+                                            isActive ? textActive : textColor
                                         }`}
                                     >
                                         {item.label}
                                     </button>
                                     <span
                                         aria-hidden="true"
-                                        className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                        className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
                                             isActive ? 'scale-x-100' : 'scale-x-0'
                                         }`}
                                     />
@@ -456,7 +468,7 @@ export function PublicNavbar() {
                         <Link href="/contact" className="hidden h-10 items-center rounded-full bg-[#2563eb] px-7 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch
                         </Link>
-                        <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="text-black/60 lg:hidden">
+                        <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className={`lg:hidden ${scrolled ? 'text-white/60' : 'text-black/60'}`}>
                             <Menu className="h-5 w-5" />
                         </button>
                     </div>

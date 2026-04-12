@@ -26,8 +26,8 @@ export default function LandingPage() {
       <ResearchInsights />
 
       {/* CTA */}
-      <section className="bg-white py-20 text-center">
-        <ScrollReveal>
+      <section className="bg-white py-20">
+        <ScrollReveal className="mx-auto max-w-[1400px] px-6 text-center lg:px-8">
           <h2 className="text-2xl font-normal text-black">
             Ready to elevate your research?
           </h2>
