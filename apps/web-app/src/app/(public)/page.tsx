@@ -25,23 +25,22 @@ export default function LandingPage() {
       {/* Research & Insights — MSCI-style editorial grid */}
       <ResearchInsights />
 
-      {/* CTA — back on white so the gray ResearchInsights above gets its own
-          distinct band. */}
-      <section className="bg-white py-16 text-center lg:py-20">
+      {/* CTA */}
+      <section className="bg-white py-20 text-center">
         <ScrollReveal>
-          <h2 className="text-2xl font-semibold tracking-tight text-black lg:text-3xl">
+          <h2 className="text-2xl font-normal text-black">
             Ready to elevate your research?
           </h2>
-          <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 rounded-full bg-[#1a3fd6] px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-[#2563eb] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1d4ed8]"
             >
               Create Free Account &rarr;
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 rounded-full border border-black/20 px-7 py-3 text-sm font-medium text-black/70 transition-colors hover:border-black hover:text-black"
+              className="inline-flex items-center gap-2 rounded-full border border-black/15 px-6 py-3 text-sm font-medium text-black/60 transition-colors hover:text-black"
             >
               Schedule Demo &rarr;
             </Link>

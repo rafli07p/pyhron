@@ -23,10 +23,8 @@ const MSCI_BRAND_BLUE = '#1a3fd6';
 
 export function ResearchInsights() {
   return (
-    // Light-gray tint differentiates this section from the white
-    // FeaturedSolutions above it — matches MSCI's alternating section rhythm.
-    <section className="bg-[#f4f5f7] py-16 lg:py-20">
-      <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+    <section className="bg-white py-20 lg:py-28">
+      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
         {/* Header */}
         <ScrollReveal>
           <h2
@@ -51,7 +49,7 @@ export function ResearchInsights() {
           </p>
 
           <Link
-            href="/research/quant"
+            href="/research"
             className="mt-8 inline-flex h-12 items-center gap-2 rounded-full px-8 text-[14px] font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
@@ -59,13 +57,12 @@ export function ResearchInsights() {
           </Link>
         </ScrollReveal>
 
-        {/* Card grid — tight 6px gap matching MSCI */}
-        <div className="mt-14 grid grid-cols-1 gap-[6px] lg:grid-cols-[1fr_1fr] lg:grid-rows-[1fr_1fr]">
-          {/* White "cover" card spanning both rows — sits on the gray
-              section background for clear separation. */}
+        {/* Card grid */}
+        <div className="mt-16 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto]">
+          {/* Gray "cover" card spanning both rows */}
           <Link
-            href="/research/quant"
-            className="group relative overflow-hidden rounded-2xl bg-white p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2"
+            href="/research/articles/idx-factor-stress-test"
+            className="group relative overflow-hidden rounded-2xl bg-[#f5f5f7] p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
           >
             <div className="pointer-events-none flex h-[340px] items-center justify-center lg:h-[380px]">
               <SphereVisual />
@@ -86,10 +83,10 @@ export function ResearchInsights() {
             </span>
           </Link>
 
-          {/* Black card */}
+          {/* Black card with "photo" placeholder */}
           <Link
-            href="/research/ml"
-            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
+            href="/research/articles/us-china-idx-flows"
+            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
@@ -108,10 +105,10 @@ export function ResearchInsights() {
             </span>
           </Link>
 
-          {/* Blue card */}
+          {/* Blue card with pattern */}
           <Link
-            href="/research/risk"
-            className="group relative overflow-hidden rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
+            href="/research/articles/idx-liquidity-premium"
+            className="group relative overflow-hidden rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />
