@@ -38,7 +38,7 @@ export function Hero() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/research"
+              href="/research-and-insights"
               className="inline-flex items-center gap-2 border border-[#0A1628] px-7 py-3.5 text-sm font-medium text-[#0A1628] transition-colors hover:bg-[#0A1628]/5"
             >
               View Research

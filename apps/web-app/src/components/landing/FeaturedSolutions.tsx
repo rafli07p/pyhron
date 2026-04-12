@@ -46,58 +46,52 @@ const introColumns = [
 
 export function FeaturedSolutions() {
   return (
-    <section className="bg-[#f5f5f7] py-20 lg:py-28">
+    <section className="bg-[#f5f5f7] py-16 lg:py-24">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
-        {/* Header — matches Research & Insights style: bold title + fading subtitle */}
+        {/* Header — MSCI ms-headline1 scale: 2.25rem mobile, 4rem desktop */}
         <ScrollReveal>
           <h2
-            className="font-semibold leading-[1.1]"
+            className="ms-heading font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
             style={{
               color: MSCI_BRAND_BLUE,
-              fontSize: '2.25rem',
               letterSpacing: '-0.04em',
-              fontFamily: 'Inter, sans-serif',
             }}
           >
             Featured Solutions
           </h2>
           <p
-            className="mt-2 font-semibold leading-[1.1]"
+            className="mt-1 font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
             style={{
               color: '#6a7cfb',
-              fontSize: '2.25rem',
               letterSpacing: '-0.04em',
-              fontFamily: 'Inter, sans-serif',
             }}
           >
             End-to-end tools to meet your needs
           </p>
         </ScrollReveal>
 
-        {/* Intro columns — plain text blocks (no link arrow, no hover color
-            shift). Titles use `ms-font-semibold ms-text-black`, bodies use
-            `ms-font-regular ms-body-l-sm ms-text-black`. */}
+        {/* Intro columns */}
         <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {introColumns.map((col) => (
             <div key={col.title}>
-              <h3 className="font-semibold text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' }}>
+              <h3 className="font-semibold text-black" style={{ fontSize: '0.875rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
                 {col.title}
               </h3>
-              <p className="mt-3 font-normal text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' }}>
+              <p className="mt-2 font-normal text-black/70" style={{ fontSize: '0.875rem', lineHeight: 1.5, letterSpacing: '-0.01em' }}>
                 {col.desc}
               </p>
             </div>
           ))}
         </ScrollReveal>
 
-        {/* Card grid */}
-        <div className="mt-10 grid grid-cols-1 gap-3 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
+        {/* Card grid — MSCI-style tight gaps */}
+        <div className="mt-8 grid grid-cols-1 gap-2 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
           {/* Big hero card — spans 2 rows on lg */}
           <Card
             href="/data/ml-signals"
             className="lg:row-span-2"
             tone="indigo"
-            heightClass="min-h-[340px] lg:min-h-[500px]"
+            heightClass="min-h-[300px] lg:min-h-[440px]"
             visual={<VisualOrbits />}
             title="Pyhron adds ML-driven alpha to IDX research"
             desc="Expanding systematic capabilities across the Indonesian capital markets research lifecycle."
@@ -109,7 +103,7 @@ export function FeaturedSolutions() {
           <Card
             href="/data/factors"
             tone="white"
-            heightClass="min-h-[230px]"
+            heightClass="min-h-[200px]"
             visual={<VisualBars />}
             title="Enhancing our multi-asset factor analytics"
             kicker="Pyhron extends Fama-French five-factor coverage"
@@ -119,9 +113,9 @@ export function FeaturedSolutions() {
 
           {/* Small card B — teal */}
           <Card
-            href="/research/quant"
+            href="/research-and-insights/quant"
             tone="teal"
-            heightClass="min-h-[230px]"
+            heightClass="min-h-[200px]"
             visual={<VisualWaves />}
             title="Daily IDX factor exposures are here"
             desc="Nowcasting delivers decision-grade signals between reporting periods."
@@ -133,7 +127,7 @@ export function FeaturedSolutions() {
           <Card
             href="/markets"
             tone="black"
-            heightClass="min-h-[230px]"
+            heightClass="min-h-[200px]"
             visual={<VisualLines />}
             title="Explore the new Markets in Motion hub"
             desc="Turn complex IDX data into clear direction with trending topics and timely insights you can act on."
@@ -143,9 +137,9 @@ export function FeaturedSolutions() {
 
           {/* Small card D — blue network */}
           <Card
-            href="/research"
+            href="/research-and-insights"
             tone="blue"
-            heightClass="min-h-[230px]"
+            heightClass="min-h-[200px]"
             visual={<VisualNetwork />}
             title="Seamlessly query Indonesian markets with conversational AI"
             kicker="Introducing Pyhron Insights™"
@@ -207,35 +201,35 @@ function Card({
   return (
     <Link
       href={href}
-      className={`group relative overflow-hidden rounded-2xl ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-1`}
+      className={`group relative overflow-hidden rounded-xl ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-0.5`}
     >
       {/* Decorative visual — absolute, behind text */}
       <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden="true">
         {visual}
       </div>
 
-      {/* Content */}
-      <div className="relative flex h-full flex-col justify-between p-5 lg:p-6" style={{ fontFamily: 'Inter, sans-serif' }}>
-        <div className="max-w-[88%]">
-          <h3 className={`text-[22px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[26px]`}>
+      {/* Content — MSCI-compact padding */}
+      <div className="relative flex h-full flex-col justify-between p-5">
+        <div className="max-w-[85%]">
+          <h3 className={`text-[20px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[24px]`}>
             {title}
           </h3>
           {desc && (
-            <p className={`mt-3 text-[14px] leading-relaxed ${descColor} lg:text-[15px]`}>
+            <p className={`mt-2 text-[13px] leading-relaxed ${descColor} lg:text-[14px]`}>
               {desc}
             </p>
           )}
           {kicker && !desc && (
-            <p className={`mt-3 text-[14px] leading-relaxed ${kickerColor} lg:text-[15px]`}>
+            <p className={`mt-2 text-[13px] leading-relaxed ${kickerColor} lg:text-[14px]`}>
               {kicker}
             </p>
           )}
         </div>
         <span
-          className={`mt-6 inline-flex h-10 w-fit items-center gap-2 rounded-full border px-5 text-[13px] font-medium transition-colors ${ctaBorder}`}
+          className={`mt-4 inline-flex h-9 w-fit items-center gap-2 rounded-full border px-4 text-[12px] font-medium transition-colors ${ctaBorder}`}
         >
           {cta}
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
     </Link>
