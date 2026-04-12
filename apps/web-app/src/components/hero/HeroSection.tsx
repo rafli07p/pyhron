@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useHeroAnimation } from '@/hooks/useHeroAnimation';
-import { FallbackGradient } from './FallbackGradient';
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -16,20 +15,62 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-dvh items-center overflow-hidden bg-white"
-      aria-label="Pyhron — powering better investment decisions for Indonesian capital markets"
+      className="relative flex min-h-dvh items-end overflow-hidden bg-white"
+      aria-label="Pyhron — powering better investment decisions"
     >
+      {/* Smooth animated gradient background */}
       <div className="absolute inset-0 z-[1]" aria-hidden="true" role="presentation">
-        <FallbackGradient isStatic={reduced} />
+        <div className="absolute inset-0 bg-white" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.06),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,0.04),transparent_55%)]" />
+
+        {/* Smooth flowing gradient blobs */}
+        <div
+          className="absolute -right-[10%] top-[15%] h-[70%] w-[65%] rounded-full opacity-[0.12]"
+          style={{
+            background: 'radial-gradient(ellipse, #3b82f6, transparent 70%)',
+            animation: reduced ? 'none' : 'hero-drift-1 20s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute -left-[5%] bottom-[5%] h-[50%] w-[55%] rounded-full opacity-[0.08]"
+          style={{
+            background: 'radial-gradient(ellipse, #8b5cf6, transparent 70%)',
+            animation: reduced ? 'none' : 'hero-drift-2 25s ease-in-out infinite',
+          }}
+        />
+        <div
+          className="absolute left-[30%] top-[40%] h-[40%] w-[40%] rounded-full opacity-[0.06]"
+          style={{
+            background: 'radial-gradient(ellipse, #06b6d4, transparent 70%)',
+            animation: reduced ? 'none' : 'hero-drift-3 18s ease-in-out infinite',
+          }}
+        />
+
+        <style>{`
+          @keyframes hero-drift-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-3%, 5%) scale(1.05); }
+            66% { transform: translate(2%, -3%) scale(0.95); }
+          }
+          @keyframes hero-drift-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(4%, -3%) scale(1.08); }
+            66% { transform: translate(-2%, 4%) scale(0.96); }
+          }
+          @keyframes hero-drift-3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-5%, 3%) scale(1.1); }
+          }
+        `}</style>
       </div>
 
-      <div className="relative z-[2] mx-auto flex h-full w-full max-w-[1400px] flex-col justify-center px-6 pb-24 pt-32 lg:px-8" role="banner">
+      <div className="relative z-[2] mx-auto flex w-full max-w-[1400px] flex-col justify-end px-6 pb-[12vh] pt-[200px] lg:px-8" role="banner">
         <div className="max-w-3xl">
           <h1 className="text-5xl font-normal leading-[1.05] tracking-tight text-[#0a0e1a] md:text-7xl lg:text-[5.5rem]">
             <span className="hero-line block">Powering better</span>
-            <span className="hero-line block">investment decisions</span>
-            <span className="hero-line block">for Indonesian</span>
-            <span className="hero-line block">capital markets</span>
+            <span className="hero-line block">investment</span>
+            <span className="hero-line block">decisions</span>
           </h1>
 
           <p className="hero-subtext mt-8 max-w-xl text-lg text-black/65">
