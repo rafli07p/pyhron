@@ -46,23 +46,25 @@ const introColumns = [
 
 export function FeaturedSolutions() {
   return (
-    <section className="bg-[#f5f5f7] py-16 lg:py-24">
+    <section className="bg-white py-14 lg:py-20">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
-        {/* Header — MSCI ms-headline1 scale: 2.25rem mobile, 4rem desktop */}
+        {/* Header — MSCI ms-headline1-sm: 2.25rem, -0.04em tracking */}
         <ScrollReveal>
           <h2
-            className="ms-heading font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
+            className="font-semibold leading-[1.1]"
             style={{
               color: MSCI_BRAND_BLUE,
+              fontSize: '2.25rem',
               letterSpacing: '-0.04em',
             }}
           >
             Featured Solutions
           </h2>
           <p
-            className="mt-1 font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
+            className="mt-0.5 font-semibold leading-[1.1]"
             style={{
               color: '#6a7cfb',
+              fontSize: '2.25rem',
               letterSpacing: '-0.04em',
             }}
           >
@@ -70,28 +72,28 @@ export function FeaturedSolutions() {
           </p>
         </ScrollReveal>
 
-        {/* Intro columns */}
-        <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+        {/* Intro columns — MSCI style: bold title, regular body, compact spacing */}
+        <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-3">
           {introColumns.map((col) => (
             <div key={col.title}>
-              <h3 className="font-semibold text-black" style={{ fontSize: '0.875rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+              <h3 className="font-bold text-black" style={{ fontSize: '0.8125rem', lineHeight: 1.5 }}>
                 {col.title}
               </h3>
-              <p className="mt-2 font-normal text-black/70" style={{ fontSize: '0.875rem', lineHeight: 1.5, letterSpacing: '-0.01em' }}>
+              <p className="mt-1.5 font-normal text-black/60" style={{ fontSize: '0.8125rem', lineHeight: 1.6 }}>
                 {col.desc}
               </p>
             </div>
           ))}
         </ScrollReveal>
 
-        {/* Card grid — MSCI-style tight gaps */}
-        <div className="mt-8 grid grid-cols-1 gap-2 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
-          {/* Big hero card — spans 2 rows on lg */}
+        {/* Card grid — MSCI-exact: 6px gaps, rounded-lg corners */}
+        <div className="mt-6 grid grid-cols-1 gap-1.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr_1fr]">
+          {/* Big hero card — spans 2 rows */}
           <Card
             href="/data/ml-signals"
             className="lg:row-span-2"
             tone="indigo"
-            heightClass="min-h-[300px] lg:min-h-[440px]"
+            heightClass="min-h-[280px] lg:min-h-[400px]"
             visual={<VisualOrbits />}
             title="Pyhron adds ML-driven alpha to IDX research"
             desc="Expanding systematic capabilities across the Indonesian capital markets research lifecycle."
@@ -103,7 +105,7 @@ export function FeaturedSolutions() {
           <Card
             href="/data/factors"
             tone="white"
-            heightClass="min-h-[200px]"
+            heightClass="min-h-[190px]"
             visual={<VisualBars />}
             title="Enhancing our multi-asset factor analytics"
             kicker="Pyhron extends Fama-French five-factor coverage"
@@ -115,7 +117,7 @@ export function FeaturedSolutions() {
           <Card
             href="/research-and-insights/quant"
             tone="teal"
-            heightClass="min-h-[200px]"
+            heightClass="min-h-[190px]"
             visual={<VisualWaves />}
             title="Daily IDX factor exposures are here"
             desc="Nowcasting delivers decision-grade signals between reporting periods."
@@ -123,11 +125,11 @@ export function FeaturedSolutions() {
             variant="dark-on-light"
           />
 
-          {/* Small card C — black with "photo" placeholder */}
+          {/* Small card C — black */}
           <Card
             href="/markets"
             tone="black"
-            heightClass="min-h-[200px]"
+            heightClass="min-h-[190px]"
             visual={<VisualLines />}
             title="Explore the new Markets in Motion hub"
             desc="Turn complex IDX data into clear direction with trending topics and timely insights you can act on."
@@ -139,7 +141,7 @@ export function FeaturedSolutions() {
           <Card
             href="/research-and-insights"
             tone="blue"
-            heightClass="min-h-[200px]"
+            heightClass="min-h-[190px]"
             visual={<VisualNetwork />}
             title="Seamlessly query Indonesian markets with conversational AI"
             kicker="Introducing Pyhron Insights™"
@@ -201,7 +203,7 @@ function Card({
   return (
     <Link
       href={href}
-      className={`group relative overflow-hidden rounded-xl ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-0.5`}
+      className={`group relative overflow-hidden rounded-lg ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-0.5`}
     >
       {/* Decorative visual — absolute, behind text */}
       <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden="true">
@@ -209,24 +211,24 @@ function Card({
       </div>
 
       {/* Content — MSCI-compact padding */}
-      <div className="relative flex h-full flex-col justify-between p-5">
+      <div className="relative flex h-full flex-col justify-end p-5 lg:p-6">
         <div className="max-w-[85%]">
-          <h3 className={`text-[20px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[24px]`}>
+          <h3 className={`text-[18px] font-semibold leading-[1.25] tracking-tight ${titleColor} lg:text-[22px]`}>
             {title}
           </h3>
           {desc && (
-            <p className={`mt-2 text-[13px] leading-relaxed ${descColor} lg:text-[14px]`}>
+            <p className={`mt-1.5 text-[12px] leading-relaxed ${descColor} lg:text-[13px]`}>
               {desc}
             </p>
           )}
           {kicker && !desc && (
-            <p className={`mt-2 text-[13px] leading-relaxed ${kickerColor} lg:text-[14px]`}>
+            <p className={`mt-1.5 text-[12px] leading-relaxed ${kickerColor} lg:text-[13px]`}>
               {kicker}
             </p>
           )}
         </div>
         <span
-          className={`mt-4 inline-flex h-9 w-fit items-center gap-2 rounded-full border px-4 text-[12px] font-medium transition-colors ${ctaBorder}`}
+          className={`mt-3 inline-flex h-8 w-fit items-center gap-1.5 rounded-full border px-4 text-[11px] font-medium transition-colors ${ctaBorder}`}
         >
           {cta}
           <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />

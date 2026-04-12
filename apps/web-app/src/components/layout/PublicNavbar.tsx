@@ -67,9 +67,9 @@ const NAV: NavItem[] = [
                     { label: 'Macro & Rates', href: '/research-and-insights/macro' },
                 ] },
             { title: 'By asset class', items: [
-                    { label: 'Equities', href: '/research-and-insights' },
-                    { label: 'Fixed Income', href: '/research-and-insights' },
-                    { label: 'Multi-Asset', href: '/research-and-insights' },
+                    { label: 'Equities', href: '/research-and-insights/equities' },
+                    { label: 'Fixed Income', href: '/research-and-insights/fixed-income' },
+                    { label: 'Multi-Asset', href: '/research-and-insights/multi-asset' },
                 ] },
         ],
         featured: { type: 'Featured research', title: 'IDX Factor Investing 2026', desc: 'How momentum, value, and quality factors perform in Indonesia\'s market.', cta: 'Read the report', ctaHref: '/research-and-insights' },
@@ -98,7 +98,7 @@ const NAV: NavItem[] = [
 
 function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void }) {
     return (
-        <div className="fixed inset-x-0 top-[88px] z-50 bg-white shadow-xl">
+        <div className="fixed inset-x-0 top-[88px] z-50 border-b border-black/[0.06] bg-white shadow-lg">
             <div className="mx-auto flex max-w-[1200px] gap-16 px-8 py-10">
                 <div className="flex flex-1 gap-12">
                     {item.columns?.map((col, i) => (
@@ -368,55 +368,54 @@ export function PublicNavbar() {
         <>
             <header
                 ref={navRef}
-                className={`fixed left-0 right-0 z-50 bg-white shadow-sm transition-transform duration-300 ease-out ${
+                className={`fixed left-0 right-0 z-50 bg-white transition-transform duration-300 ease-out ${
                     hidden ? '-translate-y-full' : 'translate-y-0'
                 }`}
             >
-                <div className="hidden lg:block">
-                    <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
-                        <Link href="/contact" className="px-3 text-[12px] text-black/40 transition-colors hover:text-black/70">
+                {/* Utility bar — MSCI style: right-aligned links with pipe separators */}
+                <div className="hidden border-b border-black/[0.06] lg:block">
+                    <div className="mx-auto flex h-8 max-w-[1400px] items-center justify-end gap-0 px-8">
+                        <Link href="/contact" className="px-3 text-[11px] text-black/45 transition-colors hover:text-black/70">
                             Support
                         </Link>
-                        <span className="text-black/15">|</span>
+                        <span className="text-black/20">|</span>
                         <ClientLoginDropdown dark={false} />
                     </div>
                 </div>
 
-                <div className="relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between px-6 lg:px-8">
+                {/* Main nav bar */}
+                <div className="relative mx-auto flex h-[56px] max-w-[1400px] items-center justify-between border-b border-black/[0.06] px-6 lg:px-8">
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
                             src="/logos/logo.svg"
                             alt="Pyhron"
-                            width={130}
-                            height={35}
+                            width={120}
+                            height={32}
                             priority
-                            className="h-9 w-auto"
+                            className="h-8 w-auto"
                         />
                     </Link>
 
                     <nav
-                        className="ml-10 hidden items-center gap-0.5 lg:flex"
+                        className="ml-8 hidden items-center gap-0 lg:flex"
                         aria-label="Main navigation"
                         onMouseLeave={() => setHoveredLabel(null)}
                     >
                         {NAV.map((item) => {
-                            // Underline is visible on hover OR when this item's dropdown is currently open.
                             const isActive = hoveredLabel === item.label || activeDropdown === item.label;
 
-                            // Single-link nav items (e.g. Pricing): hover only shows the underline,
-                            // click navigates via the Link.
                             if (item.href) {
                                 return (
                                     <Link
                                         key={item.label}
                                         href={item.href}
-                                        className="group relative flex h-[60px] items-center px-4 text-[14px] text-black/70 transition-colors hover:text-black"
+                                        className="group relative flex h-[56px] items-center px-3.5 text-[13px] font-normal text-black/70 transition-colors hover:text-black"
                                         onMouseEnter={() => setHoveredLabel(item.label)}
                                     >
                                         {item.label}
                                         <span
                                             aria-hidden="true"
-                                            className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                            className={`pointer-events-none absolute bottom-0 left-3.5 right-3.5 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
                                                 isActive ? 'scale-x-100' : 'scale-x-0'
                                             }`}
                                         />
@@ -424,8 +423,6 @@ export function PublicNavbar() {
                                 );
                             }
 
-                            // Dropdown items: hover only shows the underline. CLICK toggles
-                            // the mega panel open/closed (click-to-open, not hover-to-open).
                             return (
                                 <div
                                     key={item.label}
@@ -437,7 +434,7 @@ export function PublicNavbar() {
                                         aria-haspopup="true"
                                         aria-expanded={activeDropdown === item.label}
                                         onClick={() => toggleDropdown(item.label)}
-                                        className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
+                                        className={`flex h-[56px] items-center px-3.5 text-[13px] font-normal transition-colors ${
                                             isActive ? 'text-black' : 'text-black/70 hover:text-black'
                                         }`}
                                     >
@@ -445,7 +442,7 @@ export function PublicNavbar() {
                                     </button>
                                     <span
                                         aria-hidden="true"
-                                        className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                        className={`pointer-events-none absolute bottom-0 left-3.5 right-3.5 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
                                             isActive ? 'scale-x-100' : 'scale-x-0'
                                         }`}
                                     />
@@ -456,7 +453,7 @@ export function PublicNavbar() {
 
                     <div className="flex items-center gap-3">
                         <ExpandableSearch />
-                        <Link href="/contact" className="hidden h-9 items-center rounded-full bg-[#2563eb] px-6 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
+                        <Link href="/contact" className="hidden h-10 items-center rounded-full bg-[#2563eb] px-7 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch
                         </Link>
                         <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="text-black/60 lg:hidden">
