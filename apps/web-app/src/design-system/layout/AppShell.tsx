@@ -10,7 +10,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <TerminalTopBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main id="main-content" className="flex-1 overflow-y-auto bg-[var(--surface-0)] p-4 lg:p-6">
+        <main id="main-content" className="flex-1 overflow-y-auto bg-[#f3f4f6]">
           {children}
         </main>
       </div>

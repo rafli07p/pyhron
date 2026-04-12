@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { useSidebarStore } from '@/stores/sidebar';
@@ -135,15 +134,9 @@ export function Sidebar() {
   const content = (
     <div className="flex h-full flex-col items-center">
       {/* Logo */}
-      <div className="flex h-14 w-full items-center justify-center border-b border-white/[0.06]">
-        <Link href="/dashboard" className="flex items-center gap-1.5">
-          <Image
-            src="/logos/logo.svg"
-            alt="Pyhron"
-            width={28}
-            height={28}
-            className="h-7 w-7 brightness-0 invert"
-          />
+      <div className="flex h-12 w-full items-center justify-center border-b border-white/[0.08]">
+        <Link href="/dashboard" className="text-[11px] font-bold tracking-[0.1em] text-white/60">
+          P
         </Link>
       </div>
 
@@ -162,7 +155,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop sidebar — MSCI One style: narrow icon+label column */}
-      <aside className="hidden w-[72px] shrink-0 border-r border-white/[0.06] bg-[#0a0e14] lg:block">
+      <aside className="hidden w-[72px] shrink-0 border-r border-white/[0.06] bg-[#0f1923] lg:block">
         {content}
       </aside>
 
@@ -170,7 +163,7 @@ export function Sidebar() {
       {mobileOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMobileOpen(false)} />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[72px] border-r border-white/[0.06] bg-[#0a0e14] lg:hidden">
+          <aside className="fixed inset-y-0 left-0 z-50 w-[72px] border-r border-white/[0.06] bg-[#0f1923] lg:hidden">
             <div className="flex h-12 items-center justify-center border-b border-white/[0.06]">
               <button onClick={() => setMobileOpen(false)} className="text-white/40 hover:text-white/80" aria-label="Close menu">
                 <X className="h-4 w-4" />
