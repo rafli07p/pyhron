@@ -24,7 +24,7 @@ const MSCI_BRAND_BLUE = '#1a3fd6';
 export function ResearchInsights() {
   return (
     <section className="bg-[#f5f5f7] py-20 lg:py-28">
-      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
+      <div className="mx-auto max-w-[1400px] px-6 lg:px-8">
         {/* Header — MSCI ms-headline1: 2.25rem mobile → 4rem desktop */}
         <ScrollReveal>
           <h2
@@ -52,9 +52,8 @@ export function ResearchInsights() {
         {/* Card grid — MSCI: ~10px gaps, rounded-lg */}
         <div className="mt-12 grid grid-cols-1 gap-2.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr]">
           {/* Gray "cover" card spanning both rows */}
-          <Link
-            href="/research-and-insights/articles/idx-factor-stress-test"
-            className="group relative overflow-hidden rounded-lg bg-white p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
+          <div
+            className="group relative overflow-hidden rounded-lg bg-white p-8 lg:row-span-2 lg:min-h-[560px]"
           >
             <div className="pointer-events-none flex h-[300px] items-center justify-center lg:h-[340px]">
               <SphereVisual />
@@ -69,16 +68,15 @@ export function ResearchInsights() {
                 implications for Indonesia-focused quant portfolios.
               </p>
             </div>
-            <span className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-black/50 px-5 text-[13px] font-medium text-black transition-colors group-hover:border-black">
+            <Link href="/research-and-insights/articles/idx-factor-stress-test" className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-black/50 px-5 text-[13px] font-medium text-black transition-colors hover:border-black">
               Read more
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-            </span>
-          </Link>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
 
           {/* Black card */}
-          <Link
-            href="/research-and-insights/articles/us-china-idx-flows"
-            className="group relative overflow-hidden rounded-lg bg-[#0a0e1a] p-7 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
+          <div
+            className="group relative overflow-hidden rounded-lg bg-[#0a0e1a] p-7 lg:min-h-[270px]"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
@@ -91,16 +89,15 @@ export function ResearchInsights() {
                 equities.
               </p>
             </div>
-            <span className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/50 px-5 text-[13px] font-medium text-white transition-colors group-hover:border-white">
+            <Link href="/research-and-insights/articles/us-china-idx-flows" className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/50 px-5 text-[13px] font-medium text-white transition-colors hover:border-white">
               Learn more
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-            </span>
-          </Link>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
 
           {/* Blue card */}
-          <Link
-            href="/research-and-insights/articles/idx-liquidity-premium"
-            className="group relative overflow-hidden rounded-lg p-7 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
+          <div
+            className="group relative overflow-hidden rounded-lg p-7 lg:min-h-[270px]"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />
@@ -113,11 +110,11 @@ export function ResearchInsights() {
                 Indonesian equities?
               </p>
             </div>
-            <span className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/70 px-5 text-[13px] font-medium text-white transition-colors group-hover:border-white">
+            <Link href="/research-and-insights/articles/idx-liquidity-premium" className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/70 px-5 text-[13px] font-medium text-white transition-colors hover:border-white">
               Get the facts
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-            </span>
-          </Link>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </section>

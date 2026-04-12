@@ -17,21 +17,19 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       className="relative flex min-h-dvh items-center overflow-hidden bg-white"
-      aria-label="Pyhron — Institutional-grade quantitative research platform for Indonesian capital markets"
+      aria-label="Pyhron — powering better investment decisions for Indonesian capital markets"
     >
-      {/* Dominant white background with the cycling ribbon animation. */}
       <div className="absolute inset-0 z-[1]" aria-hidden="true" role="presentation">
         <FallbackGradient isStatic={reduced} />
       </div>
 
-      {/* Content layer */}
-      <div className="relative z-[2] flex h-full w-full flex-col justify-center px-6 pb-24 pt-32 lg:px-20" role="banner">
-        <div className="max-w-4xl">
+      <div className="relative z-[2] mx-auto flex h-full w-full max-w-[1400px] flex-col justify-center px-6 pb-24 pt-32 lg:px-8" role="banner">
+        <div className="max-w-3xl">
           <h1 className="text-5xl font-normal leading-[1.05] tracking-tight text-[#0a0e1a] md:text-7xl lg:text-[5.5rem]">
-            <span className="hero-line block">Institutional-Grade</span>
-            <span className="hero-line block">Quantitative Research</span>
-            <span className="hero-line block">for Indonesia&apos;s</span>
-            <span className="hero-line block">Capital Markets</span>
+            <span className="hero-line block">Powering better</span>
+            <span className="hero-line block">investment decisions</span>
+            <span className="hero-line block">for Indonesian</span>
+            <span className="hero-line block">capital markets</span>
           </h1>
 
           <p className="hero-subtext mt-8 max-w-xl text-lg text-black/65">
