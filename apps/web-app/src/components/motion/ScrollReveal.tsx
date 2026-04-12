@@ -24,44 +24,10 @@ interface ScrollRevealProps {
 
 export function ScrollReveal({
   children,
-  preset = 'fadeUp',
-  delay = 0,
-  duration = 0.8,
-  stagger,
   className,
 }: ScrollRevealProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
-
-  useEffect(() => {
-    const el = ref.current;
-    if (reduced || !el) return;
-
-    const targets = stagger ? Array.from(el.children) : [el];
-
-    const tween = gsap.from(targets, {
-      ...presetVars[preset],
-      duration,
-      delay,
-      stagger: stagger ?? 0,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: el,
-        start: 'top 85%',
-        toggleActions: 'play none none none',
-      },
-    });
-
-    return () => {
-      tween.kill();
-      ScrollTrigger.getAll().forEach((st) => {
-        if (st.trigger === el) st.kill();
-      });
-    };
-  }, [preset, delay, duration, stagger, reduced]);
-
   return (
-    <div ref={ref} className={className}>
+    <div className={className}>
       {children}
     </div>
   );

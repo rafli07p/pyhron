@@ -98,39 +98,41 @@ const NAV: NavItem[] = [
 
 function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void }) {
     return (
-        <div className="fixed inset-x-0 top-[88px] z-50 bg-white shadow-xl">
-            <div className="mx-auto flex max-w-[1400px] gap-16 px-8 py-10">
-                <div className="flex flex-1 gap-12">
-                    {item.columns?.map((col, i) => (
-                        <div key={i} className="min-w-[180px]">
-                            {col.title && <h3 className="mb-5 text-[13px] font-normal text-black/35">{col.title}</h3>}
-                            <ul className="space-y-3.5">
-                                {col.items.map((link) => (
-                                    <li key={link.label}>
-                                        <Link href={link.href} onClick={onClose} className="text-[15px] text-black/65 transition-colors hover:text-black">
-                                            {link.label}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                </div>
-                {item.featured && (
-                    <div className="w-[280px] shrink-0 border-l border-black/[0.08] pl-12">
-                        <p className="mb-3 text-[12px] font-medium text-[#2563eb]">{item.featured.type}</p>
-                        <h4 className="mb-2 text-[17px] font-semibold leading-snug text-black">{item.featured.title}</h4>
-                        <p className="mb-5 text-[14px] leading-relaxed text-black/45">{item.featured.desc}</p>
-                        <Link href={item.featured.ctaHref} onClick={onClose} className="inline-flex h-10 items-center rounded-full border border-black/15 px-6 text-[14px] text-black/60 transition-colors hover:border-black/30 hover:text-black">
-                            {item.featured.cta}
-                        </Link>
+        <div className="fixed inset-x-0 top-[100px] z-50 bg-white shadow-xl">
+            <div className="mx-auto max-w-[1400px] px-8 py-12">
+                <div className="flex gap-0">
+                    <div className="flex flex-1 gap-16">
+                        {item.columns?.map((col, ci) => (
+                            <div key={ci} className="min-w-[200px]">
+                                {col.title && <h3 className="mb-6 text-[14px] font-normal text-black/35">{col.title}</h3>}
+                                <ul className={`${col.items.length > 5 ? 'columns-2 gap-x-16' : ''} space-y-4`}>
+                                    {col.items.map((link) => (
+                                        <li key={link.label}>
+                                            <Link href={link.href} onClick={onClose} className="text-[15px] text-black/70 transition-colors hover:text-black">
+                                                {link.label}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
                     </div>
-                )}
+                    {item.featured && (
+                        <div className="w-[280px] shrink-0 border-l border-black/[0.08] pl-12">
+                            <p className="mb-4 text-[13px] font-medium text-[#2563eb]">{item.featured.type}</p>
+                            <h4 className="mb-3 text-[18px] font-semibold leading-snug text-black">{item.featured.title}</h4>
+                            <p className="mb-6 text-[14px] leading-relaxed text-black/50">{item.featured.desc}</p>
+                            <Link href={item.featured.ctaHref} onClick={onClose} className="inline-flex h-11 items-center rounded-full border border-black/20 px-6 text-[14px] text-black/70 transition-colors hover:border-black/40 hover:text-black">
+                                {item.featured.cta}
+                            </Link>
+                        </div>
+                    )}
+                </div>
             </div>
             {item.footer && (
                 <div className="border-t border-black/[0.06]">
                     <div className="mx-auto max-w-[1400px] px-8 py-5">
-                        <Link href={item.footer.href} onClick={onClose} className="text-[14px] text-black/40 underline underline-offset-4 decoration-black/15 transition-colors hover:text-black/70 hover:decoration-black/40">
+                        <Link href={item.footer.href} onClick={onClose} className="text-[14px] text-black/45 underline underline-offset-4 decoration-black/15 transition-colors hover:text-black/70 hover:decoration-black/40">
                             {item.footer.label}
                         </Link>
                     </div>
@@ -231,55 +233,65 @@ function ExpandableSearch({ searchOpen, setSearchOpen, dark }: { searchOpen: boo
 
     const popular = ['BBCA', 'IHSG', 'momentum', 'factor', 'screener'];
 
-    if (!searchOpen) {
-        return (
-            <button
-                onClick={() => setSearchOpen(true)}
-                className={`hidden h-11 w-[160px] items-center gap-2 rounded-full border px-5 text-[14px] transition-colors lg:flex ${
-                    dark
-                        ? 'border-white/20 text-white/50 hover:border-white/40'
-                        : 'border-black/15 text-black/40 hover:border-black/25'
-                }`}
-            >
-                <Search className="h-4 w-4 shrink-0" />
-                <span>Search</span>
-            </button>
-        );
-    }
+    const borderColor = searchOpen
+        ? 'border-[#2563eb] border-2'
+        : dark
+            ? 'border-white/20 hover:border-white/40'
+            : 'border-black/15 hover:border-black/25';
 
     return (
-        <div ref={containerRef} className="relative hidden flex-1 lg:block">
-            <div className="flex h-11 items-center gap-2 rounded-full border-2 border-[#2563eb] bg-white px-5">
+        <div ref={containerRef} className="relative hidden lg:block">
+            <button
+                onClick={() => !searchOpen && setSearchOpen(true)}
+                className={`flex h-11 items-center gap-2 rounded-full border bg-white px-5 text-[14px] transition-all duration-300 ease-out ${borderColor} ${
+                    searchOpen ? 'w-[500px] cursor-default' : 'w-[160px] cursor-pointer text-black/40'
+                }`}
+            >
                 <Search className="h-4 w-4 shrink-0 text-black/30" />
-                <input
-                    ref={inputRef}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
-                        if (e.key === 'Escape') { setSearchOpen(false); setQuery(''); }
-                    }}
-                    placeholder="Search"
-                    className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
-                />
-                {query && <button onClick={() => setQuery('')} className="text-[13px] text-black/30 hover:text-black/60">Clear</button>}
-                <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
-            </div>
-            <div className="absolute left-0 right-0 top-[48px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
-                {!query ? (
-                    <>
-                        <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
-                        {popular.map((s) => (
-                            <button key={s} onClick={() => setQuery(s)} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
-                                <Search className="h-3.5 w-3.5 text-black/20" />
-                                {s}
-                            </button>
-                        ))}
-                    </>
-                ) : (
-                    <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
+                {!searchOpen && <span>Search</span>}
+                {searchOpen && (
+                    <input
+                        ref={inputRef}
+                        value={query}
+                        onChange={(e) => { e.stopPropagation(); setQuery(e.target.value); }}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                            if (e.key === 'Escape') { setSearchOpen(false); setQuery(''); }
+                        }}
+                        placeholder="Search"
+                        className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
+                    />
                 )}
-            </div>
+                {searchOpen && query && (
+                    <button onClick={(e) => { e.stopPropagation(); setQuery(''); }} className="text-[13px] text-black/30 hover:text-black/60">
+                        Clear
+                    </button>
+                )}
+                {searchOpen && (
+                    <button onClick={(e) => { e.stopPropagation(); setSearchOpen(false); setQuery(''); }} className="text-black/30 hover:text-black/60">
+                        <X className="h-4 w-4" />
+                    </button>
+                )}
+            </button>
+
+            {searchOpen && (
+                <div className="absolute left-0 right-0 top-[48px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
+                    {!query ? (
+                        <>
+                            <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
+                            {popular.map((s) => (
+                                <button key={s} onClick={() => setQuery(s)} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
+                                    <Search className="h-3.5 w-3.5 text-black/20" />
+                                    {s}
+                                </button>
+                            ))}
+                        </>
+                    ) : (
+                        <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
@@ -329,7 +341,7 @@ export function PublicNavbar() {
     useEffect(() => {
         let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
         let ticking = false;
-        const HEADER_H = 88;
+        const HEADER_H = 100;
         const DELTA = 6;
 
         function update() {
@@ -369,8 +381,8 @@ export function PublicNavbar() {
 
     const closeDropdown = () => setActiveDropdown(null);
 
-    // Dark when scrolled up from below OR when search is open
-    const dark = showDark || searchOpen;
+    // Dark only when scrolled up from below — search does NOT force dark
+    const dark = showDark;
 
     return (
         <>
@@ -382,9 +394,9 @@ export function PublicNavbar() {
                 }}
                 className={`fixed left-0 right-0 z-50 ${dark ? 'bg-[#0a0e1a]' : 'bg-transparent'}`}
             >
-                {/* Utility bar */}
+                {/* Utility bar — taller like MSCI */}
                 <div className="hidden lg:block">
-                    <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
+                    <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-end gap-0 px-8">
                         <Link href="/contact" className={`px-3 text-[12px] transition-colors ${dark ? 'text-white/40 hover:text-white/70' : 'text-black/40 hover:text-black/70'}`}>
                             Support
                         </Link>
@@ -394,7 +406,7 @@ export function PublicNavbar() {
                 </div>
 
                 {/* Main nav bar */}
-                <div className={`relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
+                <div className={`relative mx-auto flex h-[66px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
                     dark ? 'border-white/10' : 'border-black/[0.08]'
                 }`}>
                     <Link href="/" className="flex shrink-0 items-center">
@@ -425,7 +437,7 @@ export function PublicNavbar() {
                                         <Link
                                             key={item.label}
                                             href={item.href}
-                                            className={`group relative flex h-[60px] items-center px-4 text-[14px] transition-colors ${tc}`}
+                                            className={`group relative flex h-[66px] items-center px-4 text-[14px] transition-colors ${tc}`}
                                             onMouseEnter={() => setHoveredLabel(item.label)}
                                         >
                                             {item.label}
@@ -441,7 +453,7 @@ export function PublicNavbar() {
                                             aria-haspopup="true"
                                             aria-expanded={activeDropdown === item.label}
                                             onClick={() => toggleDropdown(item.label)}
-                                            className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${tc}`}
+                                            className={`flex h-[66px] items-center px-4 text-[14px] transition-colors ${tc}`}
                                         >
                                             {item.label}
                                         </button>
