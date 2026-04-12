@@ -190,25 +190,25 @@ function Card({
       <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden="true">
         {visual}
       </div>
-      <div className="relative flex h-full flex-col justify-end p-7 lg:p-8">
+      <div className="relative flex h-full flex-col justify-end p-8 lg:p-10">
         <div className="max-w-[88%]">
-          <h3 className={`text-[22px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[26px]`}>
+          <h3 className={`text-[24px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[28px]`}>
             {title}
           </h3>
           {desc && (
-            <p className={`mt-2 text-[14px] leading-relaxed ${descColor} lg:text-[15px]`}>
+            <p className={`mt-3 text-[15px] leading-relaxed ${descColor} lg:text-[16px]`}>
               {desc}
             </p>
           )}
           {kicker && !desc && (
-            <p className={`mt-2 text-[14px] leading-relaxed ${kickerColor} lg:text-[15px]`}>
+            <p className={`mt-3 text-[15px] leading-relaxed ${kickerColor} lg:text-[16px]`}>
               {kicker}
             </p>
           )}
         </div>
         <Link
           href={href}
-          className={`mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border px-6 text-[14px] font-medium transition-colors ${ctaBorder}`}
+          className={`mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-full border px-7 text-[15px] font-medium transition-colors ${ctaBorder}`}
         >
           {cta}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

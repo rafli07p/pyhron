@@ -98,7 +98,7 @@ const NAV: NavItem[] = [
 
 function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void }) {
     return (
-        <div className="fixed inset-x-0 top-[100px] z-50 bg-white shadow-xl">
+        <div className="fixed inset-x-0 top-[106px] z-50 bg-white shadow-xl">
             <div className="mx-auto max-w-[1400px] px-8 py-12">
                 <div className="flex gap-0">
                     <div className="flex flex-1 gap-16">
@@ -240,7 +240,7 @@ function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; 
             {!searchOpen ? (
                 <button
                     onClick={() => setSearchOpen(true)}
-                    className="flex h-11 w-[160px] items-center gap-2 rounded-full border border-black/15 bg-white px-5 text-[14px] text-black/40 transition-colors hover:border-black/25"
+                    className="flex h-[44px] w-[170px] items-center gap-2 rounded-full border border-black/15 bg-white px-5 text-[15px] text-black/40 transition-colors hover:border-black/25"
                 >
                     <Search className="h-4 w-4 shrink-0" />
                     <span>Search</span>
@@ -249,7 +249,7 @@ function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; 
                 <>
                     {/* Expanded bar — anchored RIGHT at 0 (same right edge as collapsed), grows LEFT */}
                     <div
-                        className="absolute right-0 top-1/2 z-10 flex h-11 w-[600px] -translate-y-1/2 items-center gap-2 rounded-full border border-black/20 bg-white px-5"
+                        className="absolute right-0 top-1/2 z-10 flex h-[44px] w-[600px] -translate-y-1/2 items-center gap-2 rounded-full border border-black/20 bg-white px-5"
                         style={{ animation: 'search-expand 0.3s ease-out' }}
                     >
                         <Search className="h-4 w-4 shrink-0 text-black/30" />
@@ -345,7 +345,7 @@ export function PublicNavbar() {
     useEffect(() => {
         let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
         let ticking = false;
-        const HEADER_H = 100;
+        const HEADER_H = 108;
         const DELTA = 6;
 
         function update() {
@@ -405,31 +405,29 @@ export function PublicNavbar() {
                     </div>
                 </div>
 
-                <div className={`relative mx-auto flex h-[66px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
+                <div className={`relative mx-auto flex h-[72px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
                     dark ? 'border-white/10' : 'border-black/[0.08]'
                 }`}>
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
                             src="/logos/logo.svg"
                             alt="Pyhron"
-                            width={130}
-                            height={35}
+                            width={140}
+                            height={38}
                             priority
-                            className={`h-9 w-auto ${dark ? 'brightness-0 invert' : ''}`}
+                            className={`h-10 w-auto ${dark ? 'brightness-0 invert' : ''}`}
                         />
                     </Link>
 
                     {/* Nav links — hidden when search is open */}
                     {!searchOpen && (
                         <nav
-                            className="ml-10 hidden items-center gap-0.5 lg:flex"
+                            className="ml-10 hidden items-center gap-1 lg:flex"
                             aria-label="Main navigation"
                             onMouseLeave={handleNavMouseLeave}
                         >
                             {NAV.map((item) => {
-                                // Underline only when: this item's dropdown is open,
-                                // OR hovering this item while ANY dropdown is open
-                                const showUnderline = activeDropdown === item.label || (activeDropdown !== null && hoveredLabel === item.label);
+                                const showUnderline = hoveredLabel === item.label || activeDropdown === item.label;
                                 const tc = dark ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
                                 const tcActive = dark ? 'text-white' : 'text-black';
                                 const uc = dark ? 'bg-white' : 'bg-black';
@@ -439,7 +437,7 @@ export function PublicNavbar() {
                                         <Link
                                             key={item.label}
                                             href={item.href}
-                                            className={`group relative flex h-[66px] items-center px-4 text-[14px] transition-colors ${showUnderline ? tcActive : tc}`}
+                                            className={`group relative flex h-[72px] items-center px-4 text-[15px] transition-colors ${showUnderline ? tcActive : tc}`}
                                             onMouseEnter={() => handleItemMouseEnter(item.label)}
                                         >
                                             {item.label}
@@ -455,7 +453,7 @@ export function PublicNavbar() {
                                             aria-haspopup="true"
                                             aria-expanded={activeDropdown === item.label}
                                             onClick={() => toggleDropdown(item.label)}
-                                            className={`flex h-[66px] items-center px-4 text-[14px] transition-colors ${showUnderline ? tcActive : tc}`}
+                                            className={`flex h-[72px] items-center px-4 text-[15px] transition-colors ${showUnderline ? tcActive : tc}`}
                                         >
                                             {item.label}
                                         </button>
@@ -468,7 +466,7 @@ export function PublicNavbar() {
 
                     <div className="flex items-center gap-4">
                         <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
-                        <Link href="/contact" className="hidden h-12 shrink-0 items-center rounded-full bg-[#2563eb] px-8 text-[15px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
+                        <Link href="/contact" className="hidden h-[48px] shrink-0 items-center rounded-full bg-[#2563eb] px-9 text-[16px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch
                         </Link>
                         <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className={`lg:hidden ${dark ? 'text-white/60' : 'text-black/60'}`}>
