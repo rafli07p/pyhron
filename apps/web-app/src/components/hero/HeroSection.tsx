@@ -48,14 +48,12 @@ export function HeroSection() {
                 Get Started Free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <a
-                href="/dashboard"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/contact"
                 className="inline-flex items-center gap-2 rounded-lg border border-black/15 px-8 py-4 text-base font-medium text-black/70 transition-colors hover:border-black/30 hover:text-black"
               >
-                Launch Terminal
-              </a>
+                Schedule Demo
+              </Link>
             </div>
             <p className="text-sm text-black/40">Free Explorer tier — no credit card required</p>
           </div>

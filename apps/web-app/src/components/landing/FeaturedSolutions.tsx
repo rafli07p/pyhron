@@ -46,10 +46,9 @@ const introColumns = [
 
 export function FeaturedSolutions() {
   return (
-    <section className="bg-white py-20 lg:py-28">
+    <section className="bg-[#f5f5f7] py-20 lg:py-28">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
-        {/* Header — both lines styled with MSCI's `ms-headline1-sm` scale
-            (2.25rem / 1.1 / -0.04em tracking) and `ms-text-brandblue-700`. */}
+        {/* Header — matches Research & Insights style: bold title + fading subtitle */}
         <ScrollReveal>
           <h2
             className="font-semibold leading-[1.1]"
@@ -57,16 +56,18 @@ export function FeaturedSolutions() {
               color: MSCI_BRAND_BLUE,
               fontSize: '2.25rem',
               letterSpacing: '-0.04em',
+              fontFamily: 'Inter, sans-serif',
             }}
           >
-            Featured solutions
+            Featured Solutions
           </h2>
           <p
             className="mt-2 font-semibold leading-[1.1]"
             style={{
-              color: MSCI_BRAND_BLUE,
+              color: '#6a7cfb',
               fontSize: '2.25rem',
               letterSpacing: '-0.04em',
+              fontFamily: 'Inter, sans-serif',
             }}
           >
             End-to-end tools to meet your needs
@@ -76,13 +77,13 @@ export function FeaturedSolutions() {
         {/* Intro columns — plain text blocks (no link arrow, no hover color
             shift). Titles use `ms-font-semibold ms-text-black`, bodies use
             `ms-font-regular ms-body-l-sm ms-text-black`. */}
-        <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3">
+        <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {introColumns.map((col) => (
             <div key={col.title}>
-              <h3 className="font-semibold text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+              <h3 className="font-semibold text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' }}>
                 {col.title}
               </h3>
-              <p className="mt-3 font-normal text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+              <p className="mt-3 font-normal text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em', fontFamily: 'Inter, sans-serif' }}>
                 {col.desc}
               </p>
             </div>
@@ -90,13 +91,13 @@ export function FeaturedSolutions() {
         </ScrollReveal>
 
         {/* Card grid */}
-        <div className="mt-16 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
+        <div className="mt-10 grid grid-cols-1 gap-3 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
           {/* Big hero card — spans 2 rows on lg */}
           <Card
             href="/data/ml-signals"
             className="lg:row-span-2"
             tone="indigo"
-            heightClass="min-h-[380px] lg:min-h-[560px]"
+            heightClass="min-h-[340px] lg:min-h-[500px]"
             visual={<VisualOrbits />}
             title="Pyhron adds ML-driven alpha to IDX research"
             desc="Expanding systematic capabilities across the Indonesian capital markets research lifecycle."
@@ -108,7 +109,7 @@ export function FeaturedSolutions() {
           <Card
             href="/data/factors"
             tone="white"
-            heightClass="min-h-[260px]"
+            heightClass="min-h-[230px]"
             visual={<VisualBars />}
             title="Enhancing our multi-asset factor analytics"
             kicker="Pyhron extends Fama-French five-factor coverage"
@@ -120,7 +121,7 @@ export function FeaturedSolutions() {
           <Card
             href="/research/quant"
             tone="teal"
-            heightClass="min-h-[260px]"
+            heightClass="min-h-[230px]"
             visual={<VisualWaves />}
             title="Daily IDX factor exposures are here"
             desc="Nowcasting delivers decision-grade signals between reporting periods."
@@ -132,7 +133,7 @@ export function FeaturedSolutions() {
           <Card
             href="/markets"
             tone="black"
-            heightClass="min-h-[260px]"
+            heightClass="min-h-[230px]"
             visual={<VisualLines />}
             title="Explore the new Markets in Motion hub"
             desc="Turn complex IDX data into clear direction with trending topics and timely insights you can act on."
@@ -144,7 +145,7 @@ export function FeaturedSolutions() {
           <Card
             href="/research"
             tone="blue"
-            heightClass="min-h-[260px]"
+            heightClass="min-h-[230px]"
             visual={<VisualNetwork />}
             title="Seamlessly query Indonesian markets with conversational AI"
             kicker="Introducing Pyhron Insights™"
@@ -214,7 +215,7 @@ function Card({
       </div>
 
       {/* Content */}
-      <div className="relative flex h-full flex-col justify-between p-7 lg:p-8">
+      <div className="relative flex h-full flex-col justify-between p-5 lg:p-6" style={{ fontFamily: 'Inter, sans-serif' }}>
         <div className="max-w-[88%]">
           <h3 className={`text-[22px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[26px]`}>
             {title}
