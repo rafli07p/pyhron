@@ -427,7 +427,9 @@ export function PublicNavbar() {
                             onMouseLeave={handleNavMouseLeave}
                         >
                             {NAV.map((item) => {
-                                const showUnderline = hoveredLabel === item.label || activeDropdown === item.label;
+                                // Underline ONLY when a dropdown is open AND hovering this item
+                                // (not on the active dropdown itself — only on the hovered target)
+                                const showUnderline = activeDropdown !== null && hoveredLabel === item.label;
                                 const tc = dark ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
                                 const tcActive = dark ? 'text-white' : 'text-black';
                                 const uc = dark ? 'bg-white' : 'bg-black';
