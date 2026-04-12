@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -210,7 +210,8 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
     );
 }
 
-function ExpandableSearch({ searchOpen, setSearchOpen, dark }: { searchOpen: boolean; setSearchOpen: (v: boolean) => void; dark: boolean }) {
+/** Search — expands LEFT from right side. Get in touch stays in place. */
+function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; setSearchOpen: (v: boolean) => void }) {
     const [query, setQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -233,28 +234,24 @@ function ExpandableSearch({ searchOpen, setSearchOpen, dark }: { searchOpen: boo
 
     const popular = ['BBCA', 'IHSG', 'momentum', 'factor', 'screener'];
 
-    const borderColor = searchOpen
-        ? 'border-[#2563eb] border-2'
-        : dark
-            ? 'border-white/20 hover:border-white/40'
-            : 'border-black/15 hover:border-black/25';
-
     return (
         <div ref={containerRef} className="relative hidden lg:block">
-            <button
+            {/* Single element that transitions width — expands LEFT via ml-auto */}
+            <div
                 onClick={() => !searchOpen && setSearchOpen(true)}
-                className={`flex h-11 items-center gap-2 rounded-full border bg-white px-5 text-[14px] transition-all duration-300 ease-out ${borderColor} ${
-                    searchOpen ? 'w-[500px] cursor-default' : 'w-[160px] cursor-pointer text-black/40'
+                className={`ml-auto flex h-11 items-center gap-2 overflow-hidden rounded-full border bg-white px-5 transition-all duration-300 ease-out ${
+                    searchOpen
+                        ? 'w-[600px] border-black/20'
+                        : 'w-[160px] cursor-pointer border-black/15 hover:border-black/25'
                 }`}
             >
                 <Search className="h-4 w-4 shrink-0 text-black/30" />
-                {!searchOpen && <span>Search</span>}
+                {!searchOpen && <span className="text-[14px] text-black/40">Search</span>}
                 {searchOpen && (
                     <input
                         ref={inputRef}
                         value={query}
-                        onChange={(e) => { e.stopPropagation(); setQuery(e.target.value); }}
-                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
                             if (e.key === 'Escape') { setSearchOpen(false); setQuery(''); }
@@ -264,19 +261,15 @@ function ExpandableSearch({ searchOpen, setSearchOpen, dark }: { searchOpen: boo
                     />
                 )}
                 {searchOpen && query && (
-                    <button onClick={(e) => { e.stopPropagation(); setQuery(''); }} className="text-[13px] text-black/30 hover:text-black/60">
-                        Clear
-                    </button>
+                    <button onClick={() => setQuery('')} className="shrink-0 text-[13px] text-black/30 hover:text-black/60">Clear</button>
                 )}
                 {searchOpen && (
-                    <button onClick={(e) => { e.stopPropagation(); setSearchOpen(false); setQuery(''); }} className="text-black/30 hover:text-black/60">
-                        <X className="h-4 w-4" />
-                    </button>
+                    <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="shrink-0 text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
                 )}
-            </button>
+            </div>
 
             {searchOpen && (
-                <div className="absolute left-0 right-0 top-[48px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
+                <div className="absolute right-0 top-[48px] w-[600px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
                     {!query ? (
                         <>
                             <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
@@ -306,6 +299,7 @@ export function PublicNavbar() {
     const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [prevPathname, setPrevPathname] = useState(pathname);
     if (prevPathname !== pathname) {
@@ -320,6 +314,15 @@ export function PublicNavbar() {
         setActiveDropdown((prev) => (prev === label ? null : label));
     };
 
+    // Delayed hover clear — prevents underline flicker when moving between items
+    const handleNavMouseLeave = useCallback(() => {
+        hoverTimeoutRef.current = setTimeout(() => setHoveredLabel(null), 100);
+    }, []);
+    const handleItemMouseEnter = useCallback((label: string) => {
+        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        setHoveredLabel(label);
+    }, []);
+
     useEffect(() => {
         function onClick(e: MouseEvent) {
             if (
@@ -333,11 +336,6 @@ export function PublicNavbar() {
         return () => document.removeEventListener('mousedown', onClick);
     }, []);
 
-    // Scroll behavior:
-    // - At top: transparent bg, always visible
-    // - Scroll down: header hides (slide up)
-    // - Scroll up: header shows with dark bg (slide down)
-    // - Back at top: instant transparent again
     useEffect(() => {
         let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
         let ticking = false;
@@ -349,16 +347,14 @@ export function PublicNavbar() {
             const dy = y - lastY;
 
             if (y <= HEADER_H) {
-                // At top: always show, transparent
                 setHidden(false);
                 setShowDark(false);
             } else if (Math.abs(dy) > DELTA) {
                 if (dy > 0) {
-                    // Scrolling down: hide
+                    // Scrolling down: INSTANT hide (no animation)
                     setHidden(true);
                     setActiveDropdown(null);
                 } else {
-                    // Scrolling up: show with dark bg
                     setHidden(false);
                     setShowDark(true);
                 }
@@ -380,8 +376,6 @@ export function PublicNavbar() {
     }, []);
 
     const closeDropdown = () => setActiveDropdown(null);
-
-    // Dark only when scrolled up from below — search does NOT force dark
     const dark = showDark;
 
     return (
@@ -389,12 +383,12 @@ export function PublicNavbar() {
             <header
                 ref={navRef}
                 style={{
+                    // Instant hide (no transition), animated show (slide down 0.3s)
                     transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
-                    transition: 'transform 0.3s ease-out',
+                    transition: hidden ? 'none' : 'transform 0.3s ease-out',
                 }}
                 className={`fixed left-0 right-0 z-50 ${dark ? 'bg-[#0a0e1a]' : 'bg-transparent'}`}
             >
-                {/* Utility bar — taller like MSCI */}
                 <div className="hidden lg:block">
                     <div className="mx-auto flex h-9 max-w-[1400px] items-center justify-end gap-0 px-8">
                         <Link href="/contact" className={`px-3 text-[12px] transition-colors ${dark ? 'text-white/40 hover:text-white/70' : 'text-black/40 hover:text-black/70'}`}>
@@ -405,7 +399,6 @@ export function PublicNavbar() {
                     </div>
                 </div>
 
-                {/* Main nav bar */}
                 <div className={`relative mx-auto flex h-[66px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
                     dark ? 'border-white/10' : 'border-black/[0.08]'
                 }`}>
@@ -425,7 +418,7 @@ export function PublicNavbar() {
                         <nav
                             className="ml-10 hidden items-center gap-0.5 lg:flex"
                             aria-label="Main navigation"
-                            onMouseLeave={() => setHoveredLabel(null)}
+                            onMouseLeave={handleNavMouseLeave}
                         >
                             {NAV.map((item) => {
                                 const isActive = hoveredLabel === item.label || activeDropdown === item.label;
@@ -438,7 +431,7 @@ export function PublicNavbar() {
                                             key={item.label}
                                             href={item.href}
                                             className={`group relative flex h-[66px] items-center px-4 text-[14px] transition-colors ${tc}`}
-                                            onMouseEnter={() => setHoveredLabel(item.label)}
+                                            onMouseEnter={() => handleItemMouseEnter(item.label)}
                                         >
                                             {item.label}
                                             <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0'}`} />
@@ -447,7 +440,7 @@ export function PublicNavbar() {
                                 }
 
                                 return (
-                                    <div key={item.label} className="relative" onMouseEnter={() => setHoveredLabel(item.label)}>
+                                    <div key={item.label} className="relative" onMouseEnter={() => handleItemMouseEnter(item.label)}>
                                         <button
                                             type="button"
                                             aria-haspopup="true"
@@ -464,10 +457,8 @@ export function PublicNavbar() {
                         </nav>
                     )}
 
-                    {searchOpen && <div className="hidden flex-1 lg:block" />}
-
                     <div className={`flex items-center gap-4 ${searchOpen ? 'flex-1 lg:ml-8' : ''}`}>
-                        <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} dark={dark} />
+                        <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
                         <Link href="/contact" className="hidden h-12 shrink-0 items-center rounded-full bg-[#2563eb] px-8 text-[15px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch
                         </Link>
