@@ -208,7 +208,7 @@ function Card({
         </div>
         <Link
           href={href}
-          className={`mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border px-5 text-[13px] font-medium transition-colors ${ctaBorder}`}
+          className={`mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border px-6 text-[14px] font-medium transition-colors ${ctaBorder}`}
         >
           {cta}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
