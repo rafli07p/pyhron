@@ -10,7 +10,7 @@ export default function LandingPage() {
   return (
     <>
       {/* Hero — full viewport, pulled up behind fixed header */}
-      <div className="-mt-[100px]">
+      <div className="-mt-[108px]">
         <HeroSection />
       </div>
 

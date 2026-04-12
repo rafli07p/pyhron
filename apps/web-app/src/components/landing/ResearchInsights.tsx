@@ -59,60 +59,60 @@ export function ResearchInsights() {
               <SphereVisual />
             </div>
             <div className="relative mt-4 max-w-[90%]">
-              <h3 className="text-[1.375rem] font-semibold leading-[1.25] tracking-tight text-black lg:text-[1.625rem]" style={{ letterSpacing: '-0.02em' }}>
+              <h3 className="text-[1.5rem] font-semibold leading-[1.25] tracking-tight text-black lg:text-[1.75rem]" style={{ letterSpacing: '-0.02em' }}>
                 IDX Factor Models Under Stress
               </h3>
-              <p className="mt-3 text-[0.9375rem] font-normal leading-[1.55] text-black/60">
+              <p className="mt-3 text-[1rem] font-normal leading-[1.55] text-black/60">
                 The AI-driven equity rotation that rattled developed markets earlier this
                 year also exposed a fault line in IDX factor premia. We examine the
                 implications for Indonesia-focused quant portfolios.
               </p>
             </div>
-            <Link href="/research-and-insights/articles/idx-factor-stress-test" className="mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border border-black/50 px-6 text-[14px] font-medium text-black transition-colors hover:border-black">
+            <Link href="/research-and-insights/articles/idx-factor-stress-test" className="mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-full border border-black/50 px-7 text-[15px] font-medium text-black transition-colors hover:border-black">
               Read more
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {/* Black card */}
           <div
-            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-7 lg:min-h-[270px]"
+            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-8 lg:min-h-[270px]"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
-              <h3 className="text-[1.25rem] font-semibold leading-[1.25] tracking-tight text-white lg:text-[1.5rem]" style={{ letterSpacing: '-0.02em' }}>
+              <h3 className="text-[1.375rem] font-semibold leading-[1.25] tracking-tight text-white lg:text-[1.625rem]" style={{ letterSpacing: '-0.02em' }}>
                 US–China tensions reshape IDX foreign flows
               </h3>
-              <p className="mt-3 text-[0.9375rem] font-normal leading-[1.5] text-white/70">
+              <p className="mt-3 text-[1rem] font-normal leading-[1.5] text-white/70">
                 It may be time to reassess currency-hedged exposure as portfolio
                 reallocations flip historical beta relationships across Indonesian
                 equities.
               </p>
             </div>
-            <Link href="/research-and-insights/articles/us-china-idx-flows" className="relative mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border border-white/50 px-6 text-[14px] font-medium text-white transition-colors hover:border-white">
+            <Link href="/research-and-insights/articles/us-china-idx-flows" className="relative mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-full border border-white/50 px-7 text-[15px] font-medium text-white transition-colors hover:border-white">
               Learn more
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {/* Blue card */}
           <div
-            className="group relative overflow-hidden rounded-2xl p-7 lg:min-h-[270px]"
+            className="group relative overflow-hidden rounded-2xl p-8 lg:min-h-[270px]"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />
             <div className="relative max-w-[55%]">
-              <h3 className="text-[1.25rem] font-semibold leading-[1.25] tracking-tight text-white lg:text-[1.5rem]" style={{ letterSpacing: '-0.02em' }}>
+              <h3 className="text-[1.375rem] font-semibold leading-[1.25] tracking-tight text-white lg:text-[1.625rem]" style={{ letterSpacing: '-0.02em' }}>
                 IDX Liquidity Premium
               </h3>
-              <p className="mt-3 text-[0.9375rem] font-normal leading-[1.5] text-white/80">
+              <p className="mt-3 text-[1rem] font-normal leading-[1.5] text-white/80">
                 Could volatility measures signal a coming dislocation in second-board
                 Indonesian equities?
               </p>
             </div>
-            <Link href="/research-and-insights/articles/idx-liquidity-premium" className="relative mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border border-white/70 px-6 text-[14px] font-medium text-white transition-colors hover:border-white">
+            <Link href="/research-and-insights/articles/idx-liquidity-premium" className="relative mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-full border border-white/70 px-7 text-[15px] font-medium text-white transition-colors hover:border-white">
               Get the facts
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
