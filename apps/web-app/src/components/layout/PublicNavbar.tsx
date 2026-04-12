@@ -107,7 +107,7 @@ function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void })
                             <ul className="space-y-3.5">
                                 {col.items.map((link) => (
                                     <li key={link.label}>
-                                        <Link href={link.href} onClick={onClose} className="text-[14px] text-black/65 transition-colors hover:text-black">
+                                        <Link href={link.href} onClick={onClose} className="text-[15px] text-black/65 transition-colors hover:text-black">
                                             {link.label}
                                         </Link>
                                     </li>
@@ -117,11 +117,11 @@ function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void })
                     ))}
                 </div>
                 {item.featured && (
-                    <div className="w-[260px] shrink-0 border-l border-black/[0.08] pl-12">
+                    <div className="w-[280px] shrink-0 border-l border-black/[0.08] pl-12">
                         <p className="mb-3 text-[12px] font-medium text-[#2563eb]">{item.featured.type}</p>
-                        <h4 className="mb-2 text-[16px] font-semibold leading-snug text-black">{item.featured.title}</h4>
-                        <p className="mb-5 text-[13px] leading-relaxed text-black/45">{item.featured.desc}</p>
-                        <Link href={item.featured.ctaHref} onClick={onClose} className="inline-flex h-9 items-center rounded-full border border-black/15 px-5 text-[13px] text-black/60 transition-colors hover:border-black/30 hover:text-black">
+                        <h4 className="mb-2 text-[17px] font-semibold leading-snug text-black">{item.featured.title}</h4>
+                        <p className="mb-5 text-[14px] leading-relaxed text-black/45">{item.featured.desc}</p>
+                        <Link href={item.featured.ctaHref} onClick={onClose} className="inline-flex h-10 items-center rounded-full border border-black/15 px-6 text-[14px] text-black/60 transition-colors hover:border-black/30 hover:text-black">
                             {item.featured.cta}
                         </Link>
                     </div>
@@ -130,7 +130,7 @@ function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void })
             {item.footer && (
                 <div className="border-t border-black/[0.06]">
                     <div className="mx-auto max-w-[1400px] px-8 py-5">
-                        <Link href={item.footer.href} onClick={onClose} className="text-[13px] text-black/40 underline underline-offset-4 decoration-black/15 transition-colors hover:text-black/70 hover:decoration-black/40">
+                        <Link href={item.footer.href} onClick={onClose} className="text-[14px] text-black/40 underline underline-offset-4 decoration-black/15 transition-colors hover:text-black/70 hover:decoration-black/40">
                             {item.footer.label}
                         </Link>
                     </div>
@@ -208,8 +208,7 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
     );
 }
 
-/** Search — MSCI style: hides nav items when expanded, logo + search + button visible */
-function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; setSearchOpen: (v: boolean) => void }) {
+function ExpandableSearch({ searchOpen, setSearchOpen, dark }: { searchOpen: boolean; setSearchOpen: (v: boolean) => void; dark: boolean }) {
     const [query, setQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -236,7 +235,11 @@ function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; 
         return (
             <button
                 onClick={() => setSearchOpen(true)}
-                className="hidden h-11 w-[160px] items-center gap-2 rounded-full border border-black/15 px-5 text-[14px] text-black/40 transition-colors hover:border-black/25 lg:flex"
+                className={`hidden h-11 w-[160px] items-center gap-2 rounded-full border px-5 text-[14px] transition-colors lg:flex ${
+                    dark
+                        ? 'border-white/20 text-white/50 hover:border-white/40'
+                        : 'border-black/15 text-black/40 hover:border-black/25'
+                }`}
             >
                 <Search className="h-4 w-4 shrink-0" />
                 <span>Search</span>
@@ -287,7 +290,7 @@ export function PublicNavbar() {
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
+    const [showDark, setShowDark] = useState(false);
     const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -318,29 +321,34 @@ export function PublicNavbar() {
         return () => document.removeEventListener('mousedown', onClick);
     }, []);
 
-    // Scroll: transparent at top, instant dark bg when below threshold.
-    // Slide up to hide on scroll down, slide down to show on scroll up.
-    // Instant transparent when back at top (no fade).
+    // Scroll behavior:
+    // - At top: transparent bg, always visible
+    // - Scroll down: header hides (slide up)
+    // - Scroll up: header shows with dark bg (slide down)
+    // - Back at top: instant transparent again
     useEffect(() => {
         let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
         let ticking = false;
-        const THRESHOLD = 10;
+        const HEADER_H = 88;
         const DELTA = 6;
 
         function update() {
             const y = window.scrollY;
             const dy = y - lastY;
 
-            setScrolled(y > THRESHOLD);
-
-            if (y <= THRESHOLD) {
+            if (y <= HEADER_H) {
+                // At top: always show, transparent
                 setHidden(false);
+                setShowDark(false);
             } else if (Math.abs(dy) > DELTA) {
                 if (dy > 0) {
+                    // Scrolling down: hide
                     setHidden(true);
                     setActiveDropdown(null);
                 } else {
+                    // Scrolling up: show with dark bg
                     setHidden(false);
+                    setShowDark(true);
                 }
             }
 
@@ -361,10 +369,8 @@ export function PublicNavbar() {
 
     const closeDropdown = () => setActiveDropdown(null);
 
-    const dark = scrolled;
-    const textColor = dark ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
-    const textActive = dark ? 'text-white' : 'text-black';
-    const underlineColor = dark ? 'bg-white' : 'bg-black';
+    // Dark when scrolled up from below OR when search is open
+    const dark = showDark || searchOpen;
 
     return (
         <>
@@ -373,9 +379,8 @@ export function PublicNavbar() {
                 style={{
                     transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
                     transition: 'transform 0.3s ease-out',
-                    backgroundColor: scrolled ? '#0a0e1a' : 'transparent',
                 }}
-                className="fixed left-0 right-0 z-50"
+                className={`fixed left-0 right-0 z-50 ${dark ? 'bg-[#0a0e1a]' : 'bg-transparent'}`}
             >
                 {/* Utility bar */}
                 <div className="hidden lg:block">
@@ -394,12 +399,12 @@ export function PublicNavbar() {
                 }`}>
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
-                            src={dark ? '/logos/logo-dark.svg' : '/logos/logo.svg'}
+                            src="/logos/logo.svg"
                             alt="Pyhron"
                             width={130}
                             height={35}
                             priority
-                            className="h-9 w-auto"
+                            className={`h-9 w-auto ${dark ? 'brightness-0 invert' : ''}`}
                         />
                     </Link>
 
@@ -412,60 +417,45 @@ export function PublicNavbar() {
                         >
                             {NAV.map((item) => {
                                 const isActive = hoveredLabel === item.label || activeDropdown === item.label;
+                                const tc = dark ? (isActive ? 'text-white' : 'text-white/70 hover:text-white') : (isActive ? 'text-black' : 'text-black/70 hover:text-black');
+                                const uc = dark ? 'bg-white' : 'bg-black';
 
                                 if (item.href) {
                                     return (
                                         <Link
                                             key={item.label}
                                             href={item.href}
-                                            className={`group relative flex h-[60px] items-center px-4 text-[14px] transition-colors ${isActive ? textActive : textColor}`}
+                                            className={`group relative flex h-[60px] items-center px-4 text-[14px] transition-colors ${tc}`}
                                             onMouseEnter={() => setHoveredLabel(item.label)}
                                         >
                                             {item.label}
-                                            <span
-                                                aria-hidden="true"
-                                                className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
-                                                    isActive ? 'scale-x-100' : 'scale-x-0'
-                                                }`}
-                                            />
+                                            <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0'}`} />
                                         </Link>
                                     );
                                 }
 
                                 return (
-                                    <div
-                                        key={item.label}
-                                        className="relative"
-                                        onMouseEnter={() => setHoveredLabel(item.label)}
-                                    >
+                                    <div key={item.label} className="relative" onMouseEnter={() => setHoveredLabel(item.label)}>
                                         <button
                                             type="button"
                                             aria-haspopup="true"
                                             aria-expanded={activeDropdown === item.label}
                                             onClick={() => toggleDropdown(item.label)}
-                                            className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
-                                                isActive ? textActive : textColor
-                                            }`}
+                                            className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${tc}`}
                                         >
                                             {item.label}
                                         </button>
-                                        <span
-                                            aria-hidden="true"
-                                            className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
-                                                isActive ? 'scale-x-100' : 'scale-x-0'
-                                            }`}
-                                        />
+                                        <span aria-hidden="true" className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${uc} transition-transform duration-300 ease-out ${isActive ? 'scale-x-100' : 'scale-x-0'}`} />
                                     </div>
                                 );
                             })}
                         </nav>
                     )}
 
-                    {/* Spacer when search is open to push search to fill */}
                     {searchOpen && <div className="hidden flex-1 lg:block" />}
 
                     <div className={`flex items-center gap-4 ${searchOpen ? 'flex-1 lg:ml-8' : ''}`}>
-                        <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
+                        <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} dark={dark} />
                         <Link href="/contact" className="hidden h-12 shrink-0 items-center rounded-full bg-[#2563eb] px-8 text-[15px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch
                         </Link>
