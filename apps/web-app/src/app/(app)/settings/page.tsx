@@ -1,2 +1,1 @@
-import { redirect } from 'next/navigation';
-export default function SettingsPage() { redirect('/settings/profile'); }
+export default function Page() { return null; }
