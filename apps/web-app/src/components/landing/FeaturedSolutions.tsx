@@ -46,102 +46,85 @@ const introColumns = [
 
 export function FeaturedSolutions() {
   return (
-    <section className="bg-white py-14 lg:py-20">
+    <section className="bg-white py-20 lg:py-28">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
-        {/* Header — MSCI ms-headline1-sm: 2.25rem, -0.04em tracking */}
+        {/* Header — MSCI ms-headline1: 2.25rem mobile → 4rem desktop */}
         <ScrollReveal>
           <h2
-            className="font-semibold leading-[1.1]"
-            style={{
-              color: MSCI_BRAND_BLUE,
-              fontSize: '2.25rem',
-              letterSpacing: '-0.04em',
-            }}
+            className="font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
+            style={{ color: MSCI_BRAND_BLUE, letterSpacing: '-0.06em' }}
           >
             Featured Solutions
           </h2>
           <p
-            className="mt-0.5 font-semibold leading-[1.1]"
-            style={{
-              color: '#6a7cfb',
-              fontSize: '2.25rem',
-              letterSpacing: '-0.04em',
-            }}
+            className="font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
+            style={{ color: '#6a7cfb', letterSpacing: '-0.06em' }}
           >
             End-to-end tools to meet your needs
           </p>
         </ScrollReveal>
 
-        {/* Intro columns — MSCI style: bold title, regular body, compact spacing */}
-        <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-3">
+        {/* Intro columns — MSCI: bold ~1rem titles, regular ~1rem body */}
+        <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-3">
           {introColumns.map((col) => (
             <div key={col.title}>
-              <h3 className="font-bold text-black" style={{ fontSize: '0.8125rem', lineHeight: 1.5 }}>
+              <h3 className="text-[1rem] font-bold leading-[1.4] text-black">
                 {col.title}
               </h3>
-              <p className="mt-1.5 font-normal text-black/60" style={{ fontSize: '0.8125rem', lineHeight: 1.6 }}>
+              <p className="mt-3 text-[1rem] font-normal leading-[1.55] text-black/60">
                 {col.desc}
               </p>
             </div>
           ))}
         </ScrollReveal>
 
-        {/* Card grid — MSCI-exact: 6px gaps, rounded-lg corners */}
-        <div className="mt-6 grid grid-cols-1 gap-1.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr_1fr]">
-          {/* Big hero card — spans 2 rows */}
+        {/* Card grid — MSCI: ~10px gaps, rounded-lg */}
+        <div className="mt-12 grid grid-cols-1 gap-2.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr_1fr]">
           <Card
             href="/data/ml-signals"
             className="lg:row-span-2"
             tone="indigo"
-            heightClass="min-h-[280px] lg:min-h-[400px]"
+            heightClass="min-h-[380px] lg:min-h-[560px]"
             visual={<VisualOrbits />}
             title="Pyhron adds ML-driven alpha to IDX research"
             desc="Expanding systematic capabilities across the Indonesian capital markets research lifecycle."
             cta="Explore ML for quant research"
             variant="light-on-dark"
           />
-
-          {/* Small card A — light / gray */}
           <Card
             href="/data/factors"
             tone="white"
-            heightClass="min-h-[190px]"
+            heightClass="min-h-[270px]"
             visual={<VisualBars />}
             title="Enhancing our multi-asset factor analytics"
             kicker="Pyhron extends Fama-French five-factor coverage"
             cta="Read the news"
             variant="dark-on-light"
           />
-
-          {/* Small card B — teal */}
           <Card
             href="/research-and-insights/quant"
             tone="teal"
-            heightClass="min-h-[190px]"
+            heightClass="min-h-[270px]"
             visual={<VisualWaves />}
             title="Daily IDX factor exposures are here"
             desc="Nowcasting delivers decision-grade signals between reporting periods."
             cta="See how it works"
             variant="dark-on-light"
           />
-
-          {/* Small card C — black */}
           <Card
             href="/markets"
             tone="black"
-            heightClass="min-h-[190px]"
-            visual={<VisualLines />}
+            heightClass="min-h-[270px]"
+            visual={<VisualDark />}
             title="Explore the new Markets in Motion hub"
             desc="Turn complex IDX data into clear direction with trending topics and timely insights you can act on."
             cta="Get insights"
             variant="light-on-dark"
           />
-
-          {/* Small card D — blue network */}
           <Card
             href="/research-and-insights"
             tone="blue"
-            heightClass="min-h-[190px]"
+            heightClass="min-h-[270px]"
             visual={<VisualNetwork />}
             title="Seamlessly query Indonesian markets with conversational AI"
             kicker="Introducing Pyhron Insights™"
@@ -203,35 +186,32 @@ function Card({
   return (
     <Link
       href={href}
-      className={`group relative overflow-hidden rounded-lg ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-0.5`}
+      className={`group relative overflow-hidden rounded-lg ${toneBg[tone]} ${heightClass} ${className} transition-transform duration-300 ease-out hover:-translate-y-1`}
     >
-      {/* Decorative visual — absolute, behind text */}
       <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden="true">
         {visual}
       </div>
-
-      {/* Content — MSCI-compact padding */}
-      <div className="relative flex h-full flex-col justify-end p-5 lg:p-6">
-        <div className="max-w-[85%]">
-          <h3 className={`text-[18px] font-semibold leading-[1.25] tracking-tight ${titleColor} lg:text-[22px]`}>
+      <div className="relative flex h-full flex-col justify-end p-7 lg:p-8">
+        <div className="max-w-[88%]">
+          <h3 className={`text-[22px] font-semibold leading-[1.2] tracking-tight ${titleColor} lg:text-[26px]`}>
             {title}
           </h3>
           {desc && (
-            <p className={`mt-1.5 text-[12px] leading-relaxed ${descColor} lg:text-[13px]`}>
+            <p className={`mt-2 text-[14px] leading-relaxed ${descColor} lg:text-[15px]`}>
               {desc}
             </p>
           )}
           {kicker && !desc && (
-            <p className={`mt-1.5 text-[12px] leading-relaxed ${kickerColor} lg:text-[13px]`}>
+            <p className={`mt-2 text-[14px] leading-relaxed ${kickerColor} lg:text-[15px]`}>
               {kicker}
             </p>
           )}
         </div>
         <span
-          className={`mt-3 inline-flex h-8 w-fit items-center gap-1.5 rounded-full border px-4 text-[11px] font-medium transition-colors ${ctaBorder}`}
+          className={`mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border px-5 text-[13px] font-medium transition-colors ${ctaBorder}`}
         >
           {cta}
-          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
     </Link>
@@ -313,24 +293,10 @@ function VisualWaves() {
   );
 }
 
-function VisualLines() {
+function VisualDark() {
   return (
-    <div className="absolute inset-0 opacity-70">
-      <div className="absolute inset-y-0 right-0 w-[50%] bg-gradient-to-l from-white/15 via-white/5 to-transparent" />
-      <svg className="absolute right-0 top-0 h-full w-[55%]" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
-        {Array.from({ length: 28 }).map((_, i) => (
-          <line
-            key={i}
-            x1={i * 12}
-            y1={0}
-            x2={i * 12 + 80}
-            y2={400}
-            stroke="#e5e7eb"
-            strokeOpacity={0.12 + (i % 3) * 0.08}
-            strokeWidth="1"
-          />
-        ))}
-      </svg>
+    <div className="absolute inset-0">
+      <div className="absolute inset-y-0 right-0 w-[50%] bg-gradient-to-l from-white/10 via-white/5 to-transparent" />
     </div>
   );
 }

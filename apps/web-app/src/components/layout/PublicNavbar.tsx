@@ -98,7 +98,7 @@ const NAV: NavItem[] = [
 
 function MegaDropdown({ item, onClose }: { item: NavItem; onClose: () => void }) {
     return (
-        <div className="fixed inset-x-0 top-[88px] z-50 border-b border-black/[0.06] bg-white shadow-lg">
+        <div className="fixed inset-x-0 top-[88px] z-50 bg-white shadow-xl">
             <div className="mx-auto flex max-w-[1200px] gap-16 px-8 py-10">
                 <div className="flex flex-1 gap-12">
                     {item.columns?.map((col, i) => (
@@ -372,32 +372,32 @@ export function PublicNavbar() {
                     hidden ? '-translate-y-full' : 'translate-y-0'
                 }`}
             >
-                {/* Utility bar — MSCI style: right-aligned links with pipe separators */}
-                <div className="hidden border-b border-black/[0.06] lg:block">
-                    <div className="mx-auto flex h-8 max-w-[1400px] items-center justify-end gap-0 px-8">
-                        <Link href="/contact" className="px-3 text-[11px] text-black/45 transition-colors hover:text-black/70">
+                {/* Utility bar — MSCI style */}
+                <div className="hidden lg:block">
+                    <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
+                        <Link href="/contact" className="px-3 text-[12px] text-black/40 transition-colors hover:text-black/70">
                             Support
                         </Link>
-                        <span className="text-black/20">|</span>
+                        <span className="text-black/15">|</span>
                         <ClientLoginDropdown dark={false} />
                     </div>
                 </div>
 
                 {/* Main nav bar */}
-                <div className="relative mx-auto flex h-[56px] max-w-[1400px] items-center justify-between border-b border-black/[0.06] px-6 lg:px-8">
+                <div className="relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between border-b border-dashed border-black/[0.08] px-6 lg:px-8">
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
                             src="/logos/logo.svg"
                             alt="Pyhron"
-                            width={120}
-                            height={32}
+                            width={130}
+                            height={35}
                             priority
-                            className="h-8 w-auto"
+                            className="h-9 w-auto"
                         />
                     </Link>
 
                     <nav
-                        className="ml-8 hidden items-center gap-0 lg:flex"
+                        className="ml-10 hidden items-center gap-0.5 lg:flex"
                         aria-label="Main navigation"
                         onMouseLeave={() => setHoveredLabel(null)}
                     >
@@ -409,13 +409,13 @@ export function PublicNavbar() {
                                     <Link
                                         key={item.label}
                                         href={item.href}
-                                        className="group relative flex h-[56px] items-center px-3.5 text-[13px] font-normal text-black/70 transition-colors hover:text-black"
+                                        className="group relative flex h-[60px] items-center px-4 text-[14px] text-black/70 transition-colors hover:text-black"
                                         onMouseEnter={() => setHoveredLabel(item.label)}
                                     >
                                         {item.label}
                                         <span
                                             aria-hidden="true"
-                                            className={`pointer-events-none absolute bottom-0 left-3.5 right-3.5 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                            className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
                                                 isActive ? 'scale-x-100' : 'scale-x-0'
                                             }`}
                                         />
@@ -434,7 +434,7 @@ export function PublicNavbar() {
                                         aria-haspopup="true"
                                         aria-expanded={activeDropdown === item.label}
                                         onClick={() => toggleDropdown(item.label)}
-                                        className={`flex h-[56px] items-center px-3.5 text-[13px] font-normal transition-colors ${
+                                        className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
                                             isActive ? 'text-black' : 'text-black/70 hover:text-black'
                                         }`}
                                     >
@@ -442,7 +442,7 @@ export function PublicNavbar() {
                                     </button>
                                     <span
                                         aria-hidden="true"
-                                        className={`pointer-events-none absolute bottom-0 left-3.5 right-3.5 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
+                                        className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center bg-black transition-transform duration-300 ease-out ${
                                             isActive ? 'scale-x-100' : 'scale-x-0'
                                         }`}
                                     />

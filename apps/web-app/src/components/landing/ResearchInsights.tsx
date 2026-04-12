@@ -23,107 +23,99 @@ const MSCI_BRAND_BLUE = '#1a3fd6';
 
 export function ResearchInsights() {
   return (
-    <section className="bg-[#f5f5f7] py-14 lg:py-20">
+    <section className="bg-[#f5f5f7] py-20 lg:py-28">
       <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
-        {/* Header — MSCI ms-headline1-sm: 2.25rem, -0.04em tracking */}
+        {/* Header — MSCI ms-headline1: 2.25rem mobile → 4rem desktop */}
         <ScrollReveal>
           <h2
-            className="font-semibold leading-[1.1]"
-            style={{
-              color: MSCI_BRAND_BLUE,
-              fontSize: '2.25rem',
-              letterSpacing: '-0.04em',
-            }}
+            className="font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
+            style={{ color: MSCI_BRAND_BLUE, letterSpacing: '-0.06em' }}
           >
             Research &amp; Insights
           </h2>
           <p
-            className="mt-0.5 font-semibold leading-[1.1]"
-            style={{
-              color: '#6a7cfb',
-              fontSize: '2.25rem',
-              letterSpacing: '-0.04em',
-            }}
+            className="font-semibold leading-[1.1] text-[2.25rem] lg:text-[4rem]"
+            style={{ color: '#6a7cfb', letterSpacing: '-0.06em' }}
           >
             Stay ahead of changing markets
           </p>
 
           <Link
             href="/research-and-insights"
-            className="mt-5 inline-flex h-10 items-center gap-2 rounded-full px-6 text-[12px] font-medium text-white transition-opacity hover:opacity-90"
+            className="mt-8 inline-flex h-12 items-center gap-2 rounded-full px-8 text-[14px] font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             Explore all research
           </Link>
         </ScrollReveal>
 
-        {/* Card grid — MSCI-exact: 6px gaps, rounded-lg corners */}
-        <div className="mt-6 grid grid-cols-1 gap-1.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr]">
+        {/* Card grid — MSCI: ~10px gaps, rounded-lg */}
+        <div className="mt-12 grid grid-cols-1 gap-2.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr]">
           {/* Gray "cover" card spanning both rows */}
           <Link
             href="/research-and-insights/articles/idx-factor-stress-test"
-            className="group relative overflow-hidden rounded-lg bg-white p-5 transition-transform duration-300 ease-out hover:-translate-y-0.5 lg:row-span-2 lg:min-h-[400px]"
+            className="group relative overflow-hidden rounded-lg bg-white p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
           >
-            <div className="pointer-events-none flex h-[240px] items-center justify-center lg:h-[260px]">
+            <div className="pointer-events-none flex h-[300px] items-center justify-center lg:h-[340px]">
               <SphereVisual />
             </div>
-            <div className="relative mt-2 max-w-[90%]">
-              <h3 className="text-[1.1rem] font-semibold leading-[1.3] tracking-tight text-black lg:text-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
+            <div className="relative mt-4 max-w-[90%]">
+              <h3 className="text-[1.375rem] font-semibold leading-[1.25] tracking-tight text-black lg:text-[1.625rem]" style={{ letterSpacing: '-0.02em' }}>
                 IDX Factor Models Under Stress
               </h3>
-              <p className="mt-1.5 font-normal text-black/60" style={{ fontSize: '0.8125rem', lineHeight: 1.55 }}>
+              <p className="mt-3 text-[0.9375rem] font-normal leading-[1.55] text-black/60">
                 The AI-driven equity rotation that rattled developed markets earlier this
                 year also exposed a fault line in IDX factor premia. We examine the
                 implications for Indonesia-focused quant portfolios.
               </p>
             </div>
-            <span className="mt-3 inline-flex h-8 w-fit items-center gap-1.5 rounded-full border border-black/50 px-4 text-[11px] font-medium text-black transition-colors group-hover:border-black">
+            <span className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-black/50 px-5 text-[13px] font-medium text-black transition-colors group-hover:border-black">
               Read more
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
 
           {/* Black card */}
           <Link
             href="/research-and-insights/articles/us-china-idx-flows"
-            className="group relative overflow-hidden rounded-lg bg-[#0a0e1a] p-5 transition-transform duration-300 ease-out hover:-translate-y-0.5 lg:min-h-[192px]"
+            className="group relative overflow-hidden rounded-lg bg-[#0a0e1a] p-7 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
-              <h3 className="text-[1rem] font-semibold leading-[1.3] tracking-tight text-white lg:text-[1.15rem]" style={{ letterSpacing: '-0.02em' }}>
+              <h3 className="text-[1.25rem] font-semibold leading-[1.25] tracking-tight text-white lg:text-[1.5rem]" style={{ letterSpacing: '-0.02em' }}>
                 US–China tensions reshape IDX foreign flows
               </h3>
-              <p className="mt-1.5 font-normal text-white/70" style={{ fontSize: '0.8125rem', lineHeight: 1.5 }}>
+              <p className="mt-3 text-[0.9375rem] font-normal leading-[1.5] text-white/70">
                 It may be time to reassess currency-hedged exposure as portfolio
                 reallocations flip historical beta relationships across Indonesian
                 equities.
               </p>
             </div>
-            <span className="relative mt-3 inline-flex h-8 w-fit items-center gap-1.5 rounded-full border border-white/50 px-4 text-[11px] font-medium text-white transition-colors group-hover:border-white">
+            <span className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/50 px-5 text-[13px] font-medium text-white transition-colors group-hover:border-white">
               Learn more
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
 
           {/* Blue card */}
           <Link
             href="/research-and-insights/articles/idx-liquidity-premium"
-            className="group relative overflow-hidden rounded-lg p-5 transition-transform duration-300 ease-out hover:-translate-y-0.5 lg:min-h-[192px]"
+            className="group relative overflow-hidden rounded-lg p-7 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />
             <div className="relative max-w-[55%]">
-              <h3 className="text-[1rem] font-semibold leading-[1.3] tracking-tight text-white lg:text-[1.15rem]" style={{ letterSpacing: '-0.02em' }}>
+              <h3 className="text-[1.25rem] font-semibold leading-[1.25] tracking-tight text-white lg:text-[1.5rem]" style={{ letterSpacing: '-0.02em' }}>
                 IDX Liquidity Premium
               </h3>
-              <p className="mt-1.5 font-normal text-white/80" style={{ fontSize: '0.8125rem', lineHeight: 1.5 }}>
+              <p className="mt-3 text-[0.9375rem] font-normal leading-[1.5] text-white/80">
                 Could volatility measures signal a coming dislocation in second-board
                 Indonesian equities?
               </p>
             </div>
-            <span className="relative mt-3 inline-flex h-8 w-fit items-center gap-1.5 rounded-full border border-white/70 px-4 text-[11px] font-medium text-white transition-colors group-hover:border-white">
+            <span className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/70 px-5 text-[13px] font-medium text-white transition-colors group-hover:border-white">
               Get the facts
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
         </div>
