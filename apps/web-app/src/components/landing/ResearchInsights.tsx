@@ -33,6 +33,7 @@ export function ResearchInsights() {
               color: MSCI_BRAND_BLUE,
               fontSize: '2.25rem',
               letterSpacing: '-0.04em',
+              fontFamily: 'Inter, sans-serif',
             }}
           >
             Research &amp; Insights
@@ -43,6 +44,7 @@ export function ResearchInsights() {
               color: '#6a7cfb',
               fontSize: '2.25rem',
               letterSpacing: '-0.04em',
+              fontFamily: 'Inter, sans-serif',
             }}
           >
             Stay ahead of changing markets
@@ -58,17 +60,17 @@ export function ResearchInsights() {
         </ScrollReveal>
 
         {/* Card grid */}
-        <div className="mt-16 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto]">
+        <div className="mt-10 grid grid-cols-1 gap-3 lg:grid-cols-2 lg:grid-rows-[auto_auto]">
           {/* Gray "cover" card spanning both rows */}
           <Link
             href="/research/articles/idx-factor-stress-test"
-            className="group relative overflow-hidden rounded-2xl bg-[#f5f5f7] p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
+            className="group relative overflow-hidden rounded-2xl bg-[#f5f5f7] p-6 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[500px]"
           >
             <div className="pointer-events-none flex h-[340px] items-center justify-center lg:h-[380px]">
               <SphereVisual />
             </div>
-            <div className="relative mt-6 max-w-[88%]">
-              <h3 className="font-semibold leading-[1.25] tracking-tight text-black" style={{ fontSize: '1.5rem', letterSpacing: '-0.02em' }}>
+            <div className="relative mt-4 max-w-[88%]">
+              <h3 className="font-semibold leading-[1.25] tracking-tight text-black" style={{ fontSize: '1.5rem', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
                 IDX Factor Models Under Stress
               </h3>
               <p className="mt-3 font-normal text-black/70" style={{ fontSize: '0.95rem', lineHeight: 1.45 }}>
@@ -86,11 +88,11 @@ export function ResearchInsights() {
           {/* Black card with "photo" placeholder */}
           <Link
             href="/research/articles/us-china-idx-flows"
-            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
+            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-6 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[235px]"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
-              <h3 className="font-semibold leading-[1.25] tracking-tight text-white" style={{ fontSize: '1.4rem', letterSpacing: '-0.02em' }}>
+              <h3 className="font-semibold leading-[1.25] tracking-tight text-white" style={{ fontSize: '1.4rem', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
                 US–China tensions reshape IDX foreign flows
               </h3>
               <p className="mt-3 font-normal text-white/70" style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>
@@ -108,12 +110,12 @@ export function ResearchInsights() {
           {/* Blue card with pattern */}
           <Link
             href="/research/articles/idx-liquidity-premium"
-            className="group relative overflow-hidden rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
+            className="group relative overflow-hidden rounded-2xl p-6 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[235px]"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />
             <div className="relative max-w-[55%]">
-              <h3 className="font-semibold leading-[1.25] tracking-tight text-white" style={{ fontSize: '1.4rem', letterSpacing: '-0.02em' }}>
+              <h3 className="font-semibold leading-[1.25] tracking-tight text-white" style={{ fontSize: '1.4rem', letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
                 IDX Liquidity Premium
               </h3>
               <p className="mt-3 font-normal text-white/80" style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>

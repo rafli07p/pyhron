@@ -178,7 +178,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
                     </div>
                 ))}
                 <div className="mt-6 space-y-3">
-                    <a href="/login" target="_blank" rel="noopener noreferrer" onClick={onClose} className="block w-full rounded-lg bg-[#2563eb] py-3 text-center text-sm font-medium text-white">Launch Terminal</a>
+                    <Link href="/register" onClick={onClose} className="block w-full rounded-lg bg-[#2563eb] py-3 text-center text-sm font-medium text-white">Get Started Free</Link>
                     <Link href="/contact" onClick={onClose} className="block w-full rounded-lg border border-black/10 py-3 text-center text-sm text-black/60">Get in touch</Link>
                 </div>
             </nav>
