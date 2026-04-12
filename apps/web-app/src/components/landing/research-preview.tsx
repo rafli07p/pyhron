@@ -7,7 +7,7 @@ const articles = [
     date: 'March 2026',
     excerpt:
       'We apply the Fama-French five-factor model to Indonesian large-cap equities, finding statistically significant value and profitability premiums after adjusting for IDX microstructure.',
-    href: '/research/articles/fama-french-idx-lq45',
+    href: '/research-and-insights/articles/fama-french-idx-lq45',
   },
   {
     category: 'Strategy',
@@ -15,7 +15,7 @@ const articles = [
     date: 'February 2026',
     excerpt:
       'Statistical cointegration analysis of BBCA-BMRI and BBRI-BBNI pairs reveals mean-reverting spreads with half-lives suitable for automated execution strategies.',
-    href: '/research/articles/banking-sector-pairs-trading',
+    href: '/research-and-insights/articles/banking-sector-pairs-trading',
   },
   {
     category: 'Commodity Linkage',
@@ -23,7 +23,7 @@ const articles = [
     date: 'January 2026',
     excerpt:
       'Examining the transmission mechanism between crude palm oil futures and IDX poultry sector equities using Granger causality and impulse response functions.',
-    href: '/research/articles/cpo-correlation-analysis',
+    href: '/research-and-insights/articles/cpo-correlation-analysis',
   },
 ];
 
@@ -41,7 +41,7 @@ export function ResearchPreview() {
             </h2>
           </div>
           <Link
-            href="/research/articles"
+            href="/research-and-insights/articles"
             className="hidden text-sm font-medium text-white/60 transition-colors hover:text-[#C9A84C] md:block"
           >
             View All &rarr;
@@ -73,7 +73,7 @@ export function ResearchPreview() {
         </div>
 
         <Link
-          href="/research/articles"
+          href="/research-and-insights/articles"
           className="mt-8 block text-center text-sm font-medium text-white/60 transition-colors hover:text-[#C9A84C] md:hidden"
         >
           View All Research &rarr;

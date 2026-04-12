@@ -14,8 +14,8 @@ const linkGroups = [
   {
     title: 'Research',
     links: [
-      { label: 'Insights', href: '/research/articles' },
-      { label: 'Signals', href: '/research/signals' },
+      { label: 'Insights', href: '/research-and-insights' },
+      { label: 'Signals', href: '/research-and-insights' },
       { label: 'Methodology', href: '/methodology' },
     ],
   },

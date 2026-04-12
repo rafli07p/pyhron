@@ -57,7 +57,7 @@ export default function ResearchPage() {
       <section className="border-t border-[var(--border-default)] bg-[var(--surface-0)] py-20">
         <div className="mx-auto max-w-7xl px-6 text-center">
           <Link
-            href="/research"
+            href="/research-and-insights"
             className="inline-flex h-10 items-center rounded-md bg-[var(--accent-500)] px-6 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-600)]"
           >
             View Research →
