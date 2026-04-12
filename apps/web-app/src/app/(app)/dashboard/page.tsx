@@ -3,177 +3,273 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Cell, PieChart, Pie,
 } from 'recharts';
-import { PORTFOLIO, POSITIONS, RECENT_ORDERS, STRATEGIES, generateEquityCurve } from '@/mocks/terminal-data';
-import { TerminalDisclaimer } from '@/components/terminal/TerminalDisclaimer';
+import {
+  PORTFOLIO, POSITIONS, INDICES, SECTORS, MARKET_BREADTH,
+  MONTHLY_RETURNS, generateEquityCurve,
+} from '@/mocks/terminal-data';
 
 const idr = (v: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v);
+const pct = (v: number, dec = 2) => `${v >= 0 ? '+' : ''}${v.toFixed(dec)}%`;
 const equityData = generateEquityCurve(90);
-const periods = ['1W', '1M', '3M', '1Y'] as const;
 
-const statusIcon = (s: string) =>
-  s === 'running' ? <span className="text-emerald-400">●</span>
-  : s === 'paused' ? <span className="text-amber-400">○</span>
-  : <span className="text-red-400">✕</span>;
+const RISK_SOURCES = [
+  { source: 'Market', risk: 8.42, contribution: 59.2 },
+  { source: 'Local Events', risk: 3.05, contribution: 21.5 },
+  { source: 'Sectors', risk: 1.84, contribution: 12.9 },
+  { source: 'IDX Indices', risk: 0.62, contribution: 4.4 },
+  { source: 'Currency', risk: 0.21, contribution: 1.5 },
+  { source: 'Specific', risk: 0.08, contribution: 0.5 },
+];
+
+const FACTOR_RISK = [
+  { factor: 'Value', exposure: 0.42, contribution: 1.8 },
+  { factor: 'Momentum', exposure: 0.85, contribution: 3.2 },
+  { factor: 'Quality', exposure: 0.31, contribution: 0.9 },
+  { factor: 'Size', exposure: -0.22, contribution: -0.5 },
+  { factor: 'Volatility', exposure: -0.65, contribution: -2.1 },
+  { factor: 'Liquidity', exposure: 0.18, contribution: 0.4 },
+  { factor: 'Dividend', exposure: 0.55, contribution: 1.2 },
+  { factor: 'Growth', exposure: 0.12, contribution: 0.3 },
+];
+
+const tabs = ['Portfolio Summary', 'Equity Factor Risk', 'Risk Trend', 'Asset'] as const;
+
+function MetricCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 px-4 py-3">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-white/35">{label}</span>
+      <span className="text-[20px] font-semibold tabular-nums text-white">{value}</span>
+      {sub && <span className="text-[11px] text-white/40">{sub}</span>}
+    </div>
+  );
+}
+
+function SectionHeader({ title, children }: { title: string; children?: React.ReactNode }) {
+  return (
+    <div className="mb-3 flex items-center justify-between">
+      <h3 className="text-[13px] font-semibold text-white/80">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function Panel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-lg border border-white/[0.06] bg-[#0d1117] p-4 ${className}`}>
+      {children}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const [activePeriod, setActivePeriod] = useState<string>('1M');
+  const [activeTab, setActiveTab] = useState<string>('Equity Factor Risk');
+  const [riskPeriod, setRiskPeriod] = useState('3 Months');
 
-  const stats = [
-    { label: 'NAV', value: idr(PORTFOLIO.nav) },
-    { label: 'Day P&L', value: `+${idr(PORTFOLIO.dayPnl)}`, delta: `+${PORTFOLIO.dayPnlPct}%`, positive: true },
-    { label: 'Total Return', value: `+${PORTFOLIO.totalReturn}%`, delta: null, positive: true },
-    { label: 'Sharpe', value: PORTFOLIO.sharpe.toFixed(2) },
-    { label: 'Win Rate', value: `${PORTFOLIO.winRate}%` },
-    { label: 'Open Positions', value: String(PORTFOLIO.openPositions) },
-  ];
+  const topAssets = POSITIONS.slice().sort((a, b) => b.weight - a.weight);
+  const totalRisk = RISK_SOURCES.reduce((s, r) => s + r.risk, 0);
 
   return (
-    <div className="p-4 space-y-3">
-      <h1 className="terminal-page-title">Dashboard</h1>
+    <div className="min-h-full bg-[#0a0e14] p-4">
+      {/* Portfolio Header */}
+      <div className="mb-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-[18px] font-semibold text-white">PYHRON IDX QUALITY - Daily</h1>
+          <span className="rounded bg-white/[0.06] px-2 py-0.5 text-[10px] text-white/40">Equity Factor Risk</span>
+        </div>
+        <div className="mt-1 flex items-center gap-4 text-[11px] text-white/35">
+          <span>Portfolio: <strong className="text-white/60">IDX Quality</strong></span>
+          <span>Benchmark: <strong className="text-white/60">IHSG</strong></span>
+          <span>As of date: <strong className="text-white/60">11 Apr 2026</strong></span>
+        </div>
+      </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-lg bg-[#111113] border border-[#1e1e22] p-3">
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value text-lg">{s.value}</div>
-            {s.delta && (
-              <div className={`text-xs mt-0.5 ${s.positive ? 'text-emerald-400' : 'text-red-400'}`}>{s.delta}</div>
-            )}
-          </div>
+      {/* Tabs */}
+      <div className="mb-4 flex gap-0 border-b border-white/[0.06]">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveTab(t)}
+            className={`border-b-2 px-4 py-2.5 text-[12px] font-medium transition-colors ${
+              activeTab === t
+                ? 'border-[#2563eb] text-white'
+                : 'border-transparent text-white/40 hover:text-white/60'
+            }`}
+          >
+            {t}
+          </button>
         ))}
       </div>
 
-      {/* Equity Curve + Strategy Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
-        {/* Equity Curve */}
-        <div className="lg:col-span-3 rounded-lg bg-[#111113] border border-[#1e1e22] p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="terminal-heading mb-2">Equity Curve</span>
-            <div className="flex gap-1">
-              {periods.map((p) => (
-                <button key={p} onClick={() => setActivePeriod(p)}
-                  className={`rounded px-2 py-0.5 text-[10px] font-mono ${activePeriod === p ? 'bg-blue-600/20 text-blue-400' : 'text-white/30 hover:text-white/50'}`}>
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={equityData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <CartesianGrid stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickLine={false} axisLine={false} />
-                <YAxis hide />
-                <Tooltip contentStyle={{ background: '#111113', border: '1px solid #1e1e22', fontSize: 11 }}
-                  labelStyle={{ color: 'rgba(255,255,255,0.4)' }} itemStyle={{ color: '#fff' }} />
-                <Area type="monotone" dataKey="benchmark" stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" fill="none" dot={false} />
-                <Area type="monotone" dataKey="equity" stroke="#2563eb" fill="#2563eb" fillOpacity={0.1} dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Strategy Status */}
-        <div className="lg:col-span-2 rounded-lg bg-[#111113] border border-[#1e1e22] p-3">
-          <span className="terminal-heading mb-2">Strategies</span>
-          <div className="mt-2 space-y-0">
-            {STRATEGIES.map((s) => (
-              <Link key={s.id} href={`/strategies/${s.id}`}
-                className="flex items-center justify-between py-1.5 px-1 hover:bg-white/[0.02] rounded">
-                <div className="flex items-center gap-2 text-sm text-white/70">
-                  {statusIcon(s.status)}
-                  <span className="font-mono text-xs">{s.name}</span>
-                </div>
-                <span className={`font-mono text-xs ${s.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {s.pnl >= 0 ? '+' : ''}{s.pnl.toFixed(1)}%
-                </span>
-              </Link>
-            ))}
-          </div>
-          <Link href="/strategies" className="block mt-2 text-[10px] text-white/30 hover:text-white/50">View all &rarr;</Link>
-        </div>
+      {/* Key Metrics Row — MSCI One style */}
+      <div className="mb-4 flex flex-wrap items-stretch divide-x divide-white/[0.06] rounded-lg border border-white/[0.06] bg-[#0d1117]">
+        <MetricCard label="Market Value" value={`${(PORTFOLIO.nav / 1e9).toFixed(2)}B`} sub="IDR" />
+        <MetricCard label="Active Risk" value={`${(totalRisk * 0.27).toFixed(2)}%`} />
+        <MetricCard label="Total Risk" value={`${totalRisk.toFixed(2)}%`} />
+        <MetricCard label="Beta" value={PORTFOLIO.beta.toFixed(2)} />
+        <MetricCard label="Weight Top 10" value={`${topAssets.slice(0, 10).reduce((s, a) => s + a.weight, 0).toFixed(2)}%`} />
+        <MetricCard label="Active Risk Top 10" value={`${(totalRisk * 0.48).toFixed(2)}%`} />
+        <MetricCard label="No. of Assets" value={String(POSITIONS.length)} sub="Active" />
       </div>
 
-      {/* Positions + Recent Orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-[55%_1fr] gap-3">
-        {/* Positions Table */}
-        <div className="rounded-lg bg-[#111113] border border-[#1e1e22] p-3 overflow-x-auto">
-          <span className="terminal-heading mb-2">Positions</span>
-          <table className="w-full mt-2">
+      {/* Main Grid — 2 columns */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        {/* Risk Decomposition Table */}
+        <Panel>
+          <SectionHeader title="Risk Decomposition" />
+          <table className="w-full">
             <thead>
-              <tr>
-                <th className="table-header text-left py-1 px-3">SYM</th>
-                <th className="table-header text-right py-1 px-3">QTY</th>
-                <th className="table-header text-right py-1 px-3">AVG</th>
-                <th className="table-header text-right py-1 px-3">CUR</th>
-                <th className="table-header text-right py-1 px-3">P&L</th>
-                <th className="table-header text-right py-1 px-3">P&L%</th>
+              <tr className="border-b border-white/[0.06]">
+                <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-wider text-white/30">Risk Source</th>
+                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-wider text-white/30">Risk %</th>
+                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-wider text-white/30">Contribution %</th>
+                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-wider text-white/30">Bar</th>
               </tr>
             </thead>
             <tbody>
-              {POSITIONS.map((p) => {
-                const pnl = (p.currentPrice - p.avgPrice) * p.qty;
-                const pnlPct = (p.currentPrice / p.avgPrice - 1) * 100;
-                const pos = pnl >= 0;
-                return (
-                  <tr key={p.symbol} className="border-b border-[#1e1e22] hover:bg-white/[0.02] cursor-pointer"
-                    onClick={() => window.location.href = `/markets/${p.symbol}`}>
-                    <td className="py-2 px-3 font-mono text-sm text-white">{p.symbol}</td>
-                    <td className="py-2 px-3 font-mono text-sm text-white/70 text-right">{p.qty.toLocaleString('id-ID')}</td>
-                    <td className="py-2 px-3 font-mono text-sm text-white/70 text-right">{new Intl.NumberFormat('id-ID').format(p.avgPrice)}</td>
-                    <td className="py-2 px-3 font-mono text-sm text-white/70 text-right">{new Intl.NumberFormat('id-ID').format(p.currentPrice)}</td>
-                    <td className={`py-2 px-3 font-mono text-sm text-right ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {pos ? '+' : ''}{idr(pnl)}
-                    </td>
-                    <td className={`py-2 px-3 font-mono text-sm text-right ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {pos ? '+' : ''}{pnlPct.toFixed(2)}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <Link href="/portfolio/positions" className="block mt-2 text-[10px] text-white/30 hover:text-white/50">View all &rarr;</Link>
-        </div>
-
-        {/* Recent Orders */}
-        <div className="rounded-lg bg-[#111113] border border-[#1e1e22] p-3 overflow-x-auto">
-          <span className="terminal-heading mb-2">Recent Orders</span>
-          <table className="w-full mt-2">
-            <thead>
-              <tr>
-                <th className="table-header text-left py-1 px-3">TIME</th>
-                <th className="table-header text-left py-1 px-3">SIDE</th>
-                <th className="table-header text-left py-1 px-3">SYM</th>
-                <th className="table-header text-right py-1 px-3">QTY</th>
-                <th className="table-header text-left py-1 px-3">STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {RECENT_ORDERS.map((o) => (
-                <tr key={o.id} className="border-b border-[#1e1e22] hover:bg-white/[0.02]">
-                  <td className="py-2 px-3 font-mono text-xs text-white/30">{o.time}</td>
-                  <td className={`py-2 px-3 font-mono text-sm ${o.side === 'BUY' ? 'text-blue-400' : 'text-red-400'}`}>{o.side}</td>
-                  <td className="py-2 px-3 font-mono text-sm text-white">{o.symbol}</td>
-                  <td className="py-2 px-3 font-mono text-sm text-white/70 text-right">{o.qty.toLocaleString('id-ID')}</td>
-                  <td className="py-2 px-3 text-sm">
-                    {o.status === 'filled'
-                      ? <span className="text-emerald-400">●</span>
-                      : <span className="text-amber-400">◐</span>}
-                    <span className="ml-1.5 text-white/50 text-xs">{o.status}</span>
+              {RISK_SOURCES.map((r) => (
+                <tr key={r.source} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                  <td className="py-2 text-[12px] text-white/70">{r.source}</td>
+                  <td className="py-2 text-right font-mono text-[12px] text-white/60">{r.risk.toFixed(2)}%</td>
+                  <td className="py-2 text-right font-mono text-[12px] text-white/60">{r.contribution.toFixed(1)}%</td>
+                  <td className="py-2 text-right">
+                    <div className="ml-auto h-2 w-24 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div className="h-full rounded-full bg-[#2563eb]" style={{ width: `${r.contribution}%` }} />
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <Link href="/portfolio/orders" className="block mt-2 text-[10px] text-white/30 hover:text-white/50">View all &rarr;</Link>
-        </div>
+        </Panel>
+
+        {/* Local Market Risk Breakdown */}
+        <Panel>
+          <SectionHeader title="Local Market Risk Breakdown">
+            <div className="flex gap-3 text-[10px] text-white/30">
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#2563eb]" /> Portfolio</span>
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#06b6d4]" /> Benchmark</span>
+            </div>
+          </SectionHeader>
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={SECTORS.map((s) => ({ name: s.name, portfolio: s.weight, benchmark: s.weight * 0.85 + 2 }))}>
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', fontSize: 11, borderRadius: 6 }} />
+                <Bar dataKey="portfolio" fill="#2563eb" radius={[2, 2, 0, 0]} barSize={14} />
+                <Bar dataKey="benchmark" fill="#06b6d4" radius={[2, 2, 0, 0]} barSize={14} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+
+        {/* Risk Trend */}
+        <Panel>
+          <SectionHeader title="Risk Trend">
+            <div className="flex gap-1">
+              {['1 Month', '3 Months', '1 Year'].map((p) => (
+                <button key={p} onClick={() => setRiskPeriod(p)}
+                  className={`rounded px-2.5 py-1 text-[10px] ${riskPeriod === p ? 'bg-[#2563eb]/20 text-[#60a5fa]' : 'text-white/30 hover:text-white/50'}`}>
+                  {p}
+                </button>
+              ))}
+            </div>
+          </SectionHeader>
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={equityData.slice(-60)}>
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.25)' }} tickLine={false} axisLine={false} tickFormatter={(v) => v.slice(5)} />
+                <YAxis hide />
+                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', fontSize: 11, borderRadius: 6 }} />
+                <Area type="monotone" dataKey="equity" stroke="#2563eb" fill="#2563eb" fillOpacity={0.08} strokeWidth={2} dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+
+        {/* Factor Risk Contribution */}
+        <Panel>
+          <SectionHeader title="Top Factors by Risk Contribution" />
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={FACTOR_RISK.sort((a, b) => b.contribution - a.contribution)} layout="vertical">
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickLine={false} axisLine={false} />
+                <YAxis dataKey="factor" type="category" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }} tickLine={false} axisLine={false} width={80} />
+                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', fontSize: 11, borderRadius: 6 }} />
+                <Bar dataKey="contribution" radius={[0, 3, 3, 0]} barSize={16}>
+                  {FACTOR_RISK.sort((a, b) => b.contribution - a.contribution).map((f, i) => (
+                    <Cell key={i} fill={f.contribution >= 0 ? '#2563eb' : '#ef4444'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
       </div>
 
-      <TerminalDisclaimer />
+      {/* Bottom Row — Asset Tables */}
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        {/* Top 10 Assets by Weight */}
+        <Panel>
+          <SectionHeader title="Top 10 Assets by Weight" />
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                <th className="pb-2 text-left text-[10px] font-medium uppercase tracking-wider text-white/30">Asset Name</th>
+                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-wider text-white/30">Weight</th>
+                <th className="pb-2 text-right text-[10px] font-medium uppercase tracking-wider text-white/30">Risk Cont.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topAssets.map((a) => (
+                <tr key={a.symbol} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
+                  <td className="py-2">
+                    <div className="text-[12px] text-white/80">{a.name}</div>
+                    <div className="text-[10px] text-white/30">{a.symbol} / {a.sector}</div>
+                  </td>
+                  <td className="py-2 text-right font-mono text-[12px] text-white/60">{a.weight.toFixed(1)}%</td>
+                  <td className="py-2 text-right font-mono text-[12px] text-white/60">{(a.weight * 0.35).toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Panel>
+
+        {/* Monthly Performance */}
+        <Panel>
+          <SectionHeader title="Monthly Performance Attribution">
+            <div className="flex gap-3 text-[10px] text-white/30">
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-[#2563eb]" /> Portfolio</span>
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-white/20" /> Benchmark</span>
+            </div>
+          </SectionHeader>
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={MONTHLY_RETURNS}>
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)', fontSize: 11, borderRadius: 6 }} />
+                <Bar dataKey="portfolio" fill="#2563eb" radius={[2, 2, 0, 0]} barSize={14} />
+                <Bar dataKey="benchmark" fill="rgba(255,255,255,0.15)" radius={[2, 2, 0, 0]} barSize={14} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-6 border-t border-white/[0.06] pt-4 text-center text-[10px] text-white/20">
+        &copy; {new Date().getFullYear()} Pyhron. All Rights Reserved. Subject to{' '}
+        <Link href="/legal/terms" className="underline hover:text-white/40">Terms of Use</Link> &{' '}
+        <Link href="/legal/disclaimer" className="underline hover:text-white/40">Disclaimer</Link>.
+      </div>
     </div>
   );
 }

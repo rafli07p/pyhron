@@ -2,99 +2,71 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronLeft, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useSidebarStore } from '@/stores/sidebar';
-import { ROUTES } from '@/constants/routes';
-import { Badge } from '@/design-system/primitives/Badge';
 import { cn } from '@/lib/utils';
+
+const NAV_ITEMS = [
+  { label: 'Home', path: '/dashboard' },
+  { label: 'Markets', path: '/markets' },
+  { label: 'Portfolios', path: '/portfolio' },
+  { label: 'Research', path: '/research' },
+  { label: 'Strategies', path: '/strategies' },
+  { label: 'Execution', path: '/execution' },
+  { label: 'Reports', path: '/studio' },
+  { label: 'Settings', path: '/settings' },
+] as const;
+
+const LABS_ITEMS = [
+  { label: 'Labs', path: '/ml' },
+] as const;
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { collapsed, mobileOpen, toggle, setMobileOpen } = useSidebarStore();
+  const { mobileOpen, setMobileOpen } = useSidebarStore();
 
-  const sidebarRoutes = Object.values(ROUTES).filter((r) => r.showInSidebar && r.icon);
-  const mainRoutes = sidebarRoutes.filter((r) => r.sidebarGroup === 'main');
-  const advancedRoutes = sidebarRoutes.filter((r) => r.sidebarGroup === 'advanced');
-  const systemRoutes = sidebarRoutes.filter((r) => r.sidebarGroup === 'system');
-
-  const renderLink = (route: (typeof ROUTES)[string]) => {
-    const Icon = route.icon;
-    const isActive = pathname === route.path || pathname.startsWith(route.path + '/');
+  const renderLink = (item: { label: string; path: string }) => {
+    const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
     return (
       <Link
-        key={route.path}
-        href={route.path}
+        key={item.path}
+        href={item.path}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'flex items-center px-4 py-2.5 text-[13px] font-medium transition-colors',
           isActive
-            ? 'bg-[var(--accent-50)] text-[var(--accent-500)]'
-            : 'text-[var(--text-secondary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]',
-          collapsed && 'justify-center px-2',
+            ? 'border-l-[3px] border-[#2563eb] bg-[#2563eb]/[0.08] pl-[13px] text-[#2563eb]'
+            : 'border-l-[3px] border-transparent pl-[13px] text-white/50 hover:bg-white/[0.04] hover:text-white/80',
         )}
-        title={collapsed ? route.labelEn : undefined}
       >
-        {Icon && <Icon className="h-4 w-4 shrink-0" />}
-        {!collapsed && (
-          <>
-            <span className="truncate">{route.labelEn}</span>
-            {route.badge && (
-              <Badge
-                variant={route.badge === 'beta' ? 'warning' : route.badge === 'pro' ? 'accent' : 'info'}
-                className="ml-auto text-[10px]"
-              >
-                {route.badge}
-              </Badge>
-            )}
-          </>
-        )}
+        {item.label}
       </Link>
-    );
-  };
-
-  const renderGroup = (label: string, routes: typeof mainRoutes) => {
-    if (routes.length === 0) return null;
-    return (
-      <div className="space-y-1">
-        {!collapsed && (
-          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-            {label}
-          </p>
-        )}
-        {routes.map(renderLink)}
-      </div>
     );
   };
 
   const content = (
     <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto px-2 py-4">
-        {renderGroup('Main', mainRoutes)}
-        {renderGroup('Advanced', advancedRoutes)}
-        {renderGroup('System', systemRoutes)}
-      </div>
+      {/* Main navigation */}
+      <nav className="flex-1 overflow-y-auto py-3">
+        <div className="space-y-0.5">
+          {NAV_ITEMS.map(renderLink)}
+        </div>
 
-      <div className="border-t border-[var(--border-default)] p-2">
-        <button
-          onClick={toggle}
-          className="hidden w-full items-center justify-center rounded-md p-2 text-[var(--text-tertiary)] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] lg:flex"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
-        </button>
-      </div>
+        {/* Separator */}
+        <div className="my-3 border-t border-white/[0.06]" />
+
+        {/* Labs section */}
+        <div className="space-y-0.5">
+          {LABS_ITEMS.map(renderLink)}
+        </div>
+      </nav>
     </div>
   );
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside
-        className={cn(
-          'hidden border-r border-[var(--border-default)] bg-[var(--surface-1)] transition-[width] duration-200 lg:block',
-          collapsed ? 'w-14' : 'w-60',
-        )}
-      >
+      {/* Desktop sidebar — fixed width, dark background */}
+      <aside className="hidden w-[140px] shrink-0 border-r border-white/[0.06] bg-[#0a0e14] lg:block">
         {content}
       </aside>
 
@@ -105,12 +77,12 @@ export function Sidebar() {
             className="fixed inset-0 z-40 bg-black/50 lg:hidden"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-60 border-r border-[var(--border-default)] bg-[var(--surface-1)] lg:hidden">
-            <div className="flex h-12 items-center justify-between border-b border-[var(--border-default)] px-4">
-              <span className="text-sm font-semibold text-[var(--text-primary)]">Navigation</span>
+          <aside className="fixed inset-y-0 left-0 z-50 w-[200px] border-r border-white/[0.06] bg-[#0a0e14] lg:hidden">
+            <div className="flex h-12 items-center justify-between border-b border-white/[0.06] px-4">
+              <span className="text-[13px] font-semibold text-white/80">Navigation</span>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="rounded-md p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+                className="rounded-md p-1 text-white/40 hover:text-white/80"
                 aria-label="Close menu"
               >
                 <X className="h-4 w-4" />
