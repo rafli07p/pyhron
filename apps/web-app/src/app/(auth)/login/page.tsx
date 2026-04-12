@@ -8,40 +8,19 @@ import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-const DiamondPattern = () => (
-    <svg className="absolute inset-0 h-full w-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="diamonds" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M20 0L40 20L20 40L0 20Z" fill="none" stroke="white" strokeWidth="0.5" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#diamonds)" />
-    </svg>
-);
-
-const Footer = () => (
-    <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center gap-4 py-4 text-[10px] text-white/15">
-      <span>&copy; {new Date().getFullYear()} Pyhron</span>
-      <Link href="/contact" className="hover:text-white/30 transition-colors">Contact Us</Link>
-      <Link href="/terms" className="hover:text-white/30 transition-colors">Terms</Link>
-      <Link href="/privacy" className="hover:text-white/30 transition-colors">Privacy</Link>
-    </div>
-);
-
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const reason = searchParams.get('reason');
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
@@ -56,93 +35,123 @@ export default function LoginPage() {
       redirect: false,
     });
     if (result?.error) {
-      setError('Invalid email or password');
+      setError('Invalid email or password. Please try again.');
     } else {
       router.push('/dashboard');
     }
   };
 
-  const inputClass =
-      'w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[var(--accent-500)] focus:outline-none rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/20 transition-colors';
-
   return (
-      <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#0a0a0c] px-4">
-        <DiamondPattern />
-        <div className="fixed top-0 left-0 right-0 flex items-center px-6 py-4 z-10">
-          <Link href="/">
-            <Image
-                src="/logos/logo-dark.svg"
-                alt="Pyhron"
-                width={90}
-                height={24}
-                className="h-6 w-auto"
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden">
+      {/* Full-screen background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/images/login-bg.svg)',
+          backgroundColor: '#1a365d',
+        }}
+      />
+      {/* Gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10" />
+
+      {/* Login card */}
+      <div className="relative z-10 w-full max-w-[440px] rounded-2xl bg-white px-10 py-12 shadow-2xl">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <Image
+            src="/logos/logo.svg"
+            alt="Pyhron"
+            width={160}
+            height={44}
+            className="h-11 w-auto"
+            priority
+          />
+        </div>
+
+        <h1 className="mt-6 text-center text-[22px] font-semibold text-[#0a0e1a]">
+          Sign In
+        </h1>
+
+        {reason === 'session_expired' && (
+          <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-700">
+            Your session has expired. Please sign in again.
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
+          {/* Email field — MSCI floating label style */}
+          <div className="relative">
+            <input
+              type="email"
+              id="email"
+              placeholder=" "
+              autoComplete="email"
+              className="peer w-full rounded-md border border-black/20 bg-white px-4 pb-2.5 pt-5 text-[15px] text-[#0a0e1a] outline-none transition-colors focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+              {...register('email')}
             />
-          </Link>
-        </div>
-
-        <div className="relative z-10 w-full max-w-[420px] rounded-xl border border-white/[0.06] bg-[#18181b]/90 p-8 shadow-2xl">
-          <h1 className="text-2xl font-normal text-white">Login</h1>
-          <p className="mt-1 text-sm text-white/40">Secure access to Pyhron quantitative research platform</p>
-
-          {reason === 'session_expired' && (
-              <div className="mt-5 rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-sm text-amber-300">
-                Your session has expired. Please sign in again.
-              </div>
-          )}
-
-          {error && (
-              <div className="mt-5 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-300">
-                {error}
-              </div>
-          )}
-
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-white/50">Email</label>
-              <input type="email" placeholder="you@example.com" autoComplete="email" className={inputClass} {...register('email')} />
-              {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
-            </div>
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-medium text-white/50">Password</label>
-                <Link href="/forgot-password" className="text-xs text-[var(--accent-500)] hover:text-[var(--accent-400)]">
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    className={inputClass}
-                    {...register('password')}
-                />
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
-            </div>
-            <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent-500)] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-600)] disabled:opacity-50"
+            <label
+              htmlFor="email"
+              className="pointer-events-none absolute left-4 top-2 text-[11px] text-black/40 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-[14px] peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-[#2563eb]"
             >
-              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-              Sign In
-            </button>
-          </form>
+              Email address *
+            </label>
+            {errors.email && <p className="mt-1.5 text-[12px] text-red-500">{errors.email.message}</p>}
+          </div>
 
-          <p className="mt-6 text-center text-sm text-white/40">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-[var(--accent-500)] hover:text-[var(--accent-400)]">Create one</Link>
-          </p>
-        </div>
-        <Footer />
+          {/* Password field */}
+          <div className="relative">
+            <input
+              type="password"
+              id="password"
+              placeholder=" "
+              autoComplete="current-password"
+              className="peer w-full rounded-md border border-black/20 bg-white px-4 pb-2.5 pt-5 text-[15px] text-[#0a0e1a] outline-none transition-colors focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
+              {...register('password')}
+            />
+            <label
+              htmlFor="password"
+              className="pointer-events-none absolute left-4 top-2 text-[11px] text-black/40 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-[14px] peer-focus:top-2 peer-focus:text-[11px] peer-focus:text-[#2563eb]"
+            >
+              Password *
+            </label>
+            {errors.password && <p className="mt-1.5 text-[12px] text-red-500">{errors.password.message}</p>}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#1a3fd6] py-3.5 text-[15px] font-medium text-white transition-colors hover:bg-[#1530b0] disabled:opacity-50"
+          >
+            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
+            Sign In
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-[12px] leading-relaxed text-black/40">
+          By clicking &lsquo;Sign In&rsquo; I agree to Pyhron&apos;s{' '}
+          <Link href="/legal/terms" className="text-black/60 underline hover:text-black">Terms of Use</Link>
+          {' '}below. Don&apos;t have an account?{' '}
+          <Link href="/register" className="text-[#1a3fd6] hover:underline">Create an account</Link>
+        </p>
       </div>
+
+      {/* Footer */}
+      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-8 py-4">
+        <span className="text-[11px] text-white/50">&copy; Copyright {new Date().getFullYear()} Pyhron. All rights reserved.</span>
+        <div className="flex items-center gap-4">
+          <Link href="/legal/terms" className="text-[11px] text-white/50 transition-colors hover:text-white/80">Terms of Use</Link>
+          <span className="text-white/20">|</span>
+          <Link href="/legal/privacy" className="text-[11px] text-white/50 transition-colors hover:text-white/80">Privacy Notice</Link>
+          <span className="text-white/20">|</span>
+          <Link href="/contact" className="text-[11px] text-white/50 transition-colors hover:text-white/80">Contact Us</Link>
+        </div>
+      </div>
+    </div>
   );
 }
