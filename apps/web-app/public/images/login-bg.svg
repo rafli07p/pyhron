@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#87CEEB"/>
+      <stop offset="40%" stop-color="#B0D4E8"/>
+      <stop offset="70%" stop-color="#D4E8F0"/>
+      <stop offset="100%" stop-color="#E8F4F8"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4A90B8"/>
+      <stop offset="100%" stop-color="#2C6F9B"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <!-- Clouds -->
+  <ellipse cx="300" cy="200" rx="200" ry="60" fill="white" opacity="0.4"/>
+  <ellipse cx="350" cy="190" rx="150" ry="50" fill="white" opacity="0.5"/>
+  <ellipse cx="1500" cy="150" rx="250" ry="70" fill="white" opacity="0.3"/>
+  <ellipse cx="1550" cy="140" rx="180" ry="55" fill="white" opacity="0.4"/>
+  <ellipse cx="900" cy="120" rx="180" ry="50" fill="white" opacity="0.25"/>
+  <!-- Distant skyline silhouette -->
+  <path d="M0,650 L100,640 L150,580 L170,580 L170,640 L250,640 L260,600 L270,600 L280,640 L400,640 L420,550 L440,550 L440,640 L500,640 L520,500 L540,500 L540,640 L600,640 L620,580 L640,580 L650,520 L660,520 L660,580 L680,580 L680,640 L750,640 L780,480 L800,480 L810,420 L830,420 L830,480 L850,480 L850,640 L950,640 L970,560 L990,560 L990,640 L1050,640 L1070,500 L1090,500 L1100,440 L1120,440 L1120,500 L1140,500 L1140,640 L1200,640 L1220,580 L1240,580 L1240,640 L1300,640 L1320,520 L1340,520 L1350,460 L1370,460 L1370,520 L1390,520 L1390,640 L1500,640 L1520,580 L1540,580 L1540,640 L1600,640 L1620,600 L1640,600 L1640,640 L1750,640 L1770,580 L1790,580 L1790,640 L1920,650 L1920,700 L0,700 Z" fill="#6B8FA3" opacity="0.4"/>
+  <!-- Water -->
+  <rect x="0" y="700" width="1920" height="380" fill="url(#water)" opacity="0.6"/>
+  <!-- Greenery at bottom -->
+  <path d="M0,900 Q200,850 400,880 Q600,910 800,870 Q1000,830 1200,860 Q1400,890 1600,850 Q1800,820 1920,860 L1920,1080 L0,1080 Z" fill="#3D7A3D" opacity="0.5"/>
+  <path d="M0,920 Q300,880 600,910 Q900,940 1200,900 Q1500,860 1920,900 L1920,1080 L0,1080 Z" fill="#2D5A2D" opacity="0.4"/>
+</svg>
