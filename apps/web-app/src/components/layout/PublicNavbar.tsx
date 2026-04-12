@@ -208,86 +208,75 @@ function ClientLoginDropdown({ dark }: { dark: boolean }) {
     );
 }
 
-/** Search — expands inline like MSCI: logo stays visible, search bar grows between logo and button */
-function ExpandableSearch() {
-    const [expanded, setExpanded] = useState(false);
+/** Search — MSCI style: hides nav items when expanded, logo + search + button visible */
+function ExpandableSearch({ searchOpen, setSearchOpen }: { searchOpen: boolean; setSearchOpen: (v: boolean) => void }) {
     const [query, setQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (expanded && inputRef.current) inputRef.current.focus();
-    }, [expanded]);
+        if (searchOpen && inputRef.current) inputRef.current.focus();
+    }, [searchOpen]);
 
     useEffect(() => {
-        if (!expanded) return;
+        if (!searchOpen) return;
         function handleClick(e: MouseEvent) {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setExpanded(false);
+                setSearchOpen(false);
                 setQuery('');
             }
         }
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
-    }, [expanded]);
+    }, [searchOpen, setSearchOpen]);
 
     const popular = ['BBCA', 'IHSG', 'momentum', 'factor', 'screener'];
 
-    return (
-        <div ref={containerRef} className="relative hidden lg:block">
-            {/* Collapsed pill */}
+    if (!searchOpen) {
+        return (
             <button
-                onClick={() => setExpanded(true)}
-                className={`flex h-10 items-center gap-2 rounded-full border border-black/15 px-5 text-[13px] text-black/40 transition-all duration-300 ease-out hover:border-black/25 ${
-                    expanded ? 'w-[500px] border-[#2563eb] border-2' : 'w-[140px]'
-                }`}
+                onClick={() => setSearchOpen(true)}
+                className="hidden h-11 w-[160px] items-center gap-2 rounded-full border border-black/15 px-5 text-[14px] text-black/40 transition-colors hover:border-black/25 lg:flex"
             >
                 <Search className="h-4 w-4 shrink-0" />
-                {!expanded && <span>Search</span>}
-                {expanded && (
-                    <input
-                        ref={inputRef}
-                        value={query}
-                        onChange={(e) => { e.stopPropagation(); setQuery(e.target.value); }}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
-                            if (e.key === 'Escape') { setExpanded(false); setQuery(''); }
-                        }}
-                        placeholder="Search"
-                        className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
-                    />
-                )}
-                {expanded && query && (
-                    <button onClick={(e) => { e.stopPropagation(); setQuery(''); }} className="text-[12px] text-black/30 hover:text-black/60">
-                        Clear
-                    </button>
-                )}
-                {expanded && (
-                    <button onClick={(e) => { e.stopPropagation(); setExpanded(false); setQuery(''); }} className="text-black/30 hover:text-black/60">
-                        <X className="h-4 w-4" />
-                    </button>
-                )}
+                <span>Search</span>
             </button>
+        );
+    }
 
-            {/* Dropdown suggestions */}
-            {expanded && (
-                <div className="absolute left-0 right-0 top-12 rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
-                    {!query ? (
-                        <>
-                            <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
-                            {popular.map((s) => (
-                                <button key={s} onClick={() => setQuery(s)} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
-                                    <Search className="h-3.5 w-3.5 text-black/20" />
-                                    {s}
-                                </button>
-                            ))}
-                        </>
-                    ) : (
-                        <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
-                    )}
-                </div>
-            )}
+    return (
+        <div ref={containerRef} className="relative hidden flex-1 lg:block">
+            <div className="flex h-11 items-center gap-2 rounded-full border-2 border-[#2563eb] bg-white px-5">
+                <Search className="h-4 w-4 shrink-0 text-black/30" />
+                <input
+                    ref={inputRef}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && query) window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                        if (e.key === 'Escape') { setSearchOpen(false); setQuery(''); }
+                    }}
+                    placeholder="Search"
+                    className="flex-1 bg-transparent text-[14px] text-black outline-none placeholder:text-black/40"
+                />
+                {query && <button onClick={() => setQuery('')} className="text-[13px] text-black/30 hover:text-black/60">Clear</button>}
+                <button onClick={() => { setSearchOpen(false); setQuery(''); }} className="text-black/30 hover:text-black/60"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="absolute left-0 right-0 top-[48px] rounded-lg border border-black/[0.06] bg-white py-4 shadow-xl">
+                {!query ? (
+                    <>
+                        <p className="mb-2 px-5 text-[12px] text-black/30">Popular Searches</p>
+                        {popular.map((s) => (
+                            <button key={s} onClick={() => setQuery(s)} className="flex w-full items-center gap-3 px-5 py-2.5 text-[14px] text-black/60 transition-colors hover:bg-black/[0.02]">
+                                <Search className="h-3.5 w-3.5 text-black/20" />
+                                {s}
+                            </button>
+                        ))}
+                    </>
+                ) : (
+                    <p className="px-5 py-3 text-[13px] text-black/40">Press Enter to search for &ldquo;{query}&rdquo;</p>
+                )}
+            </div>
         </div>
     );
 }
@@ -297,6 +286,7 @@ export function PublicNavbar() {
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [hidden, setHidden] = useState(false);
     const navRef = useRef<HTMLElement>(null);
@@ -308,6 +298,7 @@ export function PublicNavbar() {
         setActiveDropdown(null);
         setHoveredLabel(null);
         setMobileOpen(false);
+        setSearchOpen(false);
     }
 
     const toggleDropdown = (label: string) => {
@@ -327,12 +318,13 @@ export function PublicNavbar() {
         return () => document.removeEventListener('mousedown', onClick);
     }, []);
 
-    // Scroll: transparent at top, dark bg when scrolling up from below,
-    // transparent again when back at top. Hide on scroll down.
+    // Scroll: transparent at top, instant dark bg when below threshold.
+    // Slide up to hide on scroll down, slide down to show on scroll up.
+    // Instant transparent when back at top (no fade).
     useEffect(() => {
         let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
         let ticking = false;
-        const THRESHOLD = 88;
+        const THRESHOLD = 10;
         const DELTA = 6;
 
         function update() {
@@ -369,37 +361,40 @@ export function PublicNavbar() {
 
     const closeDropdown = () => setActiveDropdown(null);
 
-    // Text colors adapt to bg
-    const textColor = scrolled ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
-    const textActive = scrolled ? 'text-white' : 'text-black';
-    const underlineColor = scrolled ? 'bg-white' : 'bg-black';
+    const dark = scrolled;
+    const textColor = dark ? 'text-white/70 hover:text-white' : 'text-black/70 hover:text-black';
+    const textActive = dark ? 'text-white' : 'text-black';
+    const underlineColor = dark ? 'bg-white' : 'bg-black';
 
     return (
         <>
             <header
                 ref={navRef}
-                className={`fixed left-0 right-0 z-50 transition-all duration-300 ease-out ${
-                    hidden ? '-translate-y-full' : 'translate-y-0'
-                } ${scrolled ? 'bg-[#0a0e1a] shadow-lg' : 'bg-transparent'}`}
+                style={{
+                    transform: hidden ? 'translateY(-100%)' : 'translateY(0)',
+                    transition: 'transform 0.3s ease-out',
+                    backgroundColor: scrolled ? '#0a0e1a' : 'transparent',
+                }}
+                className="fixed left-0 right-0 z-50"
             >
                 {/* Utility bar */}
                 <div className="hidden lg:block">
                     <div className="mx-auto flex h-7 max-w-[1400px] items-center justify-end gap-0 px-8">
-                        <Link href="/contact" className={`px-3 text-[12px] transition-colors ${scrolled ? 'text-white/40 hover:text-white/70' : 'text-black/40 hover:text-black/70'}`}>
+                        <Link href="/contact" className={`px-3 text-[12px] transition-colors ${dark ? 'text-white/40 hover:text-white/70' : 'text-black/40 hover:text-black/70'}`}>
                             Support
                         </Link>
-                        <span className={scrolled ? 'text-white/15' : 'text-black/15'}>|</span>
-                        <ClientLoginDropdown dark={scrolled} />
+                        <span className={dark ? 'text-white/15' : 'text-black/15'}>|</span>
+                        <ClientLoginDropdown dark={dark} />
                     </div>
                 </div>
 
                 {/* Main nav bar */}
                 <div className={`relative mx-auto flex h-[60px] max-w-[1400px] items-center justify-between border-b border-dashed px-6 lg:px-8 ${
-                    scrolled ? 'border-white/10' : 'border-black/[0.08]'
+                    dark ? 'border-white/10' : 'border-black/[0.08]'
                 }`}>
                     <Link href="/" className="flex shrink-0 items-center">
                         <Image
-                            src={scrolled ? '/logos/logo-dark.svg' : '/logos/logo.svg'}
+                            src={dark ? '/logos/logo-dark.svg' : '/logos/logo.svg'}
                             alt="Pyhron"
                             width={130}
                             height={35}
@@ -408,67 +403,73 @@ export function PublicNavbar() {
                         />
                     </Link>
 
-                    <nav
-                        className="ml-10 hidden items-center gap-0.5 lg:flex"
-                        aria-label="Main navigation"
-                        onMouseLeave={() => setHoveredLabel(null)}
-                    >
-                        {NAV.map((item) => {
-                            const isActive = hoveredLabel === item.label || activeDropdown === item.label;
+                    {/* Nav links — hidden when search is open */}
+                    {!searchOpen && (
+                        <nav
+                            className="ml-10 hidden items-center gap-0.5 lg:flex"
+                            aria-label="Main navigation"
+                            onMouseLeave={() => setHoveredLabel(null)}
+                        >
+                            {NAV.map((item) => {
+                                const isActive = hoveredLabel === item.label || activeDropdown === item.label;
 
-                            if (item.href) {
+                                if (item.href) {
+                                    return (
+                                        <Link
+                                            key={item.label}
+                                            href={item.href}
+                                            className={`group relative flex h-[60px] items-center px-4 text-[14px] transition-colors ${isActive ? textActive : textColor}`}
+                                            onMouseEnter={() => setHoveredLabel(item.label)}
+                                        >
+                                            {item.label}
+                                            <span
+                                                aria-hidden="true"
+                                                className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
+                                                    isActive ? 'scale-x-100' : 'scale-x-0'
+                                                }`}
+                                            />
+                                        </Link>
+                                    );
+                                }
+
                                 return (
-                                    <Link
+                                    <div
                                         key={item.label}
-                                        href={item.href}
-                                        className={`group relative flex h-[60px] items-center px-4 text-[14px] transition-colors ${isActive ? textActive : textColor}`}
+                                        className="relative"
                                         onMouseEnter={() => setHoveredLabel(item.label)}
                                     >
-                                        {item.label}
+                                        <button
+                                            type="button"
+                                            aria-haspopup="true"
+                                            aria-expanded={activeDropdown === item.label}
+                                            onClick={() => toggleDropdown(item.label)}
+                                            className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
+                                                isActive ? textActive : textColor
+                                            }`}
+                                        >
+                                            {item.label}
+                                        </button>
                                         <span
                                             aria-hidden="true"
                                             className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
                                                 isActive ? 'scale-x-100' : 'scale-x-0'
                                             }`}
                                         />
-                                    </Link>
+                                    </div>
                                 );
-                            }
+                            })}
+                        </nav>
+                    )}
 
-                            return (
-                                <div
-                                    key={item.label}
-                                    className="relative"
-                                    onMouseEnter={() => setHoveredLabel(item.label)}
-                                >
-                                    <button
-                                        type="button"
-                                        aria-haspopup="true"
-                                        aria-expanded={activeDropdown === item.label}
-                                        onClick={() => toggleDropdown(item.label)}
-                                        className={`flex h-[60px] items-center px-4 text-[14px] transition-colors ${
-                                            isActive ? textActive : textColor
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </button>
-                                    <span
-                                        aria-hidden="true"
-                                        className={`pointer-events-none absolute bottom-0 left-4 right-4 h-[2px] origin-center ${underlineColor} transition-transform duration-300 ease-out ${
-                                            isActive ? 'scale-x-100' : 'scale-x-0'
-                                        }`}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </nav>
+                    {/* Spacer when search is open to push search to fill */}
+                    {searchOpen && <div className="hidden flex-1 lg:block" />}
 
-                    <div className="flex items-center gap-3">
-                        <ExpandableSearch />
-                        <Link href="/contact" className="hidden h-10 items-center rounded-full bg-[#2563eb] px-7 text-[13px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
+                    <div className={`flex items-center gap-4 ${searchOpen ? 'flex-1 lg:ml-8' : ''}`}>
+                        <ExpandableSearch searchOpen={searchOpen} setSearchOpen={setSearchOpen} />
+                        <Link href="/contact" className="hidden h-12 shrink-0 items-center rounded-full bg-[#2563eb] px-8 text-[15px] font-medium text-white transition-colors hover:bg-[#1d4ed8] lg:inline-flex">
                             Get in touch
                         </Link>
-                        <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className={`lg:hidden ${scrolled ? 'text-white/60' : 'text-black/60'}`}>
+                        <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className={`lg:hidden ${dark ? 'text-white/60' : 'text-black/60'}`}>
                             <Menu className="h-5 w-5" />
                         </button>
                     </div>
@@ -476,7 +477,7 @@ export function PublicNavbar() {
             </header>
 
             <div ref={dropdownRef}>
-                {activeDropdown && NAV.find((n) => n.label === activeDropdown && n.columns) && (
+                {activeDropdown && !searchOpen && NAV.find((n) => n.label === activeDropdown && n.columns) && (
                     <MegaDropdown item={NAV.find((n) => n.label === activeDropdown)!} onClose={closeDropdown} />
                 )}
             </div>

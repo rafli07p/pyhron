@@ -42,7 +42,7 @@ export function ResearchInsights() {
 
           <Link
             href="/research-and-insights"
-            className="mt-8 inline-flex h-12 items-center gap-2 rounded-full px-8 text-[14px] font-medium text-white transition-opacity hover:opacity-90"
+            className="mt-8 inline-flex h-13 items-center gap-2 rounded-full px-9 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             Explore all research
@@ -68,7 +68,7 @@ export function ResearchInsights() {
                 implications for Indonesia-focused quant portfolios.
               </p>
             </div>
-            <Link href="/research-and-insights/articles/idx-factor-stress-test" className="mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-black/50 px-5 text-[13px] font-medium text-black transition-colors hover:border-black">
+            <Link href="/research-and-insights/articles/idx-factor-stress-test" className="mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border border-black/50 px-6 text-[14px] font-medium text-black transition-colors hover:border-black">
               Read more
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -89,7 +89,7 @@ export function ResearchInsights() {
                 equities.
               </p>
             </div>
-            <Link href="/research-and-insights/articles/us-china-idx-flows" className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/50 px-5 text-[13px] font-medium text-white transition-colors hover:border-white">
+            <Link href="/research-and-insights/articles/us-china-idx-flows" className="relative mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border border-white/50 px-6 text-[14px] font-medium text-white transition-colors hover:border-white">
               Learn more
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -110,7 +110,7 @@ export function ResearchInsights() {
                 Indonesian equities?
               </p>
             </div>
-            <Link href="/research-and-insights/articles/idx-liquidity-premium" className="relative mt-5 inline-flex h-10 w-fit items-center gap-2 rounded-full border border-white/70 px-5 text-[13px] font-medium text-white transition-colors hover:border-white">
+            <Link href="/research-and-insights/articles/idx-liquidity-premium" className="relative mt-5 inline-flex h-11 w-fit items-center gap-2 rounded-full border border-white/70 px-6 text-[14px] font-medium text-white transition-colors hover:border-white">
               Get the facts
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
