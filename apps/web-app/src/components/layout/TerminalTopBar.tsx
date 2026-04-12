@@ -11,10 +11,18 @@ export function TerminalTopBar() {
 
   return (
     <header className="sticky top-0 z-40 flex h-[40px] shrink-0 items-center justify-between bg-[#1c2b3a] px-0">
-      {/* Left: Logo */}
-      <div className="flex h-full items-center gap-1.5 pl-4 pr-6">
-        <span className="text-[14px] font-bold tracking-wide text-white">MSCI ONE</span>
-        <span className="text-[14px] text-white/40">◐</span>
+      {/* Left: Logo image + "ONE" text */}
+      <div className="flex h-full items-center gap-2 pl-4 pr-6">
+        <Image
+          src="/logos/logo.svg"
+          alt="MSCI"
+          width={80}
+          height={24}
+          className="h-[22px] w-auto brightness-0 invert"
+          priority
+        />
+        <span className="text-[14px] font-bold text-white/50">ONE</span>
+        <span className="text-[14px] text-white/30">◐</span>
       </div>
 
       {/* Center: Section selector + Search */}

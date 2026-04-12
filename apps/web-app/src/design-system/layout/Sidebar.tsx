@@ -95,13 +95,8 @@ export function Sidebar() {
 
   const sidebarContent = (
     <div className="flex h-full flex-col items-center">
-      {/* Top: MSCI text */}
-      <div className="flex h-[40px] w-full shrink-0 items-center justify-center">
-        <span className="text-[11px] font-bold tracking-wider text-[#94a3b8]">MSCI</span>
-      </div>
-
-      {/* Main nav items */}
-      <nav className="flex flex-1 flex-col items-center gap-0 overflow-y-auto px-1 pt-0">
+      {/* Main nav items — no logo text, starts directly */}
+      <nav className="flex flex-1 flex-col items-center gap-0 overflow-y-auto px-1 pt-3">
         {NAV.map(renderLink)}
       </nav>
 
