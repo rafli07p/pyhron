@@ -74,8 +74,8 @@ export function IndexTicker() {
   const [paused, setPaused] = useState(false);
 
   return (
-    <section className="bg-white py-10">
-      <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+    <section className="bg-white py-14">
+      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
         <div className="relative flex items-center overflow-hidden rounded-full border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
           {/* Track wrapper — masks the right side so the pause button sits on top. */}
           <div className="relative flex-1 overflow-hidden">

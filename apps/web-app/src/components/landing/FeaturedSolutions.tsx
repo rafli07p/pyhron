@@ -46,8 +46,8 @@ const introColumns = [
 
 export function FeaturedSolutions() {
   return (
-    <section className="bg-white py-16 lg:py-20">
-      <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+    <section className="bg-white py-20 lg:py-28">
+      <div className="mx-auto max-w-[1200px] px-6 lg:px-8">
         {/* Header — both lines styled with MSCI's `ms-headline1-sm` scale
             (2.25rem / 1.1 / -0.04em tracking) and `ms-text-brandblue-700`. */}
         <ScrollReveal>
@@ -73,36 +73,30 @@ export function FeaturedSolutions() {
           </p>
         </ScrollReveal>
 
-        {/* Intro columns — plain text only (not a link, does not navigate to
-            the terminal dashboard). Titles match MSCI's column header scale
-            (~1.375rem / -0.02em) and bodies use the `ms-body-l-sm` spec. */}
+        {/* Intro columns — plain text blocks (no link arrow, no hover color
+            shift). Titles use `ms-font-semibold ms-text-black`, bodies use
+            `ms-font-regular ms-body-l-sm ms-text-black`. */}
         <ScrollReveal preset="fadeUp" stagger={0.12} className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3">
           {introColumns.map((col) => (
             <div key={col.title}>
-              <h3
-                className="font-semibold text-black"
-                style={{ fontSize: '1.375rem', lineHeight: 1.2, letterSpacing: '-0.02em' }}
-              >
+              <h3 className="font-semibold text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
                 {col.title}
               </h3>
-              <p
-                className="mt-4 font-normal text-black"
-                style={{ fontSize: '1rem', lineHeight: 1.45, letterSpacing: '-0.01em' }}
-              >
+              <p className="mt-3 font-normal text-black" style={{ fontSize: '1rem', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
                 {col.desc}
               </p>
             </div>
           ))}
         </ScrollReveal>
 
-        {/* Card grid — MSCI uses tight ~6px gaps, 2-col with first card spanning 2 rows */}
-        <div className="mt-14 grid grid-cols-1 gap-[6px] lg:grid-cols-[1fr_1fr] lg:grid-rows-[1fr_1fr_1fr]">
+        {/* Card grid */}
+        <div className="mt-16 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
           {/* Big hero card — spans 2 rows on lg */}
           <Card
             href="/data/ml-signals"
             className="lg:row-span-2"
             tone="indigo"
-            heightClass=""
+            heightClass="min-h-[380px] lg:min-h-[560px]"
             visual={<VisualOrbits />}
             title="Pyhron adds ML-driven alpha to IDX research"
             desc="Expanding systematic capabilities across the Indonesian capital markets research lifecycle."
@@ -114,7 +108,7 @@ export function FeaturedSolutions() {
           <Card
             href="/data/factors"
             tone="white"
-            heightClass=""
+            heightClass="min-h-[260px]"
             visual={<VisualBars />}
             title="Enhancing our multi-asset factor analytics"
             kicker="Pyhron extends Fama-French five-factor coverage"
@@ -126,7 +120,7 @@ export function FeaturedSolutions() {
           <Card
             href="/research/quant"
             tone="teal"
-            heightClass=""
+            heightClass="min-h-[260px]"
             visual={<VisualWaves />}
             title="Daily IDX factor exposures are here"
             desc="Nowcasting delivers decision-grade signals between reporting periods."
@@ -136,9 +130,9 @@ export function FeaturedSolutions() {
 
           {/* Small card C — black with "photo" placeholder */}
           <Card
-            href="/data"
+            href="/markets"
             tone="black"
-            heightClass=""
+            heightClass="min-h-[260px]"
             visual={<VisualLines />}
             title="Explore the new Markets in Motion hub"
             desc="Turn complex IDX data into clear direction with trending topics and timely insights you can act on."
@@ -148,9 +142,9 @@ export function FeaturedSolutions() {
 
           {/* Small card D — blue network */}
           <Card
-            href="/data/ml-signals"
+            href="/research"
             tone="blue"
-            heightClass=""
+            heightClass="min-h-[260px]"
             visual={<VisualNetwork />}
             title="Seamlessly query Indonesian markets with conversational AI"
             kicker="Introducing Pyhron Insights™"
@@ -194,7 +188,7 @@ const toneBg: Record<Tone, string> = {
 function Card({
   href,
   className = '',
-  heightClass = '',
+  heightClass = 'min-h-[260px]',
   tone,
   visual,
   title,

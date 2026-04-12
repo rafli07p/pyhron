@@ -93,8 +93,6 @@
 body {
   background: var(--surface-0);
   color: var(--text-primary);
-  /* Inter (loaded via next/font/google in src/app/layout.tsx as --font-sans)
-     is the single text font across the whole app. */
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
