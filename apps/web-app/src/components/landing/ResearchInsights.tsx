@@ -51,7 +51,7 @@ export function ResearchInsights() {
           </p>
 
           <Link
-            href="/research"
+            href="/research/quant"
             className="mt-8 inline-flex h-12 items-center gap-2 rounded-full px-8 text-[14px] font-medium text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
@@ -59,13 +59,13 @@ export function ResearchInsights() {
           </Link>
         </ScrollReveal>
 
-        {/* Card grid */}
-        <div className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto]">
+        {/* Card grid — tight 6px gap matching MSCI */}
+        <div className="mt-14 grid grid-cols-1 gap-[6px] lg:grid-cols-[1fr_1fr] lg:grid-rows-[1fr_1fr]">
           {/* White "cover" card spanning both rows — sits on the gray
               section background for clear separation. */}
           <Link
-            href="/research/articles/idx-factor-stress-test"
-            className="group relative overflow-hidden rounded-2xl bg-white p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2 lg:min-h-[560px]"
+            href="/research/quant"
+            className="group relative overflow-hidden rounded-2xl bg-white p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:row-span-2"
           >
             <div className="pointer-events-none flex h-[340px] items-center justify-center lg:h-[380px]">
               <SphereVisual />
@@ -86,10 +86,10 @@ export function ResearchInsights() {
             </span>
           </Link>
 
-          {/* Black card with "photo" placeholder */}
+          {/* Black card */}
           <Link
-            href="/research/articles/us-china-idx-flows"
-            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
+            href="/research/ml"
+            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
@@ -108,10 +108,10 @@ export function ResearchInsights() {
             </span>
           </Link>
 
-          {/* Blue card with pattern */}
+          {/* Blue card */}
           <Link
-            href="/research/articles/idx-liquidity-premium"
-            className="group relative overflow-hidden rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1 lg:min-h-[270px]"
+            href="/research/risk"
+            className="group relative overflow-hidden rounded-2xl p-8 transition-transform duration-300 ease-out hover:-translate-y-1"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />

@@ -95,14 +95,14 @@ export function FeaturedSolutions() {
           ))}
         </ScrollReveal>
 
-        {/* Card grid */}
-        <div className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto]">
+        {/* Card grid — MSCI uses tight ~6px gaps, 2-col with first card spanning 2 rows */}
+        <div className="mt-14 grid grid-cols-1 gap-[6px] lg:grid-cols-[1fr_1fr] lg:grid-rows-[1fr_1fr_1fr]">
           {/* Big hero card — spans 2 rows on lg */}
           <Card
             href="/data/ml-signals"
             className="lg:row-span-2"
             tone="indigo"
-            heightClass="min-h-[380px] lg:min-h-[560px]"
+            heightClass=""
             visual={<VisualOrbits />}
             title="Pyhron adds ML-driven alpha to IDX research"
             desc="Expanding systematic capabilities across the Indonesian capital markets research lifecycle."
@@ -114,7 +114,7 @@ export function FeaturedSolutions() {
           <Card
             href="/data/factors"
             tone="white"
-            heightClass="min-h-[260px]"
+            heightClass=""
             visual={<VisualBars />}
             title="Enhancing our multi-asset factor analytics"
             kicker="Pyhron extends Fama-French five-factor coverage"
@@ -126,7 +126,7 @@ export function FeaturedSolutions() {
           <Card
             href="/research/quant"
             tone="teal"
-            heightClass="min-h-[260px]"
+            heightClass=""
             visual={<VisualWaves />}
             title="Daily IDX factor exposures are here"
             desc="Nowcasting delivers decision-grade signals between reporting periods."
@@ -136,9 +136,9 @@ export function FeaturedSolutions() {
 
           {/* Small card C — black with "photo" placeholder */}
           <Card
-            href="/markets"
+            href="/data"
             tone="black"
-            heightClass="min-h-[260px]"
+            heightClass=""
             visual={<VisualLines />}
             title="Explore the new Markets in Motion hub"
             desc="Turn complex IDX data into clear direction with trending topics and timely insights you can act on."
@@ -148,9 +148,9 @@ export function FeaturedSolutions() {
 
           {/* Small card D — blue network */}
           <Card
-            href="/research"
+            href="/data/ml-signals"
             tone="blue"
-            heightClass="min-h-[260px]"
+            heightClass=""
             visual={<VisualNetwork />}
             title="Seamlessly query Indonesian markets with conversational AI"
             kicker="Introducing Pyhron Insights™"
@@ -194,7 +194,7 @@ const toneBg: Record<Tone, string> = {
 function Card({
   href,
   className = '',
-  heightClass = 'min-h-[260px]',
+  heightClass = '',
   tone,
   visual,
   title,
