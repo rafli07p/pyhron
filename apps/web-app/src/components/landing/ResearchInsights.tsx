@@ -53,7 +53,7 @@ export function ResearchInsights() {
         <div className="mt-12 grid grid-cols-1 gap-2.5 lg:grid-cols-[1.15fr_1fr] lg:grid-rows-[1fr_1fr]">
           {/* Gray "cover" card spanning both rows */}
           <div
-            className="group relative overflow-hidden rounded-lg bg-white p-8 lg:row-span-2 lg:min-h-[560px]"
+            className="group relative overflow-hidden rounded-2xl bg-white p-8 lg:row-span-2 lg:min-h-[560px]"
           >
             <div className="pointer-events-none flex h-[300px] items-center justify-center lg:h-[340px]">
               <SphereVisual />
@@ -76,7 +76,7 @@ export function ResearchInsights() {
 
           {/* Black card */}
           <div
-            className="group relative overflow-hidden rounded-lg bg-[#0a0e1a] p-7 lg:min-h-[270px]"
+            className="group relative overflow-hidden rounded-2xl bg-[#0a0e1a] p-7 lg:min-h-[270px]"
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="warm" />
             <div className="relative max-w-[55%]">
@@ -97,7 +97,7 @@ export function ResearchInsights() {
 
           {/* Blue card */}
           <div
-            className="group relative overflow-hidden rounded-lg p-7 lg:min-h-[270px]"
+            className="group relative overflow-hidden rounded-2xl p-7 lg:min-h-[270px]"
             style={{ backgroundColor: MSCI_BRAND_BLUE }}
           >
             <MosaicVisual className="absolute right-0 top-0 h-full w-[55%]" tone="cool" />
