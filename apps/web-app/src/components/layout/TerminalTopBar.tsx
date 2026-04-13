@@ -28,14 +28,14 @@ export function TerminalTopBar() {
 
   return (
     <header className="sticky top-0 z-40 flex h-[42px] shrink-0 items-center bg-[#1a2d42]">
-      {/* Logo — single image, no separate "ONE" text */}
-      <div className="flex h-full w-[70px] shrink-0 items-center justify-center">
-        <Image src="/logos/logo.svg" alt="Pyhron ONE" width={36} height={36} className="h-[26px] w-[26px] brightness-0 invert" priority />
+      {/* Logo */}
+      <div className="flex h-full shrink-0 items-center pl-4 pr-6">
+        <Image src="/logos/logo.svg" alt="Pyhron ONE" width={100} height={28} className="h-[22px] w-auto brightness-0 invert" priority />
       </div>
 
       {/* Center: Filter + Search */}
       <div ref={searchRef} className="relative flex flex-1 items-center justify-center px-4">
-        <div className="flex w-full max-w-[640px] items-center rounded-[3px] border border-white/20 bg-white">
+        <div className="flex w-full max-w-[800px] items-center rounded-[3px] border border-white/20 bg-white">
           <button className="flex shrink-0 items-center gap-1 border-r border-[#d1d5db] px-3 py-[5px] text-[12px] font-medium text-[#1f2937]">
             All
             <svg width="10" height="10" viewBox="0 0 20 20" fill="#6b7280"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" /></svg>
@@ -55,7 +55,7 @@ export function TerminalTopBar() {
 
         {/* Search dropdown */}
         {searchOpen && (
-          <div className="absolute left-1/2 top-[38px] w-full max-w-[640px] -translate-x-1/2 rounded-b-md border border-t-0 border-[#e5e7eb] bg-white py-2 shadow-lg">
+          <div className="absolute left-1/2 top-[38px] w-full max-w-[800px] -translate-x-1/2 rounded-b-md border border-t-0 border-[#e5e7eb] bg-white py-2 shadow-lg">
             <p className="px-4 pb-1 text-[11px] font-bold text-[#111827]">Search History</p>
             {searchHistory.map((s) => (
               <button key={s} onClick={() => { setQuery(s); setSearchOpen(false); }} className="flex w-full items-center gap-2.5 px-4 py-1.5 text-[13px] text-[#374151] hover:bg-[#f3f4f6]">
