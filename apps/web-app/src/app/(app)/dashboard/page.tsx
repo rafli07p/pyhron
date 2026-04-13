@@ -149,143 +149,74 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ═══ MAIN CONTENT ═══ */}
+      {/* ═══ MIDDLE: Research (left) + Support/Discover/Recently Visited (right) ═══ */}
       <div className="flex flex-col lg:flex-row">
-
-        {/* LEFT: Research & Feature Cards */}
-        <div className="min-w-0 flex-1">
-
-          {/* Market Research and Insights */}
-          <div className="p-6">
-            <div className="rounded-lg border border-[#e2e8f0] bg-white">
-              <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
-                <h2 className="text-[14px] font-semibold text-[#0f172a]">Market Research and Insights</h2>
-                <Link href="/research" className="text-[12px] font-medium text-[#2563eb] hover:text-[#1d4ed8]">
-                  View All
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
-                {RESEARCH_ARTICLES.map((article, i) => {
-                  const Icon = article.icon;
-                  const borderR = i % 2 === 0 ? 'md:border-r' : '';
-                  const borderB = i < 2 ? 'border-b' : '';
-                  return (
-                    <Link
-                      key={article.id}
-                      href="/research"
-                      className={`group flex gap-4 p-5 ${borderR} ${borderB} border-[#e2e8f0] transition-colors hover:bg-[#f8fafc]`}
+        {/* LEFT: Research */}
+        <div className="min-w-0 flex-1 p-6">
+          <div className="rounded-lg border border-[#e2e8f0] bg-white">
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
+              <h2 className="text-[14px] font-semibold text-[#0f172a]">Market Research and Insights</h2>
+              <Link href="/research" className="text-[12px] font-medium text-[#2563eb] hover:text-[#1d4ed8]">
+                View All
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
+              {RESEARCH_ARTICLES.map((article, i) => {
+                const Icon = article.icon;
+                const borderR = i % 2 === 0 ? 'md:border-r' : '';
+                const borderB = i < 2 ? 'border-b' : '';
+                return (
+                  <Link
+                    key={article.id}
+                    href="/research"
+                    className={`group flex gap-4 p-5 ${borderR} ${borderB} border-[#e2e8f0] transition-colors hover:bg-[#f8fafc]`}
+                  >
+                    <div
+                      className="flex h-[60px] w-[80px] shrink-0 items-center justify-center rounded"
+                      style={{ backgroundColor: article.color + '14' }}
                     >
-                      <div
-                        className="flex h-[60px] w-[80px] shrink-0 items-center justify-center rounded"
-                        style={{ backgroundColor: article.color + '14' }}
-                      >
-                        <Icon className="h-7 w-7" style={{ color: article.color }} />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-[13px] font-bold text-[#2563eb] group-hover:underline">
-                          {article.title}
-                        </h3>
-                        <p className="mt-1 text-[11px] leading-relaxed text-[#64748b] line-clamp-3">
-                          {article.description}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                      <Icon className="h-7 w-7" style={{ color: article.color }} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-[13px] font-bold text-[#2563eb] group-hover:underline">
+                        {article.title}
+                      </h3>
+                      <p className="mt-1 text-[11px] leading-relaxed text-[#64748b] line-clamp-3">
+                        {article.description}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
-          </div>
-
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 gap-4 px-6 pb-6 md:grid-cols-4">
-            {FEATURE_CARDS.map((card, i) => (
-              <div
-                key={i}
-                className={`overflow-hidden rounded-lg bg-gradient-to-br ${card.gradient} text-white`}
-              >
-                {/* Image placeholder area */}
-                <div className="relative h-[120px] overflow-hidden">
-                  <div className="absolute inset-0 bg-white/5" />
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="text-[13px] font-bold">{card.title}</h3>
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-white/80">{card.description}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {card.buttons.map((btn, j) => (
-                      <Link
-                        key={j}
-                        href="/markets"
-                        className="rounded border border-white/50 px-3 py-1 text-[10px] font-semibold text-white transition-colors hover:bg-white/20"
-                      >
-                        {btn}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Video Tutorials & Upcoming Events */}
-            <div className="rounded-lg border border-[#e2e8f0] bg-white p-4">
-              <h3 className="text-[13px] font-bold text-[#0f172a]">Video Tutorials</h3>
-              <p className="mt-1 text-[11px] text-[#64748b]">
-                Learn more about the new Pyhron ONE experience.
-              </p>
-              <div className="mt-4 border-t border-[#e2e8f0] pt-3">
-                <h4 className="text-[12px] font-bold text-[#0f172a]">Upcoming Events</h4>
-                <div className="mt-2 space-y-2">
-                  <div>
-                    <p className="text-[11px] font-medium text-[#2563eb]">Apr 15, 2026 - Virtual Event</p>
-                    <p className="text-[11px] text-[#475569]">Infrastructure and Data Centers, Performance Trends</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-medium text-[#2563eb]">Apr 22, 2026 - Webinar</p>
-                    <p className="text-[11px] text-[#475569]">IDX Investment Strategy Q2 2026</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-[#e2e8f0] px-6 py-4">
-            <p className="text-center text-[10px] text-[#94a3b8]">
-              &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
-              <span className="cursor-pointer underline">Terms of Use</span> &amp;{' '}
-              <span className="cursor-pointer underline">Disclaimer</span>.{' '}
-              <span className="cursor-pointer underline">Manage Cookies</span>.
-            </p>
           </div>
         </div>
 
         {/* RIGHT SIDEBAR */}
-        <div className="w-full shrink-0 border-l border-[#e2e8f0] bg-white lg:w-[260px]">
-          <div className="space-y-5 p-5">
-
-            {/* Support */}
-            <div>
-              <h3 className="mb-1.5 text-[12px] font-bold text-[#0f172a]">Support</h3>
-              {SUPPORT_LINKS.map((label) => (
-                <Link key={label} href="/settings" className="block py-[3px] text-[12px] text-[#2563eb] hover:underline">
-                  {label}
-                </Link>
-              ))}
-            </div>
-
-            {/* Discover */}
-            <div>
-              <h3 className="mb-1.5 text-[12px] font-bold text-[#0f172a]">Discover</h3>
-              {DISCOVER_LINKS.map((l) => (
-                <Link key={l.label} href={l.href} className="block py-[3px] text-[12px] text-[#2563eb] hover:underline">
-                  {l.label}
-                </Link>
-              ))}
+        <div className="w-full shrink-0 border-l border-[#e2e8f0] bg-white lg:w-[280px]">
+          <div className="p-5">
+            {/* Support + Discover side by side */}
+            <div className="flex gap-8">
+              <div className="flex-1">
+                <h3 className="mb-1.5 text-[12px] font-bold text-[#0f172a]">Support</h3>
+                {SUPPORT_LINKS.map((label) => (
+                  <Link key={label} href="/settings" className="block py-[3px] text-[12px] text-[#2563eb] hover:underline">
+                    {label}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex-1">
+                <h3 className="mb-1.5 text-[12px] font-bold text-[#0f172a]">Discover</h3>
+                {DISCOVER_LINKS.map((l) => (
+                  <Link key={l.label} href={l.href} className="block py-[3px] text-[12px] text-[#2563eb] hover:underline">
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {/* Recently Visited */}
-            <div>
+            <div className="mt-6">
               <h3 className="mb-2 text-[12px] font-bold text-[#0f172a]">Recently Visited</h3>
               <div className="space-y-3">
                 {RECENTLY_VISITED.map((item, i) => {
@@ -312,6 +243,67 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ═══ FEATURE CARDS — full width below sidebar ═══ */}
+      <div className="grid grid-cols-1 gap-4 px-6 pb-6 md:grid-cols-4">
+        {FEATURE_CARDS.map((card, i) => (
+          <div
+            key={i}
+            className={`overflow-hidden rounded-lg bg-gradient-to-br ${card.gradient} text-white`}
+          >
+            <div className="relative h-[120px] overflow-hidden">
+              <div className="absolute inset-0 bg-white/5" />
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+            </div>
+            <div className="p-4">
+              <h3 className="text-[13px] font-bold">{card.title}</h3>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-white/80">{card.description}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {card.buttons.map((btn, j) => (
+                  <Link
+                    key={j}
+                    href="/markets"
+                    className="rounded border border-white/50 px-3 py-1 text-[10px] font-semibold text-white transition-colors hover:bg-white/20"
+                  >
+                    {btn}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Video Tutorials & Upcoming Events */}
+        <div className="rounded-lg border border-[#e2e8f0] bg-white p-4">
+          <h3 className="text-[13px] font-bold text-[#0f172a]">Video Tutorials</h3>
+          <p className="mt-1 text-[11px] text-[#64748b]">
+            Learn more about the new Pyhron ONE experience.
+          </p>
+          <div className="mt-4 border-t border-[#e2e8f0] pt-3">
+            <h4 className="text-[12px] font-bold text-[#0f172a]">Upcoming Events</h4>
+            <div className="mt-2 space-y-2">
+              <div>
+                <p className="text-[11px] font-medium text-[#2563eb]">Apr 15, 2026 - Virtual Event</p>
+                <p className="text-[11px] text-[#475569]">Infrastructure and Data Centers, Performance Trends</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-[#2563eb]">Apr 22, 2026 - Webinar</p>
+                <p className="text-[11px] text-[#475569]">IDX Investment Strategy Q2 2026</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ FOOTER ═══ */}
+      <div className="border-t border-[#e2e8f0] px-6 py-4">
+        <p className="text-center text-[10px] text-[#94a3b8]">
+          &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
+          <span className="cursor-pointer underline">Terms of Use</span> &amp;{' '}
+          <span className="cursor-pointer underline">Disclaimer</span>.{' '}
+          <span className="cursor-pointer underline">Manage Cookies</span>.
+        </p>
       </div>
     </div>
   );
