@@ -100,7 +100,7 @@ export function TerminalTopBar() {
       <div className="flex items-center gap-1 pr-4">
         <button className="flex items-center gap-1.5 rounded-full bg-[#14532d] px-3 py-[4px] text-[11px] font-bold text-[#4ade80]">
           <svg width="8" height="8" viewBox="0 0 24 24" fill="#4ade80"><circle cx="12" cy="12" r="10" /></svg>
-          AskMSCI
+          AskPyhron
           <span className="rounded bg-[#22c55e]/30 px-1 text-[9px] text-[#86efac]">BETA</span>
         </button>
         <button aria-label="Notifications" className="rounded p-2 text-white/50 hover:text-white/80">
