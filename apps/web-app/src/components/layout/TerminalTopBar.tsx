@@ -42,7 +42,7 @@ export function TerminalTopBar() {
           {/* Filter dropdown */}
           <div ref={filterRef} className="relative">
             <button
-              onClick={() => setFilterOpen(!filterOpen)}
+                onClick={() => { setSearchOpen(false); setFilterOpen(!filterOpen); }}
               className="flex h-full items-center gap-1 border-r border-[#e5e7eb] bg-[#f8fafc] px-3 text-[13px] font-medium text-[#1e3a5f]"
             >
               {filter}
@@ -68,15 +68,15 @@ export function TerminalTopBar() {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setSearchOpen(true)}
+            onFocus={() => { setFilterOpen(false); setSearchOpen(true); }}
             placeholder="Search"
             className="flex-1 bg-transparent px-3 py-[7px] text-[13px] text-[#111827] outline-none placeholder:text-[#9ca3af]"
           />
 
           {/* Magnifier button */}
           <button
-            onClick={() => { if (query) console.log('Search:', query); }}
-            className="flex shrink-0 items-center px-3 text-[#6366f1] hover:text-[#4f46e5]"
+              onClick={() => { if (query) { setSearchOpen(false); setFilterOpen(false); } }}
+              className="flex shrink-0 items-center px-3 text-[#6366f1] hover:text-[#4f46e5]"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
           </button>
