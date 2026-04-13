@@ -62,7 +62,7 @@ export function Sidebar() {
     const active = pathname === item.path || pathname.startsWith(item.path + '/');
     return (
       <Link key={item.path} href={item.path} onClick={() => setMobileOpen(false)}
-        className={cn('flex flex-col items-center gap-[3px] py-[7px] transition-colors', active ? 'text-[#2e7de6]' : 'text-[#8fa8c8] hover:text-[#5b7fa3]')}>
+        className={cn('flex flex-col items-center gap-[3px] py-[12px] transition-colors', active ? 'text-[#2e7de6]' : 'text-[#8fa8c8] hover:text-[#5b7fa3]')}>
         <item.Icon a={active} />
         <span className={cn('text-[9px] leading-none', active ? 'font-bold' : 'font-medium')}>{item.label}</span>
       </Link>
@@ -71,7 +71,7 @@ export function Sidebar() {
 
   const content = (
     <div className="flex h-full flex-col items-center">
-      <nav className="flex flex-1 flex-col items-center gap-0 overflow-y-auto pt-1">{NAV.map(renderLink)}</nav>
+      <nav className="flex flex-1 flex-col items-center justify-start gap-0 pt-1">{NAV.map(renderLink)}</nav>
       <div className="shrink-0 border-t border-[#e2e8f0] pt-1 pb-2">
         {renderLink({ label: 'Settings', path: '/settings', Icon: ISettings })}
         <div className="mt-1 flex justify-center">
