@@ -1,287 +1,249 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 import {
   TrendingUp,
   TrendingDown,
-  FileText,
-  ExternalLink,
-  BarChart3,
-  Cpu,
-  Globe2,
-  PlayCircle,
-  Calendar,
   Building2,
-  PieChart,
+  BarChart3,
   LineChart,
+  Leaf,
+  FileText,
+  PieChart,
 } from 'lucide-react';
 import { MiniChart } from '@/design-system/charts/MiniChart';
 import { generateSparkline, INDICES } from '@/mocks/terminal-data';
 
-// ═══ INDEX TICKER DATA ═══
-const INDEX_TICKERS = INDICES.map((idx, i) => ({
+/* ═══ DATA INDEKS ═══ */
+const INDEKS = INDICES.map((idx) => ({
   ...idx,
   time: '14:32',
   sparkline: generateSparkline(24, idx.value, idx.value * 0.003),
 }));
 
-// ═══ RESEARCH ARTICLES ═══
-const RESEARCH_ARTICLES = [
+/* ═══ ARTIKEL RISET ═══ */
+const ARTIKEL_RISET = [
   {
     id: 1,
-    title: 'Outlook Terbaru Sektor Perbankan Indonesia',
-    description:
-      'Kami menganalisis tren terbaru pada sektor perbankan Indonesia. Meliputi profitabilitas, kualitas aset, dan proyeksi pertumbuhan kredit untuk bank-bank utama termasuk BBCA, BMRI, BBRI, dan BBNI.',
-    icon: Building2,
-    color: '#2563eb',
+    judul: 'Terbaru: Harga Properti Komersial Indonesia',
+    deskripsi:
+      'Kami melaporkan tren terbaru indeks harga properti komersial untuk Indonesia. Mencakup indeks keseluruhan dan indeks untuk jenis properti utama termasuk industri, ritel, apartemen, dan perkantoran.',
+    ikon: Building2,
+    warna: '#2563eb',
   },
   {
     id: 2,
-    title: 'Analisis Transisi Energi & Saham ESG di IDX',
-    description:
-      'Integritas kredit karbon dan investasi ESG menjadi perhatian pasar. Analisis MSCI ESG Rating terhadap emiten IDX menunjukkan tren perbaikan tata kelola dan komitmen net-zero.',
-    icon: Globe2,
-    color: '#059669',
+    judul: 'Integritas Kredit Karbon di Pasar Indonesia',
+    deskripsi:
+      'Integritas sangat penting dalam kepatuhan pasar karbon. Analisis proyek kredit karbon Indonesia mengungkapkan premi harga, variasi risiko tingkat proyek, dan bagaimana desain metodologi membentuk hasil.',
+    ikon: Leaf,
+    warna: '#059669',
   },
   {
     id: 3,
-    title: 'Transparansi Data: Laporan Keuangan Emiten',
-    description:
-      'Transparansi data telah menjadi salah satu tantangan utama dalam hubungan investor di pasar modal Indonesia. Analisis ini mengidentifikasi di mana data masih kurang lengkap.',
-    icon: FileText,
-    color: '#7c3aed',
+    judul: 'Kesenjangan Transparansi: Ruang Data Emiten',
+    deskripsi:
+      'Transparansi telah menjadi salah satu tantangan utama dalam hubungan antara investor dan emiten di pasar modal. Analisis ini mengidentifikasi di mana data masih kurang lengkap selama due diligence.',
+    ikon: FileText,
+    warna: '#7c3aed',
   },
   {
     id: 4,
-    title: 'Strategi Portofolio untuk Pasar Emerging Market',
-    description:
-      'Apakah portofolio Anda sudah diposisikan untuk menghadapi dinamika pasar emerging? Kami memperkenalkan framework kuadran untuk menilai kesiapan dan eksposur risiko portofolio.',
-    icon: PieChart,
-    color: '#dc2626',
+    judul: 'Memposisikan Portofolio untuk Transisi Energi',
+    deskripsi:
+      'Apakah portofolio Anda sudah diposisikan lebih baik untuk menghadapi transisi energi? Kami memperkenalkan framework kuadran untuk menilai kesiapan dan risiko transisi portofolio.',
+    ikon: PieChart,
+    warna: '#dc2626',
   },
 ];
 
-// ═══ SUPPORT LINKS ═══
-const SUPPORT_LINKS = [
-  { label: 'Catatan Rilis', href: '/settings' },
-  { label: 'Kirim Tiket Dukungan', href: '/settings' },
-  { label: 'Lihat Tiket Dukungan', href: '/settings' },
-  { label: 'Hubungi Kami', href: '/settings' },
-  { label: 'Pusat Bantuan', href: '/settings' },
-  { label: 'Status Platform', href: '/settings' },
+/* ═══ LINK DUKUNGAN ═══ */
+const LINK_DUKUNGAN = [
+  'Catatan Rilis',
+  'Kirim Tiket Dukungan',
+  'Lihat Tiket Dukungan',
+  'Hubungi Kami',
+  'Pusat Bantuan',
+  'Status Platform',
 ];
 
-// ═══ DISCOVER LINKS ═══
-const DISCOVER_LINKS = [
+/* ═══ LINK JELAJAHI ═══ */
+const LINK_JELAJAHI = [
   { label: 'Dataset', href: '/data/catalog' },
-  { label: 'APIs', href: '/data/api' },
-  { label: 'Model Kuantitatif', href: '/ml' },
+  { label: 'API', href: '/data/api' },
+  { label: 'Model', href: '/ml' },
   { label: 'Screener Saham', href: '/studio/screener' },
-  { label: 'Strategi Trading', href: '/strategies' },
-  { label: 'Data Pasar Real-time', href: '/markets' },
+  { label: 'Paket Lengkap', href: '/strategies' },
+  { label: 'Analitik Pasar Modal', href: '/markets' },
 ];
 
-// ═══ RECENTLY VISITED ═══
-const RECENTLY_VISITED = [
-  { type: 'Companies', label: 'BBCA - Bank Central Asia', href: '/markets/BBCA', icon: Building2, time: 'Hari ini' },
-  { type: 'Assets', label: 'Saham LQ45', href: '/markets', icon: LineChart, time: 'Hari ini' },
-  { type: 'Companies', label: 'Ringkasan Pasar', href: '/markets', icon: BarChart3, time: 'Hari ini' },
+/* ═══ TERAKHIR DIKUNJUNGI ═══ */
+const TERAKHIR_DIKUNJUNGI = [
+  { kategori: 'Perusahaan', label: 'Komposisi Indeks', href: '/markets', ikon: Building2 },
+  { kategori: 'Aset', label: 'Saham', href: '/markets', ikon: LineChart },
+  { kategori: 'Perusahaan', label: 'Ringkasan', href: '/markets', ikon: Building2 },
 ];
 
-// ═══ FEATURE CARDS ═══
-const FEATURE_CARDS = [
+/* ═══ KARTU FITUR ═══ */
+const KARTU_FITUR = [
   {
-    title: 'Jelajahi Data Pasar IDX',
-    description:
-      'Akses data indeks dan saham Indonesia secara real-time dengan alat interaktif kami. Request demo hari ini.',
-    gradient: 'from-blue-600 to-blue-800',
-    buttons: [
-      { label: 'Selengkapnya', href: '/markets', variant: 'outline' as const },
-      { label: 'Tonton Demo', href: '/markets', variant: 'outline' as const },
-    ],
+    judul: 'Jelajahi Wawasan Pasar',
+    deskripsi:
+      'Hidupkan data indeks Anda dengan alat interaktif terbaru kami. Ajukan demo hari ini.',
+    warna: 'from-blue-500 to-indigo-700',
+    tombol: ['Selengkapnya', 'Tonton Demo Video'],
   },
   {
-    title: 'Otomatisasi Analisis dengan AI',
-    description:
-      'Rasakan AI Portfolio Insights dengan data warehousing modern, dashboard intuitif, dan GenAI untuk analisis risiko dan pengambilan keputusan lebih cepat.',
-    gradient: 'from-emerald-600 to-emerald-800',
-    buttons: [
-      { label: 'Baca Riset', href: '/research', variant: 'outline' as const },
-      { label: 'Selengkapnya', href: '/research', variant: 'outline' as const },
-    ],
+    judul: 'Otomatisasi Wawasan untuk Keputusan',
+    deskripsi:
+      'Rasakan AI Portfolio Insights dengan data warehousing modern, dashboard intuitif, dan GenAI untuk mempercepat analisis risiko dan keputusan yang lebih baik.',
+    warna: 'from-emerald-500 to-teal-700',
+    tombol: ['Baca Riset', 'Selengkapnya'],
   },
   {
-    title: 'Analisis Sektor & Fundamental',
-    description:
-      'Eksplorasi risiko fisik dan fundamental emiten dengan solusi analisis multi-faktor kami, termasuk analisis sektor dan eksposur portofolio.',
-    gradient: 'from-violet-600 to-violet-800',
-    buttons: [{ label: 'Coba Sekarang', href: '/studio/screener', variant: 'outline' as const }],
+    judul: 'Analisis Aset Geospasial',
+    deskripsi:
+      'Eksplorasi risiko fisik dan fundamental dengan solusi analisis multi-faktor kami, termasuk penghargaan PRI Award 2025 untuk Pengakuan Aksi Iklim.',
+    warna: 'from-sky-500 to-cyan-700',
+    tombol: ['Ajukan Demo'],
   },
-];
-
-// ═══ UPCOMING EVENTS ═══
-const UPCOMING_EVENTS = [
-  { date: '15 Apr 2026', title: 'Webinar: Strategi Investasi IDX Q2 2026' },
-  { date: '22 Apr 2026', title: 'Workshop: Backtesting dengan Pyhron' },
 ];
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-
   return (
     <div className="min-h-full bg-[#f8fafc]">
-      {/* ═══ INDEX TICKER STRIP ═══ */}
+      {/* ═══ STRIP INDEKS ═══ */}
       <div className="border-b border-[#e2e8f0] bg-white">
-        <div className="flex items-stretch gap-0 overflow-x-auto">
-          {INDEX_TICKERS.map((idx, i) => {
-            const isPositive = idx.changePct >= 0;
+        <div className="flex items-stretch overflow-x-auto">
+          {INDEKS.map((idx) => {
+            const positif = idx.changePct >= 0;
             return (
               <div
                 key={idx.symbol}
-                className={`flex min-w-[180px] flex-1 items-center gap-3 border-r border-[#e2e8f0] px-4 py-3 last:border-r-0`}
+                className="flex min-w-[180px] flex-1 items-center gap-3 border-r border-[#e2e8f0] px-4 py-3 last:border-r-0"
               >
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-[#1e293b] truncate">
-                      {idx.symbol}
+                    <span className="truncate text-[11px] font-bold uppercase text-[#1e293b]">
+                      {idx.name}
                     </span>
                     <span className="text-[10px] text-[#94a3b8]">{idx.time}</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="mt-0.5 flex items-center gap-2">
                     <span className="text-[13px] font-semibold tabular-nums text-[#0f172a]">
                       {idx.value.toLocaleString('id-ID', { minimumFractionDigits: 2 })}
                     </span>
                     <span
                       className={`flex items-center gap-0.5 text-[11px] font-medium tabular-nums ${
-                        isPositive ? 'text-[#16a34a]' : 'text-[#dc2626]'
+                        positif ? 'text-[#16a34a]' : 'text-[#dc2626]'
                       }`}
                     >
-                      {isPositive ? (
-                        <TrendingUp className="h-3 w-3" />
-                      ) : (
-                        <TrendingDown className="h-3 w-3" />
-                      )}
-                      {isPositive ? '+' : ''}
-                      {idx.changePct.toFixed(2)}%
+                      {positif ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {positif ? '+' : ''}{idx.changePct.toFixed(2)}%
                     </span>
                   </div>
                 </div>
-                <MiniChart
-                  data={idx.sparkline}
-                  width={80}
-                  height={28}
-                  positive={isPositive}
-                />
+                <MiniChart data={idx.sparkline} width={80} height={28} positive={positif} />
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* ═══ MAIN CONTENT ═══ */}
+      {/* ═══ KONTEN UTAMA ═══ */}
       <div className="flex flex-col lg:flex-row">
-        {/* LEFT: Research & Feature Cards */}
-        <div className="flex-1 min-w-0">
-          {/* Market Research and Insights */}
-          <div className="p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold text-[#0f172a]">
-                Riset Pasar dan Wawasan
-              </h2>
-              <Link
-                href="/research"
-                className="text-[12px] font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
-              >
-                Lihat Semua
-              </Link>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {RESEARCH_ARTICLES.map((article) => {
-                const Icon = article.icon;
-                return (
-                  <Link
-                    key={article.id}
-                    href="/research"
-                    className="group flex gap-4 rounded-lg border border-[#e2e8f0] bg-white p-4 transition-all hover:shadow-md hover:border-[#cbd5e1]"
-                  >
-                    <div
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: article.color + '12' }}
+        {/* KIRI: Riset & Kartu Fitur */}
+        <div className="min-w-0 flex-1">
+
+          {/* Riset Pasar dan Wawasan */}
+          <div className="p-6">
+            <div className="rounded-lg border border-[#e2e8f0] bg-white">
+              <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
+                <h2 className="text-[14px] font-semibold text-[#0f172a]">Riset Pasar dan Wawasan</h2>
+                <Link href="/research" className="text-[12px] font-medium text-[#2563eb] hover:text-[#1d4ed8]">
+                  Lihat Semua
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
+                {ARTIKEL_RISET.map((artikel, i) => {
+                  const Ikon = artikel.ikon;
+                  const borderR = i % 2 === 0 ? 'md:border-r' : '';
+                  const borderB = i < 2 ? 'border-b' : '';
+                  return (
+                    <Link
+                      key={artikel.id}
+                      href="/research"
+                      className={`group flex gap-4 p-5 ${borderR} ${borderB} border-[#e2e8f0] transition-colors hover:bg-[#f8fafc]`}
                     >
-                      <Icon className="h-6 w-6" style={{ color: article.color }} />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-[13px] font-semibold text-[#0f172a] group-hover:text-[#2563eb] transition-colors line-clamp-1">
-                        {article.title}
-                      </h3>
-                      <p className="mt-1 text-[12px] leading-relaxed text-[#64748b] line-clamp-3">
-                        {article.description}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+                      <div
+                        className="flex h-[60px] w-[80px] shrink-0 items-center justify-center rounded"
+                        style={{ backgroundColor: artikel.warna + '14' }}
+                      >
+                        <Ikon className="h-7 w-7" style={{ color: artikel.warna }} />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-[13px] font-bold text-[#2563eb] group-hover:underline">
+                          {artikel.judul}
+                        </h3>
+                        <p className="mt-1 text-[11px] leading-relaxed text-[#64748b] line-clamp-3">
+                          {artikel.deskripsi}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Feature Cards */}
-          <div className="px-6 pb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {FEATURE_CARDS.map((card, i) => (
-                <div
-                  key={i}
-                  className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${card.gradient} p-5 text-white`}
-                >
-                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZyIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4=')] opacity-50" />
-                  <div className="relative">
-                    <h3 className="text-[14px] font-bold">{card.title}</h3>
-                    <p className="mt-2 text-[12px] leading-relaxed text-white/80">
-                      {card.description}
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {card.buttons.map((btn, j) => (
-                        <Link
-                          key={j}
-                          href={btn.href}
-                          className="rounded-full border border-white/40 bg-white/10 px-4 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:border-white/60"
-                        >
-                          {btn.label}
-                        </Link>
-                      ))}
-                    </div>
+          {/* Kartu Fitur */}
+          <div className="grid grid-cols-1 gap-4 px-6 pb-6 md:grid-cols-4">
+            {KARTU_FITUR.map((kartu, i) => (
+              <div
+                key={i}
+                className={`overflow-hidden rounded-lg bg-gradient-to-br ${kartu.warna} text-white`}
+              >
+                {/* Area gambar placeholder */}
+                <div className="relative h-[120px] overflow-hidden">
+                  <div className="absolute inset-0 bg-white/5" />
+                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+                {/* Konten */}
+                <div className="p-4">
+                  <h3 className="text-[13px] font-bold">{kartu.judul}</h3>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-white/80">{kartu.deskripsi}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {kartu.tombol.map((t, j) => (
+                      <Link
+                        key={j}
+                        href="/markets"
+                        className="rounded border border-white/50 px-3 py-1 text-[10px] font-semibold text-white transition-colors hover:bg-white/20"
+                      >
+                        {t}
+                      </Link>
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
 
-              {/* Video Tutorials + Upcoming Events Card */}
-              <div className="rounded-xl border border-[#e2e8f0] bg-white p-5 md:col-span-3 lg:col-span-1">
-                <div className="mb-4">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#0f172a]">
-                    <PlayCircle className="h-4 w-4 text-[#2563eb]" />
-                    Video Tutorial
-                  </h3>
-                  <p className="mt-1 text-[12px] text-[#64748b]">
-                    Pelajari cara menggunakan Pyhron ONE untuk analisis pasar Indonesia.
-                  </p>
-                </div>
-                <div className="border-t border-[#e2e8f0] pt-3">
-                  <h4 className="flex items-center gap-2 text-[13px] font-semibold text-[#0f172a]">
-                    <Calendar className="h-3.5 w-3.5 text-[#2563eb]" />
-                    Acara Mendatang
-                  </h4>
-                  <div className="mt-2 space-y-2">
-                    {UPCOMING_EVENTS.map((event, i) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <span className="shrink-0 text-[11px] font-medium text-[#2563eb]">
-                          {event.date}
-                        </span>
-                        <span className="text-[11px] text-[#475569] leading-snug">
-                          {event.title}
-                        </span>
-                      </div>
-                    ))}
+            {/* Video Tutorial & Acara Mendatang */}
+            <div className="rounded-lg border border-[#e2e8f0] bg-white p-4">
+              <h3 className="text-[13px] font-bold text-[#0f172a]">Video Tutorial</h3>
+              <p className="mt-1 text-[11px] text-[#64748b]">
+                Pelajari lebih lanjut tentang pengalaman Pyhron ONE terbaru.
+              </p>
+              <div className="mt-4 border-t border-[#e2e8f0] pt-3">
+                <h4 className="text-[12px] font-bold text-[#0f172a]">Acara Mendatang</h4>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <p className="text-[11px] font-medium text-[#2563eb]">15 Apr 2026 - Virtual</p>
+                    <p className="text-[11px] text-[#475569]">Infrastruktur dan Pusat Data, Tren Kinerja</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-medium text-[#2563eb]">22 Apr 2026 - Webinar</p>
+                    <p className="text-[11px] text-[#475569]">Strategi Investasi IDX Kuartal 2 2026</p>
                   </div>
                 </div>
               </div>
@@ -290,77 +252,60 @@ export default function DashboardPage() {
 
           {/* Footer */}
           <div className="border-t border-[#e2e8f0] px-6 py-4">
-            <p className="text-[10px] text-[#94a3b8] text-center">
-              &copy; 2026 Pyhron. Hak Cipta Dilindungi. Tunduk pada{' '}
-              <span className="underline cursor-pointer">Syarat Penggunaan</span> &{' '}
-              <span className="underline cursor-pointer">Disclaimer</span>.{' '}
-              <span className="underline cursor-pointer">Kelola Cookie</span>.
+            <p className="text-center text-[10px] text-[#94a3b8]">
+              &copy; 2026 Pyhron Inc. Hak Cipta Dilindungi. Tunduk pada{' '}
+              <span className="cursor-pointer underline">Syarat Penggunaan</span> &amp;{' '}
+              <span className="cursor-pointer underline">Disclaimer</span>.{' '}
+              <span className="cursor-pointer underline">Kelola Cookie</span>.
             </p>
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR */}
-        <div className="w-full border-l border-[#e2e8f0] bg-white lg:w-[280px] shrink-0">
-          <div className="p-5 space-y-6">
-            {/* Support */}
+        {/* SIDEBAR KANAN */}
+        <div className="w-full shrink-0 border-l border-[#e2e8f0] bg-white lg:w-[260px]">
+          <div className="space-y-5 p-5">
+
+            {/* Dukungan */}
             <div>
-              <h3 className="text-[12px] font-bold text-[#0f172a] mb-2">Dukungan</h3>
-              <div className="space-y-0">
-                {SUPPORT_LINKS.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="flex items-center gap-1.5 py-1.5 text-[12px] text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
-                  >
-                    {link.label}
-                    <ExternalLink className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
-                  </Link>
-                ))}
-              </div>
+              <h3 className="mb-1.5 text-[12px] font-bold text-[#0f172a]">Dukungan</h3>
+              {LINK_DUKUNGAN.map((label) => (
+                <Link key={label} href="/settings" className="block py-[3px] text-[12px] text-[#2563eb] hover:underline">
+                  {label}
+                </Link>
+              ))}
             </div>
 
-            {/* Discover */}
+            {/* Jelajahi */}
             <div>
-              <h3 className="text-[12px] font-bold text-[#0f172a] mb-2">Jelajahi</h3>
-              <div className="space-y-0">
-                {DISCOVER_LINKS.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="flex items-center gap-1.5 py-1.5 text-[12px] text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+              <h3 className="mb-1.5 text-[12px] font-bold text-[#0f172a]">Jelajahi</h3>
+              {LINK_JELAJAHI.map((l) => (
+                <Link key={l.label} href={l.href} className="block py-[3px] text-[12px] text-[#2563eb] hover:underline">
+                  {l.label}
+                </Link>
+              ))}
             </div>
 
-            {/* Recently Visited */}
+            {/* Terakhir Dikunjungi */}
             <div>
-              <h3 className="text-[12px] font-bold text-[#0f172a] mb-3">
-                Terakhir Dikunjungi
-              </h3>
+              <h3 className="mb-2 text-[12px] font-bold text-[#0f172a]">Terakhir Dikunjungi</h3>
               <div className="space-y-3">
-                {RECENTLY_VISITED.map((item, i) => {
-                  const Icon = item.icon;
+                {TERAKHIR_DIKUNJUNGI.map((item, i) => {
+                  const Ikon = item.ikon;
                   return (
                     <Link
                       key={i}
                       href={item.href}
-                      className="group flex items-start gap-3 rounded-md p-1.5 -mx-1.5 transition-colors hover:bg-[#f1f5f9]"
+                      className="group flex items-center gap-2.5 rounded transition-colors hover:bg-[#f1f5f9] p-1 -mx-1"
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#f1f5f9] group-hover:bg-[#e2e8f0]">
-                        <Icon className="h-4 w-4 text-[#64748b]" />
-                      </div>
+                      <Ikon className="h-4 w-4 shrink-0 text-[#94a3b8]" />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-semibold text-[#64748b]">
-                            {item.type}
-                          </span>
-                          <span className="text-[10px] text-[#94a3b8]">{item.time}</span>
-                        </div>
-                        <p className="text-[12px] text-[#0f172a] truncate">{item.label}</p>
+                        <span className="text-[11px] text-[#64748b]">
+                          {item.kategori}{' '}
+                          <span className="mx-0.5 text-[#cbd5e1]">&bull;</span>{' '}
+                          <span className="text-[#0f172a]">{item.label}</span>
+                        </span>
                       </div>
+                      <span className="text-[10px] text-[#94a3b8]">Hari ini</span>
                     </Link>
                   );
                 })}
