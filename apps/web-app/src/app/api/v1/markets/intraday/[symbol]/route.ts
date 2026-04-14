@@ -8,7 +8,7 @@ const SYMBOL_MAP: Record<string, string> = {
   LQ45: '^JKLQ45',
   IDX30: '^JKIDX30',
   JII: '^JKII',
-  IDX80: '^JKSE', // fallback — IDX80 not on Yahoo
+  IDX80: '^JKSE',
 };
 
 export async function GET(
@@ -22,41 +22,33 @@ export async function GET(
     const ySymbol = SYMBOL_MAP[upper] ?? `${upper}.JK`;
 
     const now = new Date();
-    const todayOpen = new Date(now);
-    todayOpen.setHours(0, 0, 0, 0);
+    const period1 = new Date(now);
+    period1.setDate(period1.getDate() - 5); // last 5 days to ensure we get data
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = await yahooFinance.chart(ySymbol, {
-      period1: todayOpen,
+    const rows = await yahooFinance.historical(ySymbol, {
+      period1,
       period2: now,
-      interval: '5m' as const,
-    });
+      interval: '1d',
+    }) as { date: Date; open: number; high: number; low: number; close: number; volume: number }[];
 
-    const quotes = result.quotes ?? [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const points: { time: string; price: number }[] = quotes
-      .filter((q: { close?: number | null }) => q.close != null)
-      .map((q: { date: Date; close: number }) => ({
-        time: new Date(q.date).toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-        price: q.close,
-      }));
+    if (rows.length === 0) throw new Error('No data returned');
 
-    const openPrice = points.length > 0 ? points[0]!.price : 0;
-    const currentPrice = points.length > 0 ? points[points.length - 1]!.price : 0;
-    const change = openPrice > 0 ? ((currentPrice - openPrice) / openPrice) * 100 : 0;
+    // Use recent daily closes as chart points
+    const points = rows.map((r) => r.close);
+    const latest = rows[rows.length - 1]!;
+    const prev = rows.length > 1 ? rows[rows.length - 2]! : latest;
+    const change = prev.close > 0
+      ? ((latest.close - prev.close) / prev.close) * 100
+      : 0;
 
     return NextResponse.json(
       {
         symbol: upper,
-        current: currentPrice,
-        open: openPrice,
+        current: latest.close,
+        open: latest.open,
         change: Math.round(change * 100) / 100,
-        points: points.map((p) => p.price),
-        timestamps: points.map((p) => p.time),
+        points,
+        timestamps: rows.map((r) => r.date.toISOString().split('T')[0]),
         lastUpdate: now.toLocaleTimeString('id-ID', {
           hour: '2-digit',
           minute: '2-digit',
@@ -68,7 +60,6 @@ export async function GET(
   } catch (error) {
     console.error(`Intraday fetch failed for ${upper}:`, error);
 
-    // Fallback: deterministic mock so UI never breaks
     const baseMap: Record<string, number> = {
       IHSG: 7234, LQ45: 985, IDX30: 482, IDX80: 132, JII: 548,
     };
