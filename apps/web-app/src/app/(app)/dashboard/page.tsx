@@ -2,10 +2,75 @@
 
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
-import { useIntraday } from '@/hooks/use-intraday';
-import { IntradaySparkline } from '@/components/terminal/IntradaySparkline';
+import { useQuery } from '@tanstack/react-query';
 
 const INDEX_SYMBOLS = ['IHSG', 'LQ45', 'IDX30', 'IDX80', 'JII'];
+
+/* ═══ INTRADAY HOOK (inlined to avoid Turbopack name collision) ═══ */
+interface IntradayData {
+  symbol: string;
+  current: number;
+  open: number;
+  change: number;
+  points: number[];
+  timestamps: string[];
+  lastUpdate: string;
+}
+
+function isIDXMarketOpen(): boolean {
+  const now = new Date();
+  const wibHour = (now.getUTCHours() + 7) % 24;
+  const wibMinute = now.getUTCMinutes();
+  const day = now.getDay();
+  if (day === 0 || day === 6) return false;
+  const t = wibHour * 60 + wibMinute;
+  return (t >= 540 && t <= 690) || (t >= 810 && t <= 910);
+}
+
+function useIntradayData(symbol: string) {
+  return useQuery<IntradayData>({
+    queryKey: ['intraday', symbol],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/markets/intraday/${encodeURIComponent(symbol)}`);
+      if (!res.ok) throw new Error('Intraday fetch failed');
+      return res.json() as Promise<IntradayData>;
+    },
+    refetchInterval: isIDXMarketOpen() ? 30_000 : false,
+    staleTime: 15_000,
+    enabled: !!symbol,
+  });
+}
+
+/* ═══ SPARKLINE (inlined) ═══ */
+function Sparkline({ points, positive, width = 80, height = 32 }: { points: number[]; positive: boolean; width?: number; height?: number }) {
+  if (points.length < 2) return null;
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const pad = 2;
+  const chartH = height - pad * 2;
+  const coords = points.map((p, i) => {
+    const x = (i / (points.length - 1)) * width;
+    const y = pad + chartH - ((p - min) / range) * chartH;
+    return { x, y };
+  });
+  const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');
+  const fillPath = `${linePath} L${width},${height} L0,${height} Z`;
+  const color = positive ? '#16a34a' : '#dc2626';
+  const gradId = `spark-${positive ? 'up' : 'dn'}`;
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className="shrink-0">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={fillPath} fill={`url(#${gradId})`} />
+      <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 /* ═══ RESEARCH ARTICLES ═══ */
 const RESEARCH_ARTICLES = [
@@ -81,7 +146,7 @@ const RECENTLY_VISITED = [
 
 /* ═══ INDEX CARD ═══ */
 function IndexCard({ symbol }: { symbol: string }) {
-  const { data, isLoading } = useIntraday(symbol);
+  const { data, isLoading } = useIntradayData(symbol);
 
   const current = data?.current ?? 0;
   const change = data?.change ?? 0;
@@ -113,7 +178,7 @@ function IndexCard({ symbol }: { symbol: string }) {
           )}
         </div>
         {points.length >= 2 && (
-          <IntradaySparkline points={points} positive={positive} width={80} height={32} />
+          <Sparkline points={points} positive={positive} width={80} height={32} />
         )}
       </div>
     </div>
