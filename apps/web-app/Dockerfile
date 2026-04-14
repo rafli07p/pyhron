@@ -5,7 +5,7 @@ RUN corepack enable pnpm
 
 FROM base AS builder
 COPY package.json pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile --prod=false
+RUN --network=host pnpm install --frozen-lockfile --prod=false
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production

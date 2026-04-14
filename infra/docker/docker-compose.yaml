@@ -256,10 +256,16 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+  # NOTE for Docker Desktop (Windows/macOS): If the web-app build fails with
+  # "getaddrinfo ENOTFOUND registry.npmjs.org", add the following to Docker
+  # Engine settings (Settings > Docker Engine > daemon.json):
+  #   { "dns": ["8.8.8.8", "8.8.4.4", "1.1.1.1"] }
+  # Then restart Docker Desktop. See infra/docker/daemon.json.example.
   web-app:
     build:
       context: ../../apps/web-app
       dockerfile: Dockerfile
+      network: host
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000}
