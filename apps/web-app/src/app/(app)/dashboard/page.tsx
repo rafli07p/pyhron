@@ -71,13 +71,13 @@ const CALENDAR = [
 
 /* ═══ RATES ═══ */
 const RATES = [
-  { label: 'USD/IDR', value: '15,420', delta: '+0.3%', type: 'positive' as const },
-  { label: 'BI Rate', value: '5.75%', delta: 'Hold', type: 'neutral' as const },
-  { label: '10Y Govt Bond', value: '6.82%', delta: '-2bps', type: 'positive' as const },
-  { label: 'Inflation (YoY)', value: '2.8%', delta: 'Feb 2026', type: 'neutral' as const },
-  { label: 'Trade Balance', value: '+$3.2B', delta: 'Feb 2026', type: 'neutral' as const },
-  { label: 'FX Reserves', value: '$139.4B', delta: 'Mar 2026', type: 'neutral' as const },
-];
+  { label: 'USD/IDR', value: '15,420', delta: '+0.3%', type: 'positive' },
+  { label: 'BI Rate', value: '5.75%', delta: 'Hold', type: 'neutral' },
+  { label: '10Y Govt Bond', value: '6.82%', delta: '-2bps', type: 'positive' },
+  { label: 'Inflation (YoY)', value: '2.8%', delta: 'Feb 2026', type: 'neutral' },
+  { label: 'Trade Balance', value: '+$3.2B', delta: 'Feb 2026', type: 'neutral' },
+  { label: 'FX Reserves', value: '$139.4B', delta: 'Mar 2026', type: 'neutral' },
+] as const satisfies readonly { label: string; value: string; delta: string; type: 'positive' | 'negative' | 'neutral' }[];
 
 /* ═══ CORPORATE ACTIONS ═══ */
 const CORP_ACTIONS = [
