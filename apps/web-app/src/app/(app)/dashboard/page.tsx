@@ -2,15 +2,10 @@
 
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
+import { useIntraday } from '@/hooks/use-intraday';
+import { IntradaySparkline } from '@/components/terminal/IntradaySparkline';
 
-/* ═══ INDEX DATA ═══ */
-const INDICES = [
-  { symbol: 'IHSG', label: 'Jakarta Composite', time: '08:58', value: 7234.56, change: 32.45, changePct: 0.45, sparkline: [7180,7195,7210,7190,7220,7235,7215,7240,7234,7250,7245,7230,7234] },
-  { symbol: 'LQ45', label: 'LQ45', time: '08:58', value: 985.23, change: -5.12, changePct: -0.52, sparkline: [990,988,985,982,986,984,988,985,983,987,985,984,985] },
-  { symbol: 'IDX30', label: 'IDX30', time: '08:58', value: 482.18, change: 2.78, changePct: 0.58, sparkline: [478,479,480,479,481,480,482,481,483,482,484,483,482] },
-  { symbol: 'IDX80', label: 'IDX80', time: '08:58', value: 132.45, change: 0.87, changePct: 0.66, sparkline: [130,131,131,132,131,132,131,132,133,132,133,132,132] },
-  { symbol: 'JII', label: 'Jakarta Islamic', time: '08:58', value: 548.92, change: -3.21, changePct: -0.58, sparkline: [552,551,550,551,549,550,548,549,547,548,549,548,548] },
-];
+const INDEX_SYMBOLS = ['IHSG', 'LQ45', 'IDX30', 'IDX80', 'JII'];
 
 /* ═══ RESEARCH ARTICLES ═══ */
 const RESEARCH_ARTICLES = [
@@ -84,44 +79,44 @@ const RECENTLY_VISITED = [
   { category: 'Assets', label: 'Equities', icon: LineChart, time: '1 day ago' },
 ];
 
-/* ═══ SPARKLINE ═══ */
-function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const w = 80;
-  const h = 32;
-  const points = data
-    .map((v, i) => {
-      const x = (i / (data.length - 1)) * w;
-      const y = h - 2 - ((v - min) / (max - min || 1)) * (h - 4);
-      return `${x},${y}`;
-    })
-    .join(' ');
+/* ═══ INDEX CARD ═══ */
+function IndexCard({ symbol }: { symbol: string }) {
+  const { data, isLoading } = useIntraday(symbol);
 
-  const fill = data
-    .map((v, i) => {
-      const x = (i / (data.length - 1)) * w;
-      const y = h - 2 - ((v - min) / (max - min || 1)) * (h - 4);
-      return `${x},${y}`;
-    })
-    .join(' ');
+  const current = data?.current ?? 0;
+  const change = data?.change ?? 0;
+  const points = data?.points ?? [];
+  const lastUpdate = data?.lastUpdate ?? '--:--';
+  const positive = change >= 0;
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-[32px] w-[80px]">
-      <polyline
-        points={`0,${h} ${fill} ${w},${h}`}
-        fill={positive ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)'}
-        stroke="none"
-      />
-      <polyline
-        points={points}
-        fill="none"
-        stroke={positive ? '#16a34a' : '#dc2626'}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <div className={`${card} px-3.5 py-3`}>
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[11px] font-bold uppercase text-[#1e293b]">{symbol}</span>
+        <span className="text-[10px] tabular-nums text-[#94a3b8]">{lastUpdate}</span>
+      </div>
+      <div className="flex items-end justify-between">
+        <div>
+          {isLoading ? (
+            <div className="mb-1 h-5 w-20 animate-pulse rounded bg-[#e2e8f0]" />
+          ) : (
+            <div className="mb-0.5 text-[15px] font-semibold tabular-nums text-[#0f172a]">
+              {current.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          )}
+          {isLoading ? (
+            <div className="h-3 w-14 animate-pulse rounded bg-[#e2e8f0]" />
+          ) : (
+            <span className={`inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums ${positive ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+              {positive ? '▲' : '▼'} {positive ? '+' : ''}{change.toFixed(2)}%
+            </span>
+          )}
+        </div>
+        {points.length >= 2 && (
+          <IntradaySparkline points={points} positive={positive} width={80} height={32} />
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -139,28 +134,9 @@ export default function DashboardPage() {
         <div className="space-y-4">
           {/* Index Cards Row */}
           <div className="grid grid-cols-5 gap-3">
-            {INDICES.map((idx) => {
-              const pos = idx.changePct >= 0;
-              return (
-                <div key={idx.symbol} className={`${card} px-3.5 py-3`}>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase text-[#1e293b]">{idx.symbol}</span>
-                    <span className="text-[10px] text-[#94a3b8]">{idx.time}</span>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <div className="mb-0.5 text-[15px] font-semibold tabular-nums text-[#0f172a]">
-                        {idx.value.toLocaleString('id-ID', { minimumFractionDigits: 2 })}
-                      </div>
-                      <span className={`inline-flex items-center gap-1 text-[11px] font-medium tabular-nums ${pos ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-                        {pos ? '▲' : '▼'} {pos ? '+' : ''}{idx.changePct.toFixed(2)}%
-                      </span>
-                    </div>
-                    <Sparkline data={idx.sparkline} positive={pos} />
-                  </div>
-                </div>
-              );
-            })}
+            {INDEX_SYMBOLS.map((symbol) => (
+              <IndexCard key={symbol} symbol={symbol} />
+            ))}
           </div>
 
           {/* Market Research and Insights */}
