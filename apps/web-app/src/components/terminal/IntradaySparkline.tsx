@@ -1,5 +1,3 @@
-'use client';
-
 interface IntradaySparklineProps {
   points: number[];
   positive: boolean;
