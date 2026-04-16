@@ -41,8 +41,8 @@ function useIdx(symbol: string) {
   });
 }
 
-/* ═══ SPARKLINE (full-width, with gradient fill) ═══ */
-function SvgSpark({ pts, up, w = 200, h = 56 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
+/* ═══ SPARKLINE ═══ */
+function SvgSpark({ pts, up, w = 200, h = 60 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
   if (pts.length < 2) return null;
   const mn = Math.min(...pts);
   const mx = Math.max(...pts);
@@ -71,7 +71,7 @@ function SvgSpark({ pts, up, w = 200, h = 56 }: { pts: number[]; up: boolean; w?
   );
 }
 
-/* ═══ INDEX CARD (MSCI style — value on top, large chart below) ═══ */
+/* ═══ INDEX CARD ═══ */
 function IdxCard({ symbol }: { symbol: string }) {
   const { data, isLoading } = useIdx(symbol);
   const cur = data?.current ?? 0;
@@ -82,22 +82,22 @@ function IdxCard({ symbol }: { symbol: string }) {
 
   return (
     <div className={`${card} overflow-hidden`}>
-      <div className="px-3.5 pt-3 pb-1">
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-[#1e293b]">{symbol}</span>
-          <span className="text-[10px] tabular-nums text-[#94a3b8]">{ts}</span>
+      <div className="px-4 pt-3.5 pb-1">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[13px] font-bold uppercase tracking-wide text-[#1e293b]">{symbol}</span>
+          <span className="text-[12px] tabular-nums text-[#94a3b8]">{ts}</span>
         </div>
         {isLoading ? (
-          <div className="space-y-1.5">
-            <div className="h-5 w-24 animate-pulse rounded bg-[#e2e8f0]" />
-            <div className="h-3 w-16 animate-pulse rounded bg-[#e2e8f0]" />
+          <div className="space-y-2">
+            <div className="h-6 w-28 animate-pulse rounded bg-[#e2e8f0]" />
+            <div className="h-4 w-20 animate-pulse rounded bg-[#e2e8f0]" />
           </div>
         ) : (
-          <div className="flex items-baseline gap-2">
-            <span className="text-[16px] font-semibold tabular-nums text-[#0f172a]">
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-[18px] font-semibold tabular-nums text-[#0f172a]">
               {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
-            <span className={`text-[11px] font-medium tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+            <span className={`text-[13px] font-medium tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
               {up ? '▲' : '▼'} {up ? '+' : ''}{chg.toFixed(2)}%
             </span>
           </div>
@@ -105,9 +105,9 @@ function IdxCard({ symbol }: { symbol: string }) {
       </div>
       <div className="mt-1">
         {pts.length >= 2 ? (
-          <SvgSpark pts={pts} up={up} h={56} />
+          <SvgSpark pts={pts} up={up} h={60} />
         ) : (
-          <div className="h-[56px] w-full animate-pulse bg-[#f1f5f9]" />
+          <div className="h-[60px] w-full animate-pulse bg-[#f1f5f9]" />
         )}
       </div>
     </div>
@@ -130,6 +130,16 @@ const FEATURES = [
   { title: 'GeoSpatial Asset Intelligence', desc: 'Explore physical and nature risks with our multi-award-winning solution, including PRI Award 2025 for Recognition for Action \u2014 Climate Award.', gradient: 'from-[#1e3a5f] to-[#0891b2]', btns: ['Book a demo'] },
 ];
 
+const ECON_CALENDAR = [
+  { date: 'Apr 25, 2026', event: 'LQ45 Index Rebalancing', tag: 'Index', tagClr: 'bg-blue-50 text-[#2563eb]' },
+  { date: 'May 8, 2026', event: 'BI Rate Decision', tag: 'Macro', tagClr: 'bg-amber-50 text-amber-600' },
+  { date: 'May 14, 2026', event: 'FOMC Minutes Release', tag: 'Global', tagClr: 'bg-purple-50 text-purple-600' },
+  { date: 'May 15, 2026', event: 'IDX80 Semi-Annual Review', tag: 'Index', tagClr: 'bg-blue-50 text-[#2563eb]' },
+  { date: 'Jun 2, 2026', event: 'Indonesia GDP Q1 2026', tag: 'Macro', tagClr: 'bg-amber-50 text-amber-600' },
+  { date: 'Jun 5, 2026', event: 'Q1 Earnings Season Ends', tag: 'Earnings', tagClr: 'bg-emerald-50 text-emerald-600' },
+  { date: 'Jun 12, 2026', event: 'BI Rate Decision', tag: 'Macro', tagClr: 'bg-amber-50 text-amber-600' },
+];
+
 const VISITED = [
   { cat: 'Companies', label: 'Index Composition Viewer', Icon: Building2, time: '1 day ago' },
   { cat: 'Research', label: 'All Items', Icon: BarChart3, time: '2 days ago' },
@@ -140,7 +150,7 @@ const VISITED = [
 export default function DashboardPage() {
   return (
     <div className="p-5 pb-0">
-      {/* MAIN GRID: left + right sidebar */}
+      {/* MAIN GRID */}
       <div className="grid grid-cols-[1fr_300px] gap-4">
         {/* ═══ LEFT ═══ */}
         <div className="space-y-4">
@@ -151,18 +161,18 @@ export default function DashboardPage() {
 
           {/* Market Research and Insights */}
           <div className={card}>
-            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
-              <h2 className="text-[14px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
-              <Link href="/research" className="text-[12px] font-medium text-[#2563eb] hover:underline">View All</Link>
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3.5">
+              <h2 className="text-[16px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
+              <Link href="/research" className="text-[14px] font-medium text-[#2563eb] hover:underline">View All</Link>
             </div>
             <div className="grid grid-cols-2">
               {ARTICLES.map((a, i) => (
                 <Link key={a.id} href="/research"
                   className={`group flex gap-4 p-5 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
-                  <div className="h-[80px] w-[110px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
+                  <div className="h-[85px] w-[115px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-[13px] font-bold leading-snug text-[#1e3a8a] group-hover:underline line-clamp-2">{a.title}</h3>
-                    <p className="mt-1.5 text-[11px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
+                    <h3 className="text-[15px] font-bold leading-snug text-[#1e3a8a] group-hover:underline line-clamp-2">{a.title}</h3>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
                   </div>
                 </Link>
               ))}
@@ -176,15 +186,15 @@ export default function DashboardPage() {
           <div className={`${card} p-4`}>
             <div className="flex gap-6">
               <div className="flex-1">
-                <h3 className="mb-2 text-[12px] font-bold text-[#1e293b]">Support</h3>
+                <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Support</h3>
                 {['Release Notes', 'Submit a Support Ticket', 'View Support Tickets', 'Contact Us', 'Support Site', 'Platform Status'].map((l) => (
-                  <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
+                  <div key={l} className="cursor-pointer py-[3px] text-[14px] text-[#2563eb] hover:underline">{l}</div>
                 ))}
               </div>
               <div className="flex-1">
-                <h3 className="mb-2 text-[12px] font-bold text-[#1e293b]">Discover</h3>
+                <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Discover</h3>
                 {['Datasets', 'APIs', 'Models', 'Stock Screener', 'Total Plan', 'Capital Analytics'].map((l) => (
-                  <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
+                  <div key={l} className="cursor-pointer py-[3px] text-[14px] text-[#2563eb] hover:underline">{l}</div>
                 ))}
               </div>
             </div>
@@ -192,17 +202,17 @@ export default function DashboardPage() {
 
           {/* Recently Visited */}
           <div className={`${card} p-4`}>
-            <h3 className="mb-3 text-[13px] font-bold text-[#1e293b]">Recently Visited</h3>
-            <div className="space-y-3">
+            <h3 className="mb-3 text-[15px] font-bold text-[#1e293b]">Recently Visited</h3>
+            <div className="space-y-3.5">
               {VISITED.map((v, i) => (
                 <div key={i} className="flex items-center gap-2.5">
                   <v.Icon className="h-4 w-4 shrink-0 text-[#2563eb]" />
                   <div className="min-w-0 flex-1">
-                    <span className="text-[12px] font-bold text-[#1e293b]">{v.cat}</span>
-                    <span className="text-[12px] text-[#64748b]"> - </span>
-                    <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">{v.label}</span>
+                    <span className="text-[14px] font-bold text-[#1e293b]">{v.cat}</span>
+                    <span className="text-[14px] text-[#64748b]"> - </span>
+                    <span className="cursor-pointer text-[14px] text-[#2563eb] hover:underline">{v.label}</span>
                   </div>
-                  <span className="shrink-0 text-[10px] text-[#94a3b8]">{v.time}</span>
+                  <span className="shrink-0 text-[12px] text-[#94a3b8]">{v.time}</span>
                 </div>
               ))}
             </div>
@@ -210,19 +220,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ═══ BOTTOM: Feature Cards (full width) ═══ */}
+      {/* ═══ BOTTOM: Feature Cards + Economic Calendar ═══ */}
       <div className="mt-4 grid grid-cols-4 gap-4">
         {FEATURES.map((f, i) => (
-          <div key={i} className={`${card} overflow-hidden`}>
-            {/* Banner image placeholder */}
-            <div className={`h-[120px] bg-gradient-to-br ${f.gradient}`} />
-            {/* Content */}
-            <div className="p-4">
-              <h3 className="text-[13px] font-bold text-[#1e293b]">{f.title}</h3>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-[#64748b] line-clamp-3">{f.desc}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
+          <div key={i} className={`${card} overflow-hidden flex flex-col`}>
+            <div className={`h-[130px] bg-gradient-to-br ${f.gradient}`} />
+            <div className="flex flex-1 flex-col p-4">
+              <h3 className="text-[15px] font-bold text-[#1e293b]">{f.title}</h3>
+              <p className="mt-2 flex-1 text-[13px] leading-relaxed text-[#64748b]">{f.desc}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
                 {f.btns.map((b, j) => (
-                  <span key={j} className="cursor-pointer rounded-full border border-[#2563eb] px-3 py-1 text-[11px] font-medium text-[#2563eb] transition-colors hover:bg-[#2563eb] hover:text-white">
+                  <span key={j} className="cursor-pointer rounded-full border border-[#2563eb] px-3.5 py-1.5 text-[13px] font-medium text-[#2563eb] transition-colors hover:bg-[#2563eb] hover:text-white">
                     {b}
                   </span>
                 ))}
@@ -231,31 +239,26 @@ export default function DashboardPage() {
           </div>
         ))}
 
-        {/* Video Tutorials + Upcoming Events */}
-        <div className={`${card} p-4`}>
-          <h3 className="text-[14px] font-bold text-[#2563eb]">Video Tutorials</h3>
-          <p className="mt-1.5 text-[11px] leading-relaxed text-[#64748b]">
-            Learn more about the new Pyhron ONE experience.
-          </p>
-          <div className="mt-5 border-t border-[#e2e8f0] pt-4">
-            <h4 className="text-[13px] font-bold text-[#1e293b]">Upcoming Events</h4>
-            <div className="mt-3 space-y-3">
-              <div>
-                <p className="text-[11px] font-medium text-[#1e293b]">Apr 21, 2026 - Virtual Event</p>
-                <p className="text-[11px] text-[#2563eb] hover:underline cursor-pointer">IDX Bi-Annual Property Index Results</p>
+        {/* Economic Calendar */}
+        <div className={`${card} p-4 flex flex-col`}>
+          <h3 className="text-[16px] font-bold text-[#2563eb]">Economic Calendar</h3>
+          <div className="mt-3 flex-1 space-y-0">
+            {ECON_CALENDAR.map((e, i) => (
+              <div key={i} className="border-b border-[#f1f5f9] py-2.5 last:border-0">
+                <div className="mb-0.5 flex items-center gap-2">
+                  <span className="text-[12px] font-semibold text-[#1e293b]">{e.date}</span>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.tagClr}`}>{e.tag}</span>
+                </div>
+                <div className="text-[13px] text-[#475569]">{e.event}</div>
               </div>
-              <div>
-                <p className="text-[11px] font-medium text-[#1e293b]">May 8, 2026 - Webinar</p>
-                <p className="text-[11px] text-[#2563eb] hover:underline cursor-pointer">BI Rate Decision &amp; Market Impact Analysis</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* ═══ FOOTER ═══ */}
       <div className="mt-4 py-4">
-        <p className="text-center text-[10px] text-[#94a3b8]">
+        <p className="text-center text-[12px] text-[#94a3b8]">
           &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
           <span className="cursor-pointer underline">Terms of Use</span> &amp;{' '}
           <span className="cursor-pointer underline">Disclaimer</span>.{' '}
