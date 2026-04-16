@@ -42,7 +42,7 @@ function useIdx(symbol: string) {
 }
 
 /* ═══ SPARKLINE ═══ */
-function SvgSpark({ pts, up, w = 200, h = 60 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
+function SvgSpark({ pts, up, w = 200, h = 48 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
   if (pts.length < 2) return null;
   const mn = Math.min(...pts);
   const mx = Math.max(...pts);
@@ -82,32 +82,32 @@ function IdxCard({ symbol }: { symbol: string }) {
 
   return (
     <div className={`${card} overflow-hidden`}>
-      <div className="px-4 pt-3.5 pb-1">
-        <div className="mb-2 flex items-center justify-between">
+      <div className="px-3.5 pt-3 pb-0.5">
+        <div className="mb-1 flex items-center justify-between">
           <span className="text-[13px] font-bold uppercase tracking-wide text-[#1e293b]">{symbol}</span>
-          <span className="text-[12px] tabular-nums text-[#94a3b8]">{ts}</span>
+          <span className="text-[11px] tabular-nums text-[#94a3b8]">{ts}</span>
         </div>
         {isLoading ? (
-          <div className="space-y-2">
-            <div className="h-6 w-28 animate-pulse rounded bg-[#e2e8f0]" />
-            <div className="h-4 w-20 animate-pulse rounded bg-[#e2e8f0]" />
+          <div className="space-y-1.5">
+            <div className="h-5 w-24 animate-pulse rounded bg-[#e2e8f0]" />
+            <div className="h-3.5 w-16 animate-pulse rounded bg-[#e2e8f0]" />
           </div>
         ) : (
-          <div className="flex items-baseline gap-2.5">
-            <span className="text-[18px] font-semibold tabular-nums text-[#0f172a]">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[17px] font-semibold tabular-nums text-[#0f172a]">
               {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
-            <span className={`text-[13px] font-medium tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+            <span className={`text-[12px] font-medium tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
               {up ? '▲' : '▼'} {up ? '+' : ''}{chg.toFixed(2)}%
             </span>
           </div>
         )}
       </div>
-      <div className="mt-1">
+      <div className="mt-0.5">
         {pts.length >= 2 ? (
-          <SvgSpark pts={pts} up={up} h={60} />
+          <SvgSpark pts={pts} up={up} h={48} />
         ) : (
-          <div className="h-[60px] w-full animate-pulse bg-[#f1f5f9]" />
+          <div className="h-[48px] w-full animate-pulse bg-[#f1f5f9]" />
         )}
       </div>
     </div>
@@ -119,25 +119,22 @@ const IDX_SYMBOLS = ['IHSG', 'LQ45', 'IDX30', 'IDX80', 'JII'];
 
 const ARTICLES = [
   { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', bg: '#1e3a5f' },
-  { id: 'carbon', title: 'Carbon-Credit Integrity in the ACCU Market', desc: 'Integrity matters in compliance markets. MSCI Carbon Markets\u2019 analysis of ACCU ARR projects reveals pricing premiums, project-level risk variation and how methodology design shapes outcomes.', bg: '#2d4a3e' },
-  { id: 'gap', title: 'The Transparency Gap: GP Data Rooms', desc: 'Transparency has become one of the defining challenges in the relationship between GPs and LPs in private markets. This analysis identifies where the data falls short during due diligence.', bg: '#3d2e5c' },
-  { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness \u2014 and their portfolio implications.', bg: '#4a3328' },
+  { id: 'carbon', title: 'Carbon-Credit Integrity in the ACCU Market', desc: 'Integrity matters in compliance markets. Analysis of ACCU ARR projects reveals pricing premiums, project-level risk variation and how methodology design shapes outcomes.', bg: '#2d4a3e' },
+  { id: 'gap', title: 'The Transparency Gap: GP Data Rooms', desc: 'Transparency has become one of the defining challenges in the relationship between GPs and LPs in private markets. This analysis identifies where the data falls short.', bg: '#3d2e5c' },
+  { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness.', bg: '#4a3328' },
 ];
 
-const FEATURES = [
-  { title: 'Explore Market Insights', desc: 'Bring your index data to life with our latest interactive tool. Request a demo today.', gradient: 'from-[#1e3a5f] to-[#2563eb]', btns: ['Learn More', 'Watch Demo Video'] },
-  { title: 'Automate Insights to Drive Decisions', desc: 'Experience AI Portfolio Insights with modern data warehousing, intuitive dashboards, and GenAI to speed up risk analysis and empower better decisions.', gradient: 'from-[#0f766e] to-[#14b8a6]', btns: ['Read Research', 'Learn More'] },
-  { title: 'GeoSpatial Asset Intelligence', desc: 'Explore physical and nature risks with our multi-award-winning solution, including PRI Award 2025 for Recognition for Action \u2014 Climate Award.', gradient: 'from-[#1e3a5f] to-[#0891b2]', btns: ['Book a demo'] },
-];
-
-const ECON_CALENDAR = [
-  { date: 'Apr 25, 2026', event: 'LQ45 Index Rebalancing', tag: 'Index', tagClr: 'bg-blue-50 text-[#2563eb]' },
-  { date: 'May 8, 2026', event: 'BI Rate Decision', tag: 'Macro', tagClr: 'bg-amber-50 text-amber-600' },
-  { date: 'May 14, 2026', event: 'FOMC Minutes Release', tag: 'Global', tagClr: 'bg-purple-50 text-purple-600' },
-  { date: 'May 15, 2026', event: 'IDX80 Semi-Annual Review', tag: 'Index', tagClr: 'bg-blue-50 text-[#2563eb]' },
-  { date: 'Jun 2, 2026', event: 'Indonesia GDP Q1 2026', tag: 'Macro', tagClr: 'bg-amber-50 text-amber-600' },
-  { date: 'Jun 5, 2026', event: 'Q1 Earnings Season Ends', tag: 'Earnings', tagClr: 'bg-emerald-50 text-emerald-600' },
-  { date: 'Jun 12, 2026', event: 'BI Rate Decision', tag: 'Macro', tagClr: 'bg-amber-50 text-amber-600' },
+const ECON_DATA: { indicator: string; period: string; previous: string; actual: string; forecast: string; actualColor: 'green' | 'red' | 'neutral' }[] = [
+  { indicator: 'BI 7-Day Reverse Repo Rate', period: 'APR', previous: '5.75%', actual: '5.75%', forecast: '5.75%', actualColor: 'neutral' },
+  { indicator: 'Indonesia CPI YoY', period: 'MAR', previous: '2.68%', actual: '2.47%', forecast: '2.50%', actualColor: 'green' },
+  { indicator: 'Indonesia GDP Growth YoY', period: 'Q4', previous: '4.94%', actual: '5.02%', forecast: '4.98%', actualColor: 'green' },
+  { indicator: 'Foreign Bond Investment', period: 'MAR', previous: 'IDR 2.1T', actual: 'IDR 3.8T', forecast: '', actualColor: 'green' },
+  { indicator: 'Stock Investment by Foreigners', period: 'MAR', previous: 'IDR -1.2T', actual: 'IDR -2.4T', forecast: '', actualColor: 'red' },
+  { indicator: 'Trade Balance', period: 'MAR', previous: '$3.56B', actual: '$3.21B', forecast: '$3.40B', actualColor: 'red' },
+  { indicator: 'Indonesia Manufacturing PMI', period: 'APR', previous: '52.4', actual: '51.9', forecast: '52.2', actualColor: 'red' },
+  { indicator: 'Rupiah Exchange Rate (USD)', period: 'APR', previous: '15,480', actual: '15,420', forecast: '15,450', actualColor: 'green' },
+  { indicator: 'China Loan Prime Rate 1Y', period: 'APR', previous: '3.10%', actual: '3.10%', forecast: '3.10%', actualColor: 'neutral' },
+  { indicator: 'Fed Funds Rate', period: 'MAR', previous: '4.50%', actual: '4.50%', forecast: '4.50%', actualColor: 'neutral' },
 ];
 
 const VISITED = [
@@ -149,30 +146,30 @@ const VISITED = [
 /* ═══ PAGE ═══ */
 export default function DashboardPage() {
   return (
-    <div className="p-5 pb-0">
-      {/* MAIN GRID */}
-      <div className="grid grid-cols-[1fr_300px] gap-4">
-        {/* ═══ LEFT ═══ */}
-        <div className="space-y-4">
+    <div className="flex h-[calc(100dvh-48px)] flex-col p-4 pb-0">
+      {/* TOP: Index cards + Sidebar */}
+      <div className="grid grid-cols-[1fr_280px] gap-3">
+        {/* LEFT */}
+        <div className="space-y-3">
           {/* Index Cards */}
           <div className="grid grid-cols-5 gap-3">
             {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
           </div>
 
-          {/* Market Research and Insights */}
+          {/* Market Research */}
           <div className={card}>
-            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3.5">
-              <h2 className="text-[16px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
-              <Link href="/research" className="text-[14px] font-medium text-[#2563eb] hover:underline">View All</Link>
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-4 py-2.5">
+              <h2 className="text-[15px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
+              <Link href="/research" className="text-[13px] font-medium text-[#2563eb] hover:underline">View All</Link>
             </div>
             <div className="grid grid-cols-2">
               {ARTICLES.map((a, i) => (
                 <Link key={a.id} href="/research"
-                  className={`group flex gap-4 p-5 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
-                  <div className="h-[85px] w-[115px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
+                  className={`group flex gap-3 px-4 py-3 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
+                  <div className="h-[65px] w-[90px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-[15px] font-bold leading-snug text-[#1e3a8a] group-hover:underline line-clamp-2">{a.title}</h3>
-                    <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
+                    <h3 className="text-[13px] font-bold leading-snug text-[#1e3a8a] group-hover:underline line-clamp-2">{a.title}</h3>
+                    <p className="mt-1 text-[12px] leading-relaxed text-[#64748b] line-clamp-2">{a.desc}</p>
                   </div>
                 </Link>
               ))}
@@ -180,39 +177,37 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ═══ RIGHT SIDEBAR ═══ */}
-        <div className="space-y-4">
-          {/* Support + Discover */}
-          <div className={`${card} p-4`}>
-            <div className="flex gap-6">
+        {/* RIGHT SIDEBAR */}
+        <div className="space-y-3">
+          <div className={`${card} p-3.5`}>
+            <div className="flex gap-5">
               <div className="flex-1">
-                <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Support</h3>
+                <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Support</h3>
                 {['Release Notes', 'Submit a Support Ticket', 'View Support Tickets', 'Contact Us', 'Support Site', 'Platform Status'].map((l) => (
-                  <div key={l} className="cursor-pointer py-[3px] text-[14px] text-[#2563eb] hover:underline">{l}</div>
+                  <div key={l} className="cursor-pointer py-[2px] text-[13px] text-[#2563eb] hover:underline">{l}</div>
                 ))}
               </div>
               <div className="flex-1">
-                <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Discover</h3>
-                {['Datasets', 'APIs', 'Models', 'Stock Screener', 'Total Plan', 'Capital Analytics'].map((l) => (
-                  <div key={l} className="cursor-pointer py-[3px] text-[14px] text-[#2563eb] hover:underline">{l}</div>
+                <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Discover</h3>
+                {['Datasets', 'APIs', 'Models', 'Screener', 'Total Plan', 'Analytics'].map((l) => (
+                  <div key={l} className="cursor-pointer py-[2px] text-[13px] text-[#2563eb] hover:underline">{l}</div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Recently Visited */}
-          <div className={`${card} p-4`}>
-            <h3 className="mb-3 text-[15px] font-bold text-[#1e293b]">Recently Visited</h3>
-            <div className="space-y-3.5">
+          <div className={`${card} p-3.5`}>
+            <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Recently Visited</h3>
+            <div className="space-y-2.5">
               {VISITED.map((v, i) => (
-                <div key={i} className="flex items-center gap-2.5">
+                <div key={i} className="flex items-center gap-2">
                   <v.Icon className="h-4 w-4 shrink-0 text-[#2563eb]" />
                   <div className="min-w-0 flex-1">
-                    <span className="text-[14px] font-bold text-[#1e293b]">{v.cat}</span>
-                    <span className="text-[14px] text-[#64748b]"> - </span>
-                    <span className="cursor-pointer text-[14px] text-[#2563eb] hover:underline">{v.label}</span>
+                    <span className="text-[13px] font-bold text-[#1e293b]">{v.cat}</span>
+                    <span className="text-[13px] text-[#64748b]"> - </span>
+                    <span className="cursor-pointer text-[13px] text-[#2563eb] hover:underline">{v.label}</span>
                   </div>
-                  <span className="shrink-0 text-[12px] text-[#94a3b8]">{v.time}</span>
+                  <span className="shrink-0 text-[11px] text-[#94a3b8]">{v.time}</span>
                 </div>
               ))}
             </div>
@@ -220,45 +215,46 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ═══ BOTTOM: Feature Cards + Economic Calendar ═══ */}
-      <div className="mt-4 grid grid-cols-4 gap-4">
-        {FEATURES.map((f, i) => (
-          <div key={i} className={`${card} overflow-hidden flex flex-col`}>
-            <div className={`h-[130px] bg-gradient-to-br ${f.gradient}`} />
-            <div className="flex flex-1 flex-col p-4">
-              <h3 className="text-[15px] font-bold text-[#1e293b]">{f.title}</h3>
-              <p className="mt-2 flex-1 text-[13px] leading-relaxed text-[#64748b]">{f.desc}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {f.btns.map((b, j) => (
-                  <span key={j} className="cursor-pointer rounded-full border border-[#2563eb] px-3.5 py-1.5 text-[13px] font-medium text-[#2563eb] transition-colors hover:bg-[#2563eb] hover:text-white">
-                    {b}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Economic Calendar */}
-        <div className={`${card} p-4 flex flex-col`}>
-          <h3 className="text-[16px] font-bold text-[#2563eb]">Economic Calendar</h3>
-          <div className="mt-3 flex-1 space-y-0">
-            {ECON_CALENDAR.map((e, i) => (
-              <div key={i} className="border-b border-[#f1f5f9] py-2.5 last:border-0">
-                <div className="mb-0.5 flex items-center gap-2">
-                  <span className="text-[12px] font-semibold text-[#1e293b]">{e.date}</span>
-                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.tagClr}`}>{e.tag}</span>
-                </div>
-                <div className="text-[13px] text-[#475569]">{e.event}</div>
-              </div>
-            ))}
-          </div>
+      {/* BOTTOM: Economic Calendar (full width, table format) */}
+      <div className={`${card} mt-3 flex-1 overflow-hidden`}>
+        <div className="flex items-center justify-between border-b border-[#e2e8f0] px-4 py-2.5">
+          <h2 className="text-[15px] font-semibold text-[#1e293b]">Economic Calendar</h2>
+          <span className="text-[12px] text-[#64748b]">Indonesia &amp; Global Impact</span>
+        </div>
+        <div className="overflow-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc]">
+                <th className="px-4 py-2 text-left text-[12px] font-semibold text-[#64748b]">Indicator</th>
+                <th className="px-4 py-2 text-right text-[12px] font-semibold text-[#64748b]">Previous</th>
+                <th className="px-4 py-2 text-right text-[12px] font-semibold text-[#64748b]">Actual</th>
+                <th className="px-4 py-2 text-right text-[12px] font-semibold text-[#64748b]">Forecast</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ECON_DATA.map((row, i) => (
+                <tr key={i} className="border-b border-[#f1f5f9] last:border-0 hover:bg-[#f8fafc] transition-colors">
+                  <td className="px-4 py-2">
+                    <span className="text-[13px] text-[#1e293b]">{row.indicator}</span>
+                    <span className="ml-1.5 text-[10px] font-medium text-[#94a3b8]">{row.period}</span>
+                  </td>
+                  <td className="px-4 py-2 text-right text-[13px] tabular-nums text-[#475569]">{row.previous}</td>
+                  <td className={`px-4 py-2 text-right text-[13px] font-semibold tabular-nums ${
+                    row.actualColor === 'green' ? 'text-[#16a34a]' :
+                    row.actualColor === 'red' ? 'text-[#dc2626]' :
+                    'text-[#1e293b]'
+                  }`}>{row.actual}</td>
+                  <td className="px-4 py-2 text-right text-[13px] tabular-nums text-[#475569]">{row.forecast || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* ═══ FOOTER ═══ */}
-      <div className="mt-4 py-4">
-        <p className="text-center text-[12px] text-[#94a3b8]">
+      {/* FOOTER */}
+      <div className="shrink-0 py-2.5">
+        <p className="text-center text-[11px] text-[#94a3b8]">
           &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
           <span className="cursor-pointer underline">Terms of Use</span> &amp;{' '}
           <span className="cursor-pointer underline">Disclaimer</span>.{' '}

@@ -30,7 +30,7 @@ export function TerminalTopBar() {
   const searchHistory = ['LQ45 Indonesia', 'IDX Composite', 'BBCA'];
 
   return (
-    <header className="sticky top-0 z-40 flex h-[48px] shrink-0 items-center bg-[#1a2d42]">
+    <header className="sticky top-0 z-40 flex h-[48px] shrink-0 items-center bg-[#0a1628]">
       {/* Logo */}
       <div className="flex h-full shrink-0 items-center pl-5 pr-8">
         <Image src="/logos/logo.svg" alt="Pyhron ONE" width={120} height={30} className="h-[24px] w-auto brightness-0 invert" priority />
