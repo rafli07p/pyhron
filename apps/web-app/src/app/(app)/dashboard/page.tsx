@@ -39,7 +39,7 @@ function useIdx(symbol: string) {
 }
 
 function useEconCalendar() {
-  return useQuery<{ indicator: string; unit: string; current: string; previous: string; date: string }[]>({
+  return useQuery<{ indicator: string; unit: string; current: string; previous: string; forecast: string; date: string }[]>({
     queryKey: ['econ-calendar'],
     queryFn: async () => {
       const r = await fetch('/api/v1/markets/economic-calendar');
@@ -48,6 +48,14 @@ function useEconCalendar() {
     },
     staleTime: 3600_000,
   });
+}
+
+function fmtNum(v: string): string {
+  const n = parseFloat(v);
+  if (isNaN(n)) return v;
+  if (Math.abs(n) >= 10000) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (Math.abs(n) >= 100) return n.toFixed(1);
+  return n.toFixed(2);
 }
 
 function SvgSpark({ pts, up, w = 200, h = 55 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
@@ -77,11 +85,31 @@ function SvgSpark({ pts, up, w = 200, h = 55 }: { pts: number[]; up: boolean; w?
   );
 }
 
+const IDX_FALLBACK: Record<string, { base: number; change: number }> = {
+  IHSG: { base: 7234.56, change: 0.45 },
+  LQ45: { base: 985.23, change: -0.52 },
+  IDX30: { base: 482.18, change: 0.58 },
+  IDX80: { base: 132.45, change: 0.66 },
+  JII: { base: 548.92, change: -0.58 },
+};
+
+function fallbackPts(symbol: string): number[] {
+  const fb = IDX_FALLBACK[symbol] ?? { base: 500, change: 0 };
+  return Array.from({ length: 30 }, (_, i) => {
+    const t = i / 29;
+    const trend = fb.change > 0 ? t * fb.base * 0.01 : fb.change < 0 ? -t * fb.base * 0.01 : 0;
+    const noise = Math.sin(i * 0.5) * fb.base * 0.003 + Math.sin(i * 1.2) * fb.base * 0.002;
+    return Math.round((fb.base + trend + noise) * 100) / 100;
+  });
+}
+
 function IdxCard({ symbol }: { symbol: string }) {
   const { data, isLoading } = useIdx(symbol);
-  const cur = data?.current ?? 0;
-  const chg = data?.change ?? 0;
-  const pts = data?.points ?? [];
+  const fb = IDX_FALLBACK[symbol] ?? { base: 0, change: 0 };
+  const cur = data?.current && data.current > 0 ? data.current : fb.base;
+  const chg = data?.change ?? fb.change;
+  const apiPts = data?.points ?? [];
+  const pts = apiPts.length >= 2 ? apiPts : fallbackPts(symbol);
   const ts = data?.lastUpdate ?? '--:--';
   const up = chg >= 0;
 
@@ -92,7 +120,7 @@ function IdxCard({ symbol }: { symbol: string }) {
           <span className="text-[13px] font-bold uppercase text-[#1e293b]">{symbol}</span>
           <span className="text-[12px] tabular-nums text-[#94a3b8]">{ts}</span>
         </div>
-        {isLoading ? (
+        {isLoading && !data ? (
           <div className="space-y-1.5">
             <div className="h-5 w-24 animate-pulse rounded bg-[#e2e8f0]" />
             <div className="h-4 w-16 animate-pulse rounded bg-[#e2e8f0]" />
@@ -109,7 +137,7 @@ function IdxCard({ symbol }: { symbol: string }) {
         )}
       </div>
       <div className="mt-1">
-        {pts.length >= 2 ? <SvgSpark pts={pts} up={up} h={55} /> : <div className="h-[55px] w-full animate-pulse bg-[#f8fafc]" />}
+        <SvgSpark pts={pts} up={up} h={55} />
       </div>
     </div>
   );
@@ -127,12 +155,12 @@ const ARTICLES = [
 ];
 
 const ECON_FALLBACK = [
-  { indicator: 'BI 7-Day Repo Rate', unit: '%', current: '5.75', previous: '5.75', date: '2026-03' },
-  { indicator: 'Indonesia CPI', unit: '%', current: '2.47', previous: '2.68', date: '2026-03' },
-  { indicator: 'Indonesia GDP', unit: 'B IDR', current: '5.02', previous: '4.94', date: '2025-Q4' },
-  { indicator: 'USD/IDR Exchange Rate', unit: '', current: '15420', previous: '15480', date: '2026-04' },
-  { indicator: 'China Loan Prime Rate', unit: '%', current: '3.10', previous: '3.10', date: '2026-04' },
-  { indicator: 'Fed Funds Rate', unit: '%', current: '4.50', previous: '4.50', date: '2026-03' },
+  { indicator: 'BI Rate', unit: '%', current: '5.75', previous: '5.75', forecast: '5.75', date: '2026-03' },
+  { indicator: 'Indonesia CPI', unit: '%', current: '2.47', previous: '2.68', forecast: '2.50', date: '2026-03' },
+  { indicator: 'Indonesia GDP', unit: '%', current: '5.02', previous: '4.94', forecast: '5.05', date: '2025-Q4' },
+  { indicator: 'USD/IDR', unit: '', current: '15420', previous: '15480', forecast: '15450', date: '2026-04' },
+  { indicator: 'China LPR', unit: '%', current: '3.10', previous: '3.10', forecast: '3.10', date: '2026-04' },
+  { indicator: 'Fed Funds Rate', unit: '%', current: '4.50', previous: '4.50', forecast: '4.50', date: '2026-03' },
 ];
 
 const ACTIONS = [
@@ -222,92 +250,110 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 grid flex-1 grid-cols-3 gap-4 min-h-0">
-        <div className={`${card} flex flex-col p-5`}>
-          <h2 className="mb-3 text-[15px] font-bold text-[#1e293b]">Market Summary</h2>
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <div className="text-[11px] text-[#94a3b8]">Market P/E</div>
-                <div className="text-[16px] font-semibold tabular-nums text-[#0f172a]">15.76</div>
-              </div>
-              <div>
-                <div className="text-[11px] text-[#94a3b8]">Market P/BV</div>
-                <div className="text-[16px] font-semibold tabular-nums text-[#0f172a]">2.49</div>
-              </div>
-              <div>
-                <div className="text-[11px] text-[#94a3b8]">Dividend Yield</div>
-                <div className="text-[16px] font-semibold tabular-nums text-[#0f172a]">3.2%</div>
-              </div>
+        <div className={`${card} flex flex-col p-4`}>
+          <h2 className="mb-2.5 text-[15px] font-bold text-[#1e293b]">Market Summary</h2>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
+              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/E</div>
+              <div className="text-[15px] font-semibold tabular-nums text-[#0f172a]">15.76</div>
             </div>
-            <div className="border-t border-[#f1f5f9] pt-3">
-              <div className="text-[12px] font-semibold text-[#1e293b]">Net Foreign This Week</div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-[18px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
-                <span className="text-[12px] text-[#94a3b8]">Net Buy</span>
-              </div>
+            <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
+              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/BV</div>
+              <div className="text-[15px] font-semibold tabular-nums text-[#0f172a]">2.49</div>
             </div>
-            <div className="border-t border-[#f1f5f9] pt-3">
-              <div className="text-[12px] font-semibold text-[#1e293b]">Trading Value (Daily Avg)</div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-[16px] font-semibold tabular-nums text-[#0f172a]">IDR 11.9T</span>
-              </div>
-              <div className="mt-1.5 flex gap-4 text-[12px]">
-                <span className="text-[#475569]">Domestic: <span className="font-semibold">72%</span></span>
-                <span className="text-[#475569]">Foreign: <span className="font-semibold">28%</span></span>
-              </div>
+            <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
+              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">Div Yield</div>
+              <div className="text-[15px] font-semibold tabular-nums text-[#0f172a]">3.2%</div>
+            </div>
+          </div>
+          <div className="mt-2.5 border-t border-[#f1f5f9] pt-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign (W)</span>
+              <span className="text-[14px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
+            </div>
+          </div>
+          <div className="mt-2 border-t border-[#f1f5f9] pt-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[12px] font-semibold text-[#1e293b]">Trading Value</span>
+              <span className="text-[14px] font-semibold tabular-nums text-[#0f172a]">IDR 11.9T</span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f1f5f9]">
+              <div className="h-full bg-[#2563eb]" style={{ width: '72%' }} />
+            </div>
+            <div className="mt-1 flex justify-between text-[11px] text-[#64748b]">
+              <span>Domestic <span className="font-semibold text-[#1e293b]">72%</span></span>
+              <span>Foreign <span className="font-semibold text-[#1e293b]">28%</span></span>
+            </div>
+          </div>
+          <div className="mt-2.5 flex-1 border-t border-[#f1f5f9] pt-2">
+            <div className="mb-1.5 text-[12px] font-semibold text-[#1e293b]">Top Sectors (Today)</div>
+            <div className="space-y-1">
+              {[
+                { name: 'Banks', pct: 1.24, up: true },
+                { name: 'Energy', pct: 0.87, up: true },
+                { name: 'Consumer', pct: -0.45, up: false },
+                { name: 'Telco', pct: -0.62, up: false },
+              ].map((s) => (
+                <div key={s.name} className="flex items-center justify-between text-[12px]">
+                  <span className="text-[#475569]">{s.name}</span>
+                  <span className={`font-semibold tabular-nums ${s.up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+                    {s.up ? '+' : ''}{s.pct.toFixed(2)}%
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden p-5`}>
-          <div className="mb-3 flex items-center justify-between">
+        <div className={`${card} flex flex-col p-4`}>
+          <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[15px] font-bold text-[#1e293b]">Economic Calendar</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#e2e8f0]">
-                  <th className="pb-2 text-left text-[11px] font-semibold uppercase text-[#94a3b8]">Indicator</th>
-                  <th className="pb-2 text-right text-[11px] font-semibold uppercase text-[#94a3b8]">Previous</th>
-                  <th className="pb-2 text-right text-[11px] font-semibold uppercase text-[#94a3b8]">Actual</th>
-                </tr>
-              </thead>
-              <tbody>
-                {econ.map((row, i) => {
-                  const prev = parseFloat(row.previous);
-                  const cur = parseFloat(row.current);
-                  const better = !isNaN(prev) && !isNaN(cur) && cur !== prev;
-                  const color = better ? (cur > prev ? 'text-[#16a34a]' : 'text-[#dc2626]') : 'text-[#0f172a]';
-                  return (
-                    <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
-                      <td className="py-2 pr-2">
-                        <div className="text-[13px] text-[#1e293b]">{row.indicator}</div>
-                        <div className="text-[11px] text-[#94a3b8]">{row.date}</div>
-                      </td>
-                      <td className="py-2 text-right text-[13px] tabular-nums text-[#475569]">{row.previous}{row.unit ? row.unit : ''}</td>
-                      <td className={`py-2 text-right text-[13px] font-semibold tabular-nums ${color}`}>{row.current}{row.unit ? row.unit : ''}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <table className="w-full table-fixed">
+            <thead>
+              <tr className="border-b border-[#e2e8f0]">
+                <th className="w-[40%] pb-1.5 text-left text-[10px] font-semibold uppercase text-[#94a3b8]">Indicator</th>
+                <th className="pb-1.5 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Prev</th>
+                <th className="pb-1.5 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Fcst</th>
+                <th className="pb-1.5 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Actual</th>
+              </tr>
+            </thead>
+            <tbody>
+              {econ.map((row, i) => {
+                const prev = parseFloat(row.previous);
+                const cur = parseFloat(row.current);
+                const diff = !isNaN(prev) && !isNaN(cur) && cur !== prev;
+                const color = diff ? (cur > prev ? 'text-[#16a34a]' : 'text-[#dc2626]') : 'text-[#0f172a]';
+                return (
+                  <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
+                    <td className="py-1.5 pr-1">
+                      <div className="truncate text-[12px] font-medium text-[#1e293b]">{row.indicator}</div>
+                      <div className="text-[10px] text-[#94a3b8]">{row.date}</div>
+                    </td>
+                    <td className="py-1.5 text-right text-[12px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
+                    <td className="py-1.5 text-right text-[12px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
+                    <td className={`py-1.5 text-right text-[12px] font-semibold tabular-nums ${color}`}>{fmtNum(row.current)}{row.unit}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden p-5`}>
-          <div className="mb-3 flex items-center justify-between">
+        <div className={`${card} flex flex-col p-4`}>
+          <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[15px] font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1">
             {ACTIONS.map((a, i) => (
-              <div key={i} className="flex items-start gap-3 border-b border-[#f1f5f9] py-2.5 last:border-0">
+              <div key={i} className="flex items-start gap-3 border-b border-[#f1f5f9] py-1.5 last:border-0">
                 <span className="w-[46px] shrink-0 text-[12px] tabular-nums text-[#94a3b8]">{a.date}</span>
                 <span className="w-[42px] shrink-0 text-[12px] font-bold text-[#2563eb]">{a.sym}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium text-[#1e293b]">{a.act}</div>
-                  <div className="text-[12px] text-[#94a3b8]">{a.detail}</div>
+                  <div className="text-[12px] font-medium text-[#1e293b]">{a.act}</div>
+                  <div className="text-[11px] text-[#94a3b8]">{a.detail}</div>
                 </div>
               </div>
             ))}
