@@ -42,25 +42,40 @@ export function TerminalTopBar() {
           {/* Filter dropdown */}
           <div ref={filterRef} className="relative">
             <button
+
                 onClick={() => { setSearchOpen(false); setFilterOpen(!filterOpen); }}
               className="flex h-full items-center gap-1 border-r border-[#e5e7eb] bg-[#f8fafc] px-3 text-[13px] font-medium text-[#1e3a5f]"
             >
               {filter}
-              <svg width="10" height="10" viewBox="0 0 20 20" fill="#64748b"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" /></svg>
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 20 20"
+                fill="#64748b"
+                className={`transition-transform duration-200 ${filterOpen ? 'rotate-180' : 'rotate-0'}`}
+              >
+                <path d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
+              </svg>
             </button>
-            {filterOpen && (
-              <div className="absolute left-0 top-full z-50 mt-[2px] w-[180px] rounded-b border border-[#e5e7eb] bg-white py-1 shadow-lg">
+            <div
+              className={`absolute left-0 top-full z-50 mt-[2px] w-[180px] origin-top overflow-hidden rounded-b border border-[#e5e7eb] bg-white shadow-lg transition-all duration-200 ${
+                filterOpen
+                  ? 'scale-y-100 opacity-100'
+                  : 'pointer-events-none scale-y-95 opacity-0'
+              }`}
+            >
+              <div className="py-1">
                 {FILTER_OPTIONS.map((opt) => (
                   <button
                     key={opt}
                     onClick={() => { setFilter(opt); setFilterOpen(false); }}
-                    className={`block w-full px-4 py-2 text-left text-[13px] transition-colors hover:bg-[#f1f5f9] ${filter === opt ? 'font-semibold text-[#1e3a5f]' : 'text-[#374151]'}`}
+                    className={`block w-full cursor-pointer px-4 py-2 text-left text-[13px] transition-colors hover:bg-[#f1f5f9] ${filter === opt ? 'font-semibold text-[#1e3a5f]' : 'text-[#374151]'}`}
                   >
                     {opt}
                   </button>
                 ))}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Search input */}
