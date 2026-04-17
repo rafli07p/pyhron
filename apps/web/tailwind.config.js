@@ -38,7 +38,7 @@ export default {
         ],
         sans: [
           'Inter',
-          '-apple-system',
+          '-apple-system',c
           'BlinkMacSystemFont',
           'Segoe UI',
           'sans-serif',

@@ -1,4 +1,4 @@
-import { Routes, Route, NavLink } from 'react-router-dom';
+giimport { Routes, Route, NavLink } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import LoadingSpinner from '@/shared_ui_components/LoadingSpinner';
 
