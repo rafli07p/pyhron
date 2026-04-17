@@ -4,12 +4,12 @@ const FRED_KEY = 'f0c24db3f807b6c8a2ac1a8cad7ebad3';
 const BASE = 'https://api.stlouisfed.org/fred/series/observations';
 
 const SERIES = [
-  { id: 'IDNCPIALLMINMEI', name: 'Indonesia CPI', unit: '%' },
-  { id: 'IDNGDPNQDSMEI', name: 'Indonesia GDP', unit: 'B IDR' },
-  { id: 'INTDSRIDM193N', name: 'BI Interest Rate', unit: '%' },
-  { id: 'DEXINUS', name: 'USD/IDR Exchange Rate', unit: '' },
-  { id: 'CHNLPRLR', name: 'China Loan Prime Rate', unit: '%' },
-  { id: 'FEDFUNDS', name: 'Fed Funds Rate', unit: '%' },
+  { id: 'IDNCPIALLMINMEI', name: 'Indonesia CPI', unit: '%', forecast: '2.50' },
+  { id: 'IDNGDPNQDSMEI', name: 'Indonesia GDP', unit: '%', forecast: '5.05' },
+  { id: 'INTDSRIDM193N', name: 'BI Rate', unit: '%', forecast: '5.75' },
+  { id: 'DEXINUS', name: 'USD/IDR', unit: '', forecast: '15450' },
+  { id: 'CHNLPRLR', name: 'China LPR', unit: '%', forecast: '3.10' },
+  { id: 'FEDFUNDS', name: 'Fed Funds Rate', unit: '%', forecast: '4.50' },
 ];
 
 async function fetchSeries(seriesId: string): Promise<{ date: string; value: string }[]> {
@@ -37,6 +37,7 @@ export async function GET() {
         unit: s.unit,
         current: current?.value ?? '-',
         previous: previous?.value ?? '-',
+        forecast: s.forecast,
         date: current?.date ?? '',
       };
     }),
