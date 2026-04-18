@@ -128,19 +128,24 @@ function seeded(seed: number) {
 
 function fallbackPts(symbol: string): number[] {
   const fb = IDX_FALLBACK[symbol] ?? { base: 500, change: 0 };
-  const n = 150;
+  const n = 120;
   const open = fb.base / (1 + fb.change / 100);
   const target = fb.base;
-  const rand = seeded(symbol.charCodeAt(0) * 97 + (symbol.charCodeAt(1) ?? 0) * 13 + symbol.length);
-  const vol = fb.base * 0.0006;
+  const seed = symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const rand = seeded(seed * 101);
+  const amp = fb.base * 0.015;
   const out: number[] = [];
   let val = open;
+  let momentum = 0;
   for (let i = 0; i < n; i++) {
-    const drift = (target - open) / n;
-    const noise = (rand() - 0.5) * vol;
-    const wave = Math.sin(i * 0.08) * fb.base * 0.0015 + Math.sin(i * 0.23) * fb.base * 0.0008;
-    val += drift + noise;
-    out.push(Math.round((val + wave) * 100) / 100);
+    const t = i / (n - 1);
+    const phase1 = Math.sin(t * Math.PI * 1.3 + seed * 0.1) * amp;
+    const phase2 = Math.sin(t * Math.PI * 2.7 + seed * 0.3) * amp * 0.45;
+    const phase3 = Math.sin(t * Math.PI * 5.1) * amp * 0.2;
+    const drift = (target - open) * t;
+    momentum = momentum * 0.85 + (rand() - 0.5) * amp * 0.12;
+    val = open + drift + phase1 + phase2 + phase3 + momentum;
+    out.push(Math.round(val * 100) / 100);
   }
   out[n - 1] = target;
   return out;
@@ -229,110 +234,103 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-[calc(100dvh-48px)] flex-col">
-      <div className="flex flex-1 min-h-0 flex-col px-5 pt-5">
-      <div className="grid grid-cols-[1fr_300px] gap-4">
-        <div className="space-y-4">
+      <div className="flex flex-1 min-h-0 flex-col px-5 pt-4">
+      <div className="grid grid-cols-[1fr_300px] grid-rows-[auto_auto] gap-x-4 gap-y-4">
+        <div className="grid grid-cols-5 gap-3">
+          {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
+        </div>
 
-          <div className="grid grid-cols-5 gap-3">
-            {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
-          </div>
-
-          <div className={card}>
-            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
-              <h2 className="text-[15px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
-              <Link href="/research" className="text-[13px] font-medium text-[#2563eb] hover:underline">View All</Link>
+        <div className={`${card} px-4 py-3`}>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Support</h3>
+              {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
+                <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
+              ))}
             </div>
-            <div className="grid grid-cols-2">
-              {ARTICLES.map((a, i) => (
-                <Link key={a.id} href="/research"
-                  className={`group flex gap-4 p-5 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
-                  <div className="h-[90px] w-[120px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[15px] font-bold leading-snug text-[#1e3a8a] group-hover:underline">{a.title}</h3>
-                    <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
-                  </div>
-                </Link>
+            <div className="flex-1">
+              <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Discover</h3>
+              {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
+                <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className={`${card} p-4`}>
-            <div className="flex gap-6">
-              <div className="flex-1">
-                <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Support</h3>
-                {['Release Notes', 'Submit a Support Ticket', 'View Support Tickets', 'Contact Us', 'Support Site', 'Platform Status'].map((l) => (
-                  <div key={l} className="cursor-pointer py-[3px] text-[13px] text-[#2563eb] hover:underline">{l}</div>
-                ))}
-              </div>
-              <div className="flex-1">
-                <h3 className="mb-2 text-[14px] font-bold text-[#1e293b]">Discover</h3>
-                {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Capital Analytics'].map((l) => (
-                  <div key={l} className="cursor-pointer py-[3px] text-[13px] text-[#2563eb] hover:underline">{l}</div>
-                ))}
-              </div>
-            </div>
+        <div className={card}>
+          <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
+            <h2 className="text-[15px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
+            <Link href="/research" className="text-[13px] font-medium text-[#2563eb] hover:underline">View All</Link>
           </div>
-
-          <div className={`${card} p-4`}>
-            <h3 className="mb-3 text-[15px] font-bold text-[#1e293b]">Recently Visited</h3>
-            <div className="space-y-3">
-              {VISITED.map((v, i) => (
-                <div key={i} className="flex items-center gap-2.5">
-                  <v.Icon className="h-4 w-4 shrink-0 text-[#2563eb]" />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[13px] font-bold text-[#1e293b]">{v.cat}</span>
-                    <span className="text-[13px] text-[#64748b]"> - </span>
-                    <span className="cursor-pointer text-[13px] text-[#2563eb] hover:underline">{v.label}</span>
-                  </div>
-                  <span className="shrink-0 text-[12px] text-[#94a3b8]">{v.time}</span>
+          <div className="grid grid-cols-2">
+            {ARTICLES.map((a, i) => (
+              <Link key={a.id} href="/research"
+                className={`group flex gap-4 p-5 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
+                <div className="h-[90px] w-[120px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[15px] font-bold leading-snug text-[#1e3a8a] group-hover:underline">{a.title}</h3>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
                 </div>
-              ))}
-            </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className={`${card} px-4 py-3`}>
+          <h3 className="mb-2.5 text-[14px] font-bold text-[#1e293b]">Recently Visited</h3>
+          <div className="space-y-2.5">
+            {VISITED.map((v, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <v.Icon className="h-4 w-4 shrink-0 text-[#2563eb]" />
+                <div className="min-w-0 flex-1">
+                  <span className="text-[12px] font-bold text-[#1e293b]">{v.cat}</span>
+                  <span className="text-[12px] text-[#64748b]"> {'\u2013'} </span>
+                  <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">{v.label}</span>
+                </div>
+                <span className="shrink-0 text-[11px] text-[#94a3b8]">{v.time}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="mt-4 grid flex-1 grid-cols-3 gap-4 min-h-0">
-        <div className={`${card} flex flex-col overflow-hidden p-3`}>
-          <h2 className="mb-2.5 text-[15px] font-bold text-[#1e293b]">Market Summary</h2>
+      <div className="mt-4 grid flex-1 min-h-0 grid-cols-3 gap-4 pb-4">
+        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+          <h2 className="mb-3 text-[14px] font-bold text-[#1e293b]">Market Summary</h2>
           <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
+            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
               <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/E</div>
-              <div className="text-[15px] font-semibold tabular-nums text-[#0f172a]">15.76</div>
+              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">15.76</div>
             </div>
-            <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
+            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
               <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/BV</div>
-              <div className="text-[15px] font-semibold tabular-nums text-[#0f172a]">2.49</div>
+              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">2.49</div>
             </div>
-            <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
+            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
               <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">Div Yield</div>
-              <div className="text-[15px] font-semibold tabular-nums text-[#0f172a]">3.2%</div>
+              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">3.2%</div>
             </div>
           </div>
-          <div className="mt-2.5 border-t border-[#f1f5f9] pt-2">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign This Week</span>
-              <span className="text-[14px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
-            </div>
+          <div className="mt-3 flex items-baseline justify-between border-t border-[#f1f5f9] pt-2.5">
+            <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign (Week)</span>
+            <span className="text-[13px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
           </div>
-          <div className="mt-2 border-t border-[#f1f5f9] pt-2">
+          <div className="mt-2.5 border-t border-[#f1f5f9] pt-2.5">
             <div className="flex items-baseline justify-between">
               <span className="text-[12px] font-semibold text-[#1e293b]">Trading Value</span>
-              <span className="text-[14px] font-semibold tabular-nums text-[#0f172a]">IDR 11.9T</span>
+              <span className="text-[13px] font-semibold tabular-nums text-[#0f172a]">IDR 11.9T</span>
             </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#f1f5f9]">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#f1f5f9]">
               <div className="h-full bg-[#2563eb]" style={{ width: '72%' }} />
             </div>
-            <div className="mt-1 flex justify-between text-[11px] text-[#64748b]">
+            <div className="mt-1.5 flex justify-between text-[11px] text-[#64748b]">
               <span>Domestic <span className="font-semibold text-[#1e293b]">72%</span></span>
               <span>Foreign <span className="font-semibold text-[#1e293b]">28%</span></span>
             </div>
           </div>
-          <div className="mt-2.5 flex-1 border-t border-[#f1f5f9] pt-2">
-            <div className="mb-1.5 text-[12px] font-semibold text-[#1e293b]">Top Sectors (Today)</div>
-            <div className="space-y-1">
+          <div className="mt-3 border-t border-[#f1f5f9] pt-2.5">
+            <div className="mb-2 text-[12px] font-semibold text-[#1e293b]">Top Sectors (Today)</div>
+            <div className="space-y-1.5">
               {[
                 { name: 'Banks', pct: 1.24, up: true },
                 { name: 'Energy', pct: 0.87, up: true },
@@ -350,19 +348,19 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden p-3`}>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-[15px] font-bold text-[#1e293b]">Economic Calendar</h2>
+        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-[14px] font-bold text-[#1e293b]">Economic Calendar</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
-          <table className="w-full table-fixed">
+          <table className="w-full">
             <thead>
               <tr className="border-b border-[#e2e8f0]">
-                <th className="w-[52px] pb-1 text-left text-[10px] font-semibold uppercase text-[#94a3b8]">Date</th>
-                <th className="pb-1 text-left text-[10px] font-semibold uppercase text-[#94a3b8]">Event</th>
-                <th className="w-[42px] pb-1 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Prev</th>
-                <th className="w-[42px] pb-1 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Fcst</th>
-                <th className="w-[48px] pb-1 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Act</th>
+                <th className="pb-1.5 pr-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Date</th>
+                <th className="pb-1.5 pr-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Event</th>
+                <th className="pb-1.5 pl-3 pr-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Prev</th>
+                <th className="pb-1.5 pl-3 pr-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Fcst</th>
+                <th className="pb-1.5 pl-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Act</th>
               </tr>
             </thead>
             <tbody>
@@ -376,15 +374,15 @@ export default function DashboardPage() {
                 const color = beat ? 'text-[#16a34a]' : miss ? 'text-[#dc2626]' : 'text-[#0f172a]';
                 return (
                   <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
-                    <td className="py-1 pr-1 align-middle">
-                      <span className={`inline-block text-[11px] font-semibold tabular-nums ${row.released ? 'text-[#94a3b8]' : 'text-[#2563eb]'}`}>{row.date}</span>
+                    <td className="whitespace-nowrap py-2 pr-3 align-middle">
+                      <span className={`text-[11px] font-semibold tabular-nums ${row.released ? 'text-[#94a3b8]' : 'text-[#2563eb]'}`}>{row.date}</span>
                     </td>
-                    <td className="py-1 pr-1">
+                    <td className="py-2 pr-3 align-middle">
                       <div className="truncate text-[12px] font-medium text-[#1e293b]">{row.indicator}</div>
                     </td>
-                    <td className="py-1 text-right text-[11px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
-                    <td className="py-1 text-right text-[11px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
-                    <td className={`py-1 text-right text-[11px] font-semibold tabular-nums ${color}`}>{row.released ? `${fmtNum(row.current)}${row.unit}` : '\u2014'}</td>
+                    <td className="whitespace-nowrap py-2 pl-3 pr-3 text-right align-middle text-[11px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
+                    <td className="whitespace-nowrap py-2 pl-3 pr-3 text-right align-middle text-[11px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
+                    <td className={`whitespace-nowrap py-2 pl-3 text-right align-middle text-[11px] font-semibold tabular-nums ${color}`}>{row.released ? `${fmtNum(row.current)}${row.unit}` : '\u2014'}</td>
                   </tr>
                 );
               })}
@@ -392,19 +390,19 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden p-3`}>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-[15px] font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
+        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-[14px] font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 space-y-0.5">
             {ACTIONS.map((a, i) => (
-              <div key={i} className="flex items-start gap-2.5 border-b border-[#f1f5f9] py-1 last:border-0">
-                <span className="w-[46px] shrink-0 pt-0.5 text-[11px] tabular-nums text-[#94a3b8]">{a.date}</span>
-                <span className="w-[38px] shrink-0 pt-0.5 text-[11px] font-bold text-[#2563eb]">{a.sym}</span>
+              <div key={i} className="flex items-start gap-3 border-b border-[#f1f5f9] py-2 last:border-0">
+                <span className="w-[48px] shrink-0 pt-0.5 text-[11px] tabular-nums text-[#94a3b8]">{a.date}</span>
+                <span className="w-[42px] shrink-0 pt-0.5 text-[11px] font-bold text-[#2563eb]">{a.sym}</span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[12px] font-medium text-[#1e293b]">{a.act}</div>
-                  <div className="truncate text-[10px] text-[#94a3b8]">{a.detail}</div>
+                  <div className="truncate text-[11px] text-[#94a3b8]">{a.detail}</div>
                 </div>
               </div>
             ))}
@@ -414,7 +412,7 @@ export default function DashboardPage() {
 
       </div>
 
-      <footer className="mt-4 shrink-0 border-t border-[#e2e8f0] bg-[#f8fafc] px-5 py-3">
+      <footer className="shrink-0 border-t border-[#e2e8f0] bg-[#f8fafc] px-5 py-3">
         <p className="text-center text-[12px] text-[#64748b]">
           &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
           <a href="/terms" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Terms of Use</a> &amp;{' '}
