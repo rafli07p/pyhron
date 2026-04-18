@@ -38,8 +38,10 @@ function useIdx(symbol: string) {
   });
 }
 
+type EconEvent = { date: string; indicator: string; unit: string; previous: string; forecast: string; current: string; released: boolean };
+
 function useEconCalendar() {
-  return useQuery<{ indicator: string; unit: string; current: string; previous: string; forecast: string; date: string }[]>({
+  return useQuery<EconEvent[]>({
     queryKey: ['econ-calendar'],
     queryFn: async () => {
       const r = await fetch('/api/v1/markets/economic-calendar');
@@ -126,21 +128,31 @@ function seeded(seed: number) {
 
 function fallbackPts(symbol: string): number[] {
   const fb = IDX_FALLBACK[symbol] ?? { base: 500, change: 0 };
-  const n = 78;
+  const n = 150;
   const open = fb.base / (1 + fb.change / 100);
   const target = fb.base;
-  const rand = seeded(symbol.charCodeAt(0) * 31 + symbol.charCodeAt(1));
-  const vol = fb.base * 0.0015;
-  const out: number[] = [open];
-  for (let i = 1; i < n; i++) {
-    const t = i / (n - 1);
-    const drift = (target - open) * t;
-    const noise = (rand() - 0.5) * vol * 2;
-    const wave = Math.sin(i * 0.35) * fb.base * 0.0012 + Math.sin(i * 0.11) * fb.base * 0.0018;
-    out.push(Math.round((open + drift + noise + wave) * 100) / 100);
+  const rand = seeded(symbol.charCodeAt(0) * 97 + (symbol.charCodeAt(1) ?? 0) * 13 + symbol.length);
+  const vol = fb.base * 0.0006;
+  const out: number[] = [];
+  let val = open;
+  for (let i = 0; i < n; i++) {
+    const drift = (target - open) / n;
+    const noise = (rand() - 0.5) * vol;
+    const wave = Math.sin(i * 0.08) * fb.base * 0.0015 + Math.sin(i * 0.23) * fb.base * 0.0008;
+    val += drift + noise;
+    out.push(Math.round((val + wave) * 100) / 100);
   }
   out[n - 1] = target;
   return out;
+}
+
+function nowJakarta(): string {
+  return new Date().toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Jakarta',
+  });
 }
 
 function IdxCard({ symbol }: { symbol: string }) {
@@ -150,34 +162,27 @@ function IdxCard({ symbol }: { symbol: string }) {
   const chg = data?.change ?? fb.change;
   const apiPts = data?.points ?? [];
   const pts = apiPts.length >= 2 ? apiPts : fallbackPts(symbol);
-  const ts = data?.lastUpdate ?? '--:--';
+  const ts = data?.lastUpdate || (isLoading ? '--:--' : nowJakarta());
   const up = chg >= 0;
 
   return (
     <div className={`${card} overflow-hidden`}>
-      <div className="px-4 pt-3 pb-1">
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[13px] font-bold uppercase text-[#1e293b]">{symbol}</span>
-          <span className="text-[12px] tabular-nums text-[#94a3b8]">{ts}</span>
+      <div className="px-3 pt-2.5 pb-1">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-[12px] font-bold uppercase text-[#1e293b]">{symbol}</span>
+          <span className="text-[11px] tabular-nums text-[#94a3b8]">{ts}</span>
         </div>
-        {isLoading && !data ? (
-          <div className="space-y-1.5">
-            <div className="h-5 w-24 animate-pulse rounded bg-[#e2e8f0]" />
-            <div className="h-4 w-16 animate-pulse rounded bg-[#e2e8f0]" />
-          </div>
-        ) : (
-          <div className="flex items-baseline gap-3">
-            <span className="text-[18px] font-semibold tabular-nums text-[#0f172a]">
-              {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            <span className={`text-[13px] font-medium tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-              {up ? '▲' : '▼'} {up ? '+' : ''}{chg.toFixed(2)}%
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <span className={`text-[17px] font-bold tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+            {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+          <span className={`rounded bg-[#f1f5f9] px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
+            {up ? '\u25B2' : '\u25BC'} {up ? '+' : ''}{chg.toFixed(2)}%
+          </span>
+        </div>
       </div>
-      <div className="mt-2">
-        <SvgSpark pts={pts} up={up} h={50} />
+      <div className="px-2 pb-2">
+        <SvgSpark pts={pts} up={up} h={40} />
       </div>
     </div>
   );
@@ -194,13 +199,12 @@ const ARTICLES = [
   { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness \u2014 and their portfolio implications.', bg: '#4a3328' },
 ];
 
-const ECON_FALLBACK = [
-  { indicator: 'BI Rate', unit: '%', current: '5.75', previous: '5.75', forecast: '5.75', date: 'Mar 2026' },
-  { indicator: 'Indonesia CPI', unit: '', current: '133.5', previous: '131.9', forecast: '132.8', date: 'Mar 2026' },
-  { indicator: 'Fed Funds Rate', unit: '%', current: '4.50', previous: '4.50', forecast: '4.50', date: 'Mar 2026' },
-  { indicator: 'China LPR', unit: '%', current: '3.10', previous: '3.10', forecast: '3.10', date: 'Apr 2026' },
-  { indicator: 'Indonesia GDP', unit: '%', current: '5.11', previous: '5.05', forecast: '5.08', date: 'Q4 2025' },
-  { indicator: 'USD/IDR', unit: '', current: '15,380', previous: '15,420', forecast: '15,450', date: 'Apr 2026' },
+const ECON_FALLBACK: EconEvent[] = [
+  { date: 'Apr 16', indicator: 'BI Rate Decision', unit: '%', previous: '5.75', forecast: '5.75', current: '5.75', released: true },
+  { date: 'Apr 20', indicator: 'Indonesia Trade Balance', unit: 'B USD', previous: '3.45', forecast: '3.20', current: '\u2014', released: false },
+  { date: 'Apr 22', indicator: 'China LPR (1Y)', unit: '%', previous: '3.10', forecast: '3.10', current: '\u2014', released: false },
+  { date: 'Apr 23', indicator: 'Consumer Confidence', unit: '', previous: '125.6', forecast: '126.5', current: '\u2014', released: false },
+  { date: 'Apr 30', indicator: 'Fed Funds Rate', unit: '%', previous: '4.50', forecast: '4.50', current: '\u2014', released: false },
 ];
 
 const ACTIONS = [
@@ -291,7 +295,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 grid flex-1 grid-cols-3 gap-4 min-h-0">
-        <div className={`${card} flex flex-col p-4`}>
+        <div className={`${card} flex flex-col overflow-hidden p-3`}>
           <h2 className="mb-2.5 text-[15px] font-bold text-[#1e293b]">Market Summary</h2>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-md bg-[#f8fafc] px-2 py-1.5">
@@ -346,7 +350,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className={`${card} flex flex-col p-4`}>
+        <div className={`${card} flex flex-col overflow-hidden p-3`}>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[15px] font-bold text-[#1e293b]">Economic Calendar</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
@@ -354,15 +358,16 @@ export default function DashboardPage() {
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-[#e2e8f0]">
-                <th className="w-[40%] pb-1.5 text-left text-[10px] font-semibold uppercase text-[#94a3b8]">Indicator</th>
-                <th className="pb-1.5 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Prev</th>
-                <th className="pb-1.5 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Fcst</th>
-                <th className="pb-1.5 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Actual</th>
+                <th className="w-[52px] pb-1 text-left text-[10px] font-semibold uppercase text-[#94a3b8]">Date</th>
+                <th className="pb-1 text-left text-[10px] font-semibold uppercase text-[#94a3b8]">Event</th>
+                <th className="w-[42px] pb-1 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Prev</th>
+                <th className="w-[42px] pb-1 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Fcst</th>
+                <th className="w-[48px] pb-1 text-right text-[10px] font-semibold uppercase text-[#94a3b8]">Act</th>
               </tr>
             </thead>
             <tbody>
               {econ.map((row, i) => {
-                const lowerBetter = /CPI|Rate|USD\/IDR|LPR/i.test(row.indicator);
+                const lowerBetter = /Rate|LPR|CPI|USD\/IDR/i.test(row.indicator);
                 const fc = parseFloat(row.forecast.replace(/,/g, ''));
                 const cur = parseFloat(row.current.replace(/,/g, ''));
                 const hasBoth = !isNaN(fc) && !isNaN(cur) && cur !== fc;
@@ -371,13 +376,15 @@ export default function DashboardPage() {
                 const color = beat ? 'text-[#16a34a]' : miss ? 'text-[#dc2626]' : 'text-[#0f172a]';
                 return (
                   <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
-                    <td className="py-1.5 pr-1">
-                      <div className="truncate text-[12px] font-medium text-[#1e293b]">{row.indicator}</div>
-                      <div className="text-[10px] text-[#94a3b8]">{row.date}</div>
+                    <td className="py-1 pr-1 align-middle">
+                      <span className={`inline-block text-[11px] font-semibold tabular-nums ${row.released ? 'text-[#94a3b8]' : 'text-[#2563eb]'}`}>{row.date}</span>
                     </td>
-                    <td className="py-1.5 text-right text-[12px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
-                    <td className="py-1.5 text-right text-[12px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
-                    <td className={`py-1.5 text-right text-[12px] font-semibold tabular-nums ${color}`}>{fmtNum(row.current)}{row.unit}</td>
+                    <td className="py-1 pr-1">
+                      <div className="truncate text-[12px] font-medium text-[#1e293b]">{row.indicator}</div>
+                    </td>
+                    <td className="py-1 text-right text-[11px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
+                    <td className="py-1 text-right text-[11px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
+                    <td className={`py-1 text-right text-[11px] font-semibold tabular-nums ${color}`}>{row.released ? `${fmtNum(row.current)}${row.unit}` : '\u2014'}</td>
                   </tr>
                 );
               })}
@@ -385,19 +392,19 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className={`${card} flex flex-col p-4`}>
+        <div className={`${card} flex flex-col overflow-hidden p-3`}>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[15px] font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
           <div className="flex-1">
             {ACTIONS.map((a, i) => (
-              <div key={i} className="flex items-start gap-3 border-b border-[#f1f5f9] py-1.5 last:border-0">
-                <span className="w-[46px] shrink-0 text-[12px] tabular-nums text-[#94a3b8]">{a.date}</span>
-                <span className="w-[42px] shrink-0 text-[12px] font-bold text-[#2563eb]">{a.sym}</span>
+              <div key={i} className="flex items-start gap-2.5 border-b border-[#f1f5f9] py-1 last:border-0">
+                <span className="w-[46px] shrink-0 pt-0.5 text-[11px] tabular-nums text-[#94a3b8]">{a.date}</span>
+                <span className="w-[38px] shrink-0 pt-0.5 text-[11px] font-bold text-[#2563eb]">{a.sym}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[12px] font-medium text-[#1e293b]">{a.act}</div>
-                  <div className="text-[11px] text-[#94a3b8]">{a.detail}</div>
+                  <div className="truncate text-[12px] font-medium text-[#1e293b]">{a.act}</div>
+                  <div className="truncate text-[10px] text-[#94a3b8]">{a.detail}</div>
                 </div>
               </div>
             ))}

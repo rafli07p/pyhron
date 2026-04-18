@@ -1,70 +1,56 @@
 import { NextResponse } from 'next/server';
 
-const FRED_KEY = 'f0c24db3f807b6c8a2ac1a8cad7ebad3';
-const BASE = 'https://api.stlouisfed.org/fred/series/observations';
+type Event = {
+  date: string;
+  indicator: string;
+  unit: string;
+  previous: string;
+  forecast: string;
+  current: string;
+  released: boolean;
+};
 
-const SERIES = [
-  { id: 'INTDSRIDM193N', name: 'BI Rate', unit: '%', decimals: 2, forecast: '5.75' },
-  { id: 'IDNCPIALLMINMEI', name: 'Indonesia CPI', unit: '', decimals: 1, forecast: '134.2' },
-  { id: 'FEDFUNDS', name: 'Fed Funds Rate', unit: '%', decimals: 2, forecast: '4.50' },
-  { id: 'CHNLPRLR', name: 'China LPR', unit: '%', decimals: 2, forecast: '3.10' },
-];
+function buildSchedule(today: Date): Event[] {
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth();
+  const day = today.getUTCDate();
 
-const STATIC_ROWS = [
-  { indicator: 'Indonesia GDP', unit: '%', current: '5.11', previous: '5.05', forecast: '5.08', date: 'Q4 2025' },
-  { indicator: 'USD/IDR', unit: '', current: '15,380', previous: '15,420', forecast: '15,450', date: '2026-04' },
-];
+  const fmt = (offset: number): { date: string; released: boolean; iso: Date } => {
+    const d = new Date(Date.UTC(year, month, day + offset));
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return {
+      date: `${months[d.getUTCMonth()]} ${d.getUTCDate()}`,
+      released: offset <= 0,
+      iso: d,
+    };
+  };
 
-async function fetchSeries(seriesId: string): Promise<{ date: string; value: string }[]> {
-  try {
-    const url = `${BASE}?series_id=${seriesId}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=5`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.observations ?? [])
-      .filter((o: { value: string }) => o.value !== '.')
-      .map((o: { date: string; value: string }) => ({ date: o.date, value: o.value }));
-  } catch {
-    return [];
-  }
-}
+  const schedule = [
+    { offset: -2, indicator: 'BI Rate Decision', unit: '%', previous: '5.75', forecast: '5.75', current: '5.75' },
+    { offset: 2, indicator: 'Indonesia Trade Balance', unit: 'B USD', previous: '3.45', forecast: '3.20', current: '\u2014' },
+    { offset: 4, indicator: 'China LPR (1Y)', unit: '%', previous: '3.10', forecast: '3.10', current: '\u2014' },
+    { offset: 5, indicator: 'Indonesia Consumer Confidence', unit: '', previous: '125.6', forecast: '126.5', current: '\u2014' },
+    { offset: 7, indicator: 'Indonesia Foreign Reserves', unit: 'B USD', previous: '157.2', forecast: '158.0', current: '\u2014' },
+    { offset: 12, indicator: 'Fed Funds Rate', unit: '%', previous: '4.50', forecast: '4.50', current: '\u2014' },
+  ];
 
-function fmtVal(raw: string, decimals: number): string {
-  const n = parseFloat(raw);
-  if (isNaN(n)) return '\u2014';
-  return n.toFixed(decimals);
-}
-
-function fmtDate(iso: string): string {
-  if (!iso) return '';
-  const parts = iso.split('-');
-  const y = parts[0] ?? '';
-  const m = parts[1] ?? '';
-  const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const mi = parseInt(m, 10);
-  return `${(isNaN(mi) ? m : months[mi] ?? m)} ${y}`;
+  return schedule.map((s) => {
+    const f = fmt(s.offset);
+    return {
+      date: f.date,
+      indicator: s.indicator,
+      unit: s.unit,
+      previous: s.previous,
+      forecast: s.forecast,
+      current: s.current,
+      released: f.released,
+    };
+  });
 }
 
 export async function GET() {
-  const fredResults = await Promise.all(
-    SERIES.map(async (s) => {
-      const obs = await fetchSeries(s.id);
-      const current = obs[0];
-      const previous = obs[1];
-      return {
-        indicator: s.name,
-        unit: s.unit,
-        current: current ? fmtVal(current.value, s.decimals) : '\u2014',
-        previous: previous ? fmtVal(previous.value, s.decimals) : '\u2014',
-        forecast: s.forecast,
-        date: current ? fmtDate(current.date) : '',
-      };
-    }),
-  );
-
-  const results = [...fredResults, ...STATIC_ROWS];
-
-  return NextResponse.json(results, {
+  const events = buildSchedule(new Date());
+  return NextResponse.json(events, {
     headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200' },
   });
 }
