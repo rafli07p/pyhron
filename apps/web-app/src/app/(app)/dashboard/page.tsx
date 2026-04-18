@@ -54,6 +54,7 @@ function useEconCalendar() {
 
 function fmtNum(v: string): string {
   if (!v || v === '\u2014' || v === '-') return '\u2014';
+  if (/[A-Za-z]/.test(v)) return v;
   const n = parseFloat(v.replace(/,/g, ''));
   if (isNaN(n)) return v;
   if (Math.abs(n) >= 10000) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -128,27 +129,26 @@ function seeded(seed: number) {
 
 function fallbackPts(symbol: string): number[] {
   const fb = IDX_FALLBACK[symbol] ?? { base: 500, change: 0 };
-  const n = 120;
+  const n = 200;
   const open = fb.base / (1 + fb.change / 100);
   const target = fb.base;
-  const seed = symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const rand = seeded(seed * 101);
-  const amp = fb.base * 0.015;
-  const out: number[] = [];
-  let val = open;
-  let momentum = 0;
+  const rand = seeded(symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0) * 97);
+  const vol = fb.base * 0.003;
+  const pts: number[] = [];
+  let price = open;
+  let trend = 0;
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1);
-    const phase1 = Math.sin(t * Math.PI * 1.3 + seed * 0.1) * amp;
-    const phase2 = Math.sin(t * Math.PI * 2.7 + seed * 0.3) * amp * 0.45;
-    const phase3 = Math.sin(t * Math.PI * 5.1) * amp * 0.2;
-    const drift = (target - open) * t;
-    momentum = momentum * 0.85 + (rand() - 0.5) * amp * 0.12;
-    val = open + drift + phase1 + phase2 + phase3 + momentum;
-    out.push(Math.round(val * 100) / 100);
+    const expected = open + (target - open) * t;
+    const meanRev = (expected - price) * 0.015;
+    trend = trend * 0.93 + (rand() - 0.5) * vol * 0.35;
+    const noise = (rand() - 0.5) * vol;
+    const jump = rand() > 0.97 ? (rand() - 0.5) * vol * 3 : 0;
+    price += meanRev + trend + noise + jump;
+    pts.push(Math.round(price * 100) / 100);
   }
-  out[n - 1] = target;
-  return out;
+  pts[n - 1] = target;
+  return pts;
 }
 
 function nowJakarta(): string {
@@ -206,9 +206,10 @@ const ARTICLES = [
 
 const ECON_FALLBACK: EconEvent[] = [
   { date: 'Apr 16', indicator: 'BI Rate Decision', unit: '%', previous: '5.75', forecast: '5.75', current: '5.75', released: true },
-  { date: 'Apr 20', indicator: 'Indonesia Trade Balance', unit: 'B USD', previous: '3.45', forecast: '3.20', current: '\u2014', released: false },
+  { date: 'Apr 20', indicator: 'Trade Balance', unit: '', previous: '3.45B', forecast: '3.20B', current: '\u2014', released: false },
   { date: 'Apr 22', indicator: 'China LPR (1Y)', unit: '%', previous: '3.10', forecast: '3.10', current: '\u2014', released: false },
   { date: 'Apr 23', indicator: 'Consumer Confidence', unit: '', previous: '125.6', forecast: '126.5', current: '\u2014', released: false },
+  { date: 'Apr 25', indicator: 'Foreign Reserves', unit: '', previous: '157.1B', forecast: '158.0B', current: '\u2014', released: false },
   { date: 'Apr 30', indicator: 'Fed Funds Rate', unit: '%', previous: '4.50', forecast: '4.50', current: '\u2014', released: false },
 ];
 
