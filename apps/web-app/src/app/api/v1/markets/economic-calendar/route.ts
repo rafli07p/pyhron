@@ -37,9 +37,12 @@ function fmtVal(raw: string, decimals: number): string {
 
 function fmtDate(iso: string): string {
   if (!iso) return '';
-  const [y, m] = iso.split('-');
+  const parts = iso.split('-');
+  const y = parts[0] ?? '';
+  const m = parts[1] ?? '';
   const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[parseInt(m, 10)] ?? m} ${y}`;
+  const mi = parseInt(m, 10);
+  return `${(isNaN(mi) ? m : months[mi] ?? m)} ${y}`;
 }
 
 export async function GET() {

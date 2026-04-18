@@ -60,13 +60,16 @@ function fmtNum(v: string): string {
 }
 
 function smoothPath(coords: { x: number; y: number }[]): string {
-  if (coords.length === 0) return '';
-  if (coords.length === 1) return `M${coords[0].x},${coords[0].y}`;
-  let d = `M${coords[0].x.toFixed(2)},${coords[0].y.toFixed(2)}`;
+  if (coords.length < 2) {
+    const c = coords[0];
+    return c ? `M${c.x},${c.y}` : '';
+  }
+  const first = coords[0]!;
+  let d = `M${first.x.toFixed(2)},${first.y.toFixed(2)}`;
   for (let i = 0; i < coords.length - 1; i++) {
-    const p0 = coords[i - 1] ?? coords[i];
-    const p1 = coords[i];
-    const p2 = coords[i + 1];
+    const p0 = coords[i - 1] ?? coords[i]!;
+    const p1 = coords[i]!;
+    const p2 = coords[i + 1]!;
     const p3 = coords[i + 2] ?? p2;
     const c1x = p1.x + (p2.x - p0.x) / 6;
     const c1y = p1.y + (p2.y - p0.y) / 6;
