@@ -234,8 +234,8 @@ export default function DashboardPage() {
   const econ = econData ?? ECON_FALLBACK;
 
   return (
-    <div className="flex h-[calc(100dvh-48px)] flex-col">
-      <div className="flex flex-1 min-h-0 flex-col px-5 pt-4">
+    <div className="flex min-h-[calc(100dvh-48px)] flex-col">
+      <div className="flex-1 px-5 pt-4">
       <div className="grid grid-cols-[1fr_300px] grid-rows-[auto_auto] gap-x-4 gap-y-4">
         <div className="grid grid-cols-5 gap-3">
           {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
@@ -295,9 +295,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-4 grid flex-1 min-h-0 grid-cols-3 gap-4 pb-4">
-        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
-          <h2 className="mb-3 text-[14px] font-bold text-[#1e293b]">Market Summary</h2>
+      <div className="mt-4 grid grid-cols-3 items-start gap-4 pb-4">
+        <div className={`${card} flex flex-col px-4 py-4`}>
+          <h2 className="mb-3 text-sm font-bold text-[#1e293b]">Market Summary</h2>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
               <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/E</div>
@@ -349,9 +349,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+        <div className={`${card} flex flex-col px-4 py-4`}>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[14px] font-bold text-[#1e293b]">Economic Calendar</h2>
+            <h2 className="text-sm font-bold text-[#1e293b]">Economic Calendar</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
           <table className="w-full">
@@ -391,9 +391,9 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+        <div className={`${card} flex flex-col px-4 py-4`}>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[14px] font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
+            <h2 className="text-sm font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
           <div className="flex-1 space-y-0.5">
