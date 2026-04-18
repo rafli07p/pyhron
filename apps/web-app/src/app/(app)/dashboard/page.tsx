@@ -54,6 +54,7 @@ function useEconCalendar() {
 
 function fmtNum(v: string): string {
   if (!v || v === '\u2014' || v === '-') return '\u2014';
+  if (/[A-Za-z]/.test(v)) return v;
   const n = parseFloat(v.replace(/,/g, ''));
   if (isNaN(n)) return v;
   if (Math.abs(n) >= 10000) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -128,27 +129,26 @@ function seeded(seed: number) {
 
 function fallbackPts(symbol: string): number[] {
   const fb = IDX_FALLBACK[symbol] ?? { base: 500, change: 0 };
-  const n = 120;
+  const n = 200;
   const open = fb.base / (1 + fb.change / 100);
   const target = fb.base;
-  const seed = symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const rand = seeded(seed * 101);
-  const amp = fb.base * 0.015;
-  const out: number[] = [];
-  let val = open;
-  let momentum = 0;
+  const rand = seeded(symbol.split('').reduce((a, c) => a + c.charCodeAt(0), 0) * 97);
+  const vol = fb.base * 0.003;
+  const pts: number[] = [];
+  let price = open;
+  let trend = 0;
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1);
-    const phase1 = Math.sin(t * Math.PI * 1.3 + seed * 0.1) * amp;
-    const phase2 = Math.sin(t * Math.PI * 2.7 + seed * 0.3) * amp * 0.45;
-    const phase3 = Math.sin(t * Math.PI * 5.1) * amp * 0.2;
-    const drift = (target - open) * t;
-    momentum = momentum * 0.85 + (rand() - 0.5) * amp * 0.12;
-    val = open + drift + phase1 + phase2 + phase3 + momentum;
-    out.push(Math.round(val * 100) / 100);
+    const expected = open + (target - open) * t;
+    const meanRev = (expected - price) * 0.015;
+    trend = trend * 0.93 + (rand() - 0.5) * vol * 0.35;
+    const noise = (rand() - 0.5) * vol;
+    const jump = rand() > 0.97 ? (rand() - 0.5) * vol * 3 : 0;
+    price += meanRev + trend + noise + jump;
+    pts.push(Math.round(price * 100) / 100);
   }
-  out[n - 1] = target;
-  return out;
+  pts[n - 1] = target;
+  return pts;
 }
 
 function nowJakarta(): string {
@@ -206,9 +206,10 @@ const ARTICLES = [
 
 const ECON_FALLBACK: EconEvent[] = [
   { date: 'Apr 16', indicator: 'BI Rate Decision', unit: '%', previous: '5.75', forecast: '5.75', current: '5.75', released: true },
-  { date: 'Apr 20', indicator: 'Indonesia Trade Balance', unit: 'B USD', previous: '3.45', forecast: '3.20', current: '\u2014', released: false },
+  { date: 'Apr 20', indicator: 'Trade Balance', unit: '', previous: '3.45B', forecast: '3.20B', current: '\u2014', released: false },
   { date: 'Apr 22', indicator: 'China LPR (1Y)', unit: '%', previous: '3.10', forecast: '3.10', current: '\u2014', released: false },
   { date: 'Apr 23', indicator: 'Consumer Confidence', unit: '', previous: '125.6', forecast: '126.5', current: '\u2014', released: false },
+  { date: 'Apr 25', indicator: 'Foreign Reserves', unit: '', previous: '157.1B', forecast: '158.0B', current: '\u2014', released: false },
   { date: 'Apr 30', indicator: 'Fed Funds Rate', unit: '%', previous: '4.50', forecast: '4.50', current: '\u2014', released: false },
 ];
 
@@ -233,8 +234,8 @@ export default function DashboardPage() {
   const econ = econData ?? ECON_FALLBACK;
 
   return (
-    <div className="flex h-[calc(100dvh-48px)] flex-col">
-      <div className="flex flex-1 min-h-0 flex-col px-5 pt-4">
+    <div className="flex min-h-[calc(100dvh-48px)] flex-col">
+      <div className="flex-1 px-5 pt-4">
       <div className="grid grid-cols-[1fr_300px] grid-rows-[auto_auto] gap-x-4 gap-y-4">
         <div className="grid grid-cols-5 gap-3">
           {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
@@ -294,9 +295,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-4 grid flex-1 min-h-0 grid-cols-3 gap-4 pb-4">
-        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
-          <h2 className="mb-3 text-[14px] font-bold text-[#1e293b]">Market Summary</h2>
+      <div className="mt-4 grid grid-cols-3 items-start gap-4 pb-4">
+        <div className={`${card} flex flex-col px-4 py-4`}>
+          <h2 className="mb-3 text-sm font-bold text-[#1e293b]">Market Summary</h2>
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
               <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/E</div>
@@ -348,9 +349,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+        <div className={`${card} flex flex-col px-4 py-4`}>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[14px] font-bold text-[#1e293b]">Economic Calendar</h2>
+            <h2 className="text-sm font-bold text-[#1e293b]">Economic Calendar</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
           <table className="w-full">
@@ -390,9 +391,9 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className={`${card} flex flex-col overflow-hidden px-4 py-4`}>
+        <div className={`${card} flex flex-col px-4 py-4`}>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[14px] font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
+            <h2 className="text-sm font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
             <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
           </div>
           <div className="flex-1 space-y-0.5">

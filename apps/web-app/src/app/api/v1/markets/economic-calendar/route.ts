@@ -27,10 +27,10 @@ function buildSchedule(today: Date): Event[] {
 
   const schedule = [
     { offset: -2, indicator: 'BI Rate Decision', unit: '%', previous: '5.75', forecast: '5.75', current: '5.75' },
-    { offset: 2, indicator: 'Indonesia Trade Balance', unit: 'B USD', previous: '3.45', forecast: '3.20', current: '\u2014' },
+    { offset: 2, indicator: 'Trade Balance', unit: '', previous: '3.45B', forecast: '3.20B', current: '\u2014' },
     { offset: 4, indicator: 'China LPR (1Y)', unit: '%', previous: '3.10', forecast: '3.10', current: '\u2014' },
-    { offset: 5, indicator: 'Indonesia Consumer Confidence', unit: '', previous: '125.6', forecast: '126.5', current: '\u2014' },
-    { offset: 7, indicator: 'Indonesia Foreign Reserves', unit: 'B USD', previous: '157.2', forecast: '158.0', current: '\u2014' },
+    { offset: 5, indicator: 'Consumer Confidence', unit: '', previous: '125.6', forecast: '126.5', current: '\u2014' },
+    { offset: 7, indicator: 'Foreign Reserves', unit: '', previous: '157.1B', forecast: '158.0B', current: '\u2014' },
     { offset: 12, indicator: 'Fed Funds Rate', unit: '%', previous: '4.50', forecast: '4.50', current: '\u2014' },
   ];
 
