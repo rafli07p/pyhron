@@ -51,36 +51,59 @@ function useEconCalendar() {
 }
 
 function fmtNum(v: string): string {
-  const n = parseFloat(v);
+  if (!v || v === '\u2014' || v === '-') return '\u2014';
+  const n = parseFloat(v.replace(/,/g, ''));
   if (isNaN(n)) return v;
   if (Math.abs(n) >= 10000) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
   if (Math.abs(n) >= 100) return n.toFixed(1);
   return n.toFixed(2);
 }
 
-function SvgSpark({ pts, up, w = 200, h = 55 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
-  if (pts.length < 2) return null;
+function smoothPath(coords: { x: number; y: number }[]): string {
+  if (coords.length < 2) {
+    const c = coords[0];
+    return c ? `M${c.x},${c.y}` : '';
+  }
+  const first = coords[0]!;
+  let d = `M${first.x.toFixed(2)},${first.y.toFixed(2)}`;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const p0 = coords[i - 1] ?? coords[i]!;
+    const p1 = coords[i]!;
+    const p2 = coords[i + 1]!;
+    const p3 = coords[i + 2] ?? p2;
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
+  }
+  return d;
+}
+
+function SvgSpark({ pts, up, w = 300, h = 55 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
+  if (pts.length < 2) return <div style={{ height: h }} className="w-full" />;
   const mn = Math.min(...pts);
   const mx = Math.max(...pts);
   const rng = mx - mn || 1;
+  const padY = h * 0.12;
   const coords = pts.map((p, i) => ({
     x: (i / (pts.length - 1)) * w,
-    y: 2 + (h - 4) - ((p - mn) / rng) * (h - 4),
+    y: padY + (h - padY * 2) - ((p - mn) / rng) * (h - padY * 2),
   }));
-  const line = coords.map((v, i) => `${i === 0 ? 'M' : 'L'}${v.x.toFixed(1)},${v.y.toFixed(1)}`).join(' ');
-  const fill = `${line} L${w},${h} L0,${h} Z`;
+  const line = smoothPath(coords);
+  const fill = `${line} L${w.toFixed(2)},${h} L0,${h} Z`;
   const clr = up ? '#16a34a' : '#dc2626';
-  const gid = `g-${up ? 'u' : 'd'}`;
+  const gid = `g-${up ? 'u' : 'd'}-${Math.round(mn * 100)}`;
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: h }} preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${w} ${h}`} className="block w-full" style={{ height: h }} preserveAspectRatio="none">
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={clr} stopOpacity="0.18" />
+          <stop offset="0%" stopColor={clr} stopOpacity="0.22" />
           <stop offset="100%" stopColor={clr} stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={fill} fill={`url(#${gid})`} />
-      <path d={line} fill="none" stroke={clr} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={line} fill="none" stroke={clr} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -93,14 +116,31 @@ const IDX_FALLBACK: Record<string, { base: number; change: number }> = {
   JII: { base: 548.92, change: -0.58 },
 };
 
+function seeded(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
 function fallbackPts(symbol: string): number[] {
   const fb = IDX_FALLBACK[symbol] ?? { base: 500, change: 0 };
-  return Array.from({ length: 30 }, (_, i) => {
-    const t = i / 29;
-    const trend = fb.change > 0 ? t * fb.base * 0.01 : fb.change < 0 ? -t * fb.base * 0.01 : 0;
-    const noise = Math.sin(i * 0.5) * fb.base * 0.003 + Math.sin(i * 1.2) * fb.base * 0.002;
-    return Math.round((fb.base + trend + noise) * 100) / 100;
-  });
+  const n = 78;
+  const open = fb.base / (1 + fb.change / 100);
+  const target = fb.base;
+  const rand = seeded(symbol.charCodeAt(0) * 31 + symbol.charCodeAt(1));
+  const vol = fb.base * 0.0015;
+  const out: number[] = [open];
+  for (let i = 1; i < n; i++) {
+    const t = i / (n - 1);
+    const drift = (target - open) * t;
+    const noise = (rand() - 0.5) * vol * 2;
+    const wave = Math.sin(i * 0.35) * fb.base * 0.0012 + Math.sin(i * 0.11) * fb.base * 0.0018;
+    out.push(Math.round((open + drift + noise + wave) * 100) / 100);
+  }
+  out[n - 1] = target;
+  return out;
 }
 
 function IdxCard({ symbol }: { symbol: string }) {
@@ -136,8 +176,8 @@ function IdxCard({ symbol }: { symbol: string }) {
           </div>
         )}
       </div>
-      <div className="mt-1">
-        <SvgSpark pts={pts} up={up} h={55} />
+      <div className="mt-2">
+        <SvgSpark pts={pts} up={up} h={50} />
       </div>
     </div>
   );
@@ -155,20 +195,20 @@ const ARTICLES = [
 ];
 
 const ECON_FALLBACK = [
-  { indicator: 'BI Rate', unit: '%', current: '5.75', previous: '5.75', forecast: '5.75', date: '2026-03' },
-  { indicator: 'Indonesia CPI', unit: '%', current: '2.47', previous: '2.68', forecast: '2.50', date: '2026-03' },
-  { indicator: 'Indonesia GDP', unit: '%', current: '5.02', previous: '4.94', forecast: '5.05', date: '2025-Q4' },
-  { indicator: 'USD/IDR', unit: '', current: '15420', previous: '15480', forecast: '15450', date: '2026-04' },
-  { indicator: 'China LPR', unit: '%', current: '3.10', previous: '3.10', forecast: '3.10', date: '2026-04' },
-  { indicator: 'Fed Funds Rate', unit: '%', current: '4.50', previous: '4.50', forecast: '4.50', date: '2026-03' },
+  { indicator: 'BI Rate', unit: '%', current: '5.75', previous: '5.75', forecast: '5.75', date: 'Mar 2026' },
+  { indicator: 'Indonesia CPI', unit: '', current: '133.5', previous: '131.9', forecast: '132.8', date: 'Mar 2026' },
+  { indicator: 'Fed Funds Rate', unit: '%', current: '4.50', previous: '4.50', forecast: '4.50', date: 'Mar 2026' },
+  { indicator: 'China LPR', unit: '%', current: '3.10', previous: '3.10', forecast: '3.10', date: 'Apr 2026' },
+  { indicator: 'Indonesia GDP', unit: '%', current: '5.11', previous: '5.05', forecast: '5.08', date: 'Q4 2025' },
+  { indicator: 'USD/IDR', unit: '', current: '15,380', previous: '15,420', forecast: '15,450', date: 'Apr 2026' },
 ];
 
 const ACTIONS = [
-  { date: 'Apr 18', sym: 'BBCA', act: 'Cash Dividend', detail: 'IDR 180/share' },
-  { date: 'Apr 22', sym: 'BMRI', act: 'Rights Issue', detail: '1:4 ratio' },
-  { date: 'Apr 25', sym: '\u2014', act: 'LQ45 Rebalancing', detail: 'Effective date' },
-  { date: 'May 2', sym: 'TLKM', act: 'Cash Dividend', detail: 'IDR 95/share' },
-  { date: 'May 15', sym: '\u2014', act: 'IDX80 Review', detail: 'Semi-annual' },
+  { date: 'Apr 18', sym: 'BBCA', act: 'Cash Dividend', detail: 'IDR 180/share \u00b7 Ex: 22 Apr' },
+  { date: 'Apr 22', sym: 'BMRI', act: 'Rights Issue', detail: '1:4 ratio \u00b7 Price: IDR 5,500' },
+  { date: 'Apr 25', sym: '\u2014', act: 'LQ45 Rebalancing', detail: 'Effective: 25 Apr 2026' },
+  { date: 'May 2', sym: 'TLKM', act: 'Cash Dividend', detail: 'IDR 95/share \u00b7 Ex: 5 May' },
+  { date: 'May 15', sym: '\u2014', act: 'IDX80 Review', detail: 'Effective: 15 May 2026 (Semi-annual)' },
 ];
 
 const VISITED = [
@@ -184,7 +224,8 @@ export default function DashboardPage() {
   const econ = econData ?? ECON_FALLBACK;
 
   return (
-    <div className="flex h-[calc(100dvh-48px)] flex-col p-5 pb-0">
+    <div className="flex h-[calc(100dvh-48px)] flex-col">
+      <div className="flex flex-1 min-h-0 flex-col px-5 pt-5">
       <div className="grid grid-cols-[1fr_300px] gap-4">
         <div className="space-y-4">
 
@@ -268,7 +309,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2.5 border-t border-[#f1f5f9] pt-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign (W)</span>
+              <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign This Week</span>
               <span className="text-[14px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
             </div>
           </div>
@@ -321,10 +362,13 @@ export default function DashboardPage() {
             </thead>
             <tbody>
               {econ.map((row, i) => {
-                const prev = parseFloat(row.previous);
-                const cur = parseFloat(row.current);
-                const diff = !isNaN(prev) && !isNaN(cur) && cur !== prev;
-                const color = diff ? (cur > prev ? 'text-[#16a34a]' : 'text-[#dc2626]') : 'text-[#0f172a]';
+                const lowerBetter = /CPI|Rate|USD\/IDR|LPR/i.test(row.indicator);
+                const fc = parseFloat(row.forecast.replace(/,/g, ''));
+                const cur = parseFloat(row.current.replace(/,/g, ''));
+                const hasBoth = !isNaN(fc) && !isNaN(cur) && cur !== fc;
+                const beat = hasBoth && (lowerBetter ? cur < fc : cur > fc);
+                const miss = hasBoth && (lowerBetter ? cur > fc : cur < fc);
+                const color = beat ? 'text-[#16a34a]' : miss ? 'text-[#dc2626]' : 'text-[#0f172a]';
                 return (
                   <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
                     <td className="py-1.5 pr-1">
@@ -361,14 +405,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="shrink-0 py-3">
-        <p className="text-center text-[12px] text-[#94a3b8]">
-          &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
-          <span className="cursor-pointer underline">Terms of Use</span> &amp;{' '}
-          <span className="cursor-pointer underline">Disclaimer</span>.{' '}
-          <span className="cursor-pointer underline">Manage Cookies</span>.
-        </p>
       </div>
+
+      <footer className="mt-4 shrink-0 border-t border-[#e2e8f0] bg-[#f8fafc] px-5 py-3">
+        <p className="text-center text-[12px] text-[#64748b]">
+          &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
+          <a href="/terms" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Terms of Use</a> &amp;{' '}
+          <a href="/disclaimer" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Disclaimer</a>.{' '}
+          <a href="#" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Manage Cookies</a>.
+        </p>
+      </footer>
     </div>
   );
 }
