@@ -212,10 +212,10 @@ function IdxCard({ symbol }: { symbol: string }) {
 const IDX_SYMBOLS = ['IHSG', 'LQ45', 'IDX30', 'IDX80', 'JII'];
 
 const ARTICLES = [
-  { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', bg: '#1e3a5f' },
-  { id: 'carbon', title: 'Carbon-Credit Integrity in the ACCU Market', desc: 'Integrity matters in compliance markets. MSCI Carbon Markets\u2019 analysis of ACCU ARR projects reveals pricing premiums, project-level risk variation and how methodology design shapes outcomes.', bg: '#2d4a3e' },
-  { id: 'gap', title: 'The Transparency Gap: GP Data Rooms', desc: 'Transparency has become one of the defining challenges in the relationship between GPs and LPs in private markets. This analysis identifies where the data falls short during due diligence.', bg: '#3d2e5c' },
-  { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness \u2014 and their portfolio implications.', bg: '#4a3328' },
+  { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', gradient: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)' },
+  { id: 'carbon', title: 'Carbon-Credit Integrity in the ACCU Market', desc: 'Integrity matters in compliance markets. MSCI Carbon Markets\u2019 analysis of ACCU ARR projects reveals pricing premiums, project-level risk variation and how methodology design shapes outcomes.', gradient: 'linear-gradient(135deg, #1a4a3a 0%, #2d8a6a 100%)' },
+  { id: 'gap', title: 'The Transparency Gap: GP Data Rooms', desc: 'Transparency has become one of the defining challenges in the relationship between GPs and LPs in private markets. This analysis identifies where the data falls short during due diligence.', gradient: 'linear-gradient(135deg, #2d1a5c 0%, #6a2d9f 100%)' },
+  { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness \u2014 and their portfolio implications.', gradient: 'linear-gradient(135deg, #4a3000 0%, #9f7a2d 100%)' },
 ];
 
 const ECON_FALLBACK: EconEvent[] = [
@@ -272,24 +272,23 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className={card}>
-          <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
-            <h2 className="text-[15px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
-            <Link href="/research" className="text-[13px] font-medium text-[#2563eb] hover:underline">View All</Link>
+        <section>
+          <div className="section-header">
+            <span>Market Research and Insights</span>
+            <Link href="/research" className="link-blue">View All</Link>
           </div>
-          <div className="grid grid-cols-2">
-            {ARTICLES.map((a, i) => (
-              <Link key={a.id} href="/research"
-                className={`group flex gap-4 p-5 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
-                <div className="h-[90px] w-[120px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-[15px] font-bold leading-snug text-[#1e3a8a] group-hover:underline">{a.title}</h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {ARTICLES.map((a) => (
+              <Link key={a.id} href="/research" className="article-card">
+                <div className="article-thumb shrink-0" style={{ background: a.gradient }} />
+                <div className="article-text">
+                  <h3 className="article-title">{a.title}</h3>
+                  <p className="article-body">{a.desc}</p>
                 </div>
               </Link>
             ))}
           </div>
-        </div>
+        </section>
 
         <div className={`${card} px-4 py-3`}>
           <h3 className="mb-2.5 text-[14px] font-bold text-[#1e293b]">Recently Visited</h3>
