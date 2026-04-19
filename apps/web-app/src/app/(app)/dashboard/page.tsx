@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 
 const card = 'rounded-[15px] border border-[#e2e8f0] bg-white';
 
@@ -62,52 +63,32 @@ function fmtNum(v: string): string {
   return n.toFixed(2);
 }
 
-function smoothPath(coords: { x: number; y: number }[]): string {
-  if (coords.length < 2) {
-    const c = coords[0];
-    return c ? `M${c.x},${c.y}` : '';
-  }
-  const first = coords[0]!;
-  let d = `M${first.x.toFixed(2)},${first.y.toFixed(2)}`;
-  for (let i = 0; i < coords.length - 1; i++) {
-    const p0 = coords[i - 1] ?? coords[i]!;
-    const p1 = coords[i]!;
-    const p2 = coords[i + 1]!;
-    const p3 = coords[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
-  }
-  return d;
-}
-
-function SvgSpark({ pts, up, w = 300, h = 55 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
-  if (pts.length < 2) return <div style={{ height: h }} className="w-full" />;
-  const mn = Math.min(...pts);
-  const mx = Math.max(...pts);
-  const rng = mx - mn || 1;
-  const padY = h * 0.12;
-  const coords = pts.map((p, i) => ({
-    x: (i / (pts.length - 1)) * w,
-    y: padY + (h - padY * 2) - ((p - mn) / rng) * (h - padY * 2),
-  }));
-  const line = smoothPath(coords);
-  const fill = `${line} L${w.toFixed(2)},${h} L0,${h} Z`;
-  const clr = up ? '#16a34a' : '#dc2626';
-  const gid = `g-${up ? 'u' : 'd'}-${Math.round(mn * 100)}`;
+function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol: string; changePercent: number }) {
+  if (pts.length < 2) return <div className="h-11 w-full" />;
+  const isPositive = changePercent >= 0;
+  const strokeColor = isPositive ? '#00875A' : '#D92D20';
+  const gradientId = `spark-gradient-${symbol.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  const data = pts.map((value) => ({ value }));
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="block w-full" style={{ height: h }} preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={clr} stopOpacity="0.22" />
-          <stop offset="100%" stopColor={clr} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fill} fill={`url(#${gid})`} />
-      <path d={line} fill="none" stroke={clr} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <ResponsiveContainer width="100%" height={44}>
+      <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={strokeColor} stopOpacity={0.18} />
+            <stop offset="95%" stopColor={strokeColor} stopOpacity={0.01} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={strokeColor}
+          strokeWidth={1.5}
+          fill={`url(#${gradientId})`}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -171,23 +152,56 @@ function IdxCard({ symbol }: { symbol: string }) {
   const up = chg >= 0;
 
   return (
-    <div className={`${card} overflow-hidden`}>
-      <div className="px-3 pt-2.5 pb-1">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-[12px] font-bold uppercase text-[#1e293b]">{symbol}</span>
-          <span className="text-[11px] tabular-nums text-[#94a3b8]">{ts}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-[17px] font-bold tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-            {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-          <span className={`rounded bg-[#f1f5f9] px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-            {up ? '\u25B2' : '\u25BC'} {up ? '+' : ''}{chg.toFixed(2)}%
-          </span>
-        </div>
+    <div
+      className="flex flex-col justify-between overflow-hidden"
+      style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 8,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+        padding: 16,
+        minHeight: 120,
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'var(--color-text-muted)',
+          }}
+        >
+          {symbol}
+        </span>
+        <span className="tabular-nums" style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+          {ts}
+        </span>
       </div>
-      <div className="px-2 pb-2">
-        <SvgSpark pts={pts} up={up} h={40} />
+      <div className="flex items-center" style={{ gap: 8, marginTop: 6 }}>
+        <span
+          className="tabular-nums"
+          style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)' }}
+        >
+          {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span
+          className="tabular-nums"
+          style={{
+            background: up ? 'var(--color-positive-bg)' : 'var(--color-negative-bg)',
+            color: up ? 'var(--color-positive)' : 'var(--color-negative)',
+            borderRadius: 4,
+            padding: '2px 6px',
+            fontSize: 11,
+            fontWeight: 600,
+          }}
+        >
+          {up ? '\u25B2' : '\u25BC'} {up ? '+' : ''}{chg.toFixed(2)}%
+        </span>
+      </div>
+      <div className="-mx-2 mt-auto">
+        <IndexSparkline pts={pts} symbol={symbol} changePercent={chg} />
       </div>
     </div>
   );
