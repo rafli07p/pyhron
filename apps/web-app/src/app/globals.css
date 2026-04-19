@@ -56,6 +56,23 @@
   --border-error: var(--negative);
   --ring: 0 0 0 2px var(--surface-0), 0 0 0 4px var(--accent-500);
   color-scheme: dark;
+
+  /* MSCI ONE institutional tokens */
+  --color-bg-page: #F5F7FA;
+  --color-bg-card: #FFFFFF;
+  --color-border: #E8ECF0;
+  --color-border-subtle: #F0F4F8;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #5A6A7A;
+  --color-text-muted: #8A9BB0;
+  --color-blue-primary: #0057A8;
+  --color-blue-dark: #003D7A;
+  --color-blue-soft: #EBF3FC;
+  --color-positive: #00875A;
+  --color-positive-bg: #E3F5EE;
+  --color-negative: #D92D20;
+  --color-negative-bg: #FDECEA;
+  --color-neutral: #F0F4F8;
 }
 
 /* Light Mode */
@@ -91,11 +108,15 @@
 }
 
 body {
-  background: var(--surface-0);
-  color: var(--text-primary);
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 /* Price tick flash animations */
@@ -271,3 +292,50 @@ body {
 
 .pnl-positive { color: #34d399; }
 .pnl-negative { color: #f87171; }
+
+/* ═══ MSCI ONE institutional utilities ═══ */
+
+.label-caps {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.data-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-blue {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-blue-primary);
+  text-decoration: none;
+}
+
+.link-blue:hover {
+  text-decoration: underline;
+}
+
+.card-base {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.section-header {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
