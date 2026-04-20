@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { MOCK_IDX_STOCKS, generateOHLCV } from '../generators/idx-stocks';
+import { generateOrderbook } from '../generators/orderbook';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -70,6 +71,14 @@ export const marketHandlers = [
       board: s.board,
     }));
     return HttpResponse.json({ instruments, total: instruments.length });
+  }),
+
+  // -----------------------------------------------------------------------
+  // Orderbook snapshot for a symbol
+  // -----------------------------------------------------------------------
+  http.get(`${API_BASE}/v1/market/orderbook/:symbol`, ({ params }) => {
+    const symbol = (params.symbol as string).toUpperCase();
+    return HttpResponse.json(generateOrderbook(symbol));
   }),
 
   // -----------------------------------------------------------------------
