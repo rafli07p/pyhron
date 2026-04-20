@@ -56,7 +56,7 @@ class PyhronPaperTradingSession(Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
+        ForeignKey("strategies.id", ondelete="CASCADE"),
         nullable=False,
     )
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="INITIALIZING")
@@ -78,7 +78,7 @@ class PyhronPaperTradingSession(Base):
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default="now()")
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("pyhron_user.id"),
+        ForeignKey("users.id"),
     )
 
     strategy = relationship("PyhronStrategy", back_populates="paper_sessions", lazy="selectin")

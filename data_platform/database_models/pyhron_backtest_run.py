@@ -56,17 +56,17 @@ class PyhronBacktestRun(Base):
         created_at: Row creation timestamp.
     """
 
-    __tablename__ = "pyhron_backtest_run"
+    __tablename__ = "backtest_runs"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
+        ForeignKey("strategies.id", ondelete="CASCADE"),
         nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("pyhron_user.id", ondelete="CASCADE"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     status: Mapped[BacktestStatus] = mapped_column(

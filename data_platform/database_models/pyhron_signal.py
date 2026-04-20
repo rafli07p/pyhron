@@ -44,7 +44,7 @@ class PyhronSignal(Base):
         metadata_json: Raw feature values, model scores, etc.
     """
 
-    __tablename__ = "pyhron_signal"
+    __tablename__ = "signals"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -53,7 +53,7 @@ class PyhronSignal(Base):
     )
     strategy_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("pyhron_strategy.id", ondelete="CASCADE"),
+        ForeignKey("strategies.id", ondelete="CASCADE"),
         nullable=False,
     )
     instrument_symbol: Mapped[str] = mapped_column(String(20), nullable=False)

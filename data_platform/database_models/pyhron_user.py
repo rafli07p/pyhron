@@ -41,7 +41,7 @@ class PyhronUser(Base):
         updated_at: Row last-update timestamp.
     """
 
-    __tablename__ = "pyhron_user"
+    __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
