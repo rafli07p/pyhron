@@ -4,7 +4,10 @@ Advanced multi-factor stock screening for the Indonesia Stock Exchange
 with fundamental and technical filters.
 """
 
+import asyncio
 from decimal import Decimal
+from functools import partial
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
@@ -21,6 +24,46 @@ from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/screener", tags=["screener"])
+
+
+async def _fetch_prices_batch(symbols: list[str]) -> dict[str, dict[str, float]]:
+    """Fetch current price + change_pct for a batch of IDX symbols via yfinance."""
+    import yfinance as yf
+
+    def _sync_fetch(syms: list[str]) -> dict[str, dict[str, float]]:
+        result: dict[str, dict[str, float]] = {}
+        tickers = [f"{s}.JK" for s in syms]
+        try:
+            data: Any = yf.download(
+                tickers,
+                period="2d",
+                interval="1d",
+                group_by="ticker",
+                auto_adjust=True,
+                progress=False,
+                threads=True,
+            )
+            for sym in syms:
+                ticker = f"{sym}.JK"
+                try:
+                    if len(syms) == 1:
+                        closes = data["Close"].dropna()
+                    else:
+                        closes = data[ticker]["Close"].dropna()
+                    if len(closes) >= 2:
+                        prev, last = float(closes.iloc[-2]), float(closes.iloc[-1])
+                        chg = (last - prev) / prev * 100 if prev else 0.0
+                        result[sym] = {"price": last, "change_pct": round(chg, 2)}
+                    elif len(closes) == 1:
+                        result[sym] = {"price": float(closes.iloc[-1]), "change_pct": 0.0}
+                except Exception:  # noqa: S110  # per-symbol best-effort
+                    pass
+        except Exception:  # noqa: S110  # graceful network degradation
+            pass
+        return result
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, partial(_sync_fetch, symbols))
 
 
 # Response Models
@@ -212,13 +255,24 @@ async def screen_stocks(
         result = await session.execute(stmt)
         rows = result.all()
 
+    # Enrich with yfinance prices (ohlcv table empty during demo phase)
+    symbols_in_result = [row.symbol for row in rows]
+    yf_prices: dict[str, dict[str, float]] = {}
+    if symbols_in_result:
+        try:
+            yf_prices = await _fetch_prices_batch(symbols_in_result)
+        except Exception:  # graceful degradation to DB prices
+            logger.warning("yfinance_batch_failed", count=len(symbols_in_result))
+
     results = [
         ScreenerResult(
             symbol=row.symbol,
             name=row.name,
             sector=row.sector,
-            last_price=row.last_price or Decimal("0"),
-            change_pct=0.0,  # Would need previous close to compute
+            last_price=Decimal(
+                str(yf_prices.get(row.symbol, {}).get("price") or row.last_price or 0)
+            ),
+            change_pct=yf_prices.get(row.symbol, {}).get("change_pct", 0.0),
             volume=row.volume or 0,
             market_cap=Decimal(row.market_cap) if row.market_cap is not None else None,
             pe_ratio=float(row.pe_ratio) if row.pe_ratio is not None else None,
