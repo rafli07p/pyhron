@@ -5,6 +5,7 @@ and ownership structure.
 """
 
 import asyncio
+import contextlib
 from datetime import date
 from decimal import Decimal
 from functools import partial
@@ -159,9 +160,57 @@ async def get_financials(
     limit: int = Query(8, ge=1, le=20),
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[FinancialSummary]:
-    """Get historical financial statements for a stock."""
+    """Get historical financial statements for a stock via yfinance."""
     logger.info("financials_queried", symbol=symbol, period_type=period_type)
-    return []
+
+    def _fetch(sym: str, ptype: str) -> list[dict[str, Any]]:
+        try:
+            t = yf.Ticker(f"{sym}.JK")
+            fin = t.financials if ptype == "annual" else t.quarterly_financials
+            if fin is None or fin.empty:
+                return []
+            info = t.info or {}
+
+            def _safe(key: str, col: Any) -> float | None:
+                try:
+                    if key in fin.index:
+                        v = fin.loc[key, col]
+                        if v is None or str(v) == "nan":
+                            return None
+                        return float(v)
+                except Exception:
+                    return None
+                return None
+
+            results: list[dict[str, Any]] = []
+            for col in list(fin.columns)[:limit]:
+                try:
+                    period_label = col.strftime("%Y") if ptype == "annual" else col.strftime("%Y-%m")
+                except Exception:
+                    period_label = str(col)[:7]
+                results.append(
+                    {
+                        "symbol": sym,
+                        "period": period_label,
+                        "revenue": _safe("Total Revenue", col),
+                        "net_income": _safe("Net Income", col),
+                        "total_assets": None,
+                        "total_equity": None,
+                        "eps": _safe("Basic EPS", col),
+                        "pe_ratio": info.get("trailingPE"),
+                        "pbv_ratio": info.get("priceToBook"),
+                        "roe": info.get("returnOnEquity"),
+                        "der": info.get("debtToEquity"),
+                    }
+                )
+            return results
+        except Exception:
+            logger.warning("financials_fetch_failed", symbol=sym)
+            return []
+
+    loop = asyncio.get_event_loop()
+    raw = await loop.run_in_executor(None, partial(_fetch, symbol.upper(), period_type))
+    return [FinancialSummary(**r) for r in raw]
 
 
 @router.get("/{symbol}/corporate-actions", response_model=list[CorporateAction])
@@ -171,11 +220,177 @@ async def get_corporate_actions(
     limit: int = Query(20, ge=1, le=100),
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[CorporateAction]:
-    """Get corporate actions history (dividends, splits, rights issues)."""
-    return []
+    """Get corporate actions history (dividends, splits) via yfinance."""
+    def _fetch(sym: str) -> list[dict[str, Any]]:
+        try:
+            t = yf.Ticker(f"{sym}.JK")
+            results: list[dict[str, Any]] = []
+            divs = t.dividends
+            if divs is not None and not divs.empty:
+                for ts, val in divs.tail(limit).items():
+                    with contextlib.suppress(Exception):
+                        results.append(
+                            {
+                                "symbol": sym,
+                                "action_type": "dividend",
+                                "ex_date": ts.date(),
+                                "record_date": None,
+                                "description": f"Cash Dividend IDR {val:,.0f} per share",
+                                "value": float(val),
+                            }
+                        )
+            splits = t.splits
+            if splits is not None and not splits.empty:
+                for ts, ratio in splits.tail(5).items():
+                    with contextlib.suppress(Exception):
+                        results.append(
+                            {
+                                "symbol": sym,
+                                "action_type": "stock_split",
+                                "ex_date": ts.date(),
+                                "record_date": None,
+                                "description": f"Stock Split {ratio}:1",
+                                "value": float(ratio),
+                            }
+                        )
+            results.sort(key=lambda x: x["ex_date"], reverse=True)
+            return results[:limit]
+        except Exception:
+            logger.warning("corp_actions_fetch_failed", symbol=sym)
+            return []
+
+    loop = asyncio.get_event_loop()
+    raw = await loop.run_in_executor(None, partial(_fetch, symbol.upper()))
+    if action_type:
+        raw = [r for r in raw if r["action_type"] == action_type]
+    return [CorporateAction(**r) for r in raw]
 
 
 @router.get("/{symbol}/ownership", response_model=list[OwnershipEntry])
-async def get_ownership(symbol: str, _user: TokenPayload = Depends(require_role(Role.VIEWER))) -> list[OwnershipEntry]:
-    """Get ownership breakdown for a stock."""
-    return []
+async def get_ownership(
+    symbol: str,
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
+) -> list[OwnershipEntry]:
+    """Get ownership breakdown (insider/institutional/public) via yfinance."""
+    def _fetch(sym: str) -> list[dict[str, Any]]:
+        try:
+            t = yf.Ticker(f"{sym}.JK")
+            holders = t.major_holders
+            if holders is None or holders.empty:
+                return []
+
+            def _safe_pct(key: str) -> float:
+                try:
+                    row = holders[holders.index == key]
+                    if not row.empty:
+                        return float(row.iloc[0, 0]) * 100
+                except Exception:
+                    return 0.0
+                return 0.0
+
+            insider_pct = _safe_pct("insidersPercentHeld")
+            inst_pct = _safe_pct("institutionsPercentHeld")
+            public_pct = max(0.0, 100.0 - insider_pct - inst_pct)
+
+            results: list[dict[str, Any]] = []
+            if insider_pct > 0:
+                results.append({
+                    "holder_name": "Insider / Management",
+                    "holder_type": "insider",
+                    "shares_held": 0,
+                    "ownership_pct": round(insider_pct, 2),
+                    "change_from_prior": None,
+                })
+            if inst_pct > 0:
+                results.append({
+                    "holder_name": "Institutional Investors",
+                    "holder_type": "institution",
+                    "shares_held": 0,
+                    "ownership_pct": round(inst_pct, 2),
+                    "change_from_prior": None,
+                })
+            if public_pct > 0:
+                results.append({
+                    "holder_name": "Public / Retail",
+                    "holder_type": "public",
+                    "shares_held": 0,
+                    "ownership_pct": round(public_pct, 2),
+                    "change_from_prior": None,
+                })
+            return results
+        except Exception:
+            logger.warning("ownership_fetch_failed", symbol=sym)
+            return []
+
+    loop = asyncio.get_event_loop()
+    raw = await loop.run_in_executor(None, partial(_fetch, symbol.upper()))
+    return [OwnershipEntry(**r) for r in raw]
+
+
+# IDX sector peers (static curated list; tier 1 LQ45 constituents)
+SECTOR_PEERS: dict[str, list[str]] = {
+    "BBCA": ["BBRI", "BMRI", "BBNI", "BNGA", "BDMN"],
+    "BBRI": ["BBCA", "BMRI", "BBNI", "BNGA"],
+    "BMRI": ["BBCA", "BBRI", "BBNI", "BNGA"],
+    "BBNI": ["BBCA", "BBRI", "BMRI", "BNGA"],
+    "TLKM": ["EXCL", "ISAT", "FREN"],
+    "ASII": ["SMSM", "AUTO", "IMAS"],
+    "UNVR": ["ICBP", "MYOR", "KLBF"],
+    "GOTO": ["BUKA", "EMTK"],
+}
+
+
+@router.get("/{symbol}/peers", response_model=list[dict[str, Any]])
+async def get_peers(
+    symbol: str,
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
+) -> list[dict[str, Any]]:
+    """Get peer comparison — same sector stocks with key metrics."""
+    upper = symbol.upper()
+    peers = SECTOR_PEERS.get(upper, [])
+    if not peers:
+        async with get_session() as db:
+            instr_res = await db.execute(
+                select(IdxEquityInstrument.symbol)
+                .where(IdxEquityInstrument.is_active.is_(True))
+                .limit(6)
+            )
+            peers = [r[0] for r in instr_res.all() if r[0] != upper][:5]
+
+    all_symbols = [upper, *peers[:5]]
+
+    def _fetch_peers(syms: list[str]) -> list[dict[str, Any]]:
+        results: list[dict[str, Any]] = []
+        for sym in syms:
+            try:
+                t = yf.Ticker(f"{sym}.JK")
+                info = t.info or {}
+                hist = t.history(period="2d")
+                last_price = float(hist["Close"].iloc[-1]) if not hist.empty else None
+                results.append({
+                    "symbol": sym,
+                    "name": info.get("shortName", sym),
+                    "last_price": last_price,
+                    "market_cap": info.get("marketCap"),
+                    "pe_ratio": info.get("trailingPE"),
+                    "pbv_ratio": info.get("priceToBook"),
+                    "roe": info.get("returnOnEquity"),
+                    "dividend_yield": info.get("dividendYield"),
+                    "is_selected": sym == upper,
+                })
+            except Exception:
+                results.append({
+                    "symbol": sym,
+                    "name": sym,
+                    "last_price": None,
+                    "market_cap": None,
+                    "pe_ratio": None,
+                    "pbv_ratio": None,
+                    "roe": None,
+                    "dividend_yield": None,
+                    "is_selected": sym == upper,
+                })
+        return results
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, partial(_fetch_peers, all_symbols))

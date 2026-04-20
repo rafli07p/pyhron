@@ -46,40 +46,21 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* Secondary Sidebar */}
+      {/* Secondary Sidebar — full collapse to 0 width */}
       <aside style={{
-        width: collapsed ? 40 : 220,
-        minWidth: collapsed ? 40 : 220,
-        borderRight: '1px solid var(--color-border)',
+        width: collapsed ? 0 : 220,
+        minWidth: collapsed ? 0 : 220,
+        borderRight: collapsed ? 'none' : '1px solid var(--color-border)',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.2s ease, min-width 0.2s ease',
         overflow: 'hidden',
-        position: 'relative',
       }}>
-        {/* Toggle button */}
-        <button
-          onClick={() => setCollapsed(c => !c)}
-          style={{
-            position: 'absolute', top: 8, right: -12, zIndex: 10,
-            width: 24, height: 24, borderRadius: '50%',
-            background: '#fff', border: '1px solid var(--color-border)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-          }}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed
-            ? <ChevronRight size={12} style={{ color: 'var(--color-text-muted)' }} />
-            : <ChevronLeft size={12} style={{ color: 'var(--color-text-muted)' }} />
-          }
-        </button>
-
         {!collapsed && (
           <>
             {/* Section header */}
-            <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--color-border)', marginBottom: 4 }}>
               <span style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
                 textTransform: 'uppercase', color: 'var(--color-text-muted)',
@@ -89,7 +70,7 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Nav items */}
-            <nav style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
+            <nav style={{ flex: 1, overflowY: 'auto', padding: '6px 0', display: 'flex', flexDirection: 'column', gap: 4 }}>
               {NAV_ITEMS.map(item => {
                 const active = pathname === item.path;
                 return (
@@ -98,7 +79,7 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
                     onClick={() => router.push(item.path)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 8,
-                      width: '100%', padding: '8px 14px',
+                      width: '100%', padding: '10px 16px',
                       background: active ? 'rgba(0,87,168,0.08)' : 'transparent',
                       border: 'none',
                       borderLeft: active ? '3px solid var(--color-blue-primary)' : '3px solid transparent',
@@ -125,9 +106,25 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
           padding: '10px 20px',
           borderBottom: '1px solid var(--color-border)',
           background: '#fff',
-          display: 'flex', alignItems: 'center', gap: 16,
+          display: 'flex', alignItems: 'center', gap: 12,
           flexShrink: 0,
         }}>
+          {/* Inline toggle button */}
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            style={{
+              width: 24, height: 24, borderRadius: 4,
+              background: 'transparent', border: '1px solid var(--color-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+            }}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed
+              ? <ChevronRight size={12} style={{ color: 'var(--color-text-muted)' }} />
+              : <ChevronLeft size={12} style={{ color: 'var(--color-text-muted)' }} />
+            }
+          </button>
           <span style={{
             fontSize: 10, fontWeight: 700, color: 'var(--color-text-muted)',
             textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0,

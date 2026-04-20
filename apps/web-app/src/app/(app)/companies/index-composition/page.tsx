@@ -25,6 +25,28 @@ const fmtMktCap = (v: number | null) => {
 };
 const fmtShares = (v: number | null) => (v ? `${(v / 1e9).toFixed(2)}B` : '—');
 
+const SECTION_HEADER: React.CSSProperties = {
+  fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+  letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 12,
+};
+const CARD: React.CSSProperties = {
+  background: '#fff', border: '1px solid var(--color-border)',
+  borderRadius: 8, padding: '14px 16px',
+};
+
+// Index membership rows — known LQ45 / IDX30 / IDX80 / IHSG constituents
+const IDX30_SYMBOLS = new Set(['BBCA','BBRI','BMRI','TLKM','ASII','BBNI','UNVR','GOTO','ICBP','INDF','KLBF','SMGR','UNTR','ADRO','PTBA','ITMG','GGRM','HMSP','CPIN','JPFA','BSDE','PWON','LPPF','MNCN','BRIS','BTPS','ARTO','EMTK','MAPI','TBIG']);
+const IDX80_EXTRA = new Set(['EXCL','ISAT','FREN','MEDC','PGAS','INCO','ANTM','TINS','AKRA','BRPT','TPIA','INTP','WIKA','WSKT','PTPP','ADHI','JSMR','WSBP','ESSA','MIKA']);
+
+function membership(symbol: string, isLq45: boolean) {
+  return [
+    { index: 'IHSG', active: true, note: 'All listed IDX equities' },
+    { index: 'LQ45', active: isLq45, note: isLq45 ? 'Top 45 by liquidity & market cap' : 'Not currently included' },
+    { index: 'IDX30', active: IDX30_SYMBOLS.has(symbol), note: IDX30_SYMBOLS.has(symbol) ? 'Top 30 LQ45 constituents' : 'Not currently included' },
+    { index: 'IDX80', active: IDX30_SYMBOLS.has(symbol) || IDX80_EXTRA.has(symbol), note: 'Mid-cap growth index' },
+  ];
+}
+
 export default function IndexCompositionPage() {
   const { data: session } = useSession();
   const { selectedSymbol } = useCompanyStore();
@@ -63,7 +85,6 @@ export default function IndexCompositionPage() {
 
   return (
     <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Page title */}
       <div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>
           Index Composition Viewer
@@ -75,12 +96,10 @@ export default function IndexCompositionPage() {
         )}
       </div>
 
-      {/* KPI strip */}
       {profile && (
         <div style={{
           display: 'flex', gap: 24, padding: '12px 16px',
-          background: '#fff', border: '1px solid var(--color-border)',
-          borderRadius: 8,
+          background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8,
         }}>
           {kpis.map(({ label, value }, i) => (
             <div
@@ -101,13 +120,10 @@ export default function IndexCompositionPage() {
         </div>
       )}
 
-      {/* Profile cards */}
       {profile && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, padding: '14px 16px' }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 12 }}>
-              Company Overview
-            </p>
+          <div style={CARD}>
+            <p style={SECTION_HEADER}>Company Overview</p>
             <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
               <tbody>
                 {([
@@ -127,14 +143,46 @@ export default function IndexCompositionPage() {
               </tbody>
             </table>
           </div>
-          <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, padding: '14px 16px' }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 12 }}>
-              Business Description
-            </p>
+          <div style={CARD}>
+            <p style={SECTION_HEADER}>Business Description</p>
             <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.7 }}>
               {profile.description ?? 'No description available from data provider.'}
             </p>
           </div>
+        </div>
+      )}
+
+      {profile && (
+        <div style={CARD}>
+          <p style={SECTION_HEADER}>Index Membership</p>
+          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <th style={{ padding: '8px 0', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-muted)' }}>Index Name</th>
+                <th style={{ padding: '8px 0', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-muted)' }}>Description</th>
+                <th style={{ padding: '8px 0', textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-muted)' }}>Weight %</th>
+                <th style={{ padding: '8px 0', textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-muted)' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {membership(profile.symbol, profile.is_lq45).map(row => (
+                <tr key={row.index} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                  <td style={{ padding: '8px 0', fontWeight: 700, color: 'var(--color-blue-primary)', fontFamily: 'monospace' }}>{row.index}</td>
+                  <td style={{ padding: '8px 0', color: 'var(--color-text-secondary)', fontSize: 11 }}>{row.note}</td>
+                  <td style={{ padding: '8px 0', textAlign: 'right', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>—</td>
+                  <td style={{ padding: '8px 0', textAlign: 'right' }}>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 3,
+                      background: row.active ? 'rgba(0,135,90,0.12)' : 'rgba(138,155,176,0.14)',
+                      color: row.active ? 'var(--color-positive)' : 'var(--color-text-muted)',
+                    }}>
+                      {row.active ? 'ACTIVE' : 'NOT LISTED'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
