@@ -309,72 +309,79 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-3 items-start gap-4 pb-4">
-        <div className={`${card} flex flex-col px-4 py-4`}>
-          <h2 className="mb-3 text-sm font-bold text-[#1e293b]">Market Summary</h2>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/E</div>
-              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">15.76</div>
+        <div className="card-base flex flex-col" style={{ padding: 20 }}>
+          <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
+          <div className="kpi-row">
+            <div className="kpi-metric">
+              <span className="label-caps" style={{ display: 'block', marginBottom: 4 }}>P/E</span>
+              <div className="kpi-value">15.76</div>
             </div>
-            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/BV</div>
-              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">2.49</div>
+            <div className="kpi-divider" />
+            <div className="kpi-metric">
+              <span className="label-caps" style={{ display: 'block', marginBottom: 4 }}>P/BV</span>
+              <div className="kpi-value">2.49</div>
             </div>
-            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">Div Yield</div>
-              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">3.2%</div>
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline justify-between border-t border-[#f1f5f9] pt-2.5">
-            <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign (Week)</span>
-            <span className="text-[13px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
-          </div>
-          <div className="mt-2.5 border-t border-[#f1f5f9] pt-2.5">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[12px] font-semibold text-[#1e293b]">Trading Value</span>
-              <span className="text-[13px] font-semibold tabular-nums text-[#0f172a]">IDR 11.9T</span>
-            </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#f1f5f9]">
-              <div className="h-full bg-[#2563eb]" style={{ width: '72%' }} />
-            </div>
-            <div className="mt-1.5 flex justify-between text-[11px] text-[#64748b]">
-              <span>Domestic <span className="font-semibold text-[#1e293b]">72%</span></span>
-              <span>Foreign <span className="font-semibold text-[#1e293b]">28%</span></span>
+            <div className="kpi-divider" />
+            <div className="kpi-metric">
+              <span className="label-caps" style={{ display: 'block', marginBottom: 4 }}>Div Yield</span>
+              <div className="kpi-value">3.2%</div>
             </div>
           </div>
-          <div className="mt-3 border-t border-[#f1f5f9] pt-2.5">
-            <div className="mb-2 text-[12px] font-semibold text-[#1e293b]">Top Sectors (Today)</div>
-            <div className="space-y-1.5">
-              {[
-                { name: 'Banks', pct: 1.24, up: true },
-                { name: 'Energy', pct: 0.87, up: true },
-                { name: 'Consumer', pct: -0.45, up: false },
-                { name: 'Telco', pct: -0.62, up: false },
-              ].map((s) => (
-                <div key={s.name} className="flex items-center justify-between text-[12px]">
-                  <span className="text-[#475569]">{s.name}</span>
-                  <span className={`font-semibold tabular-nums ${s.up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-                    {s.up ? '+' : ''}{s.pct.toFixed(2)}%
-                  </span>
-                </div>
-              ))}
+          <div className="mt-3">
+            <div className="summary-row">
+              <span className="summary-row-label">Net Foreign (Week)</span>
+              <span className="summary-row-value-positive">+IDR 2,487B</span>
             </div>
+            <div className="summary-row">
+              <span className="summary-row-label">Trading Value</span>
+              <span className="summary-row-value">IDR 11.9T</span>
+            </div>
+          </div>
+          <div className="flow-bar">
+            <div style={{ width: '72%', background: 'var(--color-blue-primary)', borderRadius: '3px 0 0 3px', height: '100%' }} />
+            <div style={{ width: '28%', background: '#7AB3E0', borderRadius: '0 3px 3px 0', height: '100%' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--color-text-muted)' }}>
+            <span>Domestic <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>72%</span></span>
+            <span>Foreign <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>28%</span></span>
+          </div>
+          <div className="mt-3">
+            <div className="mb-2 text-[12px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>Top Sectors (Today)</div>
+            {[
+              { name: 'Banks', pct: 1.24, up: true },
+              { name: 'Energy', pct: 0.87, up: true },
+              { name: 'Consumer', pct: -0.45, up: false },
+              { name: 'Telco', pct: -0.62, up: false },
+            ].map((s) => (
+              <div key={s.name} className="sector-row">
+                <span style={{ fontSize: 12, color: 'var(--color-text-primary)' }}>{s.name}</span>
+                <span
+                  className="tabular-nums"
+                  style={{ fontSize: 12, fontWeight: 600, color: s.up ? 'var(--color-positive)' : 'var(--color-negative)' }}
+                >
+                  {s.up ? '+' : ''}{s.pct.toFixed(2)}%
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className={`${card} flex flex-col px-4 py-4`}>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#1e293b]">Economic Calendar</h2>
-            <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
+        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0 }}>
+          <div
+            className="flex items-center justify-between"
+            style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)' }}
+          >
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>Economic Calendar</h2>
+            <Link href="#" className="link-blue">View All</Link>
           </div>
-          <table className="w-full">
+          <table className="calendar-table">
             <thead>
-              <tr className="border-b border-[#e2e8f0]">
-                <th className="pb-1.5 pr-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Date</th>
-                <th className="pb-1.5 pr-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Event</th>
-                <th className="pb-1.5 pl-3 pr-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Prev</th>
-                <th className="pb-1.5 pl-3 pr-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Fcst</th>
-                <th className="pb-1.5 pl-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Act</th>
+              <tr>
+                <th>Date</th>
+                <th>Event</th>
+                <th style={{ textAlign: 'right' }}>Prev</th>
+                <th style={{ textAlign: 'right' }}>Fcst</th>
+                <th style={{ textAlign: 'right' }}>Act</th>
               </tr>
             </thead>
             <tbody>
@@ -385,18 +392,45 @@ export default function DashboardPage() {
                 const hasBoth = !isNaN(fc) && !isNaN(cur) && cur !== fc;
                 const beat = hasBoth && (lowerBetter ? cur < fc : cur > fc);
                 const miss = hasBoth && (lowerBetter ? cur > fc : cur < fc);
-                const color = beat ? 'text-[#16a34a]' : miss ? 'text-[#dc2626]' : 'text-[#0f172a]';
+                const actualColor = beat
+                  ? 'var(--color-positive)'
+                  : miss
+                  ? 'var(--color-negative)'
+                  : 'var(--color-text-primary)';
                 return (
-                  <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
-                    <td className="whitespace-nowrap py-2 pr-3 align-middle">
-                      <span className={`text-[11px] font-semibold tabular-nums ${row.released ? 'text-[#94a3b8]' : 'text-[#2563eb]'}`}>{row.date}</span>
+                  <tr key={i}>
+                    <td className="data-mono" style={{ whiteSpace: 'nowrap' }}>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: row.released ? 'var(--color-text-muted)' : 'var(--color-blue-primary)',
+                        }}
+                      >
+                        {row.date}
+                      </span>
                     </td>
-                    <td className="py-2 pr-3 align-middle">
-                      <div className="truncate text-[12px] font-medium text-[#1e293b]">{row.indicator}</div>
+                    <td>
+                      <div className="truncate" style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                        {row.indicator}
+                      </div>
                     </td>
-                    <td className="whitespace-nowrap py-2 pl-3 pr-3 text-right align-middle text-[11px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
-                    <td className="whitespace-nowrap py-2 pl-3 pr-3 text-right align-middle text-[11px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
-                    <td className={`whitespace-nowrap py-2 pl-3 text-right align-middle text-[11px] font-semibold tabular-nums ${color}`}>{row.released ? `${fmtNum(row.current)}${row.unit}` : '\u2014'}</td>
+                    <td className="data-mono calendar-previous" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {fmtNum(row.previous)}{row.unit}
+                    </td>
+                    <td className="data-mono calendar-forecast" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {fmtNum(row.forecast)}{row.unit}
+                    </td>
+                    {row.released ? (
+                      <td
+                        className="data-mono calendar-actual"
+                        style={{ whiteSpace: 'nowrap', textAlign: 'right', color: actualColor }}
+                      >
+                        {fmtNum(row.current)}{row.unit}
+                      </td>
+                    ) : (
+                      <td className="data-mono calendar-empty">{'\u2014'}</td>
+                    )}
                   </tr>
                 );
               })}
@@ -404,22 +438,33 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className={`${card} flex flex-col px-4 py-4`}>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
-            <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
+        <div className="card-base flex flex-col" style={{ padding: 16 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>IPO & Corporate Actions</h2>
+            <Link href="#" className="link-blue">View All</Link>
           </div>
-          <div className="flex-1 space-y-0.5">
-            {ACTIONS.map((a, i) => (
-              <div key={i} className="flex items-start gap-3 border-b border-[#f1f5f9] py-2 last:border-0">
-                <span className="w-[48px] shrink-0 pt-0.5 text-[11px] tabular-nums text-[#94a3b8]">{a.date}</span>
-                <span className="w-[42px] shrink-0 pt-0.5 text-[11px] font-bold text-[#2563eb]">{a.sym}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[12px] font-medium text-[#1e293b]">{a.act}</div>
-                  <div className="truncate text-[11px] text-[#94a3b8]">{a.detail}</div>
+          <div className="flex-1">
+            {ACTIONS.map((a, i) => {
+              const [desc, ex] = a.detail.split(' \u00b7 ');
+              const hasTicker = a.sym !== '\u2014';
+              return (
+                <div key={i} className="action-row">
+                  <span className="action-date">{a.date}</span>
+                  {hasTicker ? (
+                    <span className="ticker-badge">{a.sym}</span>
+                  ) : (
+                    <span style={{ display: 'inline-block', minWidth: 44 }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="action-title">{a.act}</div>
+                    <div className="action-desc">
+                      {desc}
+                      {ex ? <span className="action-ex">{ex}</span> : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
