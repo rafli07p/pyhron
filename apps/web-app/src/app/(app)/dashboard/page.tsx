@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts';
 
 function isIDXOpen(): boolean {
   const now = new Date();
@@ -76,6 +76,13 @@ function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol:
             <stop offset="95%" stopColor={strokeColor} stopOpacity={0.01} />
           </linearGradient>
         </defs>
+        <YAxis
+          domain={[
+            (dataMin: number) => dataMin * 0.998,
+            (dataMax: number) => dataMax * 1.002,
+          ]}
+          hide={true}
+        />
         <Area
           type="monotone"
           dataKey="value"
@@ -253,31 +260,34 @@ export default function DashboardPage() {
             {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
           </div>
 
-          <aside
-            className="card-base flex flex-col lg:row-span-2"
-            style={{ padding: 16 }}
-          >
-            <div className="flex gap-6">
-              <div className="flex-1">
-                <h3 className="nav-column-header">Support</h3>
-                <ul className="nav-list">
-                  {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
-                    <li key={l}><a href="#">{l}</a></li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex-1">
-                <h3 className="nav-column-header">Discover</h3>
-                <ul className="nav-list">
-                  {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
-                    <li key={l}><a href="#">{l}</a></li>
-                  ))}
-                </ul>
+          <div className="flex flex-col gap-4 lg:row-span-2">
+            {/* Support & Discover card */}
+            <div className="card-base" style={{ padding: 16 }}>
+              <div className="flex gap-6">
+                <div className="flex-1">
+                  <h3 className="nav-column-header">Support</h3>
+                  <ul className="nav-list">
+                    {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
+                      <li key={l}><a href="#">{l}</a></li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex-1">
+                  <h3 className="nav-column-header">Discover</h3>
+                  <ul className="nav-list">
+                    {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
+                      <li key={l}><a href="#">{l}</a></li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
 
-            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--color-border)' }}>
-              <span className="label-caps" style={{ display: 'block', marginBottom: 8 }}>Recently Visited</span>
+            {/* Recently Visited card */}
+            <div className="card-base" style={{ padding: 16 }}>
+              <span className="label-caps" style={{ display: 'block', marginBottom: 8 }}>
+                Recently Visited
+              </span>
               {VISITED.map((v, i) => (
                 <div key={i} className="recent-row">
                   <v.Icon className="recent-icon" />
@@ -288,7 +298,7 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </aside>
+          </div>
 
           <section>
             <div className="section-header">
@@ -310,7 +320,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="card-base flex flex-col" style={{ padding: 20 }}>
+        <div className="card-base flex flex-col" style={{ padding: 20, minHeight: 420 }}>
           <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
           <div className="kpi-row">
             <div className="kpi-metric">
@@ -367,7 +377,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0 }}>
+        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0, minHeight: 420 }}>
           <div
             className="flex items-center justify-between"
             style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)' }}
@@ -439,7 +449,7 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className="card-base flex flex-col" style={{ padding: 16 }}>
+        <div className="card-base flex flex-col" style={{ padding: 16, minHeight: 420 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>IPO & Corporate Actions</h2>
             <Link href="#" className="link-blue">View All</Link>
