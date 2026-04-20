@@ -17,8 +17,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ../../infra/init-timescaledb.sql:/docker-entrypoint-initdb.d/001-timescaledb.sql:ro
-    # ports:
-    #   - "${POSTGRES_PORT:-5432}:5432"  # Accessible via Docker network; no host exposure needed
+    # ports exposed only via docker-compose.override.yml for local dev
+    # - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pyhron} -d ${POSTGRES_DB:-pyhron}"]
       interval: 5s
@@ -39,8 +39,8 @@ services:
         --maxmemory-policy allkeys-lru
     volumes:
       - redisdata:/data
-    # ports:
-    #   - "${REDIS_PORT:-6379}:6379"  # Accessible via Docker network; no host exposure needed
+    # ports exposed only via docker-compose.override.yml for local dev
+    # - "${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

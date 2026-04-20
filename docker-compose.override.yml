@@ -1,9 +1,19 @@
 # Pyhron Trading Platform — Docker Compose Override (Local Development)
-# This file is automatically loaded alongside docker-compose.yml and provides
-# development-specific settings: volume mounts for hot reload, debug logging,
-# and additional tooling containers.
+# Loaded automatically alongside docker-compose.yaml.
+# Provides: host port exposure for direct DB/cache access during development,
+# hot-reload volume mounts for API and worker services.
+#
+# NOT for production — production uses internal Docker network only.
 
 services:
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
   api:
     volumes:
       - ./apps:/app/apps:ro
@@ -18,15 +28,6 @@ services:
       APP_ENV: development
       LOG_LEVEL: DEBUG
       RELOAD: "true"
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:80"
-    depends_on:
-      - api
 
   worker:
     volumes:
