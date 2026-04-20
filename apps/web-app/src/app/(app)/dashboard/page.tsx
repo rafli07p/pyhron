@@ -155,8 +155,8 @@ function IdxCard({ symbol }: { symbol: string }) {
         border: '1px solid var(--color-border)',
         borderRadius: 8,
         boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-        padding: 16,
-        minHeight: 120,
+        padding: '12px 14px',
+        minHeight: 100,
       }}
     >
       <div className="flex items-center justify-between">
@@ -245,13 +245,13 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-48px)] flex-col">
-      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-3 p-3 md:p-4">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-2 p-2 md:p-3">
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
             {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
           </div>
 
-          <div className="flex flex-col gap-4 lg:row-span-2">
+          <div className="flex flex-col gap-2 lg:row-span-2">
             {/* Support & Discover card */}
             <div className="card-base" style={{ padding: 16 }}>
               <div className="flex gap-6">
@@ -354,8 +354,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
-        <div className="card-base flex flex-col" style={{ padding: 20, minHeight: 420 }}>
+        <div className="grid grid-cols-1 items-start gap-2 md:grid-cols-2 lg:grid-cols-3">
+        <div className="card-base flex flex-col" style={{ padding: '14px 16px', minHeight: 360 }}>
           <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
           <div className="kpi-row">
             <div className="kpi-metric">
@@ -412,7 +412,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0, minHeight: 420 }}>
+        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0, minHeight: 360 }}>
           <div
             className="flex items-center justify-between"
             style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)' }}
@@ -484,7 +484,7 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className="card-base flex flex-col" style={{ padding: 16, minHeight: 420 }}>
+        <div className="card-base flex flex-col" style={{ padding: 16, minHeight: 360 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>IPO & Corporate Actions</h2>
             <Link href="#" className="link-blue">View All</Link>
