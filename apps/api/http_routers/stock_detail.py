@@ -398,3 +398,87 @@ async def get_peers(
 
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, partial(_fetch_peers, all_symbols))
+
+
+@router.get("/{symbol}/financial-highlights", response_model=dict[str, Any])
+async def get_financial_highlights(
+    symbol: str,
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
+) -> dict[str, Any]:
+    """Get complete financial highlights — curated data for BBCA, yfinance fallback."""
+    sym = symbol.upper()
+
+    if sym == "BBCA":
+        from apps.api.data.bbca_financials import (
+            BBCA_FINANCIAL_POSITION,
+            BBCA_INCOME,
+            BBCA_RATIOS,
+            BBCA_STOCK_HIGHLIGHTS,
+        )
+        return {
+            "symbol": sym,
+            "source": "Annual Report 2025 | PT Bank Central Asia Tbk",
+            "currency": "IDR Billion",
+            "financial_position": BBCA_FINANCIAL_POSITION,
+            "income": BBCA_INCOME,
+            "ratios": BBCA_RATIOS,
+            "stock_highlights": BBCA_STOCK_HIGHLIGHTS,
+        }
+
+    def _fetch_basic(s: str) -> dict[str, Any]:
+        try:
+            t = yf.Ticker(f"{s}.JK")
+            info = t.info or {}
+            return {
+                "symbol": s,
+                "source": "Yahoo Finance",
+                "currency": "IDR",
+                "financial_position": [],
+                "income": [],
+                "ratios": [],
+                "stock_highlights": [],
+                "message": (
+                    "Detailed financial data for this company is not yet available. "
+                    "Data will be added in a future release."
+                ),
+                "pe": info.get("trailingPE"),
+                "pbv": info.get("priceToBook"),
+                "roe": info.get("returnOnEquity"),
+            }
+        except Exception:
+            return {"symbol": s, "message": "Data unavailable"}
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, partial(_fetch_basic, sym))
+
+
+@router.get("/{symbol}/price-history", response_model=list[dict[str, Any]])
+async def get_price_history(
+    symbol: str,
+    period: str = Query("5y", pattern="^(1y|2y|5y|10y)$"),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
+) -> list[dict[str, Any]]:
+    """Get historical price data for charting (weekly bars)."""
+    def _fetch(sym: str, per: str) -> list[dict[str, Any]]:
+        try:
+            t = yf.Ticker(f"{sym}.JK")
+            hist = t.history(period=per, interval="1wk")
+            if hist.empty:
+                return []
+            result: list[dict[str, Any]] = []
+            for dt, row in hist.iterrows():
+                result.append({
+                    "date": dt.strftime("%Y-%m-%d"),
+                    "open": round(float(row["Open"]), 0),
+                    "high": round(float(row["High"]), 0),
+                    "low": round(float(row["Low"]), 0),
+                    "close": round(float(row["Close"]), 0),
+                    "volume": int(row["Volume"]),
+                })
+            return result
+        except Exception:
+            logger.warning("price_history_fetch_failed", symbol=sym, period=per)
+            return []
+
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, partial(_fetch, symbol.upper(), period))
