@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(pnpm build *)",
+      "Bash(grep -iE \"\\(error|warning|failed|✓|Compiled|\\\\\\\\bok\\\\\\\\b\\)\")"
+    ]
+  }
+}
