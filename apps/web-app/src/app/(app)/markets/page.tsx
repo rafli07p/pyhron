@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { RefreshCw, Filter } from 'lucide-react';
 
 interface ScreenerRow {
@@ -56,6 +57,7 @@ export default function MarketsPage() {
   const [lq45Only, setLq45Only] = useState(false);
   const [sortBy, setSortBy] = useState('market_cap');
   const [refreshing, setRefreshing] = useState(false);
+  const { data: session } = useSession();
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -67,7 +69,11 @@ export default function MarketsPage() {
         limit: '50',
         ...(lq45Only ? { lq45_only: 'true' } : {}),
       });
-      const res = await fetch(`/api/v1/screener/screen?${params}`);
+      const headers: Record<string, string> = {};
+      const token = (session as { accessToken?: string } | null)?.accessToken;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`/api/v1/screener/screen?${params}`, { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setData(json);
@@ -77,7 +83,7 @@ export default function MarketsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [sortBy, lq45Only]);
+  }, [sortBy, lq45Only, session]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
