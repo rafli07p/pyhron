@@ -565,3 +565,63 @@ body {
   color: var(--color-text-muted);
   margin-left: 6px;
 }
+
+/* Support / Discover / Recently Visited sidebar */
+.nav-column-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 10px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-list a {
+  display: block;
+  font-size: 12px;
+  color: var(--color-blue-primary);
+  line-height: 1.9;
+  text-decoration: none;
+}
+
+.nav-list a:hover {
+  text-decoration: underline;
+}
+
+.recent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+}
+
+.recent-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.recent-text {
+  font-size: 12px;
+  color: var(--color-blue-primary);
+}
+
+.recent-text:hover {
+  text-decoration: underline;
+}
+
+.recent-cat {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.recent-time {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}

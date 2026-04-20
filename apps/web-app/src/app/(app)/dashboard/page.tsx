@@ -5,8 +5,6 @@ import { Building2, LineChart, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 
-const card = 'rounded-[15px] border border-[#e2e8f0] bg-white';
-
 function isIDXOpen(): boolean {
   const now = new Date();
   const h = (now.getUTCHours() + 7) % 24;
@@ -249,66 +247,69 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-48px)] flex-col">
-      <div className="flex-1 px-5 pt-4">
-      <div className="grid grid-cols-[1fr_300px] grid-rows-[auto_auto] gap-x-4 gap-y-4">
-        <div className="grid grid-cols-5 gap-3">
-          {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
-        </div>
-
-        <div className={`${card} px-4 py-3`}>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Support</h3>
-              {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
-                <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
-              ))}
-            </div>
-            <div className="flex-1">
-              <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Discover</h3>
-              {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
-                <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
-              ))}
-            </div>
+      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-5 p-4 md:p-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+            {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
           </div>
-        </div>
 
-        <section>
-          <div className="section-header">
-            <span>Market Research and Insights</span>
-            <Link href="/research" className="link-blue">View All</Link>
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {ARTICLES.map((a) => (
-              <Link key={a.id} href="/research" className="article-card">
-                <div className="article-thumb shrink-0" style={{ background: a.gradient }} />
-                <div className="article-text">
-                  <h3 className="article-title">{a.title}</h3>
-                  <p className="article-body">{a.desc}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <div className={`${card} px-4 py-3`}>
-          <h3 className="mb-2.5 text-[14px] font-bold text-[#1e293b]">Recently Visited</h3>
-          <div className="space-y-2.5">
-            {VISITED.map((v, i) => (
-              <div key={i} className="flex items-center gap-2.5">
-                <v.Icon className="h-4 w-4 shrink-0 text-[#2563eb]" />
-                <div className="min-w-0 flex-1">
-                  <span className="text-[12px] font-bold text-[#1e293b]">{v.cat}</span>
-                  <span className="text-[12px] text-[#64748b]"> {'\u2013'} </span>
-                  <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">{v.label}</span>
-                </div>
-                <span className="shrink-0 text-[11px] text-[#94a3b8]">{v.time}</span>
+          <aside
+            className="card-base flex flex-col lg:row-span-2"
+            style={{ padding: 16 }}
+          >
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <h3 className="nav-column-header">Support</h3>
+                <ul className="nav-list">
+                  {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
+                    <li key={l}><a href="#">{l}</a></li>
+                  ))}
+                </ul>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+              <div className="flex-1">
+                <h3 className="nav-column-header">Discover</h3>
+                <ul className="nav-list">
+                  {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
+                    <li key={l}><a href="#">{l}</a></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
 
-      <div className="mt-4 grid grid-cols-3 items-start gap-4 pb-4">
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--color-border)' }}>
+              <span className="label-caps" style={{ display: 'block', marginBottom: 8 }}>Recently Visited</span>
+              {VISITED.map((v, i) => (
+                <div key={i} className="recent-row">
+                  <v.Icon className="recent-icon" />
+                  <span className="recent-cat">{v.cat}</span>
+                  <span className="recent-cat"> {'\u2013'} </span>
+                  <a href="#" className="recent-text">{v.label}</a>
+                  <span className="recent-time">{v.time}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          <section>
+            <div className="section-header">
+              <span>Market Research and Insights</span>
+              <Link href="/research" className="link-blue">View All</Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {ARTICLES.map((a) => (
+                <Link key={a.id} href="/research" className="article-card">
+                  <div className="article-thumb shrink-0" style={{ background: a.gradient }} />
+                  <div className="article-text">
+                    <h3 className="article-title">{a.title}</h3>
+                    <p className="article-body">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className="card-base flex flex-col" style={{ padding: 20 }}>
           <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
           <div className="kpi-row">
@@ -468,15 +469,21 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </main>
 
-      </div>
-
-      <footer className="shrink-0 border-t border-[#e2e8f0] bg-[#f8fafc] px-5 py-3">
-        <p className="text-center text-[12px] text-[#64748b]">
+      <footer
+        className="shrink-0"
+        style={{
+          borderTop: '1px solid var(--color-border)',
+          background: 'var(--color-bg-page)',
+          padding: '12px 20px',
+        }}
+      >
+        <p className="text-center" style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
           &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
-          <a href="/terms" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Terms of Use</a> &amp;{' '}
-          <a href="/disclaimer" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Disclaimer</a>.{' '}
-          <a href="#" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Manage Cookies</a>.
+          <a href="/terms" className="link-blue" style={{ textDecoration: 'underline' }}>Terms of Use</a> &amp;{' '}
+          <a href="/disclaimer" className="link-blue" style={{ textDecoration: 'underline' }}>Disclaimer</a>.{' '}
+          <a href="#" className="link-blue" style={{ textDecoration: 'underline' }}>Manage Cookies</a>.
         </p>
       </footer>
     </div>
