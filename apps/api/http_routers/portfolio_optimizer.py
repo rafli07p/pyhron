@@ -183,28 +183,12 @@ async def get_holdings(
 async def get_portfolio_summary(
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> PortfolioSummary:
-    """Aggregate portfolio-level P&L metrics."""
-    async with get_session() as session:
-        result = await session.execute(
-            text(
-                """
-                SELECT
-                    SUM(market_value) AS total_mkt_val,
-                    SUM(quantity * avg_entry_price) AS total_cost,
-                    SUM(unrealized_pnl) AS total_unreal,
-                    SUM(realized_pnl) AS total_real,
-                    COUNT(*) AS num_pos
-                FROM positions
-                WHERE strategy_id = :sid
-                """
-            ),
-            {"sid": DEMO_STRATEGY_ID},
-        )
-        row = result.fetchone()
-
+    """Aggregate portfolio-level P&L — computed from live prices, not stale DB values."""
+    # Reuse holdings logic to get live-enriched positions
+    holdings = await get_holdings(_user=_user)
     today = str(datetime.now(UTC).date())
 
-    if not row or not row.total_mkt_val:
+    if not holdings:
         return PortfolioSummary(
             total_market_value=0,
             total_cost_basis=0,
@@ -215,17 +199,26 @@ async def get_portfolio_summary(
             as_of=today,
         )
 
-    total_mkt = float(row.total_mkt_val or 0)
-    total_cost = float(row.total_cost or 0)
-    total_unreal = float(row.total_unreal or 0)
+    total_mkt = sum(h.market_value for h in holdings)
+    total_cost = sum(h.cost_basis for h in holdings)
+    total_unreal = sum(h.unrealized_pnl for h in holdings)
     unreal_pct = (total_unreal / total_cost * 100) if total_cost else 0.0
+
+    # Realized P&L still from DB (not affected by live prices)
+    async with get_session() as session:
+        result = await session.execute(
+            text("SELECT SUM(realized_pnl) AS total_real FROM positions WHERE strategy_id = :sid"),
+            {"sid": DEMO_STRATEGY_ID},
+        )
+        row = result.fetchone()
+    total_real = float(row.total_real or 0) if row else 0.0
 
     return PortfolioSummary(
         total_market_value=round(total_mkt, 0),
         total_cost_basis=round(total_cost, 0),
         total_unrealized_pnl=round(total_unreal, 0),
         total_unrealized_pnl_pct=round(unreal_pct, 2),
-        total_realized_pnl=round(float(row.total_real or 0), 0),
-        num_positions=int(row.num_pos or 0),
+        total_realized_pnl=round(total_real, 0),
+        num_positions=len(holdings),
         as_of=today,
     )
