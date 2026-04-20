@@ -251,7 +251,7 @@ export default function DashboardPage() {
             {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
           </div>
 
-          <div className="flex flex-col gap-2 lg:row-span-2">
+          <div className="flex flex-col gap-2 lg:row-span-2 lg:h-full">
             {/* Support & Discover card */}
             <div className="card-base" style={{ padding: 16 }}>
               <div className="flex gap-6">
@@ -321,7 +321,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="card-base" style={{ padding: 0 }}>
+          <div className="card-base flex flex-col" style={{ padding: 0 }}>
             <div
               style={{
                 display: 'flex',
@@ -354,8 +354,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-2 md:grid-cols-2 lg:grid-cols-3">
-        <div className="card-base flex flex-col" style={{ padding: '14px 16px', minHeight: 360 }}>
+        <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2 lg:grid-cols-3">
+        <div className="card-base flex flex-col" style={{ padding: '14px 16px' }}>
           <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
           <div className="kpi-row">
             <div className="kpi-metric">
@@ -412,7 +412,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0, minHeight: 360 }}>
+        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0 }}>
           <div
             className="flex items-center justify-between"
             style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)' }}
@@ -484,7 +484,7 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className="card-base flex flex-col" style={{ padding: 16, minHeight: 360 }}>
+        <div className="card-base flex flex-col" style={{ padding: 16 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
             <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>IPO & Corporate Actions</h2>
             <Link href="#" className="link-blue">View All</Link>
