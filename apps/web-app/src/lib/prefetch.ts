@@ -12,7 +12,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 export function prefetchInstrument(qc: QueryClient, symbol: string) {
   qc.prefetchQuery({
     queryKey: queryKeys.markets.instrument(symbol),
-    queryFn: () => fetchJson(`${API}/v1/market/instruments/${symbol}`),
+    queryFn: () => fetchJson(`${API}/v1/markets/instruments/${symbol}`),
     staleTime: 30_000,
   });
 }

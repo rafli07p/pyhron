@@ -381,19 +381,19 @@ class TestMarketOverview:
     """Validate market overview and OHLCV endpoints."""
 
     async def test_market_overview(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/market/overview", headers=_auth_headers())
+        resp = await client.get("/v1/markets/overview", headers=_auth_headers())
         assert resp.status_code in _OK_OR_UNAVAILABLE
 
     async def test_ohlcv_bars(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/market/ohlcv/BBCA.JK", headers=_auth_headers())
+        resp = await client.get("/v1/markets/ohlcv/BBCA.JK", headers=_auth_headers())
         assert resp.status_code in _OK_OR_NOT_FOUND
 
     async def test_instruments_list(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/market/instruments", headers=_auth_headers())
+        resp = await client.get("/v1/markets/instruments", headers=_auth_headers())
         assert resp.status_code in _OK_OR_UNAVAILABLE
 
     async def test_instrument_detail(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/market/instruments/BBCA.JK", headers=_auth_headers())
+        resp = await client.get("/v1/markets/instruments/BBCA.JK", headers=_auth_headers())
         assert resp.status_code in _OK_OR_NOT_FOUND
 
 

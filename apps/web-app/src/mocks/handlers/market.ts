@@ -23,7 +23,7 @@ export const marketHandlers = [
   // -----------------------------------------------------------------------
   // Market overview
   // -----------------------------------------------------------------------
-  http.get(`${API_BASE}/v1/market/overview`, () => {
+  http.get(`${API_BASE}/v1/markets/overview`, () => {
     return HttpResponse.json({
       index: 'IHSG',
       value: 7234.56,
@@ -41,7 +41,7 @@ export const marketHandlers = [
   // -----------------------------------------------------------------------
   // OHLCV for a symbol
   // -----------------------------------------------------------------------
-  http.get(`${API_BASE}/v1/market/ohlcv/:symbol`, ({ params }) => {
+  http.get(`${API_BASE}/v1/markets/ohlcv/:symbol`, ({ params }) => {
     const symbol = (params.symbol as string).toUpperCase();
     const base = BASE_PRICES[symbol];
     if (!base) {
@@ -57,7 +57,7 @@ export const marketHandlers = [
   // -----------------------------------------------------------------------
   // Instruments list (first 10)
   // -----------------------------------------------------------------------
-  http.get(`${API_BASE}/v1/market/instruments`, () => {
+  http.get(`${API_BASE}/v1/markets/instruments`, () => {
     const instruments = MOCK_IDX_STOCKS.slice(0, 10).map((s) => ({
       symbol: s.symbol,
       name: s.name,
@@ -76,7 +76,7 @@ export const marketHandlers = [
   // -----------------------------------------------------------------------
   // Orderbook snapshot for a symbol
   // -----------------------------------------------------------------------
-  http.get(`${API_BASE}/v1/market/orderbook/:symbol`, ({ params }) => {
+  http.get(`${API_BASE}/v1/markets/orderbook/:symbol`, ({ params }) => {
     const symbol = (params.symbol as string).toUpperCase();
     return HttpResponse.json(generateOrderbook(symbol));
   }),
@@ -84,7 +84,7 @@ export const marketHandlers = [
   // -----------------------------------------------------------------------
   // Single instrument detail
   // -----------------------------------------------------------------------
-  http.get(`${API_BASE}/v1/market/instruments/:symbol`, ({ params }) => {
+  http.get(`${API_BASE}/v1/markets/instruments/:symbol`, ({ params }) => {
     const symbol = (params.symbol as string).toUpperCase();
     const stock = MOCK_IDX_STOCKS.find((s) => s.symbol === symbol);
     if (!stock) {
