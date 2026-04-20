@@ -365,34 +365,63 @@ async def get_peers(
             try:
                 t = yf.Ticker(f"{sym}.JK")
                 info = t.info or {}
-                hist = t.history(period="2d")
-                last_price_raw = float(hist["Close"].iloc[-1]) if not hist.empty else None
-                # yfinance returns dividendYield as a decimal fraction (e.g. 0.0523 = 5.23%).
-                # Fall back to trailingAnnualDividendYield when not present.
+                hist_1y = t.history(period="1y")
+                hist_2d = t.history(period="2d")
+                last_price = round(float(hist_2d["Close"].iloc[-1]), 0) if not hist_2d.empty else None
+                price_change_1y = None
+                if not hist_1y.empty and len(hist_1y) >= 2:
+                    p_start = float(hist_1y["Close"].iloc[0])
+                    p_end = float(hist_1y["Close"].iloc[-1])
+                    price_change_1y = round((p_end - p_start) / p_start * 100, 2) if p_start else None
+                # yfinance returns these fields as decimal fractions (0.0523 = 5.23%).
                 raw_yield = info.get("dividendYield") or info.get("trailingAnnualDividendYield")
                 dividend_yield = round(float(raw_yield) * 100, 2) if raw_yield else None
+                payout = info.get("payoutRatio")
+                payout_pct = round(float(payout) * 100, 1) if payout else None
+                profit_margin = info.get("profitMargins")
+                profit_margin_pct = round(float(profit_margin) * 100, 2) if profit_margin else None
+                rev_growth = info.get("revenueGrowth")
+                rev_growth_pct = round(float(rev_growth) * 100, 2) if rev_growth else None
+                eps_growth = info.get("earningsGrowth")
+                eps_growth_pct = round(float(eps_growth) * 100, 2) if eps_growth else None
+                roe_raw = info.get("returnOnEquity")
+                roe_pct = round(float(roe_raw) * 100, 2) if roe_raw else None
+                health = "—"
+                if roe_pct is not None:
+                    if roe_pct >= 18:
+                        health = "Strong"
+                    elif roe_pct >= 12:
+                        health = "Satisfactory"
+                    elif roe_pct >= 6:
+                        health = "Marginal"
+                    else:
+                        health = "Weak"
                 results.append({
                     "symbol": sym,
                     "name": info.get("shortName", sym),
-                    "last_price": round(last_price_raw, 0) if last_price_raw else None,
+                    "health": health,
+                    "last_price": last_price,
                     "market_cap": info.get("marketCap"),
                     "pe_ratio": info.get("trailingPE"),
                     "pbv_ratio": info.get("priceToBook"),
-                    "roe": info.get("returnOnEquity"),
+                    "roe": roe_pct,
+                    "net_profit_margin": profit_margin_pct,
+                    "revenue_growth": rev_growth_pct,
+                    "eps_growth": eps_growth_pct,
                     "dividend_yield": dividend_yield,
+                    "payout_ratio": payout_pct,
+                    "price_change_1y": price_change_1y,
                     "is_selected": sym == upper,
                 })
             except Exception:
                 results.append({
-                    "symbol": sym,
-                    "name": sym,
-                    "last_price": None,
-                    "market_cap": None,
-                    "pe_ratio": None,
-                    "pbv_ratio": None,
-                    "roe": None,
-                    "dividend_yield": None,
-                    "is_selected": sym == upper,
+                    "symbol": sym, "name": sym, "health": "—",
+                    "last_price": None, "market_cap": None,
+                    "pe_ratio": None, "pbv_ratio": None,
+                    "roe": None, "net_profit_margin": None,
+                    "revenue_growth": None, "eps_growth": None,
+                    "dividend_yield": None, "payout_ratio": None,
+                    "price_change_1y": None, "is_selected": sym == upper,
                 })
         return results
 
