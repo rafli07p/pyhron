@@ -188,6 +188,7 @@ known-first-party = ["apps", "services", "shared", "data_platform", "strategy_en
 "scripts/**/*.py" = ["T201"]
 "data_platform/alembic_migrations/**/*.py" = ["T201", "S608"]
 "apps/api/http_routers/**/*.py" = ["TC001", "TC003"]
+"services/api/rest_gateway/routes/**/*.py" = ["TC001", "TC003"]
 "pyhron/**/*.py" = ["TC001", "TC003"]
 
 [tool.mypy]

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from services.api.rest_gateway import (
+from services.api.rest_gateway.middleware import (
     CSRFMiddleware,
     RequestIDMiddleware,
     SecurityHeadersMiddleware,
