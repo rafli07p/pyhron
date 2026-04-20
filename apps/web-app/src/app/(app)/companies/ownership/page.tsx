@@ -36,6 +36,7 @@ export default function OwnershipPage() {
 
   useEffect(() => {
     if (!session || !selectedSymbol) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     fetch(`/api/v1/stocks/${selectedSymbol}/ownership`, { headers: authHeader() })
       .then(r => r.json())
