@@ -142,7 +142,6 @@ function FinTable({
                 {row.values.map((v, j) => (
                   <td key={j} style={{
                     padding: '7px 16px', textAlign: 'right',
-                    fontFamily: 'var(--font-mono, monospace)',
                     fontWeight: row.bold ? 700 : 400,
                     color: row.bold ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
                     fontSize: 12,
