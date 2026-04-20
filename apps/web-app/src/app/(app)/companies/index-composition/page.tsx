@@ -110,7 +110,7 @@ export default function IndexCompositionPage() {
     queryKey: ['index-membership', selectedSymbol],
     queryFn: async () => {
       const res = await fetch(
-        `/api/v1/companies/index-membership/${encodeURIComponent(selectedSymbol)}`,
+        `/api/companies/index-membership/${encodeURIComponent(selectedSymbol)}`,
         { headers: authHeader() },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
