@@ -19,11 +19,11 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* Secondary Sidebar */}
+      {/* Secondary Sidebar — collapses to 24px strip so toggle stays in sidebar lane */}
       <aside style={{
-        width: collapsed ? 0 : 220,
-        minWidth: collapsed ? 0 : 220,
-        borderRight: collapsed ? 'none' : '1px solid var(--color-border)',
+        width: collapsed ? 24 : 220,
+        minWidth: collapsed ? 24 : 220,
+        borderRight: '1px solid var(--color-border)',
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
@@ -31,7 +31,25 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
         overflow: 'hidden',
         position: 'relative',
       }}>
-        {!collapsed && (
+        {collapsed ? (
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            paddingTop: 10, height: '100%',
+          }}>
+            <button
+              onClick={() => setCollapsed(false)}
+              style={{
+                width: 20, height: 20, borderRadius: 3,
+                background: 'transparent', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+              aria-label="Expand sidebar"
+            >
+              <ChevronRight size={13} style={{ color: 'var(--color-text-muted)' }} />
+            </button>
+          </div>
+        ) : (
           <>
             {/* Section header with collapse button */}
             <div style={{
@@ -91,25 +109,6 @@ export default function CompaniesLayout({ children }: { children: React.ReactNod
 
       {/* Main content area */}
       <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {/* Collapsed expand button — shown only when sidebar is collapsed, mimics MSCI ONE */}
-        {collapsed && (
-          <button
-            onClick={() => setCollapsed(false)}
-            style={{
-              position: 'absolute', top: 10, left: 8, zIndex: 20,
-              width: 24, height: 24, borderRadius: 4,
-              background: '#fff', border: '1px solid var(--color-border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-            }}
-            aria-label="Expand sidebar"
-          >
-            <ChevronRight size={13} style={{ color: 'var(--color-text-muted)' }} />
-          </button>
-        )}
-
-        {/* Page content */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           {children}
         </div>

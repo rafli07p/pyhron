@@ -337,21 +337,19 @@ export default function IndexCompositionPage() {
 
       {/* E. Tabs row */}
       <div className="mt-4 flex items-center justify-between px-6">
-        <div className="flex">
-          {(Object.keys(TAB_LABELS) as TabKey[]).map((key, idx) => {
+        <div className="flex gap-2">
+          {(Object.keys(TAB_LABELS) as TabKey[]).map((key) => {
             const active = activeTab === key;
-            const isFirst = idx === 0;
-            const isLast = idx === 2;
             return (
               <button
                 key={key}
                 type="button"
                 onClick={() => setActiveTab(key)}
-                className={`h-10 px-6 text-[13px] transition-colors ${
+                className={`h-9 rounded border px-5 text-[13px] transition-colors ${
                   active
-                    ? 'bg-[var(--color-blue-primary)] font-semibold text-white'
-                    : 'bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-border-subtle)]'
-                } border border-[var(--color-border)] ${isFirst ? 'rounded-l' : ''} ${isLast ? 'rounded-r' : ''} ${idx > 0 ? '-ml-px' : ''}`}
+                    ? 'border-[var(--color-blue-primary)] bg-[var(--color-blue-primary)] font-semibold text-white'
+                    : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-border-subtle)]'
+                }`}
               >
                 {TAB_LABELS[key]}
               </button>
@@ -420,6 +418,108 @@ export default function IndexCompositionPage() {
       <p className="px-6 py-3 text-[11px] text-[var(--color-text-muted)]">
         * Indexed AUM figures are indicative, based on publicly reported benchmarking data. Actual AUM may vary.
       </p>
+
+      {/* H. Indexed AUM Analysis card */}
+      <div style={{
+        margin: '0 24px 24px',
+        border: '1px solid var(--color-border)',
+        borderRadius: 8,
+        background: '#fff',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '12px 16px',
+          borderBottom: '1px solid var(--color-border)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <ChevronDown size={14} style={{ color: 'var(--color-text-muted)' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+            Indexed AUM Analysis (US Dollar)
+          </span>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <th style={{
+                  padding: '10px 16px', textAlign: 'left', width: 400,
+                  fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 600,
+                }}>
+                  Metric
+                </th>
+                {selectedPeers.map(sym => (
+                  <th key={sym} style={{
+                    padding: '10px 16px', textAlign: 'right', minWidth: 140,
+                    fontSize: 11, fontWeight: 700, color: 'var(--color-text-primary)',
+                    textTransform: 'uppercase', letterSpacing: '0.04em',
+                  }}>
+                    {sym}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { label: 'Free Float Market Capitalization ($M)**', key: 'freefloat' },
+                { label: 'Total Indexed AUM ($M)', key: 'totalAum' },
+                { label: 'Indexed Free Float Ratio***', key: 'ratio' },
+              ].map(({ label, key }) => (
+                <tr key={key} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                  <td style={{
+                    padding: '10px 16px', fontSize: 12,
+                    color: 'var(--color-text-primary)', fontWeight: 500,
+                  }}>
+                    {label}
+                  </td>
+                  {selectedPeers.map(sym => (
+                    <td key={sym} style={{
+                      padding: '10px 16px', textAlign: 'right',
+                      fontSize: 12, color: 'var(--color-text-muted)',
+                      fontFamily: 'var(--font-mono, monospace)',
+                    }}>
+                      —
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{
+          padding: '10px 16px',
+          borderTop: '1px solid var(--color-border)',
+          display: 'flex', alignItems: 'center', gap: 16,
+          justifyContent: 'flex-end',
+        }}>
+          {[
+            { label: 'Outperforms', bg: '#00875A' },
+            { label: 'Slightly Outperforms', bg: '#E3F5ED' },
+            { label: 'Slightly Underperforms', bg: '#FDECEA' },
+            { label: 'Underperforms', bg: '#D92D20' },
+          ].map(({ label, bg }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{
+                width: 12, height: 12, borderRadius: 2,
+                background: bg, flexShrink: 0,
+              }} />
+              <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '8px 16px 12px', borderTop: '1px solid var(--color-border)' }}>
+          <p style={{ fontSize: 11, color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+            Displaying all data as of the current date, based on AUM.<br />
+            *Indexed AUM includes, to the extent available, open-ended/closed-ended funds,
+            separately managed accounts, pools/commingled funds, and institutional mutual funds<br />
+            **MSCI defines the free float as the proportion of shares outstanding that is deemed
+            to be available for purchase in public equity markets by international investors<br />
+            *** Total Indexed AUM/Free Float Market Capitalization
+          </p>
+        </div>
+      </div>
 
       {/* Peer group modal */}
       {peerModalOpen && (
@@ -786,7 +886,7 @@ function DataTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 420 }}>
       <table className="w-full border-collapse text-[12px]">
         <colgroup>
           <col style={{ width: 40 }} />
@@ -799,8 +899,8 @@ function DataTable({
             ? (['rating', 'carbon', 'quality'] as const).map(k => <col key={k} style={{ width: 140 }} />)
             : peers.map(p => <col key={p} style={{ width: 140 }} />)}
         </colgroup>
-        <thead>
-          <tr className="border-b border-[var(--color-border)] bg-[var(--color-bg-page)]">
+        <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--color-bg-page)' }}>
+          <tr className="border-b border-[var(--color-border)]">
             <ThCell align="center">—</ThCell>
             <SortableTh label="Rank" col="rank" sort={sort} onSort={onSort} align="right" prefix />
             <SortableTh label="Index Code" col="indexCode" sort={sort} onSort={onSort} align="right" prefix />

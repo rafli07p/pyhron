@@ -63,8 +63,9 @@ describe('IndexCompositionPage', () => {
     renderPage();
     // Wait for table data (row rendered) before counting columns
     await screen.findByText('MSCI Indonesia ESG Leaders');
-    const table = screen.getByRole('table');
-    const header = within(table).getAllByRole('columnheader');
+    // Main table is the first table on the page (AUM analysis card adds a second table)
+    const mainTable = screen.getAllByRole('table')[0]!;
+    const header = within(mainTable).getAllByRole('columnheader');
     // First 6 cols are metadata; peer cols come after
     const initialPeerCols = header.length - 6;
     expect(initialPeerCols).toBe(4);
@@ -77,8 +78,8 @@ describe('IndexCompositionPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => {
-      const afterTable = screen.getByRole('table');
-      const afterHeader = within(afterTable).getAllByRole('columnheader');
+      const afterMain = screen.getAllByRole('table')[0]!;
+      const afterHeader = within(afterMain).getAllByRole('columnheader');
       expect(afterHeader.length - 6).toBe(5);
     });
   });

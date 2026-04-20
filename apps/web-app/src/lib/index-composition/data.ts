@@ -75,4 +75,44 @@ export const BBCA_INDEX_ROWS: IndexRow[] = [
     weights: { BBCA: 5.00, BMRI: 5.00, BBRI: 4.87, BBNI: null },
     esg: { rating: 'AAA', carbonIntensity: 35, esgQualityScore: 9.1 },
   },
+  {
+    rank: 8, indexCode: '722420', indexName: 'MSCI Indonesia ESG Universal',
+    nextRebalancingDate: '2025-11-28', indexedAumMillionUsd: 23, isParent: false,
+    weights: { BBCA: 21.34, BMRI: 14.22, BBRI: 11.87, BBNI: 8.45, BRIS: 6.23 },
+  },
+  {
+    rank: 9, indexCode: '718432', indexName: 'MSCI Indonesia Momentum',
+    nextRebalancingDate: '2025-11-28', indexedAumMillionUsd: 56, isParent: false,
+    weights: { BBCA: 18.91, BMRI: null, BBRI: 13.44, BBNI: null, BRIS: null },
+  },
+  {
+    rank: 10, indexCode: '715673', indexName: 'MSCI Indonesia Quality',
+    nextRebalancingDate: '2025-11-28', indexedAumMillionUsd: 34, isParent: false,
+    weights: { BBCA: 23.67, BMRI: 16.34, BBRI: null, BBNI: 9.12, BRIS: null },
+  },
+  {
+    rank: 11, indexCode: '719834', indexName: 'MSCI Indonesia Value',
+    nextRebalancingDate: '2025-11-28', indexedAumMillionUsd: 41, isParent: false,
+    weights: { BBCA: null, BMRI: 19.45, BBRI: 15.23, BBNI: 11.67, BRIS: 7.89 },
+  },
+  {
+    rank: 12, indexCode: '723651', indexName: 'MSCI Indonesia Small Cap',
+    nextRebalancingDate: '2025-02-28', indexedAumMillionUsd: 18, isParent: false,
+    weights: { BBCA: null, BMRI: null, BBRI: 8.34, BBNI: 6.12, BRIS: 9.45 },
+  },
+  {
+    rank: 13, indexCode: '721098', indexName: 'MSCI Indonesia Minimum Volatility',
+    nextRebalancingDate: '2025-11-28', indexedAumMillionUsd: 29, isParent: false,
+    weights: { BBCA: 19.23, BMRI: 13.45, BBRI: null, BBNI: 8.90, BRIS: null },
+  },
+  {
+    rank: 14, indexCode: '724789', indexName: 'MSCI Indonesia Equal Weighted',
+    nextRebalancingDate: '2025-11-28', indexedAumMillionUsd: 15, isParent: false,
+    weights: { BBCA: 3.45, BMRI: 3.45, BBRI: 3.45, BBNI: 3.45, BRIS: 3.45 },
+  },
+  {
+    rank: 15, indexCode: '726543', indexName: 'MSCI Indonesia Dividend Masters',
+    nextRebalancingDate: '2025-02-28', indexedAumMillionUsd: 47, isParent: false,
+    weights: { BBCA: 22.18, BMRI: 15.67, BBRI: 12.34, BBNI: null, BRIS: 8.91 },
+  },
 ];
