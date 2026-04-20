@@ -50,7 +50,7 @@ type Item = { label: string; path: string; Icon: React.FC<{ a: boolean }> };
 
 const NAV: Item[] = [
   { label: 'Home', path: '/dashboard', Icon: IHome },
-  { label: 'Companies', path: '/markets', Icon: ICompanies },
+  { label: 'Companies', path: '/companies', Icon: ICompanies },
   { label: 'Orderbook', path: '/markets/orderbook/BBCA', Icon: IOrderbook },
   { label: 'Portfolios', path: '/portfolio', Icon: IPortfolios },
   { label: 'Indexes', path: '/studio', Icon: IIndexes },
