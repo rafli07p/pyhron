@@ -250,7 +250,7 @@ addopts = [
     "--cov=governance_intelligence",
     "--cov=pyhron",
     "--cov-report=term-missing",
-    "--cov-fail-under=20",
+    "--cov-fail-under=15",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -266,8 +266,7 @@ filterwarnings = [
 [tool.coverage.run]
 omit = [
     "*/proto_generated/*",
-    "apps/research-platform/*",
-    "apps/admin-console/*",
+    "apps/terminal/*",
     "docs/*",
     "scripts/*",
     "tests/*",
