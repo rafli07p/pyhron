@@ -245,7 +245,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-48px)] flex-col">
-      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-2 p-2 md:p-3">
+      <main className="flex w-full flex-1 flex-col gap-2 p-2 md:p-3">
         <div className="grid grid-cols-1 gap-2 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5">
             {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
