@@ -20,7 +20,7 @@ class IdxEquityInstrument(Base):
     Column names match the canonical schema after migration 013.
     """
 
-    __tablename__ = "idx_equity_instrument"
+    __tablename__ = "instruments"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     symbol: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)

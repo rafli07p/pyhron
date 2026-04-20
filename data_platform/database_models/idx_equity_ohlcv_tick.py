@@ -20,7 +20,7 @@ class IdxEquityOhlcvTick(Base):
     Composite primary key on ``(time, symbol, exchange)``.
     """
 
-    __tablename__ = "idx_equity_ohlcv_tick"
+    __tablename__ = "ohlcv"
 
     time: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), primary_key=True, nullable=False)
     symbol: Mapped[str] = mapped_column(String(20), primary_key=True, nullable=False)
