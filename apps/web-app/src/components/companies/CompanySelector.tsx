@@ -23,12 +23,13 @@ export function CompanySelector({ width = 220 }: { width?: number }) {
   }, [session]);
 
   useEffect(() => {
-    if (!session) return;
-    fetch('/api/v1/stocks/', { headers: authHeader() })
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    if (!token) return;
+    fetch('/api/v1/stocks/', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then((data: Instrument[]) => setInstruments(Array.isArray(data) ? data : []))
       .catch(() => {});
-  }, [session, authHeader]);
+  }, [session]);
 
   const filtered = instruments.filter(i =>
     i.symbol.includes(search.toUpperCase()) ||

@@ -141,11 +141,23 @@ export default function ResearchPage() {
     }
   }, [authHeader]);
 
+  // News re-fetches on filter change
   useEffect(() => {
     if (!session) return;
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    if (!token) return;
     void fetchNews();
+  }, [session, fetchNews]);
+
+  // Sentiment only fetches once on mount (not on filter change) — prevents
+  // thundering-herd EODHD calls that otherwise exhaust the free-tier quota.
+  useEffect(() => {
+    if (!session) return;
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    if (!token) return;
     void fetchSentiment();
-  }, [session, fetchNews, fetchSentiment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   return (
     <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
