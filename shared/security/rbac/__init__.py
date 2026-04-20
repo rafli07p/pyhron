@@ -23,12 +23,10 @@ Standalone usage::
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from enum import StrEnum, unique
-from functools import wraps
 from typing import TYPE_CHECKING, Any
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from shared.security.auth import TokenPayload, verify_token
@@ -81,6 +79,16 @@ class Permission(StrEnum):
     MANAGE_TENANTS = "MANAGE_TENANTS"
     VIEW_AUDIT_LOG = "VIEW_AUDIT_LOG"
     MANAGE_CONFIG = "MANAGE_CONFIG"
+
+
+# Role hierarchy (higher number = more privileges)
+
+ROLE_HIERARCHY: dict[Role, int] = {
+    Role.ADMIN: 4,
+    Role.TRADER: 3,
+    Role.ANALYST: 2,
+    Role.VIEWER: 1,
+}
 
 
 # Role -> Permission mapping
@@ -176,27 +184,18 @@ def require_permission(permission: Permission) -> Callable[..., Any]:
 
 
 def require_role(*roles: Role) -> Callable[..., Any]:
-    """FastAPI dependency that restricts access to specific roles.
+    """FastAPI dependency — user must have AT LEAST the minimum role.
 
-    Accepts one or more :class:`Role` values.  The caller's JWT is
-    extracted, decoded, and its role is checked against the allowed
-    list.
+    When called with a single role, accepts that role AND all higher roles.
+    When called with multiple roles, the lowest of the supplied roles
+    becomes the effective minimum (so any role at or above that level passes).
 
-    Args:
-        roles: One or more allowed roles.
-
-    Returns:
-        FastAPI dependency function that yields a :class:`TokenPayload`.
-
-    Example::
-
-        @router.get("/admin/users")
-        async def list_users(
-            user: TokenPayload = Depends(require_role(Role.ADMIN)),
-        ):
-            ...
+    Examples:
+        require_role(Role.VIEWER)  -> VIEWER, ANALYST, TRADER, ADMIN all pass
+        require_role(Role.TRADER)  -> TRADER, ADMIN pass; ANALYST, VIEWER fail
+        require_role(Role.ADMIN)   -> only ADMIN passes
     """
-    allowed: frozenset[str] = frozenset(r.value for r in roles)
+    min_level = min(ROLE_HIERARCHY.get(r, 0) for r in roles)
 
     async def _dependency(
         credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
@@ -212,10 +211,19 @@ def require_role(*roles: Role) -> Callable[..., Any]:
                 headers={"WWW-Authenticate": "Bearer"},
             ) from exc
 
-        if payload.role not in allowed:
+        try:
+            user_role = Role(payload.role)
+        except ValueError:
+            user_role = None
+        user_level = ROLE_HIERARCHY.get(user_role, 0) if user_role else 0
+
+        if user_level < min_level:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Role must be one of {sorted(allowed)}. Got '{payload.role}'.",
+                detail=(
+                    f"Insufficient role. Required minimum: "
+                    f"{[r.value for r in roles]}. Got '{payload.role}'."
+                ),
             )
 
         return payload
@@ -259,6 +267,7 @@ def require_tenant(tenant_id: str) -> Callable[..., Any]:
 
 
 __all__ = [
+    "ROLE_HIERARCHY",
     "ROLE_PERMISSIONS",
     "Permission",
     "Role",
