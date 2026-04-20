@@ -254,9 +254,9 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-48px)] flex-col">
-      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-5 p-4 md:p-6">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-3 p-3 md:p-4">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
             {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
           </div>
 
@@ -285,29 +285,73 @@ export default function DashboardPage() {
 
             {/* Recently Visited card */}
             <div className="card-base" style={{ padding: 16 }}>
-              <span className="label-caps" style={{ display: 'block', marginBottom: 8 }}>
-                Recently Visited
-              </span>
+              <p className="label-caps" style={{ marginBottom: 10 }}>Recently Visited</p>
               {VISITED.map((v, i) => (
-                <div key={i} className="recent-row">
-                  <v.Icon className="recent-icon" />
-                  <span className="recent-cat">{v.cat}</span>
-                  <span className="recent-cat"> {'\u2013'} </span>
-                  <a href="#" className="recent-text">{v.label}</a>
-                  <span className="recent-time">{v.time}</span>
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 0',
+                    borderBottom: i < VISITED.length - 1
+                      ? '1px solid var(--color-border-subtle)'
+                      : 'none',
+                  }}
+                >
+                  <v.Icon size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+                    {v.cat}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                    {'\u2013'}
+                  </span>
+                  <a
+                    href="#"
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--color-blue-primary)',
+                      textDecoration: 'none',
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                    onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                  >
+                    {v.label}
+                  </a>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-muted)', flexShrink: 0, marginLeft: 8 }}>
+                    {v.time}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          <section>
-            <div className="section-header">
-              <span>Market Research and Insights</span>
+          <div className="card-base" style={{ padding: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 16px',
+                borderBottom: '1px solid var(--color-border)',
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                Market Research and Insights
+              </span>
               <Link href="/research" className="link-blue">View All</Link>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
               {ARTICLES.map((a) => (
-                <Link key={a.id} href="/research" className="article-card">
+                <Link
+                  key={a.id}
+                  href="/research"
+                  className="article-card article-grid-item"
+                >
                   <div className="article-thumb shrink-0" style={{ background: a.gradient }} />
                   <div className="article-text">
                     <h3 className="article-title">{a.title}</h3>
@@ -316,10 +360,10 @@ export default function DashboardPage() {
                 </Link>
               ))}
             </div>
-          </section>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 lg:grid-cols-3">
         <div className="card-base flex flex-col" style={{ padding: 20, minHeight: 420 }}>
           <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
           <div className="kpi-row">
