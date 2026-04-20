@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-
-const card = 'rounded-[15px] border border-[#e2e8f0] bg-white';
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 
 function isIDXOpen(): boolean {
   const now = new Date();
@@ -62,52 +61,32 @@ function fmtNum(v: string): string {
   return n.toFixed(2);
 }
 
-function smoothPath(coords: { x: number; y: number }[]): string {
-  if (coords.length < 2) {
-    const c = coords[0];
-    return c ? `M${c.x},${c.y}` : '';
-  }
-  const first = coords[0]!;
-  let d = `M${first.x.toFixed(2)},${first.y.toFixed(2)}`;
-  for (let i = 0; i < coords.length - 1; i++) {
-    const p0 = coords[i - 1] ?? coords[i]!;
-    const p1 = coords[i]!;
-    const p2 = coords[i + 1]!;
-    const p3 = coords[i + 2] ?? p2;
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
-  }
-  return d;
-}
-
-function SvgSpark({ pts, up, w = 300, h = 55 }: { pts: number[]; up: boolean; w?: number; h?: number }) {
-  if (pts.length < 2) return <div style={{ height: h }} className="w-full" />;
-  const mn = Math.min(...pts);
-  const mx = Math.max(...pts);
-  const rng = mx - mn || 1;
-  const padY = h * 0.12;
-  const coords = pts.map((p, i) => ({
-    x: (i / (pts.length - 1)) * w,
-    y: padY + (h - padY * 2) - ((p - mn) / rng) * (h - padY * 2),
-  }));
-  const line = smoothPath(coords);
-  const fill = `${line} L${w.toFixed(2)},${h} L0,${h} Z`;
-  const clr = up ? '#16a34a' : '#dc2626';
-  const gid = `g-${up ? 'u' : 'd'}-${Math.round(mn * 100)}`;
+function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol: string; changePercent: number }) {
+  if (pts.length < 2) return <div className="h-11 w-full" />;
+  const isPositive = changePercent >= 0;
+  const strokeColor = isPositive ? '#00875A' : '#D92D20';
+  const gradientId = `spark-gradient-${symbol.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  const data = pts.map((value) => ({ value }));
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="block w-full" style={{ height: h }} preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={clr} stopOpacity="0.22" />
-          <stop offset="100%" stopColor={clr} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fill} fill={`url(#${gid})`} />
-      <path d={line} fill="none" stroke={clr} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <ResponsiveContainer width="100%" height={44}>
+      <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={strokeColor} stopOpacity={0.18} />
+            <stop offset="95%" stopColor={strokeColor} stopOpacity={0.01} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={strokeColor}
+          strokeWidth={1.5}
+          fill={`url(#${gradientId})`}
+          dot={false}
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -171,23 +150,56 @@ function IdxCard({ symbol }: { symbol: string }) {
   const up = chg >= 0;
 
   return (
-    <div className={`${card} overflow-hidden`}>
-      <div className="px-3 pt-2.5 pb-1">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-[12px] font-bold uppercase text-[#1e293b]">{symbol}</span>
-          <span className="text-[11px] tabular-nums text-[#94a3b8]">{ts}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-[17px] font-bold tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-            {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-          <span className={`rounded bg-[#f1f5f9] px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-            {up ? '\u25B2' : '\u25BC'} {up ? '+' : ''}{chg.toFixed(2)}%
-          </span>
-        </div>
+    <div
+      className="flex flex-col justify-between overflow-hidden"
+      style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 8,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+        padding: 16,
+        minHeight: 120,
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'var(--color-text-muted)',
+          }}
+        >
+          {symbol}
+        </span>
+        <span className="tabular-nums" style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+          {ts}
+        </span>
       </div>
-      <div className="px-2 pb-2">
-        <SvgSpark pts={pts} up={up} h={40} />
+      <div className="flex items-center" style={{ gap: 8, marginTop: 6 }}>
+        <span
+          className="tabular-nums"
+          style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)' }}
+        >
+          {cur.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span
+          className="tabular-nums"
+          style={{
+            background: up ? 'var(--color-positive-bg)' : 'var(--color-negative-bg)',
+            color: up ? 'var(--color-positive)' : 'var(--color-negative)',
+            borderRadius: 4,
+            padding: '2px 6px',
+            fontSize: 11,
+            fontWeight: 600,
+          }}
+        >
+          {up ? '\u25B2' : '\u25BC'} {up ? '+' : ''}{chg.toFixed(2)}%
+        </span>
+      </div>
+      <div className="-mx-2 mt-auto">
+        <IndexSparkline pts={pts} symbol={symbol} changePercent={chg} />
       </div>
     </div>
   );
@@ -198,10 +210,10 @@ function IdxCard({ symbol }: { symbol: string }) {
 const IDX_SYMBOLS = ['IHSG', 'LQ45', 'IDX30', 'IDX80', 'JII'];
 
 const ARTICLES = [
-  { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', bg: '#1e3a5f' },
-  { id: 'carbon', title: 'Carbon-Credit Integrity in the ACCU Market', desc: 'Integrity matters in compliance markets. MSCI Carbon Markets\u2019 analysis of ACCU ARR projects reveals pricing premiums, project-level risk variation and how methodology design shapes outcomes.', bg: '#2d4a3e' },
-  { id: 'gap', title: 'The Transparency Gap: GP Data Rooms', desc: 'Transparency has become one of the defining challenges in the relationship between GPs and LPs in private markets. This analysis identifies where the data falls short during due diligence.', bg: '#3d2e5c' },
-  { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness \u2014 and their portfolio implications.', bg: '#4a3328' },
+  { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', gradient: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)' },
+  { id: 'carbon', title: 'Carbon-Credit Integrity in the ACCU Market', desc: 'Integrity matters in compliance markets. MSCI Carbon Markets\u2019 analysis of ACCU ARR projects reveals pricing premiums, project-level risk variation and how methodology design shapes outcomes.', gradient: 'linear-gradient(135deg, #1a4a3a 0%, #2d8a6a 100%)' },
+  { id: 'gap', title: 'The Transparency Gap: GP Data Rooms', desc: 'Transparency has become one of the defining challenges in the relationship between GPs and LPs in private markets. This analysis identifies where the data falls short during due diligence.', gradient: 'linear-gradient(135deg, #2d1a5c 0%, #6a2d9f 100%)' },
+  { id: 'energy', title: 'Positioning Portfolios for the Energy Transition', desc: 'Do funds better positioned for the energy transition outperform? We introduce a forward-looking quadrant framework to assess transition risk and readiness \u2014 and their portfolio implications.', gradient: 'linear-gradient(135deg, #4a3000 0%, #9f7a2d 100%)' },
 ];
 
 const ECON_FALLBACK: EconEvent[] = [
@@ -235,133 +247,142 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-[calc(100dvh-48px)] flex-col">
-      <div className="flex-1 px-5 pt-4">
-      <div className="grid grid-cols-[1fr_300px] grid-rows-[auto_auto] gap-x-4 gap-y-4">
-        <div className="grid grid-cols-5 gap-3">
-          {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
-        </div>
+      <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-5 p-4 md:p-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr]">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+            {IDX_SYMBOLS.map((s) => <IdxCard key={s} symbol={s} />)}
+          </div>
 
-        <div className={`${card} px-4 py-3`}>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Support</h3>
-              {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
-                <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
+          <aside
+            className="card-base flex flex-col lg:row-span-2"
+            style={{ padding: 16 }}
+          >
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <h3 className="nav-column-header">Support</h3>
+                <ul className="nav-list">
+                  {['Release Notes', 'Submit a Ticket', 'View Tickets', 'Contact Us', 'Support Site', 'Status'].map((l) => (
+                    <li key={l}><a href="#">{l}</a></li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex-1">
+                <h3 className="nav-column-header">Discover</h3>
+                <ul className="nav-list">
+                  {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
+                    <li key={l}><a href="#">{l}</a></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--color-border)' }}>
+              <span className="label-caps" style={{ display: 'block', marginBottom: 8 }}>Recently Visited</span>
+              {VISITED.map((v, i) => (
+                <div key={i} className="recent-row">
+                  <v.Icon className="recent-icon" />
+                  <span className="recent-cat">{v.cat}</span>
+                  <span className="recent-cat"> {'\u2013'} </span>
+                  <a href="#" className="recent-text">{v.label}</a>
+                  <span className="recent-time">{v.time}</span>
+                </div>
               ))}
             </div>
-            <div className="flex-1">
-              <h3 className="mb-1.5 text-[13px] font-bold text-[#1e293b]">Discover</h3>
-              {['Datasets', 'APIs', 'Models', 'Private i', 'Total Plan', 'Analytics'].map((l) => (
-                <div key={l} className="cursor-pointer py-[2px] text-[12px] text-[#2563eb] hover:underline">{l}</div>
+          </aside>
+
+          <section>
+            <div className="section-header">
+              <span>Market Research and Insights</span>
+              <Link href="/research" className="link-blue">View All</Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {ARTICLES.map((a) => (
+                <Link key={a.id} href="/research" className="article-card">
+                  <div className="article-thumb shrink-0" style={{ background: a.gradient }} />
+                  <div className="article-text">
+                    <h3 className="article-title">{a.title}</h3>
+                    <p className="article-body">{a.desc}</p>
+                  </div>
+                </Link>
               ))}
             </div>
-          </div>
+          </section>
         </div>
 
-        <div className={card}>
-          <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-3">
-            <h2 className="text-[15px] font-semibold text-[#1e293b]">Market Research and Insights</h2>
-            <Link href="/research" className="text-[13px] font-medium text-[#2563eb] hover:underline">View All</Link>
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="card-base flex flex-col" style={{ padding: 20 }}>
+          <h2 className="mb-3 text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>Market Summary</h2>
+          <div className="kpi-row">
+            <div className="kpi-metric">
+              <span className="label-caps" style={{ display: 'block', marginBottom: 4 }}>P/E</span>
+              <div className="kpi-value">15.76</div>
+            </div>
+            <div className="kpi-divider" />
+            <div className="kpi-metric">
+              <span className="label-caps" style={{ display: 'block', marginBottom: 4 }}>P/BV</span>
+              <div className="kpi-value">2.49</div>
+            </div>
+            <div className="kpi-divider" />
+            <div className="kpi-metric">
+              <span className="label-caps" style={{ display: 'block', marginBottom: 4 }}>Div Yield</span>
+              <div className="kpi-value">3.2%</div>
+            </div>
           </div>
-          <div className="grid grid-cols-2">
-            {ARTICLES.map((a, i) => (
-              <Link key={a.id} href="/research"
-                className={`group flex gap-4 p-5 transition-colors hover:bg-[#f8fafc] ${i % 2 === 0 ? 'border-r border-[#e2e8f0]' : ''} ${i < 2 ? 'border-b border-[#e2e8f0]' : ''}`}>
-                <div className="h-[90px] w-[120px] shrink-0 rounded-lg" style={{ backgroundColor: a.bg }} />
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-[15px] font-bold leading-snug text-[#1e3a8a] group-hover:underline">{a.title}</h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748b] line-clamp-3">{a.desc}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="mt-3">
+            <div className="summary-row">
+              <span className="summary-row-label">Net Foreign (Week)</span>
+              <span className="summary-row-value-positive">+IDR 2,487B</span>
+            </div>
+            <div className="summary-row">
+              <span className="summary-row-label">Trading Value</span>
+              <span className="summary-row-value">IDR 11.9T</span>
+            </div>
           </div>
-        </div>
-
-        <div className={`${card} px-4 py-3`}>
-          <h3 className="mb-2.5 text-[14px] font-bold text-[#1e293b]">Recently Visited</h3>
-          <div className="space-y-2.5">
-            {VISITED.map((v, i) => (
-              <div key={i} className="flex items-center gap-2.5">
-                <v.Icon className="h-4 w-4 shrink-0 text-[#2563eb]" />
-                <div className="min-w-0 flex-1">
-                  <span className="text-[12px] font-bold text-[#1e293b]">{v.cat}</span>
-                  <span className="text-[12px] text-[#64748b]"> {'\u2013'} </span>
-                  <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">{v.label}</span>
-                </div>
-                <span className="shrink-0 text-[11px] text-[#94a3b8]">{v.time}</span>
+          <div className="flow-bar">
+            <div style={{ width: '72%', background: 'var(--color-blue-primary)', borderRadius: '3px 0 0 3px', height: '100%' }} />
+            <div style={{ width: '28%', background: '#7AB3E0', borderRadius: '0 3px 3px 0', height: '100%' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--color-text-muted)' }}>
+            <span>Domestic <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>72%</span></span>
+            <span>Foreign <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>28%</span></span>
+          </div>
+          <div className="mt-3">
+            <div className="mb-2 text-[12px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>Top Sectors (Today)</div>
+            {[
+              { name: 'Banks', pct: 1.24, up: true },
+              { name: 'Energy', pct: 0.87, up: true },
+              { name: 'Consumer', pct: -0.45, up: false },
+              { name: 'Telco', pct: -0.62, up: false },
+            ].map((s) => (
+              <div key={s.name} className="sector-row">
+                <span style={{ fontSize: 12, color: 'var(--color-text-primary)' }}>{s.name}</span>
+                <span
+                  className="tabular-nums"
+                  style={{ fontSize: 12, fontWeight: 600, color: s.up ? 'var(--color-positive)' : 'var(--color-negative)' }}
+                >
+                  {s.up ? '+' : ''}{s.pct.toFixed(2)}%
+                </span>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="mt-4 grid grid-cols-3 items-start gap-4 pb-4">
-        <div className={`${card} flex flex-col px-4 py-4`}>
-          <h2 className="mb-3 text-sm font-bold text-[#1e293b]">Market Summary</h2>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/E</div>
-              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">15.76</div>
-            </div>
-            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">P/BV</div>
-              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">2.49</div>
-            </div>
-            <div className="rounded-md bg-[#f8fafc] px-2.5 py-2">
-              <div className="text-[10px] uppercase tracking-wide text-[#94a3b8]">Div Yield</div>
-              <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[#0f172a]">3.2%</div>
-            </div>
+        <div className="card-base flex flex-col overflow-hidden" style={{ padding: 0 }}>
+          <div
+            className="flex items-center justify-between"
+            style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-border)' }}
+          >
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>Economic Calendar</h2>
+            <Link href="#" className="link-blue">View All</Link>
           </div>
-          <div className="mt-3 flex items-baseline justify-between border-t border-[#f1f5f9] pt-2.5">
-            <span className="text-[12px] font-semibold text-[#1e293b]">Net Foreign (Week)</span>
-            <span className="text-[13px] font-bold tabular-nums text-[#16a34a]">+IDR 2,487B</span>
-          </div>
-          <div className="mt-2.5 border-t border-[#f1f5f9] pt-2.5">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[12px] font-semibold text-[#1e293b]">Trading Value</span>
-              <span className="text-[13px] font-semibold tabular-nums text-[#0f172a]">IDR 11.9T</span>
-            </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#f1f5f9]">
-              <div className="h-full bg-[#2563eb]" style={{ width: '72%' }} />
-            </div>
-            <div className="mt-1.5 flex justify-between text-[11px] text-[#64748b]">
-              <span>Domestic <span className="font-semibold text-[#1e293b]">72%</span></span>
-              <span>Foreign <span className="font-semibold text-[#1e293b]">28%</span></span>
-            </div>
-          </div>
-          <div className="mt-3 border-t border-[#f1f5f9] pt-2.5">
-            <div className="mb-2 text-[12px] font-semibold text-[#1e293b]">Top Sectors (Today)</div>
-            <div className="space-y-1.5">
-              {[
-                { name: 'Banks', pct: 1.24, up: true },
-                { name: 'Energy', pct: 0.87, up: true },
-                { name: 'Consumer', pct: -0.45, up: false },
-                { name: 'Telco', pct: -0.62, up: false },
-              ].map((s) => (
-                <div key={s.name} className="flex items-center justify-between text-[12px]">
-                  <span className="text-[#475569]">{s.name}</span>
-                  <span className={`font-semibold tabular-nums ${s.up ? 'text-[#16a34a]' : 'text-[#dc2626]'}`}>
-                    {s.up ? '+' : ''}{s.pct.toFixed(2)}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className={`${card} flex flex-col px-4 py-4`}>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#1e293b]">Economic Calendar</h2>
-            <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
-          </div>
-          <table className="w-full">
+          <table className="calendar-table">
             <thead>
-              <tr className="border-b border-[#e2e8f0]">
-                <th className="pb-1.5 pr-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Date</th>
-                <th className="pb-1.5 pr-3 text-left text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Event</th>
-                <th className="pb-1.5 pl-3 pr-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Prev</th>
-                <th className="pb-1.5 pl-3 pr-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Fcst</th>
-                <th className="pb-1.5 pl-3 text-right text-[10px] font-semibold uppercase tracking-wide text-[#94a3b8]">Act</th>
+              <tr>
+                <th>Date</th>
+                <th>Event</th>
+                <th style={{ textAlign: 'right' }}>Prev</th>
+                <th style={{ textAlign: 'right' }}>Fcst</th>
+                <th style={{ textAlign: 'right' }}>Act</th>
               </tr>
             </thead>
             <tbody>
@@ -372,18 +393,45 @@ export default function DashboardPage() {
                 const hasBoth = !isNaN(fc) && !isNaN(cur) && cur !== fc;
                 const beat = hasBoth && (lowerBetter ? cur < fc : cur > fc);
                 const miss = hasBoth && (lowerBetter ? cur > fc : cur < fc);
-                const color = beat ? 'text-[#16a34a]' : miss ? 'text-[#dc2626]' : 'text-[#0f172a]';
+                const actualColor = beat
+                  ? 'var(--color-positive)'
+                  : miss
+                  ? 'var(--color-negative)'
+                  : 'var(--color-text-primary)';
                 return (
-                  <tr key={i} className="border-b border-[#f1f5f9] last:border-0">
-                    <td className="whitespace-nowrap py-2 pr-3 align-middle">
-                      <span className={`text-[11px] font-semibold tabular-nums ${row.released ? 'text-[#94a3b8]' : 'text-[#2563eb]'}`}>{row.date}</span>
+                  <tr key={i}>
+                    <td className="data-mono" style={{ whiteSpace: 'nowrap' }}>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: row.released ? 'var(--color-text-muted)' : 'var(--color-blue-primary)',
+                        }}
+                      >
+                        {row.date}
+                      </span>
                     </td>
-                    <td className="py-2 pr-3 align-middle">
-                      <div className="truncate text-[12px] font-medium text-[#1e293b]">{row.indicator}</div>
+                    <td>
+                      <div className="truncate" style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                        {row.indicator}
+                      </div>
                     </td>
-                    <td className="whitespace-nowrap py-2 pl-3 pr-3 text-right align-middle text-[11px] tabular-nums text-[#475569]">{fmtNum(row.previous)}{row.unit}</td>
-                    <td className="whitespace-nowrap py-2 pl-3 pr-3 text-right align-middle text-[11px] tabular-nums text-[#94a3b8]">{fmtNum(row.forecast)}{row.unit}</td>
-                    <td className={`whitespace-nowrap py-2 pl-3 text-right align-middle text-[11px] font-semibold tabular-nums ${color}`}>{row.released ? `${fmtNum(row.current)}${row.unit}` : '\u2014'}</td>
+                    <td className="data-mono calendar-previous" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {fmtNum(row.previous)}{row.unit}
+                    </td>
+                    <td className="data-mono calendar-forecast" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {fmtNum(row.forecast)}{row.unit}
+                    </td>
+                    {row.released ? (
+                      <td
+                        className="data-mono calendar-actual"
+                        style={{ whiteSpace: 'nowrap', textAlign: 'right', color: actualColor }}
+                      >
+                        {fmtNum(row.current)}{row.unit}
+                      </td>
+                    ) : (
+                      <td className="data-mono calendar-empty">{'\u2014'}</td>
+                    )}
                   </tr>
                 );
               })}
@@ -391,34 +439,51 @@ export default function DashboardPage() {
           </table>
         </div>
 
-        <div className={`${card} flex flex-col px-4 py-4`}>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#1e293b]">IPO & Corporate Actions</h2>
-            <span className="cursor-pointer text-[12px] text-[#2563eb] hover:underline">View All</span>
+        <div className="card-base flex flex-col" style={{ padding: 16 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>IPO & Corporate Actions</h2>
+            <Link href="#" className="link-blue">View All</Link>
           </div>
-          <div className="flex-1 space-y-0.5">
-            {ACTIONS.map((a, i) => (
-              <div key={i} className="flex items-start gap-3 border-b border-[#f1f5f9] py-2 last:border-0">
-                <span className="w-[48px] shrink-0 pt-0.5 text-[11px] tabular-nums text-[#94a3b8]">{a.date}</span>
-                <span className="w-[42px] shrink-0 pt-0.5 text-[11px] font-bold text-[#2563eb]">{a.sym}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[12px] font-medium text-[#1e293b]">{a.act}</div>
-                  <div className="truncate text-[11px] text-[#94a3b8]">{a.detail}</div>
+          <div className="flex-1">
+            {ACTIONS.map((a, i) => {
+              const [desc, ex] = a.detail.split(' \u00b7 ');
+              const hasTicker = a.sym !== '\u2014';
+              return (
+                <div key={i} className="action-row">
+                  <span className="action-date">{a.date}</span>
+                  {hasTicker ? (
+                    <span className="ticker-badge">{a.sym}</span>
+                  ) : (
+                    <span style={{ display: 'inline-block', minWidth: 44 }} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="action-title">{a.act}</div>
+                    <div className="action-desc">
+                      {desc}
+                      {ex ? <span className="action-ex">{ex}</span> : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
+      </main>
 
-      </div>
-
-      <footer className="shrink-0 border-t border-[#e2e8f0] bg-[#f8fafc] px-5 py-3">
-        <p className="text-center text-[12px] text-[#64748b]">
+      <footer
+        className="shrink-0"
+        style={{
+          borderTop: '1px solid var(--color-border)',
+          background: 'var(--color-bg-page)',
+          padding: '12px 20px',
+        }}
+      >
+        <p className="text-center" style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
           &copy; 2026 Pyhron Inc. All Rights Reserved. Subject to{' '}
-          <a href="/terms" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Terms of Use</a> &amp;{' '}
-          <a href="/disclaimer" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Disclaimer</a>.{' '}
-          <a href="#" className="text-[#2563eb] underline hover:text-[#1d4ed8]">Manage Cookies</a>.
+          <a href="/terms" className="link-blue" style={{ textDecoration: 'underline' }}>Terms of Use</a> &amp;{' '}
+          <a href="/disclaimer" className="link-blue" style={{ textDecoration: 'underline' }}>Disclaimer</a>.{' '}
+          <a href="#" className="link-blue" style={{ textDecoration: 'underline' }}>Manage Cookies</a>.
         </p>
       </footer>
     </div>
