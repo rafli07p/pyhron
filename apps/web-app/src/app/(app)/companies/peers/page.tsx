@@ -3,28 +3,48 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCompanyStore } from '@/stores/company';
+import { CompanySelector } from '@/components/companies/CompanySelector';
 
 interface PeerRow {
   symbol: string;
   name: string;
-  last_price: number | null;
-  market_cap: number | null;
-  pe_ratio: number | null;
-  pbv_ratio: number | null;
-  roe: number | null;
-  dividend_yield: number | null;
+  last_price: number | string | null;
+  market_cap: number | string | null;
+  pe_ratio: number | string | null;
+  pbv_ratio: number | string | null;
+  roe: number | string | null;
+  dividend_yield: number | string | null;
   is_selected: boolean;
 }
 
-const fmtPrice = (v: number | null) => v ? v.toLocaleString('id-ID') : '—';
-const fmtMktCap = (v: number | null) => {
-  if (!v) return '—';
-  return v >= 1e12 ? `${(v / 1e12).toFixed(2)}T` : `${(v / 1e9).toFixed(1)}B`;
+function safeNum(v: unknown): number | null {
+  if (v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+const fmtPrice = (v: unknown) => {
+  const n = safeNum(v);
+  return n !== null && n > 0 ? n.toLocaleString('id-ID') : '—';
 };
-const fmtRatio = (v: number | null) => v !== null && v !== undefined ? `${v.toFixed(2)}x` : '—';
-const fmtPct = (v: number | null) => {
-  if (v === null || v === undefined) return '—';
-  return `${(v * 100).toFixed(2)}%`;
+const fmtMktCap = (v: unknown) => {
+  const n = safeNum(v);
+  if (n === null || n === 0) return '—';
+  return n >= 1e12 ? `${(n / 1e12).toFixed(2)}T` : `${(n / 1e9).toFixed(1)}B`;
+};
+const fmtRatio = (v: unknown) => {
+  const n = safeNum(v);
+  return n !== null ? `${n.toFixed(2)}x` : '—';
+};
+// Backend returns ROE as fraction (0.18 = 18%).
+const fmtRoePct = (v: unknown) => {
+  const n = safeNum(v);
+  return n !== null ? `${(n * 100).toFixed(2)}%` : '—';
+};
+// Backend returns dividend_yield pre-multiplied (e.g. 5.23 = 5.23%).
+const fmtYieldPct = (v: unknown) => {
+  const n = safeNum(v);
+  return n !== null ? `${n.toFixed(2)}%` : '—';
 };
 
 export default function PeersPage() {
@@ -49,7 +69,7 @@ export default function PeersPage() {
   }, [selectedSymbol, session, authHeader]);
 
   return (
-    <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>
           Peer Comparison
@@ -57,6 +77,10 @@ export default function PeersPage() {
         <p style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
           {selectedSymbol} — Key metrics vs. sector peers. Source: Yahoo Finance.
         </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, alignItems: 'end' }}>
+        <CompanySelector />
       </div>
 
       <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, overflow: 'hidden' }}>
@@ -75,7 +99,7 @@ export default function PeersPage() {
                 <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-page)' }}>
                   {['Symbol', 'Company', 'Price (IDR)', 'Mkt Cap', 'P/E', 'P/BV', 'ROE', 'Div Yield'].map(h => (
                     <th key={h} style={{
-                      padding: '8px 12px', textAlign: h === 'Symbol' || h === 'Company' ? 'left' : 'right',
+                      padding: '10px 14px', textAlign: h === 'Symbol' || h === 'Company' ? 'left' : 'right',
                       fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                       textTransform: 'uppercase', color: 'var(--color-text-muted)', whiteSpace: 'nowrap',
                     }}>{h}</th>
@@ -92,7 +116,7 @@ export default function PeersPage() {
                     }}
                   >
                     <td style={{
-                      padding: '9px 12px', fontFamily: 'monospace', fontWeight: 700,
+                      padding: '10px 14px', fontFamily: 'monospace', fontWeight: 700,
                       color: p.is_selected ? 'var(--color-blue-primary)' : 'var(--color-text-primary)',
                     }}>
                       {p.symbol}
@@ -105,26 +129,26 @@ export default function PeersPage() {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '9px 12px', color: 'var(--color-text-secondary)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '10px 14px', color: 'var(--color-text-secondary)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {p.name}
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-text-primary)' }}>
                       {fmtPrice(p.last_price)}
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
+                    <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
                       {fmtMktCap(p.market_cap)}
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
+                    <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
                       {fmtRatio(p.pe_ratio)}
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
+                    <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
                       {fmtRatio(p.pbv_ratio)}
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
-                      {fmtPct(p.roe)}
+                    <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
+                      {fmtRoePct(p.roe)}
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
-                      {fmtPct(p.dividend_yield)}
+                    <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
+                      {fmtYieldPct(p.dividend_yield)}
                     </td>
                   </tr>
                 ))}

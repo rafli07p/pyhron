@@ -3,13 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCompanyStore } from '@/stores/company';
+import { CompanySelector } from '@/components/companies/CompanySelector';
 
 interface OwnershipEntry {
   holder_name: string;
   holder_type: 'insider' | 'institution' | 'public' | string;
   shares_held: number;
-  ownership_pct: number;
-  change_from_prior: number | null;
+  ownership_pct: number | string;
+  change_from_prior: number | string | null;
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -22,6 +23,12 @@ const CARD: React.CSSProperties = {
   background: '#fff', border: '1px solid var(--color-border)',
   borderRadius: 8, padding: '16px 18px',
 };
+
+function safeNum(v: unknown): number | null {
+  if (v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export default function OwnershipPage() {
   const { data: session } = useSession();
@@ -50,13 +57,13 @@ export default function OwnershipPage() {
     return {
       type,
       label: labels[type],
-      pct: entry?.ownership_pct ?? 0,
+      pct: safeNum(entry?.ownership_pct) ?? 0,
       color: TYPE_COLORS[type],
     };
   });
 
   return (
-    <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>
           Ownership Structure
@@ -64,6 +71,10 @@ export default function OwnershipPage() {
         <p style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
           {selectedSymbol} — Insider, institutional, and public ownership breakdown. Source: Yahoo Finance.
         </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, alignItems: 'end' }}>
+        <CompanySelector />
       </div>
 
       {loading ? (
@@ -98,7 +109,7 @@ export default function OwnershipPage() {
                 <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-page)' }}>
                   {['Holder Name', 'Type', 'Ownership %', 'Change'].map(h => (
                     <th key={h} style={{
-                      padding: '8px 12px', textAlign: h === 'Holder Name' || h === 'Type' ? 'left' : 'right',
+                      padding: '10px 14px', textAlign: h === 'Holder Name' || h === 'Type' ? 'left' : 'right',
                       fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                       textTransform: 'uppercase', color: 'var(--color-text-muted)',
                     }}>{h}</th>
@@ -106,27 +117,31 @@ export default function OwnershipPage() {
                 </tr>
               </thead>
               <tbody>
-                {entries.map(e => (
-                  <tr key={e.holder_name} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                    <td style={{ padding: '10px 12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{e.holder_name}</td>
-                    <td style={{ padding: '10px 12px' }}>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
-                        background: 'rgba(138,155,176,0.14)',
-                        color: TYPE_COLORS[e.holder_type] ?? 'var(--color-text-muted)',
-                        textTransform: 'uppercase', letterSpacing: '0.04em',
-                      }}>
-                        {e.holder_type}
-                      </span>
-                    </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                      {e.ownership_pct.toFixed(2)}%
-                    </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
-                      {e.change_from_prior !== null ? `${e.change_from_prior > 0 ? '+' : ''}${e.change_from_prior.toFixed(2)}%` : '—'}
-                    </td>
-                  </tr>
-                ))}
+                {entries.map(e => {
+                  const pct = safeNum(e.ownership_pct) ?? 0;
+                  const chg = safeNum(e.change_from_prior);
+                  return (
+                    <tr key={e.holder_name} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                      <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>{e.holder_name}</td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
+                          background: 'rgba(138,155,176,0.14)',
+                          color: TYPE_COLORS[e.holder_type] ?? 'var(--color-text-muted)',
+                          textTransform: 'uppercase', letterSpacing: '0.04em',
+                        }}>
+                          {e.holder_type}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                        {pct.toFixed(2)}%
+                      </td>
+                      <td style={{ padding: '10px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>
+                        {chg !== null ? `${chg > 0 ? '+' : ''}${chg.toFixed(2)}%` : '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

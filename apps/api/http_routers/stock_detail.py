@@ -366,16 +366,20 @@ async def get_peers(
                 t = yf.Ticker(f"{sym}.JK")
                 info = t.info or {}
                 hist = t.history(period="2d")
-                last_price = float(hist["Close"].iloc[-1]) if not hist.empty else None
+                last_price_raw = float(hist["Close"].iloc[-1]) if not hist.empty else None
+                # yfinance returns dividendYield as a decimal fraction (e.g. 0.0523 = 5.23%).
+                # Fall back to trailingAnnualDividendYield when not present.
+                raw_yield = info.get("dividendYield") or info.get("trailingAnnualDividendYield")
+                dividend_yield = round(float(raw_yield) * 100, 2) if raw_yield else None
                 results.append({
                     "symbol": sym,
                     "name": info.get("shortName", sym),
-                    "last_price": last_price,
+                    "last_price": round(last_price_raw, 0) if last_price_raw else None,
                     "market_cap": info.get("marketCap"),
                     "pe_ratio": info.get("trailingPE"),
                     "pbv_ratio": info.get("priceToBook"),
                     "roe": info.get("returnOnEquity"),
-                    "dividend_yield": info.get("dividendYield"),
+                    "dividend_yield": dividend_yield,
                     "is_selected": sym == upper,
                 })
             except Exception:

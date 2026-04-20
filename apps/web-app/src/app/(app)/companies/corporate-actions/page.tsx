@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCompanyStore } from '@/stores/company';
+import { CompanySelector } from '@/components/companies/CompanySelector';
 
 interface CorporateAction {
   symbol: string;
@@ -10,7 +11,7 @@ interface CorporateAction {
   ex_date: string;
   record_date: string | null;
   description: string;
-  value: number | null;
+  value: number | string | null;
 }
 
 type Filter = 'all' | 'dividend' | 'stock_split' | 'rights_issue';
@@ -27,6 +28,13 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: 'stock_split', label: 'Stock Split' },
   { id: 'rights_issue', label: 'Rights Issue' },
 ];
+
+function fmtValue(v: number | string | null): string {
+  if (v === null || v === undefined) return '—';
+  const n = typeof v === 'number' ? v : Number(v);
+  if (!Number.isFinite(n)) return '—';
+  return n.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+}
 
 export default function CorporateActionsPage() {
   const { data: session } = useSession();
@@ -53,7 +61,7 @@ export default function CorporateActionsPage() {
   const filtered = filter === 'all' ? actions : actions.filter(a => a.action_type === filter);
 
   return (
-    <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>
           Corporate Actions
@@ -63,12 +71,17 @@ export default function CorporateActionsPage() {
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 20, alignItems: 'end' }}>
+        <CompanySelector />
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, marginTop: -4 }}>
         {FILTERS.map(f => {
           const active = filter === f.id;
           return (
             <button
               key={f.id}
+              type="button"
               onClick={() => setFilter(f.id)}
               style={{
                 padding: '6px 12px', fontSize: 12, fontWeight: active ? 700 : 500,
@@ -99,7 +112,7 @@ export default function CorporateActionsPage() {
               <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg-page)' }}>
                 {['Type', 'Ex Date', 'Record Date', 'Description', 'Value (IDR)'].map(h => (
                   <th key={h} style={{
-                    padding: '8px 12px', textAlign: h === 'Value (IDR)' ? 'right' : 'left',
+                    padding: '10px 14px', textAlign: h === 'Value (IDR)' ? 'right' : 'left',
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
                     textTransform: 'uppercase', color: 'var(--color-text-muted)',
                   }}>{h}</th>
@@ -111,7 +124,7 @@ export default function CorporateActionsPage() {
                 const badge = BADGE_COLORS[a.action_type] ?? { bg: 'rgba(138,155,176,0.14)', fg: 'var(--color-text-muted)', label: a.action_type };
                 return (
                   <tr key={`${a.ex_date}-${i}`} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                    <td style={{ padding: '8px 12px' }}>
+                    <td style={{ padding: '9px 14px' }}>
                       <span style={{
                         fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
                         background: badge.bg, color: badge.fg, letterSpacing: '0.04em',
@@ -119,11 +132,11 @@ export default function CorporateActionsPage() {
                         {badge.label.toUpperCase()}
                       </span>
                     </td>
-                    <td style={{ padding: '8px 12px', fontFamily: 'monospace', color: 'var(--color-text-primary)', fontWeight: 600 }}>{a.ex_date}</td>
-                    <td style={{ padding: '8px 12px', fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>{a.record_date ?? '—'}</td>
-                    <td style={{ padding: '8px 12px', color: 'var(--color-text-secondary)' }}>{a.description}</td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-primary)', fontWeight: 600 }}>
-                      {a.value !== null ? a.value.toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '—'}
+                    <td style={{ padding: '9px 14px', fontFamily: 'monospace', color: 'var(--color-text-primary)', fontWeight: 600 }}>{a.ex_date}</td>
+                    <td style={{ padding: '9px 14px', fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>{a.record_date ?? '—'}</td>
+                    <td style={{ padding: '9px 14px', color: 'var(--color-text-secondary)' }}>{a.description}</td>
+                    <td style={{ padding: '9px 14px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                      {fmtValue(a.value)}
                     </td>
                   </tr>
                 );
