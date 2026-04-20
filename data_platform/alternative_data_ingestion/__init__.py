@@ -1,9 +1,9 @@
 """Alternative data ingestion modules for Indonesian market signals."""
 
-from .bkpm_investment_realization_ingestion import BKPMInvestmentRealizationIngester
-from .gaikindo_vehicle_sales_ingestion import GaikindoVehicleSalesIngester
-from .nasa_firms_fire_hotspot_ingestion import NASAFIRMSFireHotspotIngester
-from .panel_harga_pangan_ingestion import PanelHargaPanganIngester
+from .bkpm_investment import BKPMInvestmentRealizationIngester
+from .food_prices import PanelHargaPanganIngester
+from .gaikindo_sales import GaikindoVehicleSalesIngester
+from .nasa_fire_hotspot import NASAFIRMSFireHotspotIngester
 
 __all__ = [
     "BKPMInvestmentRealizationIngester",

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from apps.api.http_routers import paper_trading_router
+from apps.api.http_routers import paper_trading as paper_trading_router
 
 
 @pytest.fixture(autouse=True)

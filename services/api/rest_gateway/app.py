@@ -60,24 +60,24 @@ def create_rest_app() -> FastAPI:
     app.add_middleware(RequestLoggingMiddleware)
 
     # Pyhron domain routers (IDX equity, macro, commodity, etc.)
-    from apps.api.http_routers.backtest_execution_router import router as backtest_router
-    from apps.api.http_routers.commodity_stock_impact_router import router as commodity_impact_router
-    from apps.api.http_routers.execution_algos_router import router as execution_algos_router
-    from apps.api.http_routers.governance_intelligence_router import router as governance_router
-    from apps.api.http_routers.idx_equity_screener_router import router as screener_router
-    from apps.api.http_routers.idx_equity_stock_detail_router import router as stock_detail_router
-    from apps.api.http_routers.idx_market_overview_router import router as market_overview_router
-    from apps.api.http_routers.indonesia_commodity_price_router import router as commodity_price_router
-    from apps.api.http_routers.indonesia_fixed_income_router import router as fixed_income_router
-    from apps.api.http_routers.indonesia_macro_dashboard_router import router as macro_router
-    from apps.api.http_routers.indonesia_news_sentiment_router import router as news_router
-    from apps.api.http_routers.live_trading_position_router import router as live_trading_router
-    from apps.api.http_routers.live_trading_risk_router import router as live_trading_risk_router
-    from apps.api.http_routers.ml_signals_router import router as ml_signals_router
-    from apps.api.http_routers.paper_trading_router import router as paper_trading_router
-    from apps.api.http_routers.portfolio_optimizer_router import router as portfolio_optimizer_router
-    from apps.api.http_routers.strategy_management_router import router as strategy_router
-    from apps.api.http_routers.user_authentication_router import router as auth_router
+    from apps.api.http_routers.auth import router as auth_router
+    from apps.api.http_routers.backtest import router as backtest_router
+    from apps.api.http_routers.commodity_impact import router as commodity_impact_router
+    from apps.api.http_routers.commodity_price import router as commodity_price_router
+    from apps.api.http_routers.execution_algos import router as execution_algos_router
+    from apps.api.http_routers.fixed_income import router as fixed_income_router
+    from apps.api.http_routers.governance import router as governance_router
+    from apps.api.http_routers.live_risk import router as live_trading_risk_router
+    from apps.api.http_routers.live_trading import router as live_trading_router
+    from apps.api.http_routers.macro import router as macro_router
+    from apps.api.http_routers.market_overview import router as market_overview_router
+    from apps.api.http_routers.ml_signals import router as ml_signals_router
+    from apps.api.http_routers.news import router as news_router
+    from apps.api.http_routers.paper_trading import router as paper_trading_router
+    from apps.api.http_routers.portfolio_optimizer import router as portfolio_optimizer_router
+    from apps.api.http_routers.screener import router as screener_router
+    from apps.api.http_routers.stock_detail import router as stock_detail_router
+    from apps.api.http_routers.strategy import router as strategy_router
 
     app.include_router(screener_router)
     app.include_router(stock_detail_router)

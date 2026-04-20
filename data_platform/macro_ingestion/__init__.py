@@ -1,11 +1,11 @@
 """Macroeconomic data ingestion modules for Indonesia."""
 
-from .bank_indonesia_monetary_data_ingestion import BankIndonesiaMonetaryDataIngester
-from .bmkg_daily_rainfall_ingestion import BMKGDailyRainfallIngester
-from .bps_statistics_macro_ingestion import BPSStatisticsMacroIngester
-from .enso_climate_index_ingestion import ENSOClimateIndexIngester
-from .esdm_energy_production_ingestion import ESDMEnergyProductionIngester
-from .kemenkeu_apbn_realization_ingestion import KemenkeuAPBNRealizationIngester
+from .bi_monetary import BankIndonesiaMonetaryDataIngester
+from .bmkg_rainfall import BMKGDailyRainfallIngester
+from .bps_stats import BPSStatisticsMacroIngester
+from .enso_climate import ENSOClimateIndexIngester
+from .esdm_energy import ESDMEnergyProductionIngester
+from .kemenkeu_apbn import KemenkeuAPBNRealizationIngester
 
 __all__ = [
     "BMKGDailyRainfallIngester",

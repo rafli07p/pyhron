@@ -62,7 +62,7 @@ class TestStrategyManagementRoutes:
     @pytest.fixture(autouse=True)
     def _setup(self, _mock_jwt_settings: Any) -> None:
         try:
-            from apps.api.http_routers.strategy_management_router import router
+            from apps.api.http_routers.strategy import router
         except (ImportError, SyntaxError):
             pytest.skip("Strategy router not available")
 
@@ -81,7 +81,7 @@ class TestStrategyManagementRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.strategy_management_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.strategy.get_session", return_value=mock_session):
             resp = self.client.get("/v1/strategies/", headers=_auth_header("VIEWER"))
 
         assert resp.status_code == 200
@@ -97,7 +97,7 @@ class TestStrategyManagementRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.strategy_management_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.strategy.get_session", return_value=mock_session):
             resp = self.client.get(
                 "/v1/strategies/?strategy_type=momentum",
                 headers=_auth_header("VIEWER"),
@@ -128,7 +128,7 @@ class TestStrategyManagementRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.strategy_management_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.strategy.get_session", return_value=mock_session):
             resp = self.client.get(
                 f"/v1/strategies/{self.strategy_id}",
                 headers=_auth_header("VIEWER"),
@@ -168,7 +168,7 @@ class TestLiveTradingRoutes:
     @pytest.fixture(autouse=True)
     def _setup(self, _mock_jwt_settings: Any) -> None:
         try:
-            from apps.api.http_routers.live_trading_position_router import router
+            from apps.api.http_routers.live_trading import router
         except (ImportError, SyntaxError):
             pytest.skip("Live trading router not available")
 
@@ -186,7 +186,7 @@ class TestLiveTradingRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.live_trading_position_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.live_trading.get_session", return_value=mock_session):
             resp = self.client.get("/v1/trading/positions", headers=_auth_header("VIEWER"))
 
         assert resp.status_code == 200
@@ -202,7 +202,7 @@ class TestLiveTradingRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.live_trading_position_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.live_trading.get_session", return_value=mock_session):
             resp = self.client.get("/v1/trading/orders", headers=_auth_header("VIEWER"))
 
         assert resp.status_code == 200
@@ -214,7 +214,7 @@ class TestLiveTradingRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.live_trading_position_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.live_trading.get_session", return_value=mock_session):
             resp = self.client.get(
                 "/v1/trading/orders?status=INVALID",
                 headers=_auth_header("VIEWER"),
@@ -270,7 +270,7 @@ class TestLiveTradingRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.live_trading_position_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.live_trading.get_session", return_value=mock_session):
             resp = self.client.get("/v1/trading/pnl", headers=_auth_header("VIEWER"))
 
         assert resp.status_code == 200
@@ -356,7 +356,7 @@ class TestBacktestRoutes:
     @pytest.fixture(autouse=True)
     def _setup(self, _mock_jwt_settings: Any) -> None:
         try:
-            from apps.api.http_routers.backtest_execution_router import router
+            from apps.api.http_routers.backtest import router
         except (ImportError, SyntaxError):
             pytest.skip("Backtest router not available")
 
@@ -412,7 +412,7 @@ class TestPaperTradingRoutes:
     @pytest.fixture(autouse=True)
     def _setup(self, _mock_jwt_settings: Any) -> None:
         try:
-            from apps.api.http_routers.paper_trading_router import router
+            from apps.api.http_routers.paper_trading import router
         except (ImportError, SyntaxError):
             pytest.skip("Paper trading router not available")
 
@@ -461,7 +461,7 @@ class TestPaperTradingRoutes:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.paper_trading_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.paper_trading.get_session", return_value=mock_session):
             resp = self.client.get(
                 f"/v1/paper-trading/sessions/{self.session_id}/nav",
                 headers=_auth_header("TRADER"),
@@ -485,10 +485,10 @@ class TestAuthEnforcement:
     @pytest.fixture(autouse=True)
     def _setup(self, _mock_jwt_settings: Any) -> None:
         try:
-            from apps.api.http_routers.live_trading_position_router import (
+            from apps.api.http_routers.live_trading import (
                 router as trading_router,
             )
-            from apps.api.http_routers.strategy_management_router import (
+            from apps.api.http_routers.strategy import (
                 router as strategy_router,
             )
         except (ImportError, SyntaxError):
@@ -551,7 +551,7 @@ class TestAuthEnforcement:
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
-        with patch("apps.api.http_routers.live_trading_position_router.get_session", return_value=mock_session):
+        with patch("apps.api.http_routers.live_trading.get_session", return_value=mock_session):
             resp = self.client.get("/v1/trading/positions", headers=_auth_header("VIEWER"))
 
         assert resp.status_code == 200
@@ -582,8 +582,8 @@ class TestAuthEnforcement:
 
         # Patch Strategy constructor and UUID conversion
         with (
-            patch("apps.api.http_routers.strategy_management_router.get_session", return_value=mock_session),
-            patch("apps.api.http_routers.strategy_management_router.PyhronStrategy", return_value=mock_strategy),
+            patch("apps.api.http_routers.strategy.get_session", return_value=mock_session),
+            patch("apps.api.http_routers.strategy.PyhronStrategy", return_value=mock_strategy),
         ):
             resp = self.client.post(
                 "/v1/strategies/",

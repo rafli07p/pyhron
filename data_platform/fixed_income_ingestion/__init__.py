@@ -1,8 +1,8 @@
 """Fixed income ingestion modules for Indonesian bond market data."""
 
-from .djppr_sbn_yield_curve_ingestion import DJPPRSBNYieldCurveIngester
-from .idx_corporate_bond_ingestion import IDXCorporateBondIngester
-from .pefindo_credit_rating_ingestion import PEFINDOCreditRatingIngester
+from .corporate_bonds import IDXCorporateBondIngester
+from .credit_ratings import PEFINDOCreditRatingIngester
+from .sbn_yield_curve import DJPPRSBNYieldCurveIngester
 
 __all__ = [
     "DJPPRSBNYieldCurveIngester",

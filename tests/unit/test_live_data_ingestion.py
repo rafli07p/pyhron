@@ -21,7 +21,7 @@ from data_platform.adapters.eodhd_adapter import (
     EODHDOHLCVRecord,
     EODHDSplitRecord,
 )
-from data_platform.equity_ingestion.idx_corporate_action_processor import (
+from data_platform.equity_ingestion.action_processor import (
     IDXCorporateActionProcessor,
 )
 from data_platform.quality.idx_data_validator import (
