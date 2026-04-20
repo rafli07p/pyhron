@@ -41,7 +41,7 @@ class IdxEquityIndexConstituent(Base):
     index_name: Mapped[str] = mapped_column(String(20), nullable=False)
     symbol: Mapped[str] = mapped_column(
         String(20),
-        ForeignKey("idx_equity_instrument.symbol"),
+        ForeignKey("instruments.symbol"),
         nullable=False,
         index=True,
     )
