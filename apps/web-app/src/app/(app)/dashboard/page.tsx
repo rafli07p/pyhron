@@ -137,23 +137,14 @@ function fallbackPts(symbol: string): number[] {
   return pts;
 }
 
-function nowJakarta(): string {
-  return new Date().toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Asia/Jakarta',
-  });
-}
-
 function IdxCard({ symbol }: { symbol: string }) {
-  const { data, isLoading } = useIdx(symbol);
+  const { data } = useIdx(symbol);
   const fb = IDX_FALLBACK[symbol] ?? { base: 0, change: 0 };
   const cur = data?.current && data.current > 0 ? data.current : fb.base;
   const chg = data?.change ?? fb.change;
   const apiPts = data?.points ?? [];
   const pts = apiPts.length >= 2 ? apiPts : fallbackPts(symbol);
-  const ts = data?.lastUpdate || (isLoading ? '--:--' : nowJakarta());
+  const ts = data?.lastUpdate ?? '--:--';
   const up = chg >= 0;
 
   return (
