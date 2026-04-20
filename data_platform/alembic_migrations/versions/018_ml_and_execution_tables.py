@@ -65,9 +65,16 @@ def upgrade() -> None:
     )
 
     # portfolio.portfolio_snapshots: historical weight records
+    # Composite PK (id, snapshot_at) required — TimescaleDB needs the
+    # partition column in every unique constraint on the hypertable.
     op.create_table(
         "portfolio_snapshots",
-        sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
+        sa.Column(
+            "id",
+            UUID(as_uuid=True),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
         sa.Column("snapshot_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("method", sa.String(32), nullable=False),
         sa.Column("weights", JSONB, nullable=False),
@@ -75,6 +82,7 @@ def upgrade() -> None:
         sa.Column("expected_vol", sa.Float, nullable=True),
         sa.Column("turnover", sa.Float, nullable=True),
         sa.Column("cost_bps", sa.Float, nullable=True),
+        sa.PrimaryKeyConstraint("id", "snapshot_at", name="pk_portfolio_snapshots"),
         schema="portfolio",
     )
 
