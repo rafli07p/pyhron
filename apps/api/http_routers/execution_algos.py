@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/api/v1/execution", tags=["execution-algorithms"])
+router = APIRouter(prefix="/api/v1/execution", tags=["execution-algorithms"], redirect_slashes=False)
 
 # In-memory schedule store (production: use DB)
 _schedules: dict[str, dict[str, Any]] = {}

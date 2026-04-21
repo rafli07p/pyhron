@@ -38,7 +38,7 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/v1/trading", tags=["trading"])
+router = APIRouter(prefix="/v1/trading", tags=["trading"], redirect_slashes=False)
 
 # Injected at app startup via set_order_handler()
 _order_handler: OrderSubmissionHandler | None = None

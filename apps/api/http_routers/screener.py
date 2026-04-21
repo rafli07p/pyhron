@@ -23,7 +23,7 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/v1/screener", tags=["screener"])
+router = APIRouter(prefix="/v1/screener", tags=["screener"], redirect_slashes=False)
 
 
 async def _fetch_prices_batch(symbols: list[str]) -> dict[str, dict[str, float]]:

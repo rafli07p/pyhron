@@ -23,7 +23,7 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/v1/portfolio", tags=["portfolio"])
+router = APIRouter(prefix="/v1/portfolio", tags=["portfolio"], redirect_slashes=False)
 
 DEMO_STRATEGY_ID = "660e8400-e29b-41d4-a716-446655440001"
 

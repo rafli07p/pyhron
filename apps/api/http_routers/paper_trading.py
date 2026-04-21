@@ -25,7 +25,7 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/v1/paper-trading", tags=["paper-trading"])
+router = APIRouter(prefix="/v1/paper-trading", tags=["paper-trading"], redirect_slashes=False)
 
 _session_manager = PaperTradingSessionManager()
 

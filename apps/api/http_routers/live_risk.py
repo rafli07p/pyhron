@@ -14,7 +14,7 @@ from services.api.rest_gateway import Role, TokenPayload, get_current_user, requ
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/api/v1/live-trading-risk", tags=["live-trading-risk"])
+router = APIRouter(prefix="/api/v1/live-trading-risk", tags=["live-trading-risk"], redirect_slashes=False)
 
 
 # Enumerations

@@ -20,7 +20,7 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/v1/strategies", tags=["strategies"])
+router = APIRouter(prefix="/v1/strategies", tags=["strategies"], redirect_slashes=False)
 
 
 # Request/Response Models

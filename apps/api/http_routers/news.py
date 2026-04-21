@@ -22,7 +22,7 @@ from shared.security.rbac import Role, require_role
 from shared.structured_json_logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/v1/news", tags=["news-sentiment"])
+router = APIRouter(prefix="/v1/news", tags=["news-sentiment"], redirect_slashes=False)
 
 EODHD_URL = "https://eodhd.com/api/news"
 DEFAULT_SYMBOLS = ["BBCA", "BBRI", "BMRI", "TLKM", "ASII"]

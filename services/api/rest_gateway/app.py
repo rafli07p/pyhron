@@ -32,6 +32,9 @@ def create_rest_app() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        # Disable 307 redirects on missing/extra trailing slash.
+        # Next.js proxy strips Authorization header on redirect, causing 403.
+        redirect_slashes=False,
     )
 
     app.state.limiter = limiter
