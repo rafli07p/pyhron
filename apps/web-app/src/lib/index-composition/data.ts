@@ -116,3 +116,52 @@ export const BBCA_INDEX_ROWS: IndexRow[] = [
     weights: { BBCA: 22.18, BMRI: 15.67, BBRI: 12.34, BBNI: null, BRIS: 8.91 },
   },
 ];
+
+export interface SustainabilityMetrics {
+  subIndustry: string;
+  sizeCategory: string;
+  country: string;
+  ticker: string;
+  isin: string;
+  freefloatMarketCapUsdM: number;
+  indexedAumUsdM: number;
+  indexedFreefloatRatio: number;
+  esgRating: string;
+  industryAdjustedScore: number;
+  esgControversiesScore: number;
+  ghgReductionTarget: string;
+  scienceBasedTarget: string;
+  impliedTemperatureRise: number;
+  carbonScope12MetricTons: number;
+  carbonScope12Type: string;
+  totalEmissionScope3: number | null;
+  emissionIntensityEvic: number;
+}
+
+export const BBCA_SUSTAINABILITY: Record<string, SustainabilityMetrics> = {
+  BBCA: {
+    // General Information
+    subIndustry: 'Commercial Banks',
+    sizeCategory: 'Large Cap',
+    country: 'Indonesia',
+    // Security Identification
+    ticker: 'BBCA IJ Equity',
+    isin: 'ID1000109807',
+    // Security Information
+    freefloatMarketCapUsdM: 42_800,
+    indexedAumUsdM: 3_120,
+    indexedFreefloatRatio: 0.21,
+    // ESG Ratings
+    esgRating: 'BBB',
+    industryAdjustedScore: 4.2,
+    esgControversiesScore: 2,
+    // Decarbonization
+    ghgReductionTarget: 'Company sets GHG reduction targets',
+    scienceBasedTarget: 'No',
+    impliedTemperatureRise: 2.4,
+    carbonScope12MetricTons: 124_500,
+    carbonScope12Type: 'Estimated',
+    totalEmissionScope3: null,
+    emissionIntensityEvic: 18,
+  },
+};

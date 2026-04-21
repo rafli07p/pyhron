@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -25,7 +26,9 @@ import {
 import {
   AS_OF_DATES,
   AVAILABLE_PEERS,
+  BBCA_SUSTAINABILITY,
   DEFAULT_PEER_SYMBOLS,
+  type SustainabilityMetrics,
 } from '@/lib/index-composition/data';
 import { rowsToCsv } from '@/lib/index-composition/csv';
 import type {
@@ -418,6 +421,11 @@ export default function IndexCompositionPage() {
       <p className="px-6 py-3 text-[11px] text-[var(--color-text-muted)]">
         * Indexed AUM figures are indicative, based on publicly reported benchmarking data. Actual AUM may vary.
       </p>
+
+      {/* I. Sustainability Panel — shown only on ESG tab */}
+      {activeTab === 'esg' && (
+        <SustainabilityPanel peers={selectedPeers} symbol={selectedSymbol} />
+      )}
 
       {/* H. Indexed AUM Analysis card */}
       <div style={{
@@ -1135,5 +1143,254 @@ function TdCell({
     >
       {children}
     </td>
+  );
+}
+
+// ── Sustainability panel (ESG tab only) ──────────────────────────────────────
+
+interface SustainabilityRow {
+  label: string;
+  getValue: (d: SustainabilityMetrics) => string | number | null;
+}
+
+interface SustainabilitySection {
+  title: string;
+  rows: SustainabilityRow[];
+}
+
+const SUSTAINABILITY_SECTIONS: SustainabilitySection[] = [
+  {
+    title: 'General Information',
+    rows: [
+      { label: 'Sub Industry', getValue: d => d.subIndustry },
+      { label: 'Size Category', getValue: d => d.sizeCategory },
+      { label: 'Country', getValue: d => d.country },
+    ],
+  },
+  {
+    title: 'Security Identification',
+    rows: [
+      { label: 'TICKER', getValue: d => d.ticker },
+      { label: 'ISIN', getValue: d => d.isin },
+    ],
+  },
+  {
+    title: 'Security Information',
+    rows: [
+      {
+        label: 'Free Float Market Capitalization (USD M)**',
+        getValue: d => d.freefloatMarketCapUsdM.toLocaleString('en-US'),
+      },
+      { label: 'Indexed AUM ($M)*', getValue: d => d.indexedAumUsdM.toFixed(2) },
+      { label: 'Indexed Free Float Ratio***', getValue: d => d.indexedFreefloatRatio.toFixed(2) },
+    ],
+  },
+  {
+    title: 'ESG Ratings & Controversies',
+    rows: [
+      { label: 'ESG Rating (CCC to AAA)', getValue: d => d.esgRating },
+      { label: 'Industry Adjusted Company Score (0-10)', getValue: d => d.industryAdjustedScore },
+      { label: 'ESG Controversies Overall Score (0-10)', getValue: d => d.esgControversiesScore },
+    ],
+  },
+  {
+    title: 'Decarbonization Targets & Emissions',
+    rows: [
+      {
+        label:
+          'Indicates whether the company has a carbon emissions reduction target and (for carbon-intensive sectors) our assessment of how aggressive any target is.',
+        getValue: d => d.ghgReductionTarget,
+      },
+      {
+        label: 'Company has Science-based Approved Emissions Target (SBTi)',
+        getValue: d => d.scienceBasedTarget,
+      },
+      { label: 'Implied Temperature Rise (1.3°C-10°C)', getValue: d => d.impliedTemperatureRise },
+      {
+        label: 'Carbon Emissions - Scope 1+2 (metric tons)',
+        getValue: d => d.carbonScope12MetricTons.toLocaleString('en-US'),
+      },
+      {
+        label: 'Carbon Emissions - Scope 1+2 (Reported or Estimated)',
+        getValue: d => d.carbonScope12Type,
+      },
+      {
+        label: 'Total Emission Estimated - Scope 3 (metric tons)',
+        getValue: d =>
+          d.totalEmissionScope3 !== null ? d.totalEmissionScope3.toLocaleString('en-US') : '—',
+      },
+      {
+        label: 'Total Emission Scope (1, 2 and 3) Intensity EVIC (USD)',
+        getValue: d => d.emissionIntensityEvic,
+      },
+    ],
+  },
+];
+
+function SustainabilityPanel({
+  peers,
+  symbol,
+}: {
+  peers: string[];
+  symbol: string;
+}) {
+  const subjectData = BBCA_SUSTAINABILITY[symbol] ?? BBCA_SUSTAINABILITY['BBCA'] ?? null;
+
+  if (!subjectData) return null;
+
+  return (
+    <div style={{
+      margin: '0 24px 24px',
+      border: '1px solid var(--color-border)',
+      borderRadius: 8,
+      background: '#fff',
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '16px 20px', borderBottom: '1px solid var(--color-border)',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
+      }}>
+        <div>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>
+            Comparison of Key Sustainability &amp; Climate Metrics across Peers
+          </h2>
+          <p style={{
+            fontSize: 12, color: 'var(--color-text-secondary)',
+            maxWidth: 700, lineHeight: 1.5, margin: 0,
+          }}>
+            MSCI Indonesia recommends choosing peers within the same industry, size segment and region
+            for a more relevant comparison because these factors align with index methodology and construction.
+          </p>
+        </div>
+        <label style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 12, color: 'var(--color-text-secondary)',
+          cursor: 'pointer', whiteSpace: 'nowrap',
+        }}>
+          <input
+            type="checkbox"
+            defaultChecked
+            style={{ accentColor: 'var(--color-blue-primary)' }}
+          />
+          Peer Conditional Formatting
+        </label>
+      </div>
+
+      {/* Table */}
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <colgroup>
+            <col style={{ width: 420 }} />
+            {peers.map(p => <col key={p} style={{ width: 160 }} />)}
+          </colgroup>
+          <thead>
+            <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
+              <th style={{
+                padding: '10px 16px', textAlign: 'left',
+                fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)',
+              }}>
+                Categories / Factors
+              </th>
+              {peers.map((p, i) => (
+                <th key={p} style={{
+                  padding: '10px 16px', textAlign: 'right', minWidth: 140,
+                  fontSize: 12, fontWeight: 700,
+                  color: i === 0 ? 'var(--color-blue-primary)' : 'var(--color-text-primary)',
+                  borderLeft: '1px solid var(--color-border)',
+                }}>
+                  {p}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {SUSTAINABILITY_SECTIONS.map(section => (
+              <Fragment key={section.title}>
+                {/* Section header row */}
+                <tr style={{
+                  background: 'rgba(0,87,168,0.04)',
+                  borderBottom: '1px solid var(--color-border)',
+                }}>
+                  <td
+                    colSpan={peers.length + 1}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: 'var(--color-text-muted)', marginRight: 6 }}>−</span>
+                    {section.title}
+                  </td>
+                </tr>
+                {/* Data rows */}
+                {section.rows.map((row, ri) => (
+                  <tr
+                    key={`${section.title}-${ri}`}
+                    style={{
+                      borderBottom: '1px solid var(--color-border-subtle)',
+                      background: ri % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.01)',
+                    }}
+                  >
+                    <td style={{
+                      padding: '9px 16px 9px 28px',
+                      fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.4,
+                    }}>
+                      {row.label}
+                    </td>
+                    {peers.map((p, pi) => {
+                      const val = pi === 0 ? row.getValue(subjectData) : null;
+                      return (
+                        <td
+                          key={p}
+                          style={{
+                            padding: '9px 16px', textAlign: 'right', fontSize: 12,
+                            color: pi === 0 ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                            borderLeft: '1px solid var(--color-border)',
+                            fontWeight: pi === 0 ? 500 : 400,
+                          }}
+                        >
+                          {val !== null && val !== undefined
+                            ? String(val)
+                            : <span style={{ color: 'var(--color-text-muted)' }}>XX.XXX</span>}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Legend */}
+      <div style={{
+        padding: '10px 16px', borderTop: '1px solid var(--color-border)',
+        display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'flex-end',
+      }}>
+        {[
+          { label: 'Outperforms', bg: '#057a55' },
+          { label: 'Slightly Outperforms', bg: '#e3f5ed' },
+          { label: 'Slightly Underperforms', bg: '#fdecea' },
+          { label: 'Underperforms', bg: '#e02424' },
+        ].map(({ label, bg }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 12, height: 12, borderRadius: 2, background: bg }} />
+            <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Footnotes */}
+      <div style={{ padding: '8px 16px 12px', borderTop: '1px solid var(--color-border)' }}>
+        <p style={{ fontSize: 11, color: 'var(--color-text-muted)', lineHeight: 1.6, margin: 0 }}>
+          * Indexed AUM includes open-ended/closed-ended funds, separately managed accounts, and institutional mutual funds.<br />
+          ** Free float as proportion of shares outstanding available for purchase by international investors.<br />
+          *** Total Indexed AUM / Free Float Market Capitalization.<br />
+          Data sourced from MSCI ESG Research and company disclosures. Peer data requires MSCI subscription.
+        </p>
+      </div>
+    </div>
   );
 }
