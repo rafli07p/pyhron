@@ -95,6 +95,7 @@ BANKING_BALANCE_MAP: dict[str, str] = {
     "Assets":                           "total_assets",
     "LiabilitiesTemporarySyirkahFundsAndEquity": "total_assets",  # fallback
     "Liabilities":                      "total_liabilities",
+    "TemporarySyirkahFunds":            "temporary_syirkah_funds",
     "Equity":                           "total_equity",
     "EquityAttributableToEquityOwnersOfParentEntity": "equity_parent",
     "TotalLoansGross":                  "total_loans_gross",
@@ -397,7 +398,17 @@ class IDXFilingDiscoverer:
             # Rate limit: be respectful to IDX servers
             await asyncio.sleep(0.5)
 
-        return filings
+        # Deduplicate by file_id: the IDX API sometimes returns the same
+        # filing for multiple period queries (e.g. an annual filing shows
+        # up under both "Tahunan" and the last quarterly window), which
+        # would otherwise cause 4x duplicate rows per statement.
+        seen_file_ids: set[str] = set()
+        unique_filings: list[FilingInfo] = []
+        for f in filings:
+            if f.file_id not in seen_file_ids:
+                seen_file_ids.add(f.file_id)
+                unique_filings.append(f)
+        return unique_filings
 
     async def _fetch_period(
         self,
@@ -755,7 +766,10 @@ class IDXXBRLScraper:
             total_equity = metrics.get("total_equity")
 
             if total_assets and total_liab and total_equity:
-                diff = abs(total_assets - (total_liab + total_equity))
+                # Islamic banking taxonomy adds TemporarySyirkahFunds between
+                # Liabilities and Equity. Non-syirkah banks have it as 0/None.
+                syirkah = metrics.get("temporary_syirkah_funds") or Decimal(0)
+                diff = abs(total_assets - (total_liab + syirkah + total_equity))
                 tolerance = total_assets * Decimal("0.02")  # 2% tolerance
                 if diff > tolerance:
                     raise DataQualityError(
@@ -763,7 +777,8 @@ class IDXXBRLScraper:
                         f"{stmt.symbol}/{stmt.fiscal_year}/"
                         f"{stmt.filing_period}: "
                         f"assets={total_assets:,}, "
-                        f"liab+equity={total_liab + total_equity:,}, "
+                        f"liab+syirkah+equity="
+                        f"{total_liab + syirkah + total_equity:,}, "
                         f"diff={diff:,}",
                     )
 
