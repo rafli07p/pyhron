@@ -53,7 +53,7 @@ const NAV: Item[] = [
   { label: 'Companies', path: '/companies', Icon: ICompanies },
   { label: 'Orderbook', path: '/markets/orderbook/BBCA', Icon: IOrderbook },
   { label: 'Portfolios', path: '/portfolio', Icon: IPortfolios },
-  { label: 'Indexes', path: '/studio', Icon: IIndexes },
+  { label: 'Studio', path: '/studio', Icon: IIndexes },
   { label: 'Research', path: '/research', Icon: IResearch },
   { label: 'Reports', path: '/strategies', Icon: IReports },
   { label: 'Apps', path: '/execution', Icon: IApps },
