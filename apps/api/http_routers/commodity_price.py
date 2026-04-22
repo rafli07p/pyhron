@@ -51,7 +51,7 @@ class CommodityDashboard(BaseModel):
 
 
 # Endpoints
-@router.get("/", response_model=list[CommodityPrice])
+@router.get("", response_model=list[CommodityPrice])
 async def list_commodities(
     category: str | None = Query(None, description="energy, metals, agriculture"),
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),

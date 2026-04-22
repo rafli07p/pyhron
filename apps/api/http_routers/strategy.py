@@ -80,7 +80,7 @@ def _to_response(s: PyhronStrategy) -> StrategyResponse:
 
 
 # Endpoints
-@router.get("/", response_model=list[StrategyResponse])
+@router.get("", response_model=list[StrategyResponse])
 async def list_strategies(
     strategy_type: str | None = Query(None),
     enabled_only: bool = Query(False),
@@ -98,7 +98,7 @@ async def list_strategies(
     return [_to_response(s) for s in strategies]
 
 
-@router.post("/", response_model=StrategyResponse, status_code=201)
+@router.post("", response_model=StrategyResponse, status_code=201)
 async def create_strategy(
     body: StrategyCreate,
     user: TokenPayload = Depends(require_role(Role.TRADER)),

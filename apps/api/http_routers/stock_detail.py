@@ -74,7 +74,7 @@ class OwnershipEntry(BaseModel):
 
 # Endpoints
 # NOTE: `/` must be registered before `/{symbol}` so FastAPI matches it first.
-@router.get("/", response_model=list[dict[str, str]])
+@router.get("", response_model=list[dict[str, str]])
 async def list_symbols(
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[dict[str, str]]:

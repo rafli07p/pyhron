@@ -68,7 +68,7 @@ def _classify(polarity: float) -> str:
 
 
 # Endpoints
-@router.get("/", response_model=list[NewsArticle])
+@router.get("", response_model=list[NewsArticle])
 async def get_news(
     symbol: str | None = Query(None, description="Filter by ticker symbol"),
     category: str | None = Query(None, description="Filter by category"),
