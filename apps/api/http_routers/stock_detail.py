@@ -14,7 +14,7 @@ from typing import Any
 import yfinance as yf
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from data_platform.database_models.idx_equity_instrument import IdxEquityInstrument
 from shared.async_database_session import get_session
@@ -44,15 +44,17 @@ class StockProfile(BaseModel):
 class FinancialSummary(BaseModel):
     symbol: str
     period: str
+    statement_type: str
     revenue: Decimal | None = None
     net_income: Decimal | None = None
     total_assets: Decimal | None = None
+    total_liabilities: Decimal | None = None
     total_equity: Decimal | None = None
-    eps: Decimal | None = None
-    pe_ratio: float | None = None
-    pbv_ratio: float | None = None
-    roe: float | None = None
-    der: float | None = None
+    operating_income: Decimal | None = None
+    gross_profit: Decimal | None = None
+    operating_cash_flow: Decimal | None = None
+    capex: Decimal | None = None
+    free_cash_flow: Decimal | None = None
 
 
 class CorporateAction(BaseModel):
@@ -156,61 +158,50 @@ async def get_stock_profile(
 @router.get("/{symbol}/financials", response_model=list[FinancialSummary])
 async def get_financials(
     symbol: str,
-    period_type: str = Query("annual", pattern="^(annual|quarterly)$"),
-    limit: int = Query(8, ge=1, le=20),
+    statement_type: str = Query("income", pattern="^(income|balance|cashflow)$"),
     _user: TokenPayload = Depends(require_role(Role.VIEWER)),
 ) -> list[FinancialSummary]:
-    """Get historical financial statements for a stock via yfinance."""
-    logger.info("financials_queried", symbol=symbol, period_type=period_type)
-
-    def _fetch(sym: str, ptype: str) -> list[dict[str, Any]]:
-        try:
-            t = yf.Ticker(f"{sym}.JK")
-            fin = t.financials if ptype == "annual" else t.quarterly_financials
-            if fin is None or fin.empty:
-                return []
-            info = t.info or {}
-
-            def _safe(key: str, col: Any) -> float | None:
-                try:
-                    if key in fin.index:
-                        v = fin.loc[key, col]
-                        if v is None or str(v) == "nan":
-                            return None
-                        return float(v)
-                except Exception:
-                    return None
-                return None
-
-            results: list[dict[str, Any]] = []
-            for col in list(fin.columns)[:limit]:
-                try:
-                    period_label = col.strftime("%Y") if ptype == "annual" else col.strftime("%Y-%m")
-                except Exception:
-                    period_label = str(col)[:7]
-                results.append(
-                    {
-                        "symbol": sym,
-                        "period": period_label,
-                        "revenue": _safe("Total Revenue", col),
-                        "net_income": _safe("Net Income", col),
-                        "total_assets": None,
-                        "total_equity": None,
-                        "eps": _safe("Basic EPS", col),
-                        "pe_ratio": info.get("trailingPE"),
-                        "pbv_ratio": info.get("priceToBook"),
-                        "roe": info.get("returnOnEquity"),
-                        "der": info.get("debtToEquity"),
-                    }
-                )
-            return results
-        except Exception:
-            logger.warning("financials_fetch_failed", symbol=sym)
-            return []
-
-    loop = asyncio.get_event_loop()
-    raw = await loop.run_in_executor(None, partial(_fetch, symbol.upper(), period_type))
-    return [FinancialSummary(**r) for r in raw]
+    """Get financial statements from IDX XBRL data in TimescaleDB."""
+    logger.info("financials_queried", symbol=symbol, statement_type=statement_type)
+    async with get_session() as session:
+        result = await session.execute(
+            text("""
+                SELECT
+                    symbol, period, statement_type,
+                    revenue_idr, net_income_idr,
+                    total_assets_idr, total_liabilities_idr, total_equity_idr,
+                    operating_income_idr,
+                    gross_profit_idr,
+                    operating_cash_flow_idr,
+                    capital_expenditure_idr,
+                    free_cash_flow_idr
+                FROM financial_statements
+                WHERE symbol = :symbol
+                  AND statement_type = :statement_type
+                ORDER BY period DESC
+                LIMIT 12
+            """),
+            {"symbol": symbol.upper(), "statement_type": statement_type},
+        )
+        rows = result.mappings().all()
+    return [
+        FinancialSummary(
+            symbol=r["symbol"],
+            period=r["period"],
+            statement_type=r["statement_type"],
+            revenue=r["revenue_idr"],
+            net_income=r["net_income_idr"],
+            total_assets=r["total_assets_idr"],
+            total_liabilities=r["total_liabilities_idr"],
+            total_equity=r["total_equity_idr"],
+            operating_income=r["operating_income_idr"],
+            gross_profit=r["gross_profit_idr"],
+            operating_cash_flow=r["operating_cash_flow_idr"],
+            capex=r["capital_expenditure_idr"],
+            free_cash_flow=r["free_cash_flow_idr"],
+        )
+        for r in rows
+    ]
 
 
 @router.get("/{symbol}/corporate-actions", response_model=list[CorporateAction])
