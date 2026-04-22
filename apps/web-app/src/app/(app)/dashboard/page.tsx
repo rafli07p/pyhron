@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, YAxis, Tooltip} from 'recharts';
 
 function isIDXOpen(): boolean {
   const now = new Date();
@@ -32,7 +32,7 @@ function useIdx(symbol: string) {
       return r.json();
     },
     refetchInterval: isIDXOpen() ? 30_000 : false,
-    staleTime: 15_000,
+    staleTime: isIDXOpen() ? 15_000 : Infinity,
     enabled: !!symbol,
   });
 }
@@ -83,6 +83,7 @@ function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol:
           ]}
           hide={true}
         />
+        <Tooltip content={() => null} />
         <Area
           type="monotone"
           dataKey="value"
@@ -98,7 +99,7 @@ function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol:
 }
 
 const IDX_FALLBACK: Record<string, { base: number; change: number }> = {
-  IHSG: { base: 7234.56, change: 0.45 },
+  COMPOSITE: { base: 7234.56, change: 0.45 },
   LQ45: { base: 985.23, change: -0.52 },
   IDX30: { base: 482.18, change: 0.58 },
   IDX80: { base: 132.45, change: 0.66 },
@@ -205,7 +206,7 @@ function IdxCard({ symbol }: { symbol: string }) {
 
 // Data
 
-const IDX_SYMBOLS = ['IHSG', 'LQ45', 'IDX30', 'IDX80', 'JII'];
+const IDX_SYMBOLS = ['COMPOSITE', 'LQ45', 'IDX30', 'IDX80', 'JII'];
 
 const ARTICLES = [
   { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', gradient: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)' },
