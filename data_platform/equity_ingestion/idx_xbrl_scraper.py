@@ -223,8 +223,8 @@ class IDXXBRLParser:
         fiscal_year: int,
         period: str,
         source_url: str,
-    ) -> list[ParsedStatement]:
-        """Parse XBRL content into normalized statements.
+    ) -> tuple[list[ParsedStatement], dict[str, dict[str, Decimal]]]:
+        """Parse XBRL content into normalized statements + raw facts.
 
         Args:
             xbrl_content: Raw XBRL XML string.
@@ -234,7 +234,11 @@ class IDXXBRLParser:
             source_url: Original file URL for audit trail.
 
         Returns:
-            List of ParsedStatement (one per statement type per period).
+            Tuple of:
+              - list[ParsedStatement] (one per statement type per period,
+                with normalized/mapped metrics for the typed columns table)
+              - dict[context_ref -> dict[metric_tag -> Decimal]] for the
+                EAV financial_facts table (every tag, every context).
         """
         quarter, period_month_day = PERIOD_MAP[period]
 
@@ -315,7 +319,7 @@ class IDXXBRLParser:
                     filing_period=period,
                 ))
 
-        return statements
+        return statements, raw_facts
 
     def _is_banking_taxonomy(
         self,
@@ -624,7 +628,7 @@ class IDXXBRLScraper:
             xbrl_content = await self._download_xbrl(filing, client)
 
             # Parse XBRL
-            statements = self._parser.parse(
+            statements, raw_facts = self._parser.parse(
                 xbrl_content=xbrl_content,
                 symbol=filing.symbol,
                 fiscal_year=filing.year,
@@ -647,7 +651,7 @@ class IDXXBRLScraper:
                     result.errors.append(str(exc))
                     result.rows_skipped += 1
 
-            # Persist to DB
+            # Persist typed columns (legacy financial_statements table)
             inserted, updated = await self._upsert_statements(valid_statements)
             result.rows_inserted = inserted
             result.rows_updated = updated
@@ -662,6 +666,24 @@ class IDXXBRLScraper:
                 symbol=filing.symbol,
                 operation="updated",
             ).inc(updated)
+
+            # Persist EAV facts (every XBRL tag, every context).
+            facts_count = await self._upsert_facts(
+                symbol=filing.symbol,
+                fiscal_year=filing.year,
+                period=filing.period,
+                period_end=date.fromisoformat(
+                    f"{filing.year}-{PERIOD_MAP[filing.period][1]}",
+                ),
+                raw_facts=raw_facts,
+            )
+            self._logger.info(
+                "xbrl_facts_upserted",
+                symbol=filing.symbol,
+                period=filing.period,
+                year=filing.year,
+                facts_count=facts_count,
+            )
 
             self._logger.info(
                 "xbrl_filing_processed",
@@ -878,3 +900,76 @@ class IDXXBRLScraper:
                     inserted += 1
 
         return inserted, updated
+
+    async def _upsert_facts(
+        self,
+        symbol: str,
+        fiscal_year: int,
+        period: str,
+        period_end: date,
+        raw_facts: dict[str, dict[str, Decimal]],
+    ) -> int:
+        """Upsert all XBRL facts into financial_facts EAV table.
+
+        Args:
+            symbol: IDX ticker.
+            fiscal_year: Fiscal year.
+            period: IDX period code (TW1/TW2/TW3/Tahunan).
+            period_end: Period end date.
+            raw_facts: {context_ref: {metric_tag: value}}.
+
+        Returns:
+            Total rows upserted.
+        """
+        quarter = PERIOD_MAP[period][0]
+        period_str = (
+            f"{fiscal_year}-Annual" if period == "Tahunan"
+            else f"{fiscal_year}-Q{quarter}"
+        )
+
+        # Map context_ref -> readable context_type
+        context_labels: dict[str, str] = {
+            "CurrentYearDuration":   "income_current",
+            "PriorYearDuration":     "income_prior",
+            "CurrentYearInstant":    "balance_current",
+            "PriorEndYearInstant":   "balance_prior",
+        }
+
+        rows: list[dict[str, object]] = []
+        for ctx_ref, facts in raw_facts.items():
+            ctx_type = context_labels.get(ctx_ref)
+            if ctx_type is None:
+                continue  # skip dimensional contexts
+            for metric, value in facts.items():
+                rows.append({
+                    "symbol":       symbol,
+                    "period":       period_str,
+                    "context_type": ctx_type,
+                    "metric":       metric,
+                    "value":        value,
+                    "filing_date":  period_end,
+                })
+
+        if not rows:
+            return 0
+
+        upsert_sql = text("""
+            INSERT INTO financial_facts
+                (symbol, period, context_type, metric,
+                 value, filing_date, source)
+            VALUES
+                (:symbol, :period, :context_type, :metric,
+                 :value, :filing_date, 'idx_xbrl')
+            ON CONFLICT (symbol, period, context_type, metric) DO UPDATE SET
+                value       = EXCLUDED.value,
+                filing_date = EXCLUDED.filing_date,
+                ingested_at = NOW()
+        """)
+
+        total = 0
+        async with get_session() as session:
+            for row in rows:
+                await session.execute(upsert_sql, row)
+                total += 1
+
+        return total
