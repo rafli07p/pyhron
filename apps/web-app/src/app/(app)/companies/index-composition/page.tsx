@@ -87,7 +87,7 @@ export default function IndexCompositionPage() {
   const { selectedSymbol, selectedName, setSelected } = useCompanyStore();
 
   const [asOfDate, setAsOfDate] = useState<string>(AS_OF_DATES[0] ?? '2025-09-30');
-  const [nameQuery, setNameQuery] = useState<string>('');
+  const [selectedIndexes, setSelectedIndexes] = useState<string[]>([]);
   // Store non-subject peers only; subject is always prepended at render time.
   const [peerExtras, setPeerExtras] = useState<string[]>(
     DEFAULT_PEER_SYMBOLS.filter(s => s !== 'BBCA'),
@@ -148,9 +148,8 @@ export default function IndexCompositionPage() {
 
   const filteredRows = useMemo(() => {
     let out = rows;
-    if (nameQuery.trim()) {
-      const q = nameQuery.toLowerCase();
-      out = out.filter(r => r.isParent || r.indexName.toLowerCase().includes(q));
+    if (selectedIndexes.length > 0) {
+      out = out.filter(r => r.isParent || selectedIndexes.includes(r.indexName));
     }
     if (filterEsgOnly) {
       out = out.filter(r => r.isParent || r.esg !== undefined);
@@ -159,7 +158,7 @@ export default function IndexCompositionPage() {
       out = out.filter(r => r.isParent || (r.weights[selectedSymbol] ?? null) !== null);
     }
     return out;
-  }, [rows, nameQuery, filterEsgOnly, filterHideNotListed, selectedSymbol]);
+  }, [rows, selectedIndexes, filterEsgOnly, filterHideNotListed, selectedSymbol]);
 
   const sortedRows = useMemo(() => {
     if (!sort) return filteredRows;
@@ -189,7 +188,7 @@ export default function IndexCompositionPage() {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setNameQuery('');
+    setSelectedIndexes([]);
     setFilterEsgOnly(false);
     setFilterHideNotListed(false);
     setSort(null);
@@ -320,7 +319,11 @@ export default function IndexCompositionPage() {
           }}
         />
         <AsOfDateSelect value={asOfDate} onChange={setAsOfDate} />
-        <IndexSearchField value={nameQuery} onChange={setNameQuery} />
+        <IndexMultiSelect
+          selected={selectedIndexes}
+          onChange={setSelectedIndexes}
+          allIndexes={Array.from(new Set(rows.filter(r => !r.isParent).map(r => r.indexName)))}
+        />
         <div>
           <button
             type="button"
@@ -573,9 +576,12 @@ function CompanyPicker({
   onSelect: (sym: string, name: string) => void;
 }) {
   const [search, setSearch] = useState('');
-  const filtered = AVAILABLE_PEERS.filter(i =>
-    i.symbol.includes(search.toUpperCase()) || i.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const trimmedSearch = search.trim();
+  const filtered = trimmedSearch.length === 0
+      ? []
+      : AVAILABLE_PEERS.filter(i =>
+          i.symbol.includes(trimmedSearch.toUpperCase()) || i.name.toLowerCase().includes(trimmedSearch.toLowerCase()),
+      );
   return (
     <div>
       <label className="label-caps mb-1 block">Company</label>
@@ -615,9 +621,9 @@ function CompanyPicker({
                 </button>
               ))}
               {filtered.length === 0 && (
-                <div className="px-3 py-4 text-center text-[12px] text-[var(--color-text-muted)]">
-                  No matches
-                </div>
+                  <div className="px-3 py-4 text-center text-[12px] text-[var(--color-text-muted)]">
+                    {trimmedSearch.length === 0 ? 'Type to search companies' : 'No matches'}
+                  </div>
               )}
             </div>
           </div>
@@ -658,9 +664,46 @@ function AsOfDateSelect({ value, onChange }: { value: string; onChange: (v: stri
   );
 }
 
-function IndexSearchField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function IndexMultiSelect({
+  selected,
+  onChange,
+  allIndexes,
+}: {
+  selected: string[];
+  onChange: (next: string[]) => void;
+  allIndexes: string[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const trimmed = search.trim().toLowerCase();
+  const filtered = trimmed.length === 0
+    ? []
+    : allIndexes.filter(name =>
+        name.toLowerCase().includes(trimmed) && !selected.includes(name),
+      ).slice(0, 50);
+
+  const toggleIndex = (name: string) => {
+    if (selected.includes(name)) {
+      onChange(selected.filter(n => n !== name));
+    } else {
+      onChange([...selected, name]);
+    }
+  };
+
   return (
-    <div>
+    <div ref={ref}>
       <div className="mb-1 flex items-center gap-1">
         <label className="label-caps">Index Name Selection</label>
         <span title="Filter visible indexes by name">
@@ -668,16 +711,70 @@ function IndexSearchField({ value, onChange }: { value: string; onChange: (v: st
         </span>
       </div>
       <div className="relative">
-        <SearchIcon
-          size={13}
-          className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
-        />
-        <input
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder="Search"
-          className="w-full rounded border border-[var(--color-border)] bg-white py-[7px] pl-7 pr-3 text-[13px] outline-none hover:bg-[var(--color-border-subtle)]"
-        />
+        <div
+          onClick={() => setOpen(true)}
+          className="flex min-h-[34px] w-full flex-wrap items-center gap-1 rounded border border-[var(--color-border)] bg-white py-1 pl-7 pr-3 text-[13px] outline-none cursor-text hover:bg-[var(--color-border-subtle)]"
+        >
+          <SearchIcon
+            size={13}
+            className="pointer-events-none absolute left-2 top-[10px] text-[var(--color-text-muted)]"
+          />
+          {selected.map(name => (
+            <span
+              key={name}
+              className="inline-flex items-center gap-1 rounded bg-[rgba(0,87,168,0.08)] px-2 py-[2px] text-[11px] font-medium text-[var(--color-blue-primary)]"
+            >
+              <span className="max-w-[140px] truncate">{name}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(selected.filter(n => n !== name));
+                }}
+                className="flex h-3 w-3 items-center justify-center rounded hover:bg-[rgba(0,87,168,0.15)]"
+              >
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              if (!open) setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            placeholder={selected.length === 0 ? 'Search' : ''}
+            className="flex-1 min-w-[60px] bg-transparent text-[13px] outline-none"
+          />
+        </div>
+
+        {open && (
+          <div className="absolute left-0 top-full z-40 mt-1 w-full overflow-hidden rounded-md border border-[var(--color-border)] bg-white shadow-lg">
+            <div className="max-h-[260px] overflow-y-auto">
+              {trimmed.length === 0 ? (
+                <div className="px-3 py-4 text-center text-[12px] text-[var(--color-text-muted)]">
+                  Type to search indexes
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="px-3 py-4 text-center text-[12px] text-[var(--color-text-muted)]">
+                  No matches
+                </div>
+              ) : (
+                filtered.map(name => (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => toggleIndex(name)}
+                    className="flex w-full items-center gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2 text-left text-[12px] hover:bg-[var(--color-border-subtle)]"
+                  >
+                    <span className="flex-1 truncate text-[var(--color-text-secondary)]">{name}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
