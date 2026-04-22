@@ -28,11 +28,14 @@ from __future__ import annotations
 import asyncio
 import io
 import re
+import shutil
+import tempfile
 import time
 import zipfile
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from pathlib import Path as _Path
 from typing import Any
 
 from curl_cffi import CurlError
@@ -47,7 +50,49 @@ from shared.platform_exception_hierarchy import (
 from shared.prometheus_metrics_registry import INGESTION_ROWS
 from shared.structured_json_logger import get_logger
 
+from .arelle_xbrl_parser import IDXXBRLParser as _ArelleParser
+from .arelle_xbrl_parser import ParseResult as _ArelleParseResult
+
 logger = get_logger(__name__)
+
+# IDX period code (as returned by IDX report API) -> parser period suffix.
+_PERIOD_CODE_MAP: dict[str, str] = {
+    "TW1": "Q1", "TW2": "Q2", "TW3": "Q3", "Tahunan": "FY",
+}
+
+_TAXONOMY_MAP_PATH = _Path(__file__).parent / "idx_taxonomy_map.yaml"
+
+# Common IDX report-date string patterns across endpoint revisions. Each
+# is a (regex, group-order) pair where group-order names which capture
+# group holds year/month/day.
+_IDX_DATE_PATTERNS: tuple[tuple[re.Pattern[str], tuple[int, int, int]], ...] = (
+    # ISO-ish: 2023-04-28, 2023-04-28T09:15:00, 2023-04-28 09:15:00
+    (re.compile(r"^(\d{4})-(\d{1,2})-(\d{1,2})"), (1, 2, 3)),
+    # Indonesian dd-mm-yyyy or dd/mm/yyyy
+    (re.compile(r"^(\d{1,2})[-/](\d{1,2})[-/](\d{4})"), (3, 2, 1)),
+)
+
+
+def _parse_idx_report_date(raw: object) -> date | None:
+    """Best-effort parse of IDX date strings. Returns None on unparseable input.
+
+    Does not fabricate a value when the input is missing or malformed - the
+    caller is expected to fall back to `file_modified` or emit a warning.
+    """
+    if raw is None:
+        return None
+    s = str(raw).strip()
+    if not s:
+        return None
+    for pattern, (yi, mi, di) in _IDX_DATE_PATTERNS:
+        m = pattern.match(s)
+        if m is None:
+            continue
+        try:
+            return date(int(m.group(yi)), int(m.group(mi)), int(m.group(di)))
+        except ValueError:
+            return None
+    return None
 
 # -- Constants ----------------------------------------------------------------
 
@@ -164,6 +209,7 @@ class FilingInfo:
     file_path: str       # Path to instance.zip on IDX server
     file_id: str
     file_modified: str
+    report_date: date | None = None  # IDX receipt date; None if API omits it
 
 
 @dataclass
@@ -196,6 +242,8 @@ class ScraperResult:
 
 # -- XBRL Parser --------------------------------------------------------------
 
+# DEPRECATED: replaced by arelle_xbrl_parser.IDXXBRLParser.
+# Retained for rollback path only. Do not call from new code.
 class IDXXBRLParser:
     """Parse IDX XBRL instance documents into normalized financial metrics.
 
@@ -470,6 +518,13 @@ class IDXFilingDiscoverer:
             if emiten_code.upper() != symbol.upper():
                 continue
 
+            # IDX receipt date — field name varies by endpoint revision.
+            report_date = _parse_idx_report_date(
+                entry.get("TanggalLaporan")
+                or entry.get("Report_Date")
+                or entry.get("File_Date"),
+            )
+
             # Find instance.zip attachment
             attachments = entry.get("Attachments", [])
             if not isinstance(attachments, list):
@@ -479,6 +534,11 @@ class IDXFilingDiscoverer:
                     continue
                 fname = str(attachment.get("File_Name", "")).lower()
                 if fname == "instance.zip":
+                    file_modified = str(attachment.get("File_Modified", ""))
+                    effective_report_date = (
+                        report_date
+                        or _parse_idx_report_date(file_modified)
+                    )
                     filings.append(FilingInfo(
                         symbol=symbol,
                         name=str(entry.get("NamaEmiten", "")),
@@ -486,7 +546,8 @@ class IDXFilingDiscoverer:
                         year=int(entry.get("Report_Year", year)),
                         file_path=str(attachment["File_Path"]),
                         file_id=str(attachment["File_ID"]),
-                        file_modified=str(attachment.get("File_Modified", "")),
+                        file_modified=file_modified,
+                        report_date=effective_report_date,
                     ))
                     break  # Only need instance.zip per filing
 
@@ -517,7 +578,10 @@ class IDXXBRLScraper:
     """
 
     def __init__(self) -> None:
-        self._parser = IDXXBRLParser()
+        self._parser = IDXXBRLParser()  # DEPRECATED regex parser, rollback path.
+        self._arelle_parser = _ArelleParser(
+            taxonomy_map_path=_TAXONOMY_MAP_PATH,
+        )
         self._logger = get_logger(__name__)
 
     async def scrape_symbol(
@@ -623,17 +687,34 @@ class IDXXBRLScraper:
             year=filing.year,
         )
 
+        tmpdir: str | None = None
         try:
-            # Download instance.zip
-            xbrl_content = await self._download_xbrl(filing, client)
+            # Download instance.zip and extract to a per-scrape tempdir so
+            # Arelle can resolve schemaRef/label/presentation siblings.
+            zip_bytes = await self._download_xbrl_zip_bytes(filing, client)
+            tmpdir = tempfile.mkdtemp(prefix="pyhron_xbrl_")
+            xbrl_path = self._extract_instance_zip(zip_bytes, tmpdir)
 
-            # Parse XBRL
-            statements, raw_facts = self._parser.parse(
-                xbrl_content=xbrl_content,
+            period_label = self._to_parser_period(filing.year, filing.period)
+            filing_date = filing.report_date or date.fromisoformat(
+                f"{filing.year}-{PERIOD_MAP[filing.period][1]}",
+            )
+            if filing.report_date is None:
+                self._logger.warning(
+                    "filing_report_date_missing_using_period_end",
+                    symbol=filing.symbol,
+                    period=filing.period,
+                    year=filing.year,
+                )
+
+            parse_result = self._arelle_parser.parse(
+                xbrl_path=xbrl_path,
                 symbol=filing.symbol,
-                fiscal_year=filing.year,
-                period=filing.period,
-                source_url=f"{IDX_BASE_URL}{filing.file_path}",
+                period=period_label,
+                filing_date=filing_date,
+            )
+            statements, raw_facts = self._adapt_parse_result(
+                parse_result, filing,
             )
 
             if not statements:
@@ -706,8 +787,151 @@ class IDXXBRLScraper:
             )
         finally:
             result.duration_ms = (time.monotonic() - t0) * 1000
+            if tmpdir is not None:
+                shutil.rmtree(tmpdir, ignore_errors=True)
 
         return result
+
+    def _to_parser_period(self, fiscal_year: int, idx_period: str) -> str:
+        """Translate IDX period code (TW1/.../Tahunan) to parser format."""
+        suffix = _PERIOD_CODE_MAP.get(idx_period)
+        if suffix is None:
+            raise IngestionError(f"unknown_idx_period_code: {idx_period!r}")
+        return f"{fiscal_year}-{suffix}"
+
+    def _extract_instance_zip(self, zip_bytes: bytes, dest_dir: str) -> _Path:
+        """Extract all members of instance.zip into `dest_dir` and return the
+        path to the `.xbrl` instance document.
+
+        Arelle needs the full DTS (schemaRef + linkbases) co-located on disk.
+        Extracting only the `.xbrl` member loses `xlink:href` resolution.
+        """
+        try:
+            with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+                zf.extractall(dest_dir)
+                xbrl_members = [
+                    n for n in zf.namelist() if n.lower().endswith(".xbrl")
+                ]
+        except zipfile.BadZipFile as exc:
+            raise IngestionError(f"invalid_zip: {exc}") from exc
+
+        if not xbrl_members:
+            raise IngestionError("no_xbrl_file_in_instance_zip")
+
+        return _Path(dest_dir) / xbrl_members[0]
+
+    def _adapt_parse_result(
+        self,
+        parse_result: _ArelleParseResult,
+        filing: FilingInfo,
+    ) -> tuple[list[ParsedStatement], dict[str, dict[str, Decimal]]]:
+        """Adapt the new Arelle ParseResult into the legacy
+        (statements, raw_facts) tuple consumed by `_upsert_statements` and
+        `_upsert_facts`. This preserves the existing persistence code.
+        """
+        # Map new context_type labels to the legacy contextRef strings
+        # expected by `_upsert_facts` (which further maps them to
+        # context_labels inside that method).
+        ctx_legacy: dict[str, str] = {
+            "income_current":  "CurrentYearDuration",
+            "income_prior":    "PriorYearDuration",
+            "balance_current": "CurrentYearInstant",
+            "balance_prior":   "PriorEndYearInstant",
+        }
+
+        raw_facts: dict[str, dict[str, Decimal]] = {}
+        per_ctx_mapped: dict[str, dict[str, Decimal]] = {
+            k: {} for k in ctx_legacy
+        }
+
+        for fact in parse_result.facts:
+            legacy_ctx = ctx_legacy.get(fact.context_type)
+            if legacy_ctx is None:
+                continue
+            localname = fact.raw_concept.rsplit(":", 1)[-1]
+            raw_facts.setdefault(legacy_ctx, {}).setdefault(
+                localname, fact.value,
+            )
+            if fact.is_mapped:
+                per_ctx_mapped[fact.context_type].setdefault(
+                    fact.metric, fact.value,
+                )
+
+        quarter, period_month_day = PERIOD_MAP[filing.period]
+        source_url = f"{IDX_BASE_URL}{filing.file_path}"
+        statements: list[ParsedStatement] = []
+
+        def _date_for(offset: int) -> date:
+            fy = filing.year + offset
+            if filing.period == "Tahunan":
+                return date.fromisoformat(f"{fy}-12-31")
+            return date.fromisoformat(f"{fy}-{period_month_day}")
+
+        def _append(
+            metrics: dict[str, Decimal],
+            statement_type: str,
+            year_offset: int,
+        ) -> None:
+            if not metrics:
+                return
+            statements.append(ParsedStatement(
+                symbol=filing.symbol,
+                fiscal_year=filing.year + year_offset,
+                quarter=quarter if year_offset == 0 else None,
+                period_end=_date_for(year_offset),
+                statement_type=statement_type,
+                metrics=metrics,
+                source_url=source_url,
+                filing_period=filing.period,
+            ))
+
+        _append(per_ctx_mapped["income_current"],  "income",  0)
+        _append(per_ctx_mapped["income_prior"],    "income", -1)
+        _append(per_ctx_mapped["balance_current"], "balance", 0)
+        _append(per_ctx_mapped["balance_prior"],   "balance", -1)
+
+        return statements, raw_facts
+
+    async def _download_xbrl_zip_bytes(
+        self,
+        filing: FilingInfo,
+        client: CurlSession[Any],
+    ) -> bytes:
+        """Download the raw instance.zip bytes. Shared by the Arelle parser
+        path (which extracts to tempdir) and the legacy regex path (kept for
+        rollback)."""
+        encoded_path = filing.file_path.replace(" ", "%20")
+        url = f"{IDX_BASE_URL}{encoded_path}"
+
+        for attempt in range(1, 4):
+            try:
+                resp = await client.get(
+                    url,
+                    headers={
+                        "User-Agent": IDX_HEADERS["User-Agent"],
+                        "Referer": IDX_BASE_URL + "/",
+                    },
+                    allow_redirects=True,
+                    timeout=60,
+                )
+                if resp.status_code >= 400:
+                    if attempt == 3:
+                        raise IngestionError(
+                            f"Failed to download {url}: "
+                            f"HTTP {resp.status_code}",
+                        )
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                content: bytes = resp.content
+                return content
+            except CurlError as exc:
+                if attempt == 3:
+                    raise IngestionError(
+                        f"Connection error downloading {url}: {exc}",
+                    ) from exc
+                await asyncio.sleep(2 ** attempt)
+
+        raise IngestionError(f"exhausted_retries_downloading: {url}")
 
     async def _download_xbrl(
         self,
