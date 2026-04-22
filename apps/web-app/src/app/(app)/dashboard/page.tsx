@@ -68,8 +68,10 @@ function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol:
   const gradientId = `spark-gradient-${symbol.replace(/[^a-zA-Z0-9]/g, '-')}`;
   const data = pts.map((value) => ({ value }));
   return (
-    <ResponsiveContainer width="100%" height={44}>
+    <div style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
+    <ResponsiveContainer width="100%" height={44} style={{ outline: 'none' }}>
       <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+        <Tooltip content={() => null} cursor={false} />
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={strokeColor} stopOpacity={0.18} />
@@ -96,6 +98,7 @@ function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol:
         />
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -207,7 +210,7 @@ function IdxCard({ symbol }: { symbol: string }) {
 
 // Data
 
-const IDX_SYMBOLS = ['JCI', 'LQ45', 'IDX30', 'IDX80', 'JII'];
+const IDX_SYMBOLS = ['JCI', 'LQ45', 'IDX30', 'AGRI', 'JII'];
 
 const ARTICLES = [
   { id: 'prop', title: 'Latest on Indonesian Commercial-Property Pricing', desc: 'We report the latest trends in the RCA CPPI for Indonesia. We cover the all-property index and indexes for the major property types including industrial, retail, apartment and office.', gradient: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%)' },
