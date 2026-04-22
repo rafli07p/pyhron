@@ -114,7 +114,7 @@ export default function ResearchPage() {
     if (selectedSymbol) params.set('symbol', selectedSymbol);
     if (sentimentFilter !== 'all') params.set('sentiment', sentimentFilter);
     try {
-      const res = await fetch(`/api/v1/news/?${params}`, { headers: authHeader() });
+      const res = await fetch(`/api/v1/news?${params}`, { headers: authHeader() });
       if (res.ok) setArticles(await res.json());
     } catch {
       /* noop */
