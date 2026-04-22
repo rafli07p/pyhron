@@ -91,6 +91,7 @@ function IndexSparkline({ pts, symbol, changePercent }: { pts: number[]; symbol:
           strokeWidth={1.5}
           fill={`url(#${gradientId})`}
           dot={false}
+          activeDot={false}
           isAnimationActive={false}
         />
       </AreaChart>
