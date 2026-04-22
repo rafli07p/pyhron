@@ -1,0 +1,226 @@
+metrics:
+  # Income statement - shared (IFRS + banking)
+  - metric: revenue
+    localnames: [Revenue, SalesAndRevenue, TotalRevenue]
+    contexts: [income_current, income_prior]
+
+  - metric: interest_income
+    localnames: [InterestIncome, TotalInterestAndShariaIncome]
+    contexts: [income_current, income_prior]
+
+  - metric: net_interest_income
+    localnames: [SubtotalInterestIncome, NetInterestIncome]
+    contexts: [income_current, income_prior]
+
+  - metric: cost_of_revenue
+    localnames: [CostOfRevenue, CostOfGoodsSold, CostOfSales]
+    contexts: [income_current, income_prior]
+
+  - metric: gross_profit
+    localnames: [GrossProfit]
+    contexts: [income_current, income_prior]
+
+  - metric: selling_expenses
+    localnames: [SellingExpenses, SellingAndMarketingExpenses]
+    contexts: [income_current, income_prior]
+
+  - metric: general_admin_expenses
+    localnames: [GeneralAndAdministrativeExpenses]
+    contexts: [income_current, income_prior]
+
+  - metric: operating_expenses
+    localnames: [OperatingExpenses, OtherOperatingExpenses]
+    contexts: [income_current, income_prior]
+
+  - metric: other_operating_expenses
+    localnames: [OtherOperatingExpenses]
+    contexts: [income_current, income_prior]
+
+  - metric: operating_profit
+    localnames: [OperatingProfit, OperatingIncome, ProfitFromOperation]
+    contexts: [income_current, income_prior]
+
+  - metric: ebit
+    localnames: [OperatingIncome, ProfitFromOperation, EBIT]
+    contexts: [income_current, income_prior]
+
+  - metric: ebitda
+    localnames: [EBITDA, EarningsBeforeInterestTaxesDepreciationAndAmortization]
+    contexts: [income_current, income_prior]
+
+  - metric: depreciation_amortization
+    localnames: [DepreciationAndAmortisationExpense, DepreciationAndAmortizationExpense]
+    contexts: [income_current, income_prior]
+
+  - metric: impairment_losses
+    localnames: [RecoveryOfImpairmentLossesOfFinancialAssets, ImpairmentLoss]
+    contexts: [income_current, income_prior]
+
+  - metric: income_before_tax
+    localnames: [ProfitBeforeTax, ProfitLossBeforeIncomeTax, ProfitBeforeIncomeTax]
+    contexts: [income_current, income_prior]
+
+  - metric: income_tax_expense
+    localnames: [IncomeTaxExpense, TaxBenefitExpenses, TaxExpense]
+    contexts: [income_current, income_prior]
+
+  - metric: tax_expense
+    localnames: [TaxExpense, IncomeTaxExpense, TaxBenefitExpenses]
+    contexts: [income_current, income_prior]
+
+  - metric: net_income
+    localnames:
+      - ProfitLoss
+      - NetIncome
+      - ProfitLossFromContinuingOperations
+    contexts: [income_current, income_prior]
+
+  - metric: net_income_from_continuing_ops
+    localnames: [ProfitLossFromContinuingOperations]
+    contexts: [income_current, income_prior]
+
+  - metric: earnings_per_share_basic
+    localnames: [BasicEarningsLossPerShare, BasicEarningsPerShare]
+    contexts: [income_current, income_prior]
+
+  - metric: earnings_per_share_diluted
+    localnames: [DilutedEarningsLossPerShare, DilutedEarningsPerShare]
+    contexts: [income_current, income_prior]
+
+
+  # Balance sheet - shared
+  - metric: cash
+    localnames: [Cash]
+    contexts: [balance_current, balance_prior]
+
+  - metric: cash_and_equivalents
+    localnames: [CashAndCashEquivalents, CashAndCashEquivalentsCashFlows]
+    contexts: [balance_current, balance_prior]
+
+  - metric: trade_receivables
+    localnames: [TradeReceivables, TradeAndOtherCurrentReceivables]
+    contexts: [balance_current, balance_prior]
+
+  - metric: inventories
+    localnames: [Inventories, CurrentInventories]
+    contexts: [balance_current, balance_prior]
+
+  - metric: current_assets
+    localnames: [CurrentAssets, TotalCurrentAssets]
+    contexts: [balance_current, balance_prior]
+
+  - metric: non_current_assets
+    localnames: [NoncurrentAssets, TotalNoncurrentAssets]
+    contexts: [balance_current, balance_prior]
+
+  - metric: ppe
+    localnames: [PropertyPlantAndEquipment]
+    contexts: [balance_current, balance_prior]
+
+  - metric: property_plant_equipment
+    localnames: [PropertyPlantAndEquipment]
+    contexts: [balance_current, balance_prior]
+
+  - metric: intangible_assets
+    localnames: [IntangibleAssetsOtherThanGoodwill, IntangibleAssets]
+    contexts: [balance_current, balance_prior]
+
+  - metric: goodwill
+    localnames: [Goodwill, GoodWill]
+    contexts: [balance_current, balance_prior]
+
+  - metric: investment_property
+    localnames: [InvestmentProperty]
+    contexts: [balance_current, balance_prior]
+
+  - metric: total_assets
+    localnames: [Assets, LiabilitiesTemporarySyirkahFundsAndEquity]
+    contexts: [balance_current, balance_prior]
+
+  - metric: total_liabilities
+    localnames: [Liabilities]
+    contexts: [balance_current, balance_prior]
+
+  - metric: total_debt
+    localnames: [TotalDebt, BorrowingsNoncurrent, BankLoans]
+    contexts: [balance_current, balance_prior]
+
+  - metric: short_term_debt
+    localnames: [ShortTermBorrowings, CurrentBorrowings, BankLoansCurrent]
+    contexts: [balance_current, balance_prior]
+
+  - metric: long_term_debt
+    localnames: [LongTermBorrowings, NoncurrentBorrowings, BankLoansNoncurrent]
+    contexts: [balance_current, balance_prior]
+
+  - metric: temporary_syirkah_funds
+    localnames: [TemporarySyirkahFunds]
+    contexts: [balance_current, balance_prior]
+
+  - metric: total_equity
+    localnames: [Equity]
+    contexts: [balance_current, balance_prior]
+
+  - metric: equity_parent
+    localnames: [EquityAttributableToEquityOwnersOfParentEntity]
+    contexts: [balance_current, balance_prior]
+
+  - metric: common_stock
+    localnames: [CommonStocks, IssuedCapital]
+    contexts: [balance_current, balance_prior]
+
+  - metric: retained_earnings
+    localnames: [UnappropriatedRetainedEarnings, RetainedEarnings]
+    contexts: [balance_current, balance_prior]
+
+  # Banking-specific balance sheet
+  - metric: total_loans
+    localnames: [TotalLoansNet]
+    contexts: [balance_current, balance_prior]
+
+  - metric: total_loans_gross
+    localnames: [TotalLoansGross]
+    contexts: [balance_current, balance_prior]
+
+  - metric: government_bonds
+    localnames: [GovernmentBonds]
+    contexts: [balance_current, balance_prior]
+
+  - metric: customer_deposits
+    localnames: [CustomerDeposits, SavingsDeposits]
+    contexts: [balance_current, balance_prior]
+
+  # Cash flow statement
+  - metric: operating_cash_flow
+    localnames:
+      - NetCashFromOperatingActivities
+      - CashFlowsFromOperatingActivities
+      - NetCashFlowsFromUsedInOperatingActivities
+    contexts: [income_current, income_prior]
+
+  - metric: investing_cash_flow
+    localnames:
+      - NetCashFromInvestingActivities
+      - NetCashFlowsFromUsedInInvestingActivities
+    contexts: [income_current, income_prior]
+
+  - metric: financing_cash_flow
+    localnames:
+      - NetCashFromFinancingActivities
+      - NetCashFlowsFromUsedInFinancingActivities
+    contexts: [income_current, income_prior]
+
+  - metric: capex
+    localnames:
+      - CapitalExpenditures
+      - PaymentsForPurchaseOfPropertyPlantAndEquipment
+      - PurchaseOfPropertyPlantAndEquipment
+    contexts: [income_current, income_prior]
+
+  - metric: free_cash_flow
+    localnames: [FreeCashFlow]
+    contexts: [income_current, income_prior]
+
+  - metric: dividends_paid
+    localnames: [DividendsPaid, DividendsPaidClassifiedAsFinancingActivities]
+    contexts: [income_current, income_prior]

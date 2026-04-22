@@ -79,6 +79,10 @@ ccxt = "~=4.4.0"
 email-validator = "^2.3.0"
 curl-cffi = "^0.15.0"
 
+# XBRL parsing (IDX financial statements)
+arelle-release = "^2.30.0"
+pyyaml = "^6.0"
+
 [tool.poetry.group.ml]
 optional = true
 
@@ -227,6 +231,8 @@ module = [
     "shap.*",
     "matplotlib.*",
     "scipy.*",
+    "arelle.*",
+    "yaml",
 ]
 ignore_missing_imports = true
 
