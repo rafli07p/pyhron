@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Building2, LineChart, BarChart3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Area, AreaChart, ResponsiveContainer, YAxis,} from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from 'recharts';
 
 function isIDXOpen(): boolean {
   const now = new Date();
