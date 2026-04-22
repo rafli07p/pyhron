@@ -72,3 +72,5 @@ test-results/
 .cache/
 secrets/
 appendonlydir/
+.claude/settings.local.json
+apps/web-app/next-env.d.ts
