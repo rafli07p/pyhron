@@ -33,8 +33,10 @@ import zipfile
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
-import httpx
+from curl_cffi import CurlError
+from curl_cffi.requests import AsyncSession as CurlSession
 from sqlalchemy import text
 
 from shared.async_database_session import get_session
@@ -363,7 +365,7 @@ class IDXFilingDiscoverer:
     MAX_RETRIES = 3
     PAGE_SIZE = 20  # IDX default page size
 
-    def __init__(self, client: httpx.AsyncClient) -> None:
+    def __init__(self, client: CurlSession[Any]) -> None:
         self._client = client
 
     async def discover(
@@ -404,9 +406,9 @@ class IDXFilingDiscoverer:
         period: str,
     ) -> list[FilingInfo]:
         """Fetch filings for one symbol/year/period combination."""
-        params: dict[str, str | int] = {
-            "indexFrom": 0,
-            "pageSize": self.PAGE_SIZE,
+        params: dict[str, str] = {
+            "indexFrom": "0",
+            "pageSize": str(self.PAGE_SIZE),
             "reportType": "rdf",
             "KodeEmiten": symbol,
             "Year": str(year),
@@ -420,21 +422,25 @@ class IDXFilingDiscoverer:
                     IDX_REPORT_API,
                     params=params,
                     headers=IDX_HEADERS,
-                    timeout=30.0,
+                    timeout=30,
                 )
-                resp.raise_for_status()
+                if resp.status_code >= 400:
+                    if attempt == self.MAX_RETRIES:
+                        raise IngestionError(
+                            f"IDX API error for {symbol}/{year}/{period}: "
+                            f"HTTP {resp.status_code}",
+                        )
+                    await asyncio.sleep(2 ** attempt)
+                    continue
                 data = resp.json()
                 break
-            except httpx.HTTPStatusError as exc:
+            except CurlError as exc:
                 if attempt == self.MAX_RETRIES:
                     raise IngestionError(
-                        f"IDX API error for {symbol}/{year}/{period}: {exc}",
+                        f"IDX connection error for {symbol}/{year}/{period}: "
+                        f"{exc}",
                     ) from exc
                 await asyncio.sleep(2 ** attempt)
-            except httpx.RequestError as exc:
-                raise IngestionError(
-                    f"IDX connection error: {exc}",
-                ) from exc
 
         results = data.get("Results", []) if isinstance(data, dict) else []
         if not isinstance(results, list):
@@ -516,7 +522,7 @@ class IDXXBRLScraper:
         Returns:
             List of ScraperResult per period scraped.
         """
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with CurlSession(impersonate="chrome120", timeout=60) as client:
             discoverer = IDXFilingDiscoverer(client)
             filings = await discoverer.discover(symbol, year, period)
 
@@ -584,7 +590,7 @@ class IDXXBRLScraper:
     async def _process_filing(
         self,
         filing: FilingInfo,
-        client: httpx.AsyncClient,
+        client: CurlSession[Any],
     ) -> ScraperResult:
         """Download, parse, and persist one XBRL filing.
 
@@ -673,7 +679,7 @@ class IDXXBRLScraper:
     async def _download_xbrl(
         self,
         filing: FilingInfo,
-        client: httpx.AsyncClient,
+        client: CurlSession[Any],
     ) -> str:
         """Download and extract XBRL content from instance.zip.
 
@@ -700,23 +706,25 @@ class IDXXBRLScraper:
                         "User-Agent": IDX_HEADERS["User-Agent"],
                         "Referer": IDX_BASE_URL + "/",
                     },
-                    follow_redirects=True,
-                    timeout=60.0,
+                    allow_redirects=True,
+                    timeout=60,
                 )
-                resp.raise_for_status()
+                if resp.status_code >= 400:
+                    if attempt == 3:
+                        raise IngestionError(
+                            f"Failed to download {url}: "
+                            f"HTTP {resp.status_code}",
+                        )
+                    await asyncio.sleep(2 ** attempt)
+                    continue
                 zip_bytes = resp.content
                 break
-            except httpx.HTTPStatusError as exc:
+            except CurlError as exc:
                 if attempt == 3:
                     raise IngestionError(
-                        f"Failed to download {url}: HTTP "
-                        f"{exc.response.status_code}",
+                        f"Connection error downloading {url}: {exc}",
                     ) from exc
                 await asyncio.sleep(2 ** attempt)
-            except httpx.RequestError as exc:
-                raise IngestionError(
-                    f"Connection error downloading {url}: {exc}",
-                ) from exc
 
         # Extract instance.xbrl from zip
         try:

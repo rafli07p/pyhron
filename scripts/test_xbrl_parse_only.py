@@ -13,7 +13,7 @@ import io
 import sys
 import zipfile
 
-import httpx
+from curl_cffi.requests import AsyncSession as CurlSession
 
 sys.path.insert(0, ".")
 
@@ -31,7 +31,7 @@ async def main() -> None:
     period = sys.argv[3] if len(sys.argv) > 3 else "TW1"
 
     print(f"[1/4] Discovering filings for {symbol}/{year}/{period}...")
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with CurlSession(impersonate="chrome120", timeout=60) as client:
         discoverer = IDXFilingDiscoverer(client)
         filings = await discoverer.discover(symbol, year, period)
 
@@ -52,10 +52,12 @@ async def main() -> None:
                 "User-Agent": IDX_HEADERS["User-Agent"],
                 "Referer": IDX_BASE_URL + "/",
             },
-            follow_redirects=True,
-            timeout=60.0,
+            allow_redirects=True,
+            timeout=60,
         )
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            print(f"  Download failed: HTTP {resp.status_code}")
+            return
         print(f"  Downloaded {len(resp.content):,} bytes")
 
         print("[3/4] Extracting XBRL...")
