@@ -785,82 +785,81 @@ class IDXXBRLScraper:
         inserted = 0
         updated = 0
 
+        # Actual deployed schema (after migration 013 consolidate_public_schema):
+        # table: public.financial_statements
+        # cols:  symbol, period (varchar), statement_type (varchar),
+        #        revenue_idr, gross_profit_idr, operating_income_idr,
+        #        net_income_idr, total_assets_idr, total_liabilities_idr,
+        #        total_equity_idr, operating_cash_flow_idr,
+        #        capital_expenditure_idr, free_cash_flow_idr,
+        #        filing_date, ingested_at
+        # index: ix_financial_stmt_symbol_period (symbol, period) -- NOT unique
+        # => no ON CONFLICT target; use DELETE + INSERT for idempotence.
+
+        delete_sql = text("""
+            DELETE FROM financial_statements
+            WHERE symbol = :symbol
+              AND period = :period
+              AND statement_type = :statement_type
+        """)
+
+        insert_sql = text("""
+            INSERT INTO financial_statements (
+                symbol, period, statement_type,
+                revenue_idr, gross_profit_idr, operating_income_idr, net_income_idr,
+                total_assets_idr, total_liabilities_idr, total_equity_idr,
+                operating_cash_flow_idr, capital_expenditure_idr, free_cash_flow_idr,
+                filing_date, ingested_at
+            ) VALUES (
+                :symbol, :period, :statement_type,
+                :revenue_idr, :gross_profit_idr, :operating_income_idr, :net_income_idr,
+                :total_assets_idr, :total_liabilities_idr, :total_equity_idr,
+                :operating_cash_flow_idr, :capital_expenditure_idr, :free_cash_flow_idr,
+                :filing_date, NOW()
+            )
+        """)
+
+        def _to_int(v: Decimal | None) -> int | None:
+            return int(v) if v is not None else None
+
+        def _period_str(fiscal_year: int, quarter: int | None) -> str:
+            return f"{fiscal_year}-Q{quarter}" if quarter else f"{fiscal_year}-Annual"
+
         async with get_session() as session:
             for stmt in statements:
                 m = stmt.metrics
+                period = _period_str(stmt.fiscal_year, stmt.quarter)
 
-                # Map normalized metrics to DB columns
-                sql = text("""
-                    INSERT INTO financial_statements (
-                        id, symbol, period_end, fiscal_year, quarter,
-                        statement_type,
-                        revenue, gross_profit, ebit, ebitda, net_income,
-                        total_assets, total_liabilities, total_equity,
-                        total_debt, cash_and_equivalents,
-                        operating_cash_flow, capex, free_cash_flow,
-                        shares_outstanding, eps, source_url, created_at
-                    ) VALUES (
-                        gen_random_uuid(),
-                        :symbol, :period_end, :fiscal_year, :quarter,
-                        CAST(:statement_type AS statement_type_enum),
-                        :revenue, :gross_profit, :ebit, :ebitda, :net_income,
-                        :total_assets, :total_liabilities, :total_equity,
-                        :total_debt, :cash_and_equivalents,
-                        :operating_cash_flow, :capex, :free_cash_flow,
-                        :shares_outstanding, :eps, :source_url, NOW()
-                    )
-                    ON CONFLICT (symbol, period_end, statement_type) DO UPDATE SET
-                        revenue             = EXCLUDED.revenue,
-                        gross_profit        = EXCLUDED.gross_profit,
-                        ebit                = EXCLUDED.ebit,
-                        ebitda              = EXCLUDED.ebitda,
-                        net_income          = EXCLUDED.net_income,
-                        total_assets        = EXCLUDED.total_assets,
-                        total_liabilities   = EXCLUDED.total_liabilities,
-                        total_equity        = EXCLUDED.total_equity,
-                        total_debt          = EXCLUDED.total_debt,
-                        cash_and_equivalents = EXCLUDED.cash_and_equivalents,
-                        operating_cash_flow = EXCLUDED.operating_cash_flow,
-                        capex               = EXCLUDED.capex,
-                        free_cash_flow      = EXCLUDED.free_cash_flow,
-                        eps                 = EXCLUDED.eps,
-                        source_url          = EXCLUDED.source_url
-                    RETURNING (xmax = 0) AS is_insert
-                """)
+                key_params = {
+                    "symbol": stmt.symbol,
+                    "period": period,
+                    "statement_type": stmt.statement_type,
+                }
 
-                def _to_int(v: Decimal | None) -> int | None:
-                    return int(v) if v is not None else None
+                # DELETE any prior row with the same key (idempotent re-run).
+                del_result = await session.execute(delete_sql, key_params)
+                # rowcount is on CursorResult at runtime; not in Result stub.
+                prior_rows = getattr(del_result, "rowcount", 0) or 0
 
-                row = await session.execute(sql, {
-                    "symbol":               stmt.symbol,
-                    "period_end":           stmt.period_end,
-                    "fiscal_year":          stmt.fiscal_year,
-                    "quarter":              stmt.quarter,
-                    "statement_type":       stmt.statement_type,
-                    "revenue":              _to_int(m.get("revenue")),
-                    "gross_profit":         _to_int(m.get("gross_profit")),
-                    "ebit":                 _to_int(m.get("ebit")),
-                    "ebitda":               _to_int(m.get("ebitda")),
-                    "net_income":           _to_int(m.get("net_income")),
-                    "total_assets":         _to_int(m.get("total_assets")),
-                    "total_liabilities":    _to_int(m.get("total_liabilities")),
-                    "total_equity":         _to_int(m.get("total_equity")),
-                    "total_debt":           _to_int(m.get("total_debt")),
-                    "cash_and_equivalents": _to_int(
-                        m.get("cash_and_equivalents") or m.get("cash"),
-                    ),
-                    "operating_cash_flow":  _to_int(m.get("operating_cash_flow")),
-                    "capex":                _to_int(m.get("capex")),
-                    "free_cash_flow":       _to_int(m.get("free_cash_flow")),
-                    "shares_outstanding":   None,  # not in XBRL, use yfinance
-                    "eps":                  m.get("eps"),
-                    "source_url":           stmt.source_url,
+                # INSERT the fresh values.
+                await session.execute(insert_sql, {
+                    **key_params,
+                    "revenue_idr":             _to_int(m.get("revenue")),
+                    "gross_profit_idr":        _to_int(m.get("gross_profit")),
+                    "operating_income_idr":    _to_int(m.get("ebit")),
+                    "net_income_idr":          _to_int(m.get("net_income")),
+                    "total_assets_idr":        _to_int(m.get("total_assets")),
+                    "total_liabilities_idr":   _to_int(m.get("total_liabilities")),
+                    "total_equity_idr":        _to_int(m.get("total_equity")),
+                    "operating_cash_flow_idr": _to_int(m.get("operating_cash_flow")),
+                    "capital_expenditure_idr": _to_int(m.get("capex")),
+                    "free_cash_flow_idr":      _to_int(m.get("free_cash_flow")),
+                    "filing_date":             stmt.period_end,
                 })
 
-                is_insert = row.scalar()
-                if is_insert:
-                    inserted += 1
-                else:
+                if prior_rows > 0:
                     updated += 1
+                else:
+                    inserted += 1
 
         return inserted, updated

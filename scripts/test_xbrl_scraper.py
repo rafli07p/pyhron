@@ -1,6 +1,7 @@
 """Quick integration test for IDX XBRL scraper.
 
-Run: poetry run python scripts/test_xbrl_scraper.py
+Run: poetry run python scripts/test_xbrl_scraper.py [SYMBOL] [YEAR] [PERIOD]
+Default: BBCA 2023 TW1
 
 Requires running Postgres (DATABASE_URL) for the upsert path.
 """
@@ -15,9 +16,13 @@ from data_platform.equity_ingestion.idx_xbrl_scraper import IDXXBRLScraper
 
 
 async def main() -> None:
+    symbol = sys.argv[1] if len(sys.argv) > 1 else "BBCA"
+    year = int(sys.argv[2]) if len(sys.argv) > 2 else 2023
+    period = sys.argv[3] if len(sys.argv) > 3 else "TW1"
+
     scraper = IDXXBRLScraper()
-    print("Testing IDX XBRL scraper with BBCA TW1 2023...")
-    results = await scraper.scrape_symbol("BBCA", 2023, "TW1")
+    print(f"Testing IDX XBRL scraper with {symbol} {period} {year}...")
+    results = await scraper.scrape_symbol(symbol, year, period)
     for r in results:
         print(f"  {r.symbol}/{r.period}/{r.year}:")
         print(
