@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Check,
   ChevronDown,
+  ChevronsUpDown,
   Filter as FilterIcon,
   Info,
   Maximize2,
@@ -675,6 +676,8 @@ function IndexMultiSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [showOnlySelected, setShowOnlySelected] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -687,12 +690,30 @@ function IndexMultiSelect({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const trimmed = search.trim().toLowerCase();
-  const filtered = trimmed.length === 0
-    ? []
-    : allIndexes.filter(name =>
-        name.toLowerCase().includes(trimmed) && !selected.includes(name),
-      ).slice(0, 50);
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let out = q.length === 0
+      ? allIndexes
+      : allIndexes.filter(name => name.toLowerCase().includes(q));
+    if (showOnlySelected) out = out.filter(name => selected.includes(name));
+    out = [...out].sort((a, b) =>
+      sortDir === 'asc' ? a.localeCompare(b) : b.localeCompare(a),
+    );
+    return out;
+  }, [allIndexes, search, showOnlySelected, selected, sortDir]);
+
+  const visibleSelectedCount = visible.filter(n => selected.includes(n)).length;
+  const allChecked = visible.length > 0 && visibleSelectedCount === visible.length;
+  const isIndeterminate = visibleSelectedCount > 0 && visibleSelectedCount < visible.length;
+
+  const toggleAll = () => {
+    if (allChecked) {
+      const visibleSet = new Set(visible);
+      onChange(selected.filter(n => !visibleSet.has(n)));
+    } else {
+      onChange(Array.from(new Set([...selected, ...visible])));
+    }
+  };
 
   const toggleIndex = (name: string) => {
     if (selected.includes(name)) {
@@ -701,6 +722,8 @@ function IndexMultiSelect({
       onChange([...selected, name]);
     }
   };
+
+  const summary = selected.length > 0 ? `(${selected.length}) ${selected.join(', ')}` : '';
 
   return (
     <div ref={ref}>
@@ -712,67 +735,123 @@ function IndexMultiSelect({
       </div>
       <div className="relative">
         <div
-          onClick={() => setOpen(true)}
-          className="flex min-h-[34px] w-full flex-wrap items-center gap-1 rounded border border-[var(--color-border)] bg-white py-1 pl-7 pr-3 text-[13px] outline-none cursor-text hover:bg-[var(--color-border-subtle)]"
+          onClick={() => setOpen(o => !o)}
+          className="flex h-9 w-full items-center gap-2 rounded border border-[var(--color-border)] bg-white pl-7 pr-2 text-[13px] cursor-pointer hover:bg-[var(--color-border-subtle)]"
         >
           <SearchIcon
             size={13}
-            className="pointer-events-none absolute left-2 top-[10px] text-[var(--color-text-muted)]"
+            className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
           />
-          {selected.map(name => (
-            <span
-              key={name}
-              className="inline-flex items-center gap-1 rounded bg-[rgba(0,87,168,0.08)] px-2 py-[2px] text-[11px] font-medium text-[var(--color-blue-primary)]"
+          {selected.length === 0 ? (
+            <span className="flex-1 truncate text-[var(--color-text-muted)]">Search</span>
+          ) : (
+            <span className="flex-1 truncate text-[var(--color-text-primary)]">{summary}</span>
+          )}
+          {selected.length > 0 && (
+            <button
+              type="button"
+              aria-label="Clear selection"
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange([]);
+              }}
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded hover:bg-[var(--color-border-subtle)]"
             >
-              <span className="max-w-[140px] truncate">{name}</span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(selected.filter(n => n !== name));
-                }}
-                className="flex h-3 w-3 items-center justify-center rounded hover:bg-[rgba(0,87,168,0.15)]"
-              >
-                <X size={10} />
-              </button>
-            </span>
-          ))}
-          <input
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              if (!open) setOpen(true);
-            }}
-            onFocus={() => setOpen(true)}
-            placeholder={selected.length === 0 ? 'Search' : ''}
-            className="flex-1 min-w-[60px] bg-transparent text-[13px] outline-none"
-          />
+              <X size={12} className="text-[var(--color-text-muted)]" />
+            </button>
+          )}
+          <ChevronDown size={12} className="shrink-0 text-[var(--color-text-muted)]" />
         </div>
 
         {open && (
           <div className="absolute left-0 top-full z-40 mt-1 w-full overflow-hidden rounded-md border border-[var(--color-border)] bg-white shadow-lg">
-            <div className="max-h-[260px] overflow-y-auto">
-              {trimmed.length === 0 ? (
+            <div className="flex items-center gap-2 border-b border-[var(--color-border)] p-2">
+              <div className="relative flex-1">
+                <SearchIcon
+                  size={13}
+                  className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+                />
+                <input
+                  autoFocus
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search"
+                  className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg-page)] py-1 pl-7 pr-2 text-[12px] outline-none"
+                />
+              </div>
+              <button
+                type="button"
+                aria-label="Toggle sort direction"
+                onClick={() => setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))}
+                className="flex h-6 w-6 items-center justify-center rounded border border-[var(--color-border)] hover:bg-[var(--color-border-subtle)]"
+              >
+                <ChevronsUpDown size={12} className="text-[var(--color-text-muted)]" />
+              </button>
+            </div>
+
+            <div className="max-h-[380px] overflow-y-auto">
+              <button
+                type="button"
+                onClick={toggleAll}
+                disabled={visible.length === 0}
+                className="flex w-full items-center gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2 text-left text-[12px] hover:bg-[var(--color-border-subtle)] disabled:opacity-50"
+              >
+                <span
+                  className={`flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-sm border ${
+                    allChecked || isIndeterminate
+                      ? 'border-[var(--color-blue-primary)] bg-[var(--color-blue-primary)]'
+                      : 'border-[var(--color-border)] bg-white'
+                  }`}
+                >
+                  {allChecked && <Check size={10} className="text-white" />}
+                  {!allChecked && isIndeterminate && <span className="h-[2px] w-[8px] bg-white" />}
+                </span>
+                <span className="flex-1 font-semibold text-[var(--color-text-primary)]">All</span>
+              </button>
+
+              {visible.length === 0 ? (
                 <div className="px-3 py-4 text-center text-[12px] text-[var(--color-text-muted)]">
-                  Type to search indexes
-                </div>
-              ) : filtered.length === 0 ? (
-                <div className="px-3 py-4 text-center text-[12px] text-[var(--color-text-muted)]">
-                  No matches
+                  {showOnlySelected ? 'No selected items' : 'No matches'}
                 </div>
               ) : (
-                filtered.map(name => (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => toggleIndex(name)}
-                    className="flex w-full items-center gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2 text-left text-[12px] hover:bg-[var(--color-border-subtle)]"
-                  >
-                    <span className="flex-1 truncate text-[var(--color-text-secondary)]">{name}</span>
-                  </button>
-                ))
+                visible.map(name => {
+                  const isSelected = selected.includes(name);
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => toggleIndex(name)}
+                      className={`flex w-full items-center gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2 text-left text-[12px] hover:bg-[var(--color-border-subtle)] ${
+                        isSelected ? 'bg-[rgba(0,87,168,0.05)]' : ''
+                      }`}
+                    >
+                      <span
+                        className={`flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-sm border ${
+                          isSelected
+                            ? 'border-[var(--color-blue-primary)] bg-[var(--color-blue-primary)]'
+                            : 'border-[var(--color-border)] bg-white'
+                        }`}
+                      >
+                        {isSelected && <Check size={10} className="text-white" />}
+                      </span>
+                      <span className="flex-1 truncate text-[var(--color-text-secondary)]">{name}</span>
+                    </button>
+                  );
+                })
               )}
             </div>
+
+            {selected.length > 0 && (
+              <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-page)] p-2">
+                <button
+                  type="button"
+                  onClick={() => setShowOnlySelected(s => !s)}
+                  className="text-[12px] text-[var(--color-blue-primary)] hover:underline"
+                >
+                  {showOnlySelected ? 'Show all' : `Show only selected (${selected.length})`}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -994,7 +1073,6 @@ function DataTable({
     <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 420 }}>
       <table className="w-full border-collapse text-[12px]">
         <colgroup>
-          <col style={{ width: 40 }} />
           <col style={{ width: 70 }} />
           <col style={{ width: 110 }} />
           <col style={{ width: 280 }} />
@@ -1006,7 +1084,6 @@ function DataTable({
         </colgroup>
         <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--color-bg-page)' }}>
           <tr className="border-b border-[var(--color-border)]">
-            <ThCell align="center">—</ThCell>
             <SortableTh label="Rank" col="rank" sort={sort} onSort={onSort} align="right" prefix />
             <SortableTh label="Index Code" col="indexCode" sort={sort} onSort={onSort} align="right" prefix />
             <SortableTh label="Index Name" col="indexName" sort={sort} onSort={onSort} align="left" prefix />
@@ -1056,7 +1133,6 @@ function TableRow({
 
   return (
     <tr className={`border-b border-[var(--color-border-subtle)] ${bg} transition-colors hover:bg-[var(--color-border-subtle)]`}>
-      <TdCell align="center" muted>—</TdCell>
       <TdCell align="right">
         {row.rank === null ? <span className="text-[var(--color-text-muted)]">—</span> : row.rank}
       </TdCell>
