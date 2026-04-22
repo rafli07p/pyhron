@@ -57,6 +57,12 @@ class FinancialSummary(BaseModel):
     free_cash_flow: Decimal | None = None
 
 
+class FinancialFactsResponse(BaseModel):
+    symbol: str
+    periods: list[str]
+    sections: list[dict[str, object]]
+
+
 class CorporateAction(BaseModel):
     symbol: str
     action_type: str = Field(description="dividend, stock_split, rights_issue, etc.")
@@ -202,6 +208,234 @@ async def get_financials(
         )
         for r in rows
     ]
+
+
+@router.get("/{symbol}/financial-facts", response_model=FinancialFactsResponse)
+async def get_financial_facts(
+    symbol: str,
+    context_type: str = Query(
+        "income_current",
+        pattern="^(income_current|income_prior|balance_current|balance_prior)$",
+    ),
+    _user: TokenPayload = Depends(require_role(Role.VIEWER)),
+) -> FinancialFactsResponse:
+    """Get full XBRL financial facts from EAV table."""
+    logger.info("financial_facts_queried", symbol=symbol, context_type=context_type)
+
+    async with get_session() as session:
+        result = await session.execute(
+            text("""
+                SELECT period, metric, value
+                FROM financial_facts
+                WHERE symbol = :symbol
+                  AND context_type = :context_type
+                ORDER BY period ASC, metric ASC
+            """),
+            {"symbol": symbol.upper(), "context_type": context_type},
+        )
+        rows = result.mappings().all()
+
+    pivot: dict[str, dict[str, str]] = {}
+    periods_set: set[str] = set()
+    for row in rows:
+        metric = str(row["metric"])
+        period = str(row["period"])
+        value = str(row["value"]) if row["value"] is not None else None
+        periods_set.add(period)
+        if metric not in pivot:
+            pivot[metric] = {}
+        if value is not None:
+            pivot[metric][period] = value
+
+    def period_order(p: str) -> int:
+        parts = p.split("-")
+        year = int(parts[0]) if parts[0].isdigit() else 0
+        q_map = {"Q1": 1, "Q2": 2, "Q3": 3, "Annual": 4}
+        q = q_map.get(parts[1] if len(parts) > 1 else "", 0)
+        return year * 10 + q
+
+    periods = sorted(periods_set, key=period_order)
+
+    income_sections: list[dict[str, object]] = [
+        {
+            "title": "Interest Income",
+            "rows": [
+                {"label": "Total Interest & Sharia Income", "metric": "TotalInterestAndShariaIncome", "bold": True},
+                {"label": "Interest Income", "metric": "SubtotalInterestIncome", "indent": True},
+                {"label": "Loan Interest Income", "metric": "LoansInterestIncome", "indent": True},
+                {"label": "Securities Income", "metric": "MarketableSecuritiesIncome", "indent": True},
+                {"label": "Placement Income", "metric": "PlacementsWithBankIndonesiaAndOtherBanksIncome", "indent": True},
+                {"label": "Sharia Income", "metric": "SubtotalShariaIncome", "indent": True},
+                {"label": "Total Interest & Sharia Expense", "metric": "TotalInterestAndShariaExpense", "bold": True},
+                {"label": "Time Deposit Expense", "metric": "TimeDepositsInterestExpense", "indent": True},
+                {"label": "Savings Deposit Expense", "metric": "SavingDepositsInterestExpense", "indent": True},
+                {"label": "Borrowing Expense", "metric": "BorrowingsInterestExpense", "indent": True},
+                {"label": "Guarantee Premium", "metric": "PremiumOnThirdPartyFundGuarantees", "indent": True},
+            ],
+        },
+        {
+            "title": "Other Operating Income",
+            "rows": [
+                {"label": "Trading Revenue", "metric": "RevenueFromTradingTransactions"},
+                {"label": "Realised Derivative Gains/Losses", "metric": "RealisedGainsLossesFromDerivativeInstruments"},
+                {"label": "Other Operating Income", "metric": "OtherOperatingIncome", "bold": True},
+            ],
+        },
+        {
+            "title": "Operating Expenses",
+            "rows": [
+                {"label": "Impairment Allowances (CKPN)", "metric": "AllowancesForImpairmentLossesOnEarningsAssets"},
+                {"label": "Impairment Recovery", "metric": "RecoveryOfImpairmentLossesOfFinancialAssets"},
+                {"label": "General & Administrative Expenses", "metric": "GeneralAndAdministrativeExpenses", "bold": True},
+                {"label": "Other Operating Expenses", "metric": "OtherOperatingExpenses", "bold": True},
+                {"label": "Other Fees & Commissions", "metric": "OtherFeesAndCommissionsExpenses"},
+            ],
+        },
+        {
+            "title": "Profit & Loss",
+            "rows": [
+                {"label": "Operating Profit", "metric": "ProfitFromOperation", "bold": True},
+                {"label": "Profit Before Tax", "metric": "ProfitLossBeforeIncomeTax", "bold": True},
+                {"label": "Tax Expense", "metric": "TaxBenefitExpenses"},
+                {"label": "Net Profit", "metric": "ProfitLoss", "bold": True},
+                {"label": "Comprehensive Income", "metric": "ComprehensiveIncome", "bold": True},
+                {"label": "Attributable to Parent", "metric": "ProfitLossAttributableToParentEntity", "indent": True},
+                {"label": "EPS (Basic)", "metric": "BasicEarningsLossPerShareFromContinuingOperations"},
+                {"label": "EPS (Diluted)", "metric": "DilutedEarningsLossPerShareFromContinuingOperations"},
+            ],
+        },
+    ]
+
+    balance_sections: list[dict[str, object]] = [
+        {
+            "title": "Assets",
+            "rows": [
+                {"label": "Total Assets", "metric": "Assets", "bold": True},
+                {"label": "Cash", "metric": "Cash", "indent": True},
+                {"label": "Current Accounts with BI", "metric": "CurrentAccountsWithBankIndonesia", "indent": True},
+                {"label": "Placements with Other Banks", "metric": "PlacementsWithBankIndonesiaAndOtherBanksThirdParties", "indent": True},
+                {"label": "Marketable Securities", "metric": "MarketableSecuritiesThirdParties", "indent": True},
+                {"label": "Securities under Resale Agreement", "metric": "SecuritiesPurchasedUnderAgreementToResale", "indent": True},
+                {"label": "Government Bonds", "metric": "GovernmentBonds", "indent": True},
+                {"label": "Loans (Third Parties)", "metric": "LoansThirdParties", "indent": True},
+                {"label": "Total Loans (Gross)", "metric": "TotalLoansGross", "bold": True},
+                {"label": "Total Loans (Net)", "metric": "TotalLoansNet", "indent": True},
+                {"label": "Allowance for Loan Losses", "metric": "AllowanceForImpairmentLossesForLoans", "indent": True},
+                {"label": "Other Financial Assets", "metric": "OtherFinancialAssets", "indent": True},
+                {"label": "Property, Plant & Equipment", "metric": "PropertyPlantAndEquipment", "indent": True},
+                {"label": "Goodwill", "metric": "Goodwill", "indent": True},
+                {"label": "Deferred Tax Assets", "metric": "DeferredTaxAssets", "indent": True},
+                {"label": "Other Assets", "metric": "OtherAssets", "indent": True},
+            ],
+        },
+        {
+            "title": "Liabilities",
+            "rows": [
+                {"label": "Total Liabilities", "metric": "Liabilities", "bold": True},
+                {"label": "Current Accounts (Deposits)", "metric": "CurrentAccounts", "indent": True},
+                {"label": "Savings Deposits", "metric": "SavingsDeposits", "indent": True},
+                {"label": "Time Deposits", "metric": "TimeDeposits", "indent": True},
+                {"label": "Sharia Deposits", "metric": "ShariaDeposits", "indent": True},
+                {"label": "Interbank Deposits", "metric": "OtherBanksDepositsThirdParties", "indent": True},
+                {"label": "Derivative Payables", "metric": "DerivativePayablesThirdParties", "indent": True},
+                {"label": "Borrowings", "metric": "Borrowings", "indent": True},
+                {"label": "Post-Employment Obligations", "metric": "PostEmploymentBenefitObligations", "indent": True},
+                {"label": "Taxes Payable", "metric": "TaxesPayable", "indent": True},
+                {"label": "Other Liabilities", "metric": "OtherLiabilities", "indent": True},
+                {"label": "Temporary Syirkah Funds", "metric": "TemporarySyirkahFunds", "bold": True},
+            ],
+        },
+        {
+            "title": "Equity",
+            "rows": [
+                {"label": "Total Equity", "metric": "Equity", "bold": True},
+                {"label": "Common Stock", "metric": "CommonStocks", "indent": True},
+                {"label": "Additional Paid-in Capital", "metric": "AdditionalPaidInCapital", "indent": True},
+                {"label": "Revaluation Reserves", "metric": "RevaluationReserves", "indent": True},
+                {"label": "Retained Earnings", "metric": "UnappropriatedRetainedEarnings", "indent": True},
+                {"label": "General & Legal Reserves", "metric": "GeneralAndLegalReserves", "indent": True},
+                {"label": "Non-Controlling Interests", "metric": "NonControllingInterests", "indent": True},
+            ],
+        },
+    ]
+
+    cashflow_sections: list[dict[str, object]] = [
+        {
+            "title": "Operating Activities",
+            "rows": [
+                {"label": "Net Cash from Operating Activities", "metric": "NetCashFlowsReceivedFromUsedInOperatingActivities", "bold": True},
+                {"label": "Interest & Commission Received", "metric": "InterestInvestmentIncomeFeesAndCommissionsReceived", "indent": True},
+                {"label": "Interest & Commission Paid", "metric": "PaymentsOfInterestAndBonusFeesAndCommissions", "indent": True},
+                {"label": "Income Tax Paid", "metric": "RefundsPaymentsOfIncomeTax", "indent": True},
+                {"label": "Other Operating Expenses Paid", "metric": "PaymentsForOtherOperatingExpenses", "indent": True},
+                {"label": "Change in Loans", "metric": "DecreaseIncreaseInLoans", "indent": True},
+                {"label": "Change in Deposits (Current + Savings)", "metric": "IncreaseDecreaseInCustomersCurrentAccountsAndSavings", "indent": True},
+                {"label": "Change in Time Deposits", "metric": "IncreaseDecreaseInCustomersTimeDeposits", "indent": True},
+            ],
+        },
+        {
+            "title": "Investing Activities",
+            "rows": [
+                {"label": "Net Cash from Investing Activities", "metric": "NetCashFlowsReceivedFromUsedInInvestingActivities", "bold": True},
+                {"label": "Purchase/Disposal of Fixed Assets", "metric": "ProceedsFromDisposalAcquisitionOfPropertyAndEquipment", "indent": True},
+                {"label": "Other Investing Activities", "metric": "OtherCashInflowsOutflowsFromInvestingActivities", "indent": True},
+            ],
+        },
+        {
+            "title": "Financing Activities",
+            "rows": [
+                {"label": "Net Cash from Financing Activities", "metric": "NetCashFlowsReceivedFromUsedInFinancingActivities", "bold": True},
+                {"label": "Proceeds from Borrowings", "metric": "ProceedsFromBorrowings", "indent": True},
+                {"label": "Repayment of Borrowings", "metric": "PaymentsForBorrowings", "indent": True},
+                {"label": "Cash Dividends Paid", "metric": "DistributionsOfCashDividends", "indent": True},
+            ],
+        },
+        {
+            "title": "Cash Position",
+            "rows": [
+                {"label": "Net Change in Cash", "metric": "NetIncreaseDecreaseInCashAndCashEquivalents", "bold": True},
+                {"label": "FX Effect on Cash", "metric": "EffectOfExchangeRateChangesOnCashAndCashEquivalents", "indent": True},
+                {"label": "Cash & Equivalents", "metric": "CashAndCashEquivalentsCashFlows", "bold": True},
+            ],
+        },
+    ]
+
+    # Cashflow facts are embedded in the *Duration* (income) contexts
+    if context_type in ("income_current", "income_prior"):
+        all_sections = income_sections + cashflow_sections
+    else:
+        all_sections = balance_sections
+
+    # Enrich sections with actual values
+    enriched: list[dict[str, object]] = []
+    for section in all_sections:
+        section_rows = section["rows"]
+        if not isinstance(section_rows, list):
+            continue
+        enriched_rows: list[dict[str, object]] = []
+        for row_def in section_rows:
+            if not isinstance(row_def, dict):
+                continue
+            metric = str(row_def["metric"])
+            values = {p: pivot.get(metric, {}).get(p) for p in periods}
+            has_data = any(v is not None for v in values.values())
+            if not has_data:
+                continue
+            enriched_rows.append({
+                "label":  row_def.get("label"),
+                "metric": metric,
+                "bold":   row_def.get("bold", False),
+                "indent": row_def.get("indent", False),
+                "values": values,
+            })
+        if enriched_rows:
+            enriched.append({"title": section["title"], "rows": enriched_rows})
+
+    return FinancialFactsResponse(
+        symbol=symbol.upper(),
+        periods=periods,
+        sections=enriched,
+    )
 
 
 @router.get("/{symbol}/corporate-actions", response_model=list[CorporateAction])
