@@ -21,6 +21,12 @@ celery_app = Celery(
     backend=os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/2"),
 )
 
+from data_platform.equity_ingestion.arelle_controller import (
+    register_celery_signals,
+)
+
+register_celery_signals()
+
 celery_app.conf.update(
     timezone="Asia/Jakarta",
     enable_utc=True,
