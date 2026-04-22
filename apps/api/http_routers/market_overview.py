@@ -237,6 +237,7 @@ class IntradayResponse(BaseModel):
 
 
 IDX_INDEX_MAP: dict[str, dict[str, str]] = {
+    "JCI": {"yahoo": "^JKSE", "name": "Jakarta Composite"},
     "IHSG": {"yahoo": "^JKSE", "name": "Jakarta Composite"},
     "LQ45": {"yahoo": "^JKLQ45", "name": "LQ45 Index"},
     "IDX30": {"yahoo": "^JKIDX30", "name": "IDX30 Index"},
@@ -247,6 +248,7 @@ IDX_INDEX_MAP: dict[str, dict[str, str]] = {
 SYMBOL_MAP: dict[str, str] = {sym: meta["yahoo"] for sym, meta in IDX_INDEX_MAP.items()}
 
 FALLBACK_INDICES: dict[str, dict[str, float]] = {
+    "JCI": {"current": 7234.56, "change": 0.45},
     "IHSG": {"current": 7234.56, "change": 0.45},
     "LQ45": {"current": 985.23, "change": -0.52},
     "IDX30": {"current": 482.18, "change": 0.58},
